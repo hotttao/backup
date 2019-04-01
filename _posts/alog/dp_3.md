@@ -81,19 +81,38 @@ max(max_lcs(i-1,j-1), max_lcs(i-1, j), max_lcs(i, j-1))；
 我们有一个数字序列包含 n 个不同的数字，如何求出这个序列中的最长递增子序列长度？比如 2, 9, 3, 6, 5, 1, 7 这样一组数字序列，它的最长递增子序列就是 2, 3, 5, 7，所以最长递增子序列的长度是 4。
 
 ```Python
-def max_seq(nums):
-    mem = [1] * len(nums)
-    for i in range(1, len(nums)):
-        m = 1
-        j = 0
-        while j < i:
-            if nums[i] > nums[j]:
-                v = mem[j] + 1
-                if v > m:
-                    m = v
-            j += 1
-        mem[i] = m
+class Solution(object):
+    def lengthOfLIS(self, nums):
+        """
+        :type nums: List[int]
+        :rtype: int
+        """
+        if not nums:
+            return 0
+        n = len(nums)
+        status = [None] * (n)
+        status[0] = nums[0]
+        end = 0
+        for i in range(1, n):
+            end = max(end, self.binary_search(nums[i], status, end))
+        return end + 1
 
-
-max_seq([2, 9, 3, 6, 5, 3, 7])
+    def binary_search(self, v, status, end, start=0):
+        m = start
+        if status[end] < v:
+            end += 1
+            status[end] = v
+            return end
+        while start <= end:
+            mid = start + ((end - start) > 1)
+            if status[mid] == v:
+                return end
+            elif status[mid] < v:
+                start = mid + 1
+            else:
+                if mid == m or status[mid-1] < v:
+                    status[mid] = v
+                    return end
+                else:
+                    end = mid - 1
 ```
