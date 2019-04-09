@@ -21,7 +21,7 @@ tags:
 我想我也无需去吹赞这本书，只想把他推荐给需要的人。好记性不如烂笔头，这个系列的博客就是《构建数据密集型应用》的读书笔记。
 
 ## 2. 本书结构
-什么是数据密集型应用，一个应用，如果数据是其主要挑战**(数据量，数据复杂度和数据变化速度)**，它就被称为数据密集型应用。本书就是围绕应用中的数据问题展开的，分为如下三个部分：
+什么是数据密集型应用，一个应用，如果数据是其主要挑战**(数据量，数据复杂度和数据变化速度)** ，它就被称为数据密集型应用。本书就是围绕应用中的数据问题展开的，分为如下三个部分：
 
 ![big data](/images/db/db_frame.jpg)
 
@@ -44,3 +44,4 @@ tags:
 1. [书中引用持续维护的github仓库](https://github.com/ept/ddia-references)
 2. [原著的开源翻译版本](https://vonng.gitbooks.io/ddia-cn/content/)，对于英文不好的同学真是福音
 3. [耗子叔](https://www.coolshell.cn/)在极客时间的专栏[左耳听风](https://time.geekbang.org/column/intro/48)，《构建数据密集型应用》是这个专栏推荐的书，也推荐这个专栏。
+4. [可扩展的Web架构和分布式系统](http://nettee.github.io/posts/2016/Scalable-Web-Architecture-and-Distributed-Systems/)

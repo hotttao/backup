@@ -9,7 +9,7 @@ tags:
 
 构建数据密集型应用的目标
 
-![big data](/images/db/db_start.jpg)
+![big data](/images/db/系统目标.png)
 
 <!-- more -->
 
