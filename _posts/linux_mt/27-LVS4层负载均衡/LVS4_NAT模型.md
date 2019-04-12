@@ -8,8 +8,6 @@ tags:
 ---
 
 LVS nat模型实战
-
-![linux-mt](/images/linux_mt/linux_slb.jpg)
 <!-- more -->
 
 本节我们将搭建一个 LVS-NAT 的负载均衡集群。

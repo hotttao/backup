@@ -8,8 +8,6 @@ tags:
 ---
 
 LVS 4层负载均衡原理
-
-![linux-mt](/images/linux_mt/linux_slb.jpg)
 <!-- more -->
 
 本节我们先来讲解 LVS 实现负载均衡的原理，内容包括:
