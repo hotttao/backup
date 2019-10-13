@@ -11,18 +11,16 @@ tags:
 
 <!-- more -->
 
-![高性能的MySQL](/images/mysql/高性能的mysql.jpg)
-
 
 ## 1. mysql 开篇
 说来惭愧，相比于入程序员这行的时间，对 mysql 的了解太少了。接下来的两个月里，希望借助于 [高性能的MySQL](https://github.com/ept/ddia-references) 一书和林晓斌老师的专栏 [MySQL实战45讲](https://time.geekbang.org/column/intro/100020801) 来系统的学习 MySQL。
 
-mysql 的内容大致分成了以下几块:
-1. 表结构，索引和查询优化
-2. 事务和锁
-3. 分区和主从复制
 
-在我们正式学习其他内容之前，我想先介绍一下如何调用“EXPLAIN”来获取关于查询执行计划的信息，以及如何解释输出。EXPLAIN命令是查看查询优化器如何决定执行查询的主要方法。这个功能有局限性，但是能帮助我们了解 mysql 在执行 sql 背后的每一步。
+在我们正式学习其他内容之前，我想先介绍一下如何调用“EXPLAIN”来获取关于查询执行计划的信息，以及如何解释输出。这将能帮助我们了解 mysql 在执行 sql 背后的每一步。我们将分成以下 4 个部分来介绍 EXPLAIN 的相关内容:
+1. EXPLAIN 的三种用法
+2. EXPLAIN 的数据
+3. EXPLAIN 的缺陷
+4. MySQL5.6 对EXPLAIN 的改进
 
 ## 2. EXPLAIN
 ### 2.1 EXPLAIN 用法
@@ -68,17 +66,7 @@ Message: select `enlightent_daily`.`floatTest`.`dd` AS `dd` from `enlightent_dai
 MySQL 必须在可以完成外层查询优化之前处理所有类似的子查询，这对于EXPLAIN来说是必须要做的。这意味着如果语句包含开销较大的子查询或使用临时表算法的视图，实际上会给服务器带来大量工作。这个限制将在 MySQL5.6 之后取消。
 
 
-### 2.2 EXPLAIN 缺陷
-EXPLAIN只是个近似结果，存在以下缺陷:
-1. EXPLAIN根本不会告诉你触发器、存储过程或UDF会如何影响查询。
-2. 它并不支持存储过程，尽管可以手动抽取查询并单独地对其进行EXPLAIN操作。
-3. 它并不会告诉你MySQL在查询执行中所做的特定优化。
-4. 它并不会显示关于查询的执行计划的所有信息
-5. 它并不区分具有相同名字的事物。例如，它对内存排序和临时文件都使用“filesort”，并且对于磁盘上和内存中的临时表都显示“Using temporary”。
-6. 可能会误导
-7. MySQL EXPLAIN只能解释SELECT查询，并不会对存储程序调用和INSERT、UPDATE、DELETE或其他语句做解释。你可以重写某些非SELECT查询以利用EXPLAIN；MySQL5.6 之后将允许解释非 SELECT 操作
-
-### 2.3 EXPLAIN 中的列
+### 2.2 EXPLAIN 中的列
 要想明白 EXPLAIN 的输出，首先我们要明白EXPLAIN 中的列的含义，其次是每个列可能的取值范围，以及每个值代表的含义。下面 EXPLAIN 输出的每一列的含义:
 
 列名 | 含义
@@ -138,7 +126,7 @@ table 对应行正在访问的表名，可以在这一列中从上往下观察My
     16 ) AS der_2;
 ```
 
-![负责select示例](/images/mysql/explain_select.jpg)
+![EXPLAIIN 示例](/images/mysql/explain_select.jpg)
 
 #### type
 type 表示 MySQL 决定如何查找表中的行，从最差到最优有如下几种取值:
@@ -195,7 +183,17 @@ Extra 是额外的提示信息，常见的最重要的值如下：
   - 意味着没有好用的索引，新的索引将在联接的每一行上重新估算
   - N是显示在possible_keys列中索引的位图，并且是冗余的
 
-## 3.MySQL 5.6中的改进
+### 3. EXPLAIN 缺陷
+EXPLAIN只是个近似结果，存在以下缺陷:
+1. EXPLAIN根本不会告诉你触发器、存储过程或UDF会如何影响查询。
+2. 它并不支持存储过程，尽管可以手动抽取查询并单独地对其进行EXPLAIN操作。
+3. 它并不会告诉你MySQL在查询执行中所做的特定优化。
+4. 它并不会显示关于查询的执行计划的所有信息
+5. 它并不区分具有相同名字的事物。例如，它对内存排序和临时文件都使用“filesort”，并且对于磁盘上和内存中的临时表都显示“Using temporary”。
+6. 可能会误导
+7. MySQL EXPLAIN只能解释SELECT查询，并不会对存储程序调用和INSERT、UPDATE、DELETE或其他语句做解释。你可以重写某些非SELECT查询以利用EXPLAIN；MySQL5.6 之后将允许解释非 SELECT 操作
+
+## 4. MySQL 5.6 对 EXPLAIN 的改进
 MySQL 5.6中将包括一些对EXPLAIN的重要改进：
 1. 能对类似UPDATE、INSERT等的查询进行解释。
 2. 允许匿名的临时表尽可能晚地被具体化，而不总是在优化和执行使用到此临时表的部分查询时创建并填充它们。这将允许MySQL可以直接解释带子查询的查询语句，而不需要先实际地执行子查询
