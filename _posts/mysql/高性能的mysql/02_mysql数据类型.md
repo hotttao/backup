@@ -1,5 +1,5 @@
 ---
-title: 2 Schema 与数据类型
+title: 2 MySQL 数据类型
 date: 2019-10-10
 categories:
     - 存储
