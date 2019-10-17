@@ -19,8 +19,6 @@ mysql 的 Schema 设计
 
 最后我们会简单说一下加快 ALTER TABLE 操作速度的方法。下面大部分内容摘自：《高性能MySQL》 — 〔美〕施瓦茨 (Baron Schwartz)  〔美〕扎伊采夫 (Peter Zaitsev)  〔美〕特卡琴科 (Vadim Tkachenko)
 在豆瓣阅读书店查看：https://read.douban.com/ebook/35648568/
-本作品由电子工业出版社授权豆瓣阅读全球范围内电子版制作与发行。
-© 版权所有，侵权必究。
 
 ## 2. MySQL schema设计中的陷阱
 有一些问题是由MySQL的实现机制导致的，我们需要避免下面只会在 MySQL 中发生的特定问题:
