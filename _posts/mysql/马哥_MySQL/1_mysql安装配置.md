@@ -171,6 +171,24 @@ ll /etc/my.cnf.d
 -rw-r--r--. 1 root root 744 4月  30 2017 server.cnf
 ```
 
+### 3.3 运行时参数修改
+```bash
+MariaDB [(none)]> help 'show variables'
+MariaDB [(none)]> show global variables like 'skip_name_resolve'
+MariaDB [(none)]> show variables where variable_name="innodb_version";
+```
+
+运行时参数查看：
+- `SHOW GLOBAL VARIABLES [LIKE 'pattern' | WHERE expr] `: 查看全局默认参数
+- `SHOW SESSION VARIABLES [LIKE 'pattern' | WHERE expr]`: 查看当前会话的参数
+
+运行时参数修改:
+- `SET GLOBAL VARIABLES=` 或者 `SET @@GLOBAL.VARIABLES=`: 修改全局默认参数，仅对修改后新建的会话有效
+- `SET SESSION VARIABLES=` 或者 `SET @@SESSION.VARIABLES=`: 修改当前会话参数
+
+### 3.4 查看 mariadb 状态变量
+`SHOW [GLOBAL | SESSION] STATUS [LIKE 'pattern' | WHERE expr]`
+
 
 ## 4 mysql 客户端启动命令
 `mysql [OPTIONS] [database]`
