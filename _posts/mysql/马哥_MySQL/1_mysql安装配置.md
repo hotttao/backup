@@ -76,6 +76,9 @@ srwxrwxrwx. 1 mysql mysql 0 8月  21 11:10 /var/lib/mysql/mysql.sock
 
 ```bash
 yum install mariadb-server
+
+# 如果修改了mysql 默认保存数据的存储目录 datadir，需要重新执行 mysql_install_db
+mysql_install_db --user=mysql --datadir=/data
 ```
 
 ### 2.1 初始化配置
@@ -256,7 +259,7 @@ adm	 crash	empty  gopher  kerberos  local	log   named  opt  run	    target  www
 ```
 
 ### 4.2 查看服务端命令
-```
+```bash
 MariaDB [(none)]> help contents   # 查看 mysql 命令的组成部分
 For more information, type 'help <item>', where <item> is one of the following
 categories:
