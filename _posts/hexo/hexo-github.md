@@ -1,8 +1,6 @@
 ---
 title: hexo github blog
 date: 2017-09-03 11:58:00
-categories:
-    - 运维
 tags:
     - hexo
 ---

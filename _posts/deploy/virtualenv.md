@@ -5,7 +5,6 @@ categories:
     - 运维
 tags:
     - python
-    - 部署工具
 ---
 ![hexo blog](/images/python/virtualenv.jpg)
 virtualenv 基本使用

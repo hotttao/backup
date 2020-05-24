@@ -1,10 +1,10 @@
 ---
 title: 3 MARIADB 基础使用
-date: 2020-03-03
+date: 2019-10-08
 categories:
     - 存储
 tags:
-    - mysql运维
+    - 马哥 MySQL 运维
 ---
 
 mariadb 基础使用

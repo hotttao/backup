@@ -5,7 +5,6 @@ categories:
     - Python
 tags:
     - wrapt
-    - 函数装饰器
 ---
 ![Python decorator](/images/python/decorator.jpg)
 上一篇文章说明了普通函数实现的装饰器存在的问题。本文我们将着眼于之前阐述的最后一个问题，如何将装饰器应用到一个描述符上。

@@ -5,7 +5,6 @@ categories:
     - Python
 tags:
     - wrapt
-    - 函数装饰器
 ---
 ![Python decorator](/images/python/decorator.jpg)
 [GrahamDumpleton wrapt blog](https://github.com/GrahamDumpleton/wrapt/tree/master/blog) 的翻译部分到此就结束。很可惜的是作者并没有把猴子补丁部分写完，查阅了 wrapt 的官方文档，上面只介绍了 wrapt 的装饰器，代理对象以及 synchronized 同步装饰器，也没有介绍猴子补丁相关内容。不过已经介绍的内容足够用了，接下来我想结合 wrapt 的文档介绍一下 wrapt 模块的使用，算是整个博客的总结。

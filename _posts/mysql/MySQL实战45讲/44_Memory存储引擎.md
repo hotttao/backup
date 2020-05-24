@@ -1,10 +1,11 @@
 ---
-title: 44 MYSQL Memory 存储引擎
-date: 2020-03-31
+title: 25 MYSQL Memory 存储引擎
+date: 2020-03-25
 categories:
     - 存储
 tags:
-    - mysql运维
+    - 极客时间
+    - MySQL实战45讲
 ---
 
 什么时候使用 Memory 存储引擎

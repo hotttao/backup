@@ -1,10 +1,10 @@
 ---
 title: 1 MYSQL 安装配置
-date: 2020-03-01
+date: 2019-10-06
 categories:
     - 存储
 tags:
-    - mysql运维
+    - 马哥 MySQL 运维
 ---
 
 mariadb 安装配置

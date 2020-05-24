@@ -1,10 +1,11 @@
 ---
-title: 41 常见语句的执行逻辑
-date: 2020-03-28
+title: 22 常见语句的执行逻辑
+date: 2020-03-22
 categories:
     - 存储
 tags:
-    - mysql运维
+	  - 极客时间
+	  - MySQL实战45讲
 ---
 
 count，order by 都是怎么执行的

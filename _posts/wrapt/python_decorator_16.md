@@ -5,7 +5,6 @@ categories:
     - Python
 tags:
     - wrapt
-    - 函数装饰器
 ---
 ![Python decorator](/images/python/decorator.jpg)
 装饰器和 wrapt 模块的介绍已经结束，作为整个系列的最后一篇的实战篇，我们来实现在一开始我提出的一个需求

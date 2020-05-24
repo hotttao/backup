@@ -1,10 +1,10 @@
 ---
 title: 3 Schema 设计
-date: 2019-10-14
+date: 2019-10-03
 categories:
     - 存储
 tags:
-    - mysql
+    - 高性能的MySQL
 ---
 
 mysql 的 Schema 设计

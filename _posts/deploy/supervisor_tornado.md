@@ -4,9 +4,7 @@ date: 2017-09-21
 categories:
     - 运维
 tags:
-    - supervisor
-    - tornado
-    - 部署工具
+    - python
 
 ---
 ![tornado](/images/python/tornado.jpg)

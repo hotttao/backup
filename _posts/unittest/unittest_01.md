@@ -4,8 +4,7 @@ date: 2017-09-22
 categories:
     - Python
 tags:
-    - unittest
-    - 单元测试
+    - python
 ---
 至关重要的单元测试
 ![Python decorator](/images/python/unittest.png)

@@ -1,10 +1,10 @@
 ---
 title: 1 MYSQL EXPLAIN
-date: 2019-10-08
+date: 2019-10-01
 categories:
     - 存储
 tags:
-    - mysql
+    - 高性能的MySQL
 ---
 
 你以为很懂，其实一点也不懂的 mysql。

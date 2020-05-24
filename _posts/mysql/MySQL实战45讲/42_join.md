@@ -1,10 +1,11 @@
 ---
-title: 42 join
-date: 2020-03-29
+title: 23 join
+date: 2020-03-23
 categories:
     - 存储
 tags:
-    - mysql运维
+	  - 极客时间
+	  - MySQL实战45讲
 ---
 
 join 语句是怎么执行的

@@ -1,6 +1,6 @@
 ---
 title: 1. k8s集群安装与配置
-date: 2018-11-15
+date: 2019-11-15
 categories:
     - 运维
 tags:

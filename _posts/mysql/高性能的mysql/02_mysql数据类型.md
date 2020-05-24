@@ -1,10 +1,10 @@
 ---
 title: 2 MySQL 数据类型
-date: 2019-10-10
+date: 2019-10-02
 categories:
     - 存储
 tags:
-    - mysql
+    - 高性能的MySQL
 ---
 
 mysql 的数据类型。

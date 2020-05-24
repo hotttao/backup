@@ -1,10 +1,11 @@
 ---
-title: 51 MYSQL flush privileges
-date: 2020-04-02
+title: 27 MYSQL flush privileges
+date: 2020-03-27
 categories:
     - 存储
 tags:
-    - mysql运维
+    - 极客时间
+    - MySQL实战45讲
 ---
 
 grant 之后要不要跟 flush privileges

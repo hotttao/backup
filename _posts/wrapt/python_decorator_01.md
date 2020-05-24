@@ -5,7 +5,6 @@ categories:
     - Python
 tags:
     - wrapt
-    - 函数装饰器
 ---
 ![Python decorator](/images/python/decorator.jpg)
 

@@ -1,10 +1,11 @@
 ---
-title: 22 MySQL 主备延迟
-date: 2020-03-22
+title: 16 MySQL 主备延迟
+date: 2020-03-16
 categories:
     - 存储
 tags:
-    - mysql运维
+    - 极客时间
+    - MySQL实战45讲
 ---
 
 MySQL 主备延迟与并行复制
