@@ -37,6 +37,7 @@ def queens_eight(num=8):
     def cal_queens(row):
         if row == num:
             output_chessboard(chessboard, num)
+            return
         for column in range(num):
             if is_ok(chessboard, row, column, num):
                 # print chessboard, row, column
@@ -150,6 +151,22 @@ class Pattern():
     def match(self, S):
         return self._match(S, 0, 0)
 
+```
+
+### 2.4 图的着色
+```python
+```
+
+### 2.5 旅行商问题
+```python
+```
+
+### 2.6 全排列
+```python
+```
+
+### 2.7 数独
+```python
 ```
 
 **参考:**
