@@ -55,7 +55,27 @@ def cion(k):
 ![snake](/images/algo/greedy/span_choose.jpg)
 
 ```Python
-
+class Solution(object):
+    def eraseOverlapIntervals(self, intervals):
+        """
+        :type intervals: List[List[int]]
+        :rtype: int
+        """
+        if not intervals:
+            return 0
+        intervals.sort(key=lambda x: x[0])
+        collect = [intervals[0]]
+        rm = 0
+        for i in intervals[1:]:
+            low, up = collect[-1]
+            if i[0] >= up:
+                collect.append(i)
+            elif i[1] <= up:
+                collect[-1] = i
+                rm += 1
+            else:
+                rm += 1
+        return rm
 ```
 
 ### 2.3 霍夫曼编码
@@ -72,8 +92,26 @@ leetcode 上有很多贪心算法的练习题，下面是一些练习题以及�
 在一个非负整数 a 中，我们希望从中移除 k 个数字，让剩下的数字值最小，如何选择移除哪 k 个数字呢？
 
 ```Python
-
+class Solution:
+    def removeKdigits(self, num, k):
+        numStack = []
+        
+        # Construct a monotone increasing sequence of digits
+        for digit in num:
+            while k and numStack and numStack[-1] > digit:
+                numStack.pop()
+                k -= 1
+        
+            numStack.append(digit)
+        
+        # - Trunk the remaining K digits at the end
+        # - in the case k==0: return the entire list
+        finalStack = numStack[:-k] if k else numStack
+        
+        # trip the leading zeros
+        return "".join(finalStack).lstrip('0') or "0"
 ```
+
 
 **参考:**
 - [王争老师专栏-数据结构与算法之美](https://time.geekbang.org/column/126)
