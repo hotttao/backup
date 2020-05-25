@@ -5,6 +5,7 @@ categories:
     - Go
 tags:
 	- go语言入门
+	- 入门指南
 series: go 语言入门
 ---
 
