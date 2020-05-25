@@ -1,10 +1,10 @@
 ---
 title: 13.5 grub2 系统配置与使用
-date: 2018-08-05
+date: 2018-02-23
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 grub2 系统配置与使用

@@ -1,10 +1,10 @@
 ---
 title: 10.1 Linux程序包管理介绍
-date: 2018-07-14
+date: 2018-02-03
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 Linux程序包管理介绍

@@ -1,10 +1,10 @@
 ---
 title: 19.4 MariaDB 权限管理
-date: 2018-09-09
+date: 2018-03-27
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 MariaDB 权限管理

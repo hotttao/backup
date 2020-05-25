@@ -1,10 +1,10 @@
 ---
 title: 16.2 DNS区域数据库文件格式
-date: 2018-08-17
+date: 2018-03-08
 categories:
     - 运维
 tags:
-    - DNS
+    - 马哥 Linux
 ---
 
 DNS区域数据库文件格式

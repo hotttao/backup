@@ -1,10 +1,10 @@
 ---
 title: 18.1 LAMP入门讲解
-date: 2018-09-01
+date: 2018-03-19
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 LAMP入门讲解

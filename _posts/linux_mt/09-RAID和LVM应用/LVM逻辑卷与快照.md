@@ -1,10 +1,10 @@
 ---
 title: 8.4 Linux中实现LVM逻辑卷与快照
-date: 2018-07-10
+date: 2018-01-30
 categories:
     - 运维
 tags:
-    - 磁盘与文件系统
+    - 马哥 Linux
 ---
 
 Linux中实现LVM逻辑卷与快照

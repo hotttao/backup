@@ -4,7 +4,7 @@ date: 2018-11-11
 categories:
     - 运维
 tags:
-    - 自动化运维
+    - 马哥 Linux
 ---
 
 zabbix安装与入门

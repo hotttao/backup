@@ -1,10 +1,10 @@
 ---
 title: 21.5 nat路由
-date: 2018-09-15
+date: 2018-04-02
 categories:
     - 运维
 tags:
-    - 防火墙
+    - 马哥 Linux
 ---
 
 nat路由

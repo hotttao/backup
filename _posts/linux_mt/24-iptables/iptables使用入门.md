@@ -1,10 +1,10 @@
 ---
 title: 21.2 iptables使用入门
-date: 2018-09-12
+date: 2018-03-30
 categories:
     - 运维
 tags:
-    - 防火墙
+    - 马哥 Linux
 ---
 
 iptables使用入门

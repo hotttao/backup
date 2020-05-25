@@ -4,7 +4,7 @@ date: 2018-10-05
 categories:
     - 运维
 tags:
-    - 负载均衡
+    - 马哥 Linux
 ---
 
 LVS DR模型实战

@@ -1,10 +1,10 @@
 ---
 title: 14.2 Centos安装过程
-date: 2018-08-08
+date: 2018-02-26
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 Centos安装过程

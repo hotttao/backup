@@ -1,10 +1,10 @@
 ---
 title: 7.1 vim使用
-date: 2018-07-01
+date: 2018-01-19
 categories:
     - 运维
 tags:
-    - 文本处理
+    - 马哥 Linux
 ---
 
 vim使用

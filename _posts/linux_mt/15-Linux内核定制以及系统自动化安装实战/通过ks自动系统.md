@@ -1,10 +1,10 @@
 ---
 title: 14.4 通过 ks 自动安装系统
-date: 2018-08-10
+date: 2018-02-28
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 通过 ks 自动安装系统

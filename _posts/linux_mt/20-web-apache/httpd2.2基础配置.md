@@ -1,10 +1,10 @@
 ---
 title: 17.5 httpd2.2 的基础配置
-date: 2018-08-24
+date: 2018-03-15
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 httpd2.2 的基础配置

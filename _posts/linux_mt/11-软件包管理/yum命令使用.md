@@ -1,10 +1,10 @@
 ---
 title: 10.3 yum命令使用
-date: 2018-07-16
+date: 2018-02-05
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 yum命令使用

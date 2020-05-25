@@ -1,10 +1,10 @@
 ---
 title: 14.5 SELinux简介
-date: 2018-08-11
+date: 2018-03-01
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 SELinux简介

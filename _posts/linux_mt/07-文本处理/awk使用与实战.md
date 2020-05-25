@@ -1,10 +1,10 @@
 ---
 title: 7.6 awk使用与实战
-date: 2018-07-06
+date: 2018-01-24
 categories:
     - 运维
 tags:
-    - 文本处理
+    - 马哥 Linux
 ---
 
 sed命令应用与实战

@@ -1,10 +1,10 @@
 ---
 title: 17.7 httpd 配置进阶
-date: 2018-08-26
+date: 2018-03-17
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 httpd 配置进阶

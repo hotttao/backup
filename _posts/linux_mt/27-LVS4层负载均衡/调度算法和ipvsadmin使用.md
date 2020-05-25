@@ -4,7 +4,7 @@ date: 2018-10-03
 categories:
     - 运维
 tags:
-    - 负载均衡
+    - 马哥 Linux
 ---
 
 LVS 调度算法和 ipvsadmin 命令使用

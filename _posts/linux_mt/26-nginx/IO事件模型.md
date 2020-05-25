@@ -4,7 +4,7 @@ date: 2018-09-21
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 IO模型

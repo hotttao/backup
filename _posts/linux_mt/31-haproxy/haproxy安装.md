@@ -4,7 +4,7 @@ date: 2018-10-22
 categories:
     - 运维
 tags:
-    - 负载均衡
+    - 马哥 Linux
 ---
 
 haproxy 入门

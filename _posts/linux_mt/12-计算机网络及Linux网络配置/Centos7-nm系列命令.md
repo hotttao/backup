@@ -1,10 +1,10 @@
 ---
 title: 11.6 网络属性配置之 nmcli 系列命令
-date: 2018-07-23
+date: 2018-02-12
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 网络属性配置之 nmcli 系列命令

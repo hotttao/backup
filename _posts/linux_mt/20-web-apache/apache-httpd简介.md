@@ -1,10 +1,10 @@
 ---
 title: 17.4 apache httpd 简介
-date: 2018-08-23
+date: 2018-03-14
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 apache httpd 简介

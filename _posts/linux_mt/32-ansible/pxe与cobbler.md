@@ -4,7 +4,7 @@ date: 2018-11-03
 categories:
     - 运维
 tags:
-    - 自动化运维
+    - 马哥 Linux
 ---
 
 pxe与cobbler

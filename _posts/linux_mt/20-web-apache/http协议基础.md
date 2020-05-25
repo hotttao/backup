@@ -1,10 +1,10 @@
 ---
 title: 17.2 http协议基础
-date: 2018-08-21
+date: 2018-03-12
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 http协议基础

@@ -1,10 +1,10 @@
 ---
 title: 16.3 bind安装和配置
-date: 2018-08-18
+date: 2018-03-09
 categories:
     - 运维
 tags:
-    - DNS
+    - 马哥 Linux
 ---
 
 bind安装和配置

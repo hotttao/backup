@@ -1,10 +1,10 @@
 ---
 title: 6.1 shell 脚本简介
-date: 2018-06-21
+date: 2018-01-10
 categories:
     - 运维
 tags:
-    - shell脚本
+    - 马哥 Linux
 ---
 
 shell 脚本简介

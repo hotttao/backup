@@ -4,7 +4,7 @@ date: 2018-09-23
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 nginx main 配置段

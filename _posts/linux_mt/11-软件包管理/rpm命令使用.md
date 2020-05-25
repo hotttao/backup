@@ -1,10 +1,10 @@
 ---
 title: 10.2 软件包管理rpm命令使用
-date: 2018-07-15
+date: 2018-02-04
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 软件包管理rpm命令使用

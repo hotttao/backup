@@ -1,10 +1,10 @@
 ---
 title: 6.2 if 和条件判断
-date: 2018-06-22
+date: 2018-01-11
 categories:
     - 运维
 tags:
-    - shell脚本
+    - 马哥 Linux
 ---
 
 if 和条件判断

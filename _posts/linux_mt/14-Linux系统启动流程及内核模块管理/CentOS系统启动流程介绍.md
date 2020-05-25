@@ -1,10 +1,10 @@
 ---
 title: 13.1 CentOS系统启动流程介绍
-date: 2018-08-01
+date: 2018-02-19
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 CentOS系统启动流程介绍

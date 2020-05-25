@@ -1,10 +1,10 @@
 ---
 title: 17.3 http协议进阶
-date: 2018-08-22
+date: 2018-03-13
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 http协议进阶

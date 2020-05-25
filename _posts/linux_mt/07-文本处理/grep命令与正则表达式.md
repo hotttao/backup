@@ -1,10 +1,10 @@
 ---
 title: 7.3 grep命令与正则表达式
-date: 2018-07-03
+date: 2018-01-21
 categories:
     - 运维
 tags:
-    - 文本处理
+    - 马哥 Linux
 ---
 
 grep命令与正则表达式

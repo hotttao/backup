@@ -4,7 +4,7 @@ date: 2018-11-02
 categories:
     - 运维
 tags:
-    - 自动化运维
+    - 马哥 Linux
 ---
 
 PXE 系统自动化部署

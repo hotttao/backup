@@ -4,7 +4,7 @@ date: 2018-10-21
 categories:
     - 运维
 tags:
-    - 缓存系统
+    - 马哥 Linux
 ---
 
 varnish 日志查看

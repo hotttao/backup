@@ -1,10 +1,10 @@
 ---
 title: 17.8 httpd 辅助工具
-date: 2018-08-27
+date: 2018-03-18
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 httpd 辅助工具

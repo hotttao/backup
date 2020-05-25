@@ -1,10 +1,10 @@
 ---
 title: 22.2 日志管理系统rsyslog
-date: 2018-09-19
+date: 2018-04-06
 categories:
     - 运维
 tags:
-    - Linux进阶
+    - 马哥 Linux
 ---
 
 日志管理系统rsyslog

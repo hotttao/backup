@@ -1,10 +1,10 @@
 ---
 title: 18.2 PHP 基础
-date: 2018-09-02
+date: 2018-03-20
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 PHP 基础

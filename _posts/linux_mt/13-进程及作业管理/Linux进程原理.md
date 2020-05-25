@@ -1,10 +1,10 @@
 ---
 title: 12.1 Linux进程原理
-date: 2018-07-24
+date: 2018-02-14
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 Linux进程原理

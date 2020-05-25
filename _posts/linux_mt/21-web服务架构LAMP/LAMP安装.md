@@ -1,10 +1,10 @@
 ---
 title: 18.3 LAMP安装
-date: 2018-09-03
+date: 2018-03-21
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 LAMP安装

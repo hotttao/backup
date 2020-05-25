@@ -1,10 +1,10 @@
 ---
 title: 7.5 sed命令应用与实战
-date: 2018-07-05
+date: 2018-01-23
 categories:
     - 运维
 tags:
-    - 文本处理
+    - 马哥 Linux
 ---
 
 sed命令应用与实战

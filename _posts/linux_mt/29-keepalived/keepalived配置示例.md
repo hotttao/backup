@@ -4,7 +4,7 @@ date: 2018-10-15
 categories:
     - 运维
 tags:
-    - 高可用
+    - 马哥 Linux
 ---
 
 keepalived 配置示例

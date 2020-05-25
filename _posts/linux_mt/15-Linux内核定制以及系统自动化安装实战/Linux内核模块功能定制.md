@@ -1,10 +1,10 @@
 ---
 title: 14.1 Linux内核模块功能定制
-date: 2018-08-07
+date: 2018-02-25
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 Linux内核模块功能定制

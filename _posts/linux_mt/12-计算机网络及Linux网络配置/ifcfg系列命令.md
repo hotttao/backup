@@ -1,10 +1,10 @@
 ---
 title: 11.3 网络属性配置之 ifcfg 系列命令
-date: 2018-07-20
+date: 2018-02-09
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 网络属性配置之 ifcfg 系列命令

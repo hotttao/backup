@@ -4,7 +4,7 @@ date: 2018-11-05
 categories:
     - 运维
 tags:
-    - 自动化运维
+    - 马哥 Linux
 ---
 
 ansible简介

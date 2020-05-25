@@ -1,10 +1,10 @@
 ---
 title: 17.6 httpd2.4 基础配置
-date: 2018-08-25
+date: 2018-03-16
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 httpd2.4 基础配置

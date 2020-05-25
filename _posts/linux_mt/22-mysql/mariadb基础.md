@@ -1,10 +1,10 @@
 ---
 title: 19.1 mysql 数据库基础
-date: 2018-09-06
+date: 2018-03-24
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 mysql 数据库基础

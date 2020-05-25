@@ -1,10 +1,10 @@
 ---
 title: 22.1 Linux时间服务-chrony
-date: 2018-09-18
+date: 2018-04-05
 categories:
     - 运维
 tags:
-    - Linux进阶
+    - 马哥 Linux
 ---
 
 Linux时间服务-chrony

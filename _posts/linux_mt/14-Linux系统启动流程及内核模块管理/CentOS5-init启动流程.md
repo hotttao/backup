@@ -1,10 +1,10 @@
 ---
 title: 13.2 Centos5 init 启动流程
-date: 2018-08-02
+date: 2018-02-20
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 Centos5 init 启动流程

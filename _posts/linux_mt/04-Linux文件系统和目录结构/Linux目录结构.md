@@ -1,10 +1,10 @@
 ---
 title: 4.1 Linux目录结构
-date: 2018-06-14
+date: 2018-01-03
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 Linux 目录结构

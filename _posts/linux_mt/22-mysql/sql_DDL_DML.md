@@ -1,10 +1,10 @@
 ---
 title: 19.3 SQL DDL 与 DML
-date: 2018-09-08
+date: 2018-03-26
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 SQL DDL 与 DML

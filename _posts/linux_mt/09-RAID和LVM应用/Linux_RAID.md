@@ -1,10 +1,10 @@
 ---
 title: 8.3 Linux RAID
-date: 2018-07-09
+date: 2018-01-29
 categories:
     - 运维
 tags:
-    - 磁盘与文件系统
+    - 马哥 Linux
 ---
 
 Linux RAID

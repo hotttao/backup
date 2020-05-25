@@ -1,10 +1,10 @@
 ---
 title: 9.2 任务计划和周期性任务
-date: 2018-07-13
+date: 2018-02-02
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 任务计划和周期性任务

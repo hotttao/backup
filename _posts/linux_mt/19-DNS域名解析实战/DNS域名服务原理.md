@@ -1,10 +1,10 @@
 ---
 title: 16.1 DNS域名服务原理
-date: 2018-08-16
+date: 2018-03-07
 categories:
     - 运维
 tags:
-    - DNS
+    - 马哥 Linux
 ---
 
 DNS域名服务原理

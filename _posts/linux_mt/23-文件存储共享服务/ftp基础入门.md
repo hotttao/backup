@@ -1,10 +1,10 @@
 ---
 title: 20.1 ftp基础入门
-date: 2018-09-10
+date: 2018-03-28
 categories:
     - 运维
 tags:
-    - 文件共享服务
+    - 马哥 Linux
 ---
 
 ftp基础入门

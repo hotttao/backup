@@ -1,10 +1,10 @@
 ---
 title: 13.6 Linux内核功能及模块应用
-date: 2018-08-06
+date: 2018-02-24
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 Linux内核功能及模块应用

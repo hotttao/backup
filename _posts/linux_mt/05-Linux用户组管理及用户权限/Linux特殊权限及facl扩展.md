@@ -1,10 +1,10 @@
 ---
 title: 5.4 Linux特殊权限及facl扩展
-date: 2018-06-20
+date: 2018-01-09
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 Linux特殊权限及facl扩展

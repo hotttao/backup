@@ -1,10 +1,10 @@
 ---
 title: 22.3 sudo
-date: 2018-09-20
+date: 2018-04-07
 categories:
     - 运维
 tags:
-    - Linux进阶
+    - 马哥 Linux
 ---
 
 sudo

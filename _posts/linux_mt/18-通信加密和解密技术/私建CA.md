@@ -1,10 +1,10 @@
 ---
 title: 15.4 私建 CA
-date: 2018-08-15
+date: 2018-03-06
 categories:
     - 运维
 tags:
-    - Linux进阶
+    - 马哥 Linux
 ---
 
 私建 CA

@@ -1,10 +1,10 @@
 ---
 title: 11.4 网络属性配置之 ip 系列命令
-date: 2018-07-21
+date: 2018-02-10
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 网络属性配置之 ip 系列命令

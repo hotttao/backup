@@ -4,7 +4,7 @@ date: 2018-09-25
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 nginx_http配置段(核心模块)

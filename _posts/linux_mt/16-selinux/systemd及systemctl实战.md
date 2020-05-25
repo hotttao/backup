@@ -1,10 +1,10 @@
 ---
 title: 14.6 systemd及systemctl
-date: 2018-08-11 15:00:00
+date: 2018-03-02
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 Centos7 的服务管理工具

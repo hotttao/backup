@@ -1,10 +1,10 @@
 ---
 title: 18.4 LAMP部署示例
-date: 2018-09-04
+date: 2018-03-22
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 LAMP部署示例

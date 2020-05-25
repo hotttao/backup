@@ -1,10 +1,10 @@
 ---
 title: 13.4 grub配置与使用
-date: 2018-08-04
+date: 2018-02-22
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 grub配置与使用

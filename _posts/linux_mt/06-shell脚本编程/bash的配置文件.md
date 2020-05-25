@@ -1,10 +1,10 @@
 ---
 title: 6.8 bash 配置文件
-date: 2018-06-28
+date: 2018-01-17
 categories:
     - 运维
 tags:
-    - shell脚本
+    - 马哥 Linux
 ---
 
 bash 配置文件

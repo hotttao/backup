@@ -1,10 +1,10 @@
 ---
 title: 18.5 编译安装 lamp-fpm
-date: 2018-09-05
+date: 2018-03-23
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 编译安装 lamp-fpm

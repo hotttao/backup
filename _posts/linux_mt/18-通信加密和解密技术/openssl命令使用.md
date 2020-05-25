@@ -1,10 +1,10 @@
 ---
 title: 15.3 openssl 命令使用
-date: 2018-08-14
+date: 2018-03-05
 categories:
     - 运维
 tags:
-    - Linux进阶
+    - 马哥 Linux
 ---
 
 openssl 命令使用

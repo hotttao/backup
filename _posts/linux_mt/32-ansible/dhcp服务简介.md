@@ -4,7 +4,7 @@ date: 2018-11-01
 categories:
     - 运维
 tags:
-    - 自动化运维
+    - 马哥 Linux
 ---
 
 dhcp服务简介

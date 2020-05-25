@@ -1,10 +1,10 @@
 ---
 title: 21.3 iptables扩展匹配
-date: 2018-09-13
+date: 2018-03-31
 categories:
     - 运维
 tags:
-    - 防火墙
+    - 马哥 Linux
 ---
 
 iptables扩展匹配

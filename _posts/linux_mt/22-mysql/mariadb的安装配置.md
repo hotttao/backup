@@ -1,10 +1,10 @@
 ---
 title: 19.2 mysql的安装配置
-date: 2018-09-07
+date: 2018-03-25
 categories:
     - 运维
 tags:
-    - LAMP
+    - 马哥 Linux
 ---
 
 mysql的安装配置

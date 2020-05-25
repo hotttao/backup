@@ -1,10 +1,10 @@
 ---
 title: 16.4 bind 高级配置
-date: 2018-08-19
+date: 2018-03-10
 categories:
     - 运维
 tags:
-    - DNS
+    - 马哥 Linux
 ---
 
 bind 高级配置

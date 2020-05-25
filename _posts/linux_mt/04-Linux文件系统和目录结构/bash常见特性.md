@@ -1,10 +1,10 @@
 ---
 title: 4.2 bash常见特性
-date: 2018-06-15
+date: 2018-01-04
 categories:
     - 运维
 tags:
-    - Linux基础
+    - 马哥 Linux
 ---
 
 bash常见特性

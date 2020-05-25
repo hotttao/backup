@@ -1,10 +1,10 @@
 ---
 title: 13.3 Centos7 Systemd 启动流程
-date: 2018-08-03
+date: 2018-02-21
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 Centos7 Systemd 启动流程

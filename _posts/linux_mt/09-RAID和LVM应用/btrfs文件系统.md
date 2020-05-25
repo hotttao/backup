@@ -1,10 +1,10 @@
 ---
 title: 8.5 btrfs文件系统管理与应用
-date: 2018-07-11
+date: 2018-01-31
 categories:
     - 运维
 tags:
-    - 磁盘与文件系统
+    - 马哥 Linux
 ---
 
 btrfs文件系统管理与应用

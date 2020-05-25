@@ -1,10 +1,10 @@
 ---
 title: 14.3 Centos 安装程序 anaconda 配置
-date: 2018-08-09
+date: 2018-02-27
 categories:
     - 运维
 tags:
-    - Linux开机启动
+    - 马哥 Linux
 ---
 
 Centos 安装程序 anaconda 配置
