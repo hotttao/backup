@@ -13,9 +13,9 @@ tags:
 
 ## 1. 系列大纲
 Linux 性能优化与 Linux 操作系统密切相关，所以想要学好非常不容易。下面是 Linux 性能优化的内容大纲:
-1. 动态追踪: 讲解动态追踪的原理，并介绍 DTrace，Systemtap 的使用
-2. 操作系统：讲解 CPU，内存，文件系统，磁盘，网络的基本原理以及可监测它们的工具(命令)
-3. 高级工具: 讲解基于动态追踪技术的一些高级工具，包括:
+1. 动态追踪: 动态追踪的原理，并介绍 DTrace，Systemtap 的使用
+2. 操作系统：CPU，内存，文件系统，磁盘，网络基本原理以及可监测它们的工具(命令)
+3. 高级工具: 基于动态追踪技术的一些高级工具，包括:
     - [perf-tool](https://github.com/brendangregg/perf-tools)
     - [systemtap-lwtools](https://github.com/brendangregg/systemtap-lwtools)
     - [DTraceToolkit](https://github.com/opendtrace/toolkit)
@@ -23,10 +23,10 @@ Linux 性能优化与 Linux 操作系统密切相关，所以想要学好非常�
     - [bpf-bcc](https://github.com/iovisor/bcc)
     - [openresty-systemtap](https://github.com/openresty/openresty-systemtap-toolkit)
     - [openresty_stapxx](https://github.com/openresty/stapxx)
-4. 高级语言: 讲解如何利用上面介绍的工具，对 Python，Go，Java 进行性能调优，使用这些工具的好处是语言无关，更加具有普适性。
+4. 高级语言: 如何利用上面介绍的工具，对 Python，Go，Java 进行性能调优，使用这些工具的好处是语言无关，更加具有普适性。
 
 ## 2. 学习资源
-下面是我在学习过程中发现的学习资源，推荐大家阅读。本系列的文章也参考了很多他们的内容，再次特别说明。
+下面是我在学习过程中发现的学习资源，推荐大家阅读。本系列的文章也参考了很多他们的内容，在此特别说明。
 1. [《性能之巅》](https://book.douban.com/subject/26586598/)
 2. [极客时间专栏-Linux性能优化实战](https://time.geekbang.org/column/intro/140)
 3. [动态追踪技术漫谈](https://blog.openresty.com.cn/cn/dynamic-tracing/)
