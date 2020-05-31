@@ -19,4 +19,6 @@ perf 提供了优化 Python 的脚本。类似于 Python，Java 这些采用虚�
 
 
 ## 参考
+- [pyflame](https://github.com/uber-archive/pyflame)
+- [python 性能分析](http://hustlijian.github.io/python/2017/06/03/python%E6%80%A7%E8%83%BD%E5%88%86%E6%9E%90.html)
 - [manpage-perf-python](https://www.man7.org/linux/man-pages/man1/perf-script-python.1.html)
