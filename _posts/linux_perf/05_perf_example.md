@@ -13,16 +13,29 @@ tags:
 
 These are some examples of using the perf Linux profiler, which has also been called Performance Counters for Linux (PCL), Linux perf events (LPE), or perf_events. Like Vince Weaver, I'll call it perf_events so that you can search on that term later. Searching for just "perf" finds sites on the police, petroleum, weed control, and a T-shirt. This is not an official perf page, for either perf_events or the T-shirt.
 
-perf_events is an event-oriented observability tool, which can help you solve advanced performance and troubleshooting functions. Questions that can be answered include:
+这些是使用perf Linux分析器的一些示例，它也被称为Linux性能计数器(PCL)、Linux perf事件(LPE)或perf_events。和Vince Weaver一样，我将它命名为perf_events，这样以后就可以搜索这个词了。搜索“perf”可以找到关于警察、石油、除草和t恤的网站。这不是一个官方的表演页面，无论是表演事件还是t恤。
 
-Why is the kernel on-CPU so much? What code-paths?
-Which code-paths are causing CPU level 2 cache misses?
-Are the CPUs stalled on memory I/O?
-Which code-paths are allocating memory, and how much?
-What is triggering TCP retransmits?
-Is a certain kernel function being called, and how often?
-What reasons are threads leaving the CPU?
+perf_events is an event-oriented observability tool, which can help you solve advanced performance and troubleshooting functions. Questions that can be answered include:
+1. Why is the kernel on-CPU so much? What code-paths?
+2. Which code-paths are causing CPU level 2 cache misses?
+3. Are the CPUs stalled on memory I/O?
+4. Which code-paths are allocating memory, and how much?
+5. What is triggering TCP retransmits?
+6. Is a certain kernel function being called, and how often?
+7. What reasons are threads leaving the CPU?
+
+perf_events是一个面向事件的可观察性工具，它可以帮助您解决高级性能和故障诊断功能。可以回答的问题包括:
+1. 为什么内核占用cpu这么多?代码路径是什么?
+2. 哪些代码路径会导致CPU二级缓存丢失?
+3. cpu在内存I/O上停止了吗?
+4. 哪些代码路径正在分配内存，分配多少?
+5. 是什么触发TCP重传?
+6. 是否调用某个内核函数，调用频率是多少?
+7. 线程离开CPU的原因是什么?
+
 perf_events is part of the Linux kernel, under tools/perf. While it uses many Linux tracing features, some are not yet exposed via the perf command, and need to be used via the ftrace interface instead. My perf-tools collection (github) uses both perf_events and ftrace as needed.
+
+perf_events是Linux内核的一部分，位于tools/perf之下。虽然它使用了许多Linux跟踪特性，但是有些特性还没有通过perf命令公开，需要通过ftrace接口来使用。我的perf-tools集合([perf-tool](https://github.com/brendangregg/perf-tools))根据需要同时使用perf_events和ftrace。
 
 This page includes my examples of perf_events. A table of contents:
 1. Screenshot
@@ -64,16 +77,25 @@ This page includes my examples of perf_events. A table of contents:
 
 Key sections to start with are: Events, One-Liners, Presentations, Prerequisites, CPU statistics, Timed Profiling, and Flame Graphs. Also see my Posts about perf_events, and Links for the main (official) perf_events page, awesome tutorial, and other links. The next sections introduce perf_events further, starting with a screenshot, one-liners, and then background.
 
+上面是博客的大纲和写作顺序的一个简介。
+
 This page is under construction, and there's a lot more to perf_events that I'd like to add. Hopefully this is useful so far.
 
-## 1. Screenshot
-Starting with a screenshot, here's perf version 3.9.3 tracing disk I/O:
-```bash
-# perf record -e block:block_rq_issue -ag
+这个页面还在构建中，我还想添加更多的perf_events，希望到目前为止这是有用的。
 
-# ls -l perf.data
+## 1. Screenshot(总览)
+
+Starting with a screenshot, here's perf version 3.9.3 tracing disk I/O:
+
+下面是perf版本3.9.3跟踪磁盘I/O的一个示例:
+
+```bash
+> perf record -e block:block_rq_issue -ag
+
+> ls -l perf.data
 -rw------- 1 root root 3458162 Jan 26 03:03 perf.data
-# perf report
+
+perf report
 [...]
 # Samples: 2K of event 'block:block_rq_issue'
 # Event count (approx.): 2216
@@ -118,82 +140,118 @@ Starting with a screenshot, here's perf version 3.9.3 tracing disk I/O:
 ```
 A perf record command was used to trace the block:block_rq_issue probe, which fires when a block device I/O request is issued (disk I/O). Options included -a to trace all CPUs, and -g to capture call graphs (stack traces). Trace data is written to a perf.data file, and tracing ended when Ctrl-C was hit. A summary of the perf.data file was printed using perf report, which builds a tree from the stack traces, coalescing common paths, and showing percentages for each path.
 
+perf record 命令用于跟踪块:block_rq_issue probe，它在块设备I/O请求发出时触发(磁盘I/O)。选项包括 -a 用于跟踪所有cpu， -g用于捕获调用图(堆栈跟踪)。跟踪数据被写入perf.data 文件。当按Ctrl-C时，数据文件和跟踪结束。使用 perf report 命令可以打印 perf.data 内的追踪信息，perf record 从堆栈跟踪构建一个树，合并公共路径，并显示每个路径的百分比。
+
 The perf report output shows that 2,216 events were traced (disk I/O), 32% of which from a dd command. These were issued by the kernel function blk_peek_request(), and walking down the stacks, about half of these 32% were from the close() system call.
+
+perf report 输出显示跟踪了2,216个事件(磁盘I/O)，其中32%来自dd命令。这些是由内核函数blk_peek_request()发出的，在堆栈中查找，**其中大约一半来自 close() 系统调用**。
 
 Note that I use the "#" prompt to signify that these commands were run as root, and I'll use "$" for user commands. Use sudo as needed.
 
-## 2. One-Liners
+注意，我使用“#”提示符来表示这些命令是以根用户身份运行的，对于用户命令，我将使用“$”。根据需要使用sudo。说明: 我改成了 ">" 不然命令会跟 perf 的输出混淆。
+
+## 2. One-Liners(常用命令)
+
 Some useful one-liners I've gathered or written. Terminology I'm using, from lowest to highest overhead:
 
-statistics/count: increment an integer counter on events
-sample: collect details (eg, instruction pointer or stack) from a subset of events (once every ...)
-trace: collect details from every event
+1. statistics/count: increment an integer counter on events
+2. sample: collect details (eg, instruction pointer or stack) from a subset of events (once every ...)
+3. trace: collect details from every event
 
-#### Listing Events
+我收集或编写的一些有用的一行程序。并使用了如下的术语进行说明
+
+1. statistics/count: 对事件增加一个整数计数器
+2. sample: 从事件子集收集细节(例如，指令指针或堆栈)(每…一次)
+3. trace: 收集每个事件的细节
+
+#### Listing Events(列出所有事件)
+
 ```bash
 # Listing all currently known events:
+# 列出所有事件
 perf list
 
 # Listing sched tracepoints:
+# 列出 sched 静态探针
 perf list 'sched:*'
 ```
-#### Counting Events
+
+#### Counting Events(事件计数)
+
 ```bash
 # CPU counter statistics for the specified command:
+# 为特定命令进行 CPU 计数
 perf stat command
 
 # Detailed CPU counter statistics (includes extras) for the specified command:
+# 为特定命令进行详细的 CPU 计数
 perf stat -d command
 
 # CPU counter statistics for the specified PID, until Ctrl-C:
+# 为指定的 PID 进程进行 CPU 计数
 perf stat -p PID
 
 # CPU counter statistics for the entire system, for 5 seconds:
+# 整个系统的CPU计数器统计信息，持续5秒
 perf stat -a sleep 5
 
 # Various basic CPU statistics, system wide, for 10 seconds:
+# 指定范围，进行整个系统的 CPU 计数
 perf stat -e cycles,instructions,cache-references,cache-misses,bus-cycles -a sleep 10
 
 # Various CPU level 1 data cache statistics for the specified command:
+# 一级缓存统计
 perf stat -e L1-dcache-loads,L1-dcache-load-misses,L1-dcache-stores command
 
 # Various CPU data TLB statistics for the specified command:
+# TLB 统计
 perf stat -e dTLB-loads,dTLB-load-misses,dTLB-prefetch-misses command
 
 # Various CPU last level cache statistics for the specified command:
+# 最后一级缓存统计
 perf stat -e LLC-loads,LLC-load-misses,LLC-stores,LLC-prefetches command
 
 # Using raw PMC counters, eg, counting unhalted core cycles:
-perf stat -e r003c -a sleep 5 
+# PMC 计数器
+perf stat -e r003c -a sleep 5
 
 # PMCs: counting cycles and frontend stalls via raw specification:
 perf stat -e cycles -e cpu/event=0x0e,umask=0x01,inv,cmask=0x01/ -a sleep 5
 
 # Count syscalls per-second system-wide:
+# 系统级每秒系统调用计数:
 perf stat -e raw_syscalls:sys_enter -I 1000 -a
 
 # Count system calls by type for the specified PID, until Ctrl-C:
+# 指定 PID 统计每秒系统调用计数:
 perf stat -e 'syscalls:sys_enter_*' -p PID
 
 # Count system calls by type for the entire system, for 5 seconds:
+# 按整个系统的类型计数系统调用，持续5秒:
 perf stat -e 'syscalls:sys_enter_*' -a sleep 5
 
 # Count scheduler events for the specified PID, until Ctrl-C:
+# 计算指定PID的调度程序事件
 perf stat -e 'sched:*' -p PID
 
 # Count scheduler events for the specified PID, for 10 seconds:
+# 计算指定PID的调度程序事件，持续 10s
 perf stat -e 'sched:*' -p PID sleep 10
 
 # Count ext4 events for the entire system, for 10 seconds:
+# 计算整个系统的ext4事件
 perf stat -e 'ext4:*' -a sleep 10
 
 # Count block device I/O events for the entire system, for 10 seconds:
+# 计算整个系统的块设备I/O事件
 perf stat -e 'block:*' -a sleep 10
 
 # Count all vmscan events, printing a report every second:
+# 计算所有vmscan事件，每秒打印一个报告
 perf stat -e 'vmscan:*' -a -I 1000
 ```
-#### Profiling
+#### Profiling(剖析)
+
 ```bash
 # Sample on-CPU functions for the specified command, at 99 Hertz:
 perf record -F 99 command
@@ -220,30 +278,39 @@ perf record -F 99 -g -- sleep 10
 perf record -F 99 -e cpu-clock -ag -- sleep 10
 
 # Sample CPU stack traces for a container identified by its /sys/fs/cgroup/perf_event cgroup:
+# 一个由其/sys/fs/cgroup/perf_event cgroup标识的容器的示例CPU堆栈跟踪:
 perf record -F 99 -e cpu-clock --cgroup=docker/1d567f4393190204...etc... -a -- sleep 10
 
 # Sample CPU stack traces for the entire system, with dwarf stacks, at 99 Hertz, for 10 seconds:
+# 整个系统的CPU堆栈跟踪示例，使用dwarf堆栈，频率为99赫兹，持续10秒:
 perf record -F 99 -a --call-graph dwarf sleep 10
 
 # Sample CPU stack traces for the entire system, using last branch record for stacks, ... (>= Linux 4.?):
+# 整个系统的CPU堆栈跟踪示例，使用堆栈的最后一个分支记录
 perf record -F 99 -a --call-graph lbr sleep 10
 
 # Sample CPU stack traces, once every 10,000 Level 1 data cache misses, for 5 seconds:
+# 示例CPU堆栈跟踪，每10,000 次 1 级缓存丢失记录一次，持续5秒:
 perf record -e L1-dcache-load-misses -c 10000 -ag -- sleep 5
 
 # Sample CPU stack traces, once every 100 last level cache misses, for 5 seconds:
+# 示例CPU堆栈跟踪，每100 次最后 1 级缓存丢失记录一次，持续5秒:
 perf record -e LLC-load-misses -c 100 -ag -- sleep 5 
 
 # Sample on-CPU kernel instructions, for 5 seconds:
+# 内核指令抽样
 perf record -e cycles:k -a -- sleep 5 
 
 # Sample on-CPU user instructions, for 5 seconds:
+# 用户指令抽样
 perf record -e cycles:u -a -- sleep 5 
 
 # Sample on-CPU user instructions precisely (using PEBS), for 5 seconds:
+# 使用 PEBS 进行用户指令抽样
 perf record -e cycles:up -a -- sleep 5 
 
 # Perform branch tracing (needs HW support), for 1 second:
+# 执行分支跟踪(需要HW支持)
 perf record -b -a sleep 1
 
 # Sample CPUs at 49 Hertz, and show top addresses and symbols, live (no perf.data file):
@@ -252,25 +319,31 @@ perf top -F 49
 # Sample CPUs at 49 Hertz, and show top process names and segments, live:
 perf top -F 49 -ns comm,dso
 ```
-#### Static Tracing
+
+#### Static Tracing(静态追踪)
 
 ```bash
 # Trace new processes, until Ctrl-C:
+# 跟踪进程创建
 perf record -e sched:sched_process_exec -a
 
 # Sample (take a subset of) context-switches, until Ctrl-C:
+# 抽样跟踪上下文切换
 perf record -e context-switches -a
 
 # Trace all context-switches, until Ctrl-C:
+# 跟踪所有上下文切换
 perf record -e context-switches -c 1 -a
 
 # Include raw settings used (see: man perf_event_open):
 perf record -vv -e context-switches -a
 
 # Trace all context-switches via sched tracepoint, until Ctrl-C:
+# 通过 sched 跟踪点跟踪所有上下文切换
 perf record -e sched:sched_switch -a
 
 # Sample context-switches with stack traces, until Ctrl-C:
+# 跟踪上下文切换的调用栈
 perf record -e context-switches -ag
 
 # Sample context-switches with stack traces, for 10 seconds:
@@ -280,182 +353,242 @@ perf record -e context-switches -ag -- sleep 10
 perf record -e context-switches -ag -T
 
 # Sample CPU migrations, for 10 seconds:
+# 抽样统计 CPU 迁移
 perf record -e migrations -a -- sleep 10
 
 # Trace all connect()s with stack traces (outbound connections), until Ctrl-C:
+# 跟踪所有出站连接的调用栈
 perf record -e syscalls:sys_enter_connect -ag
 
 # Trace all accepts()s with stack traces (inbound connections), until Ctrl-C:
+# # 跟踪所有入站连接的调用栈
 perf record -e syscalls:sys_enter_accept* -ag
 
 # Trace all block device (disk I/O) requests with stack traces, until Ctrl-C:
+# 使用堆栈跟踪跟踪所有块设备(磁盘I/O)请求
 perf record -e block:block_rq_insert -ag
 
 # Sample at most 100 block device requests per second, until Ctrl-C:
+# 按照每秒最多 100 次的频率踪跟踪所有块设备(磁盘I/O)请求
 perf record -F 100 -e block:block_rq_insert -a
 
 # Trace all block device issues and completions (has timestamps), until Ctrl-C:
+# 跟踪所有块设备问题和完成情况
 perf record -e block:block_rq_issue -e block:block_rq_complete -a
 
 # Trace all block completions, of size at least 100 Kbytes, until Ctrl-C:
+# 跟踪所有大小至少为100 kb的块完成情况
 perf record -e block:block_rq_complete --filter 'nr_sector > 200'
 
 # Trace all block completions, synchronous writes only, until Ctrl-C:
+# 跟踪所有同步完成的块请求
 perf record -e block:block_rq_complete --filter 'rwbs == "WS"'
 
 # Trace all block completions, all types of writes, until Ctrl-C:
+# 跟踪所有完成的写块请求
 perf record -e block:block_rq_complete --filter 'rwbs ~ "*W*"'
 
 # Sample minor faults (RSS growth) with stack traces, until Ctrl-C:
+# 跟踪主缺页异常
 perf record -e minor-faults -ag
 
 # Trace all minor faults with stack traces, until Ctrl-C:
+# 跟踪次缺页异常
 perf record -e minor-faults -c 1 -ag
 
 # Sample page faults with stack traces, until Ctrl-C:
+# 跟踪所有的缺页异常
 perf record -e page-faults -ag
 
 # Trace all ext4 calls, and write to a non-ext4 location, until Ctrl-C:
+# 跟踪所有ext4调用，并写入到非ext4位置
 perf record -e 'ext4:*' -o /tmp/perf.data -a 
 
 # Trace kswapd wakeup events, until Ctrl-C:
+# 跟踪kswapd唤醒事件
 perf record -e vmscan:mm_vmscan_wakeup_kswapd -ag
 
 # Add Node.js USDT probes (Linux 4.10+):
+# 添加Node.js USDT探针
 perf buildid-cache --add `which node`
 
 # Trace the node http__server__request USDT event (Linux 4.10+):
+# 跟踪节点http_ server_ request USDT事件
 perf record -e sdt_node:http__server__request -a
 ```
 
-#### Dynamic Tracing
+#### Dynamic Tracing(动态追踪)
+
 ```bash
 # Add a tracepoint for the kernel tcp_sendmsg() function entry ("--add" is optional):
+# 为内核tcp_sendmsg()函数条目添加一个跟踪点
 perf probe --add tcp_sendmsg
 
 # Remove the tcp_sendmsg() tracepoint (or use "--del"):
+# 删除内核tcp_sendmsg()函数跟踪点
 perf probe -d tcp_sendmsg
 
 # Add a tracepoint for the kernel tcp_sendmsg() function return:
+# 为内核tcp_sendmsg()函数返回添加一个跟踪点
 perf probe 'tcp_sendmsg%return'
 
 # Show available variables for the kernel tcp_sendmsg() function (needs debuginfo):
+# 显示内核tcp_sendmsg()函数的可用变量
 perf probe -V tcp_sendmsg
 
 # Show available variables for the kernel tcp_sendmsg() function, plus external vars (needs debuginfo):
+# 显示内核tcp_sendmsg()函数的可用变量，以及外部变量(需要debuginfo)
 perf probe -V tcp_sendmsg --externs
 
 # Show available line probes for tcp_sendmsg() (needs debuginfo):
+# 显示tcp_sendmsg()的可用行探测
 perf probe -L tcp_sendmsg
 
 # Show available variables for tcp_sendmsg() at line number 81 (needs debuginfo):
+# 在第81行显示tcp_sendmsg()的可用变量
 perf probe -V tcp_sendmsg:81
 
 # Add a tracepoint for tcp_sendmsg(), with three entry argument registers (platform specific):
+# 为tcp_sendmsg()添加一个跟踪点，带有三个条目参数寄存器(平台特定的)
 perf probe 'tcp_sendmsg %ax %dx %cx'
 
 # Add a tracepoint for tcp_sendmsg(), with an alias ("bytes") for the %cx register (platform specific):
+# 为tcp_sendmsg()添加跟踪点，并为%cx寄存器(平台特定)添加别名(“字节”)
 perf probe 'tcp_sendmsg bytes=%cx'
 
 # Trace previously created probe when the bytes (alias) variable is greater than 100:
+# 当 bytes (别名)变量大于100 时，跟踪以前创建的探针时:
 perf record -e probe:tcp_sendmsg --filter 'bytes > 100'
 
 # Add a tracepoint for tcp_sendmsg() return, and capture the return value:
+# 为tcp_sendmsg()返回添加一个跟踪点，并捕获返回值:
 perf probe 'tcp_sendmsg%return $retval'
 
 # Add a tracepoint for tcp_sendmsg(), and "size" entry argument (reliable, but needs debuginfo):
+# 为tcp_sendmsg()和“size”条目参数添加一个跟踪点
 perf probe 'tcp_sendmsg size'
 
 # Add a tracepoint for tcp_sendmsg(), with size and socket state (needs debuginfo):
+# 为tcp_sendmsg()添加一个跟踪点，该跟踪点具有大小和套接字状态
 perf probe 'tcp_sendmsg size sk->__sk_common.skc_state'
 
 # Tell me how on Earth you would do this, but don't actually do it (needs debuginfo):
+# 告诉我你到底会怎么做，但不要真的去做
 perf probe -nv 'tcp_sendmsg size sk->__sk_common.skc_state'
 
 # Trace previous probe when size is non-zero, and state is not TCP_ESTABLISHED(1) (needs debuginfo):
+# 跟踪上面创建的探测点，条件是 size 非零且状态不为TCP_ESTABLISHED
 perf record -e probe:tcp_sendmsg --filter 'size > 0 && skc_state != 1' -a
 
 # Add a tracepoint for tcp_sendmsg() line 81 with local variable seglen (needs debuginfo):
+# 使用本地变量seglen为tcp_sendmsg()添加一个跟踪点
 perf probe 'tcp_sendmsg:81 seglen'
 
 # Add a tracepoint for do_sys_open() with the filename as a string (needs debuginfo):
+# 为do_sys_open()添加一个跟踪点，文件名为字符串
 perf probe 'do_sys_open filename:string'
 
 # Add a tracepoint for myfunc() return, and include the retval as a string:
+# 为myfunc()返回添加一个跟踪点，并将retval包含为一个字符串
 perf probe 'myfunc%return +0($retval):string'
 
 # Add a tracepoint for the user-level malloc() function from libc:
+# 为libc中的用户级malloc()函数添加一个跟踪点
 perf probe -x /lib64/libc.so.6 malloc
 
 # Add a tracepoint for this user-level static probe (USDT, aka SDT event):
+# 为这个用户级静态探测添加一个跟踪点(USDT，即SDT事件)
 perf probe -x /usr/lib64/libpthread-2.24.so %sdt_libpthread:mutex_entry
 
 # List currently available dynamic probes:
+# 列出当前可用的动态探测
 perf probe -l
 ```
 #### Mixed
+
 ```bash
 # Trace system calls by process, showing a summary refreshing every 2 seconds:
+# 按进程跟踪系统调用，显示每2秒刷新一次的摘要
 perf top -e raw_syscalls:sys_enter -ns comm
 
 # Trace sent network packets by on-CPU process, rolling output (no clear):
+# 通过 on-CPU进程跟踪发送的网络数据包，滚动输出
 stdbuf -oL perf top -e net:net_dev_xmit -ns comm | strings
 
 # Sample stacks at 99 Hertz, and, context switches:
+# 按照 99 hz 的频率统计 CPU 时钟和上下文切换的调用栈
 perf record -F99 -e cpu-clock -e cs -a -g 
 
 # Sample stacks to 2 levels deep, and, context switch stacks to 5 levels (needs 4.8):
+# 指定调用栈的统计深度
 perf record -F99 -e cpu-clock/max-stack=2/ -e cs/max-stack=5/ -a -g 
 ```
 
 #### Special
 ```bash
 # Record cacheline events (Linux 4.10+):
+# 记录cacheline事件
 perf c2c record -a -- sleep 10
 
 # Report cacheline events from previous recording (Linux 4.10+):
+# 报告之前记录的cacheline事件
 perf c2c report
 ```
 
 #### Reporting
+
 ```bash
 # Show perf.data in an ncurses browser (TUI) if possible:
 perf report
 
 # Show perf.data with a column for sample count:
+# 显示计数次数
 perf report -n
 
 # Show perf.data as a text report, with data coalesced and percentages:
+# 使用文本格式，报告 perf.data
 perf report --stdio
 
 # Report, with stacks in folded format: one line per stack (needs 4.4):
+# 折叠格式的堆栈报告:每个堆栈一行
 perf report --stdio -n -g folded
 
 # List all events from perf.data:
+# 列出perf.data中的所有事件
 perf script
 
 # List all perf.data events, with data header (newer kernels; was previously default):
+# 在 perf script 开头添加统计信息
 perf script --header
 
 # List all perf.data events, with customized fields (< Linux 4.1):
+# 指定字段显示 perf.data 中的事件信息
 perf script -f time,event,trace
 
 # List all perf.data events, with customized fields (>= Linux 4.1):
+# 指定字段显示 perf.data 中的事件信息
 perf script -F time,event,trace
 
 # List all perf.data events, with my recommended fields (needs record -a; newer kernels):
+# 指定字段显示 perf.data 中的事件信息，并在头部显示统计信息
 perf script --header -F comm,pid,tid,cpu,time,event,ip,sym,dso 
 
 # List all perf.data events, with my recommended fields (needs record -a; older kernels):
+# 指定字段显示 perf.data 中的事件信息，并在头部显示统计信息
 perf script -f comm,pid,tid,cpu,time,event,ip,sym,dso
 
 # Dump raw contents from perf.data as hex (for debugging):
+# 按照十六进制从perf.data 转储原始内容
 perf script -D
 
 # Disassemble and annotate instructions with percentages (needs some debuginfo):
+# 显示反汇编并注释的代码
 perf annotate --stdio
 ```
+
 These one-liners serve to illustrate the capabilities of perf_events, and can also be used a bite-sized tutorial: learn perf_events one line at a time. You can also print these out as a perf_events cheatsheet.
+
+这些一行程序演示了perf_events的功能，也可以作为小型教程使用:一次只学习一行perf_events。您还可以将其打印为perf_events备忘单。
 
 ## 3. Presentations
 Kernel Recipes (2017)
