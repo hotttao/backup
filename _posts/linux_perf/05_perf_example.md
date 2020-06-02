@@ -598,52 +598,74 @@ A video of the talk is on youtube and the slides are on slideshare:
 
 There's also an older version of this talk from 2015, which I've posted about.
 
+brendangregg 层就 Linux perf 发表过两次演讲，下面是视频的链接:
+1. [2017](https://image.slidesharecdn.com/kernelrecipesperfevents-170929090404/95/kernel-recipes-2017-using-linux-perf-at-netflix-1-638.jpg?cb=1506675940)
+2. [2015](https://youtu.be/UVM3WX8Lq2k)
+
 ## 4. Background
 The following sections provide some background for understanding perf_events and how to use it. I'll describe the prerequisites, audience, usage, events, and tracepoints.
+下面几节提供了一些背景知识，帮助您理解perf_events以及如何使用它。内容包括:
+1. prerequisites 先决条件
+2. audience 受众
+3. usage 用法
+4. events 事件
+5. tracepoints 跟踪点
 
-### 4.1. Prerequisites
+### 4.1. Prerequisites 先决条件
 The perf tool is in the linux-tools-common package. Start by adding that, then running "perf" to see if you get the USAGE message. It may tell you to install another related package (linux-tools-kernelversion).
+perf工具位于linux-tools-common包中。安装 linux-tools-common ，然后运行“perf”，提示信息可能会告诉您需要安装另一个相关的包(linux-tools-kernelversion)。
 
 You can also build and add perf from the Linux kernel source. See the Building section.
+您还可以从Linux内核源代码构建和添加perf。
 
 To get the most out perf, you'll want symbols and stack traces. These may work by default in your Linux distribution, or they may require the addition of packages, or recompilation of the kernel with additional config options.
+为了获得最大的性能，您需要符号和堆栈跟踪。这些可能在Linux发行版中默认工作，或者它们可能需要额外的包，或者使用其他配置选项重新编译内核。
 
-### 4.2. Symbols
+### 4.2. Symbols 符号表
 perf_events, like other debug tools, needs symbol information (symbols). These are used to translate memory addresses into function and variable names, so that they can be read by us humans. Without symbols, you'll see hexadecimal numbers representing the memory addresses profiled.
+与其他调试工具一样，perf_events需要符号信息(符号)。它们被用来将内存地址转换成函数和变量名，以便我们人类能够读取它们。如果没有符号，您将看到十六进制数字表示所分析的内存地址。
 
 The following perf report output shows stack traces, however, only hexadecimal numbers can be seen:
+下面的perf报告输出显示了堆栈跟踪，但是，只能看到十六进制数:
+
 ```bash
-    57.14%     sshd  libc-2.15.so        [.] connect           
-               |
-               --- connect
-                  |          
-                  |--25.00%-- 0x7ff3c1cddf29
-                  |          
-                  |--25.00%-- 0x7ff3bfe82761
-                  |          0x7ff3bfe82b7c
-                  |          
-                  |--25.00%-- 0x7ff3bfe82dfc
-                   --25.00%-- [...]
+57.14%     sshd  libc-2.15.so        [.] connect           
+            |
+            --- connect
+              |          
+              |--25.00%-- 0x7ff3c1cddf29
+              |          
+              |--25.00%-- 0x7ff3bfe82761
+              |          0x7ff3bfe82b7c
+              |          
+              |--25.00%-- 0x7ff3bfe82dfc
+                --25.00%-- [...]
 ```
 If the software was added by packages, you may find debug packages (often "-dbgsym") which provide the symbols. Sometimes perf report will tell you to install these, eg: "no symbols found in /bin/dd, maybe install a debug package?".
+如果软件是通过包添加的，您可能会发现提供这些符号的调试包(通常是“-dbgsym”)。有时perf 会提示去安装这些调试包。
 
 Here's the same perf report output seen earlier, after adding openssh-server-dbgsym and libc6-dbgsym (this is on ubuntu 12.04):
+下面是添加了 openssh-server-dbgsym和libc6-dbgsym(这是在ubuntu 12.04上)之后，看到的 perf 报告输出:
+
 ```bash
-    57.14%     sshd  libc-2.15.so        [.] __GI___connect_internal
-               |
-               --- __GI___connect_internal
-                  |          
-                  |--25.00%-- add_one_listen_addr.isra.0
-                  |          
-                  |--25.00%-- __nscd_get_mapping
-                  |          __nscd_get_map_ref
-                  |          
-                  |--25.00%-- __nscd_open_socket
-                   --25.00%-- [...]
+57.14%     sshd  libc-2.15.so        [.] __GI___connect_internal
+            |
+            --- __GI___connect_internal
+              |          
+              |--25.00%-- add_one_listen_addr.isra.0
+              |          
+              |--25.00%-- __nscd_get_mapping
+              |          __nscd_get_map_ref
+              |          
+              |--25.00%-- __nscd_open_socket
+                --25.00%-- [...]
 ```
 I find it useful to add both libc6-dbgsym and coreutils-dbgsym, to provide some symbol coverage of user-level OS codepaths.
+我发现同时添加libc6-dbgsym和coreutils-dbgsym很有用，可以提供用户级 OS 代码页的一些符号表。
 
 Another way to get symbols is to compile the software yourself. For example, I just compiled node (Node.js):
+另一种获取符号的方法是自己编译软件。例如，编译 node (node.js):
+
 ```bash
 # file node-v0.10.28/out/Release/node 
 node-v0.10.28/out/Release/node: ELF 64-bit LSB executable, ... not stripped
@@ -651,114 +673,136 @@ node-v0.10.28/out/Release/node: ELF 64-bit LSB executable, ... not stripped
 This has not been stripped, so I can profile node and see more than just hex. If the result is stripped, configure your build system not to run strip(1) on the output binaries.
 
 Kernel-level symbols are in the kernel debuginfo package, or when the kernel is compiled with CONFIG_KALLSYMS.
+内核级符号位于内核debuginfo包中，或者在内核编译时启用 CONFIG_KALLSYMS 选项
 
-### 4.3. JIT Symbols (Java, Node.js)
+### 4.3. JIT Symbols (Java, Node.js) JIT 符号表
 Programs that have virtual machines (VMs), like Java's JVM and node's v8, execute their own virtual processor, which has its own way of executing functions and managing stacks. If you profile these using perf_events, you'll see symbols for the VM engine, which have some use (eg, to identify if time is spent in GC), but you won't see the language-level context you might be expecting. Eg, you won't see Java classes and methods.
+拥有虚拟机(VMs)的程序(如Java的JVM和node的v8)执行它们自己的虚拟处理器，它有自己执行函数和管理堆栈的方式。如果您使用perf_events对它们进行配置，您将看到VM引擎的符号，这些符号有一些用途(例如，用于确定是否在GC中花费了时间)，但是您不会看到您可能期望的语言级上下文。你不会看到Java类和方法。
 
 perf_events has JIT support to solve this, which requires the VM to maintain a /tmp/perf-PID.map file for symbol translation. Java can do this with perf-map-agent, and Node.js 0.11.13+ with --perf_basic_prof. See my blog post Node.js flame graphs on Linux for the steps.
+perf_events支持JIT来解决这个问题，这需要VM维护一个 /tmp/perf-PID.map 的符号表转义文件。Java可以使用[perf-map-agent](https://github.com/jvm-profiling-tools/perf-map-agent)实现这一点，而Node.js 0.11.13+可以使用——perf_basic_prof。请参阅我的博客文章[Node.js火焰图在Linux上的步骤](http://www.brendangregg.com/blog/2014-09-17/node-flame-graphs-on-linux.html)。
 
 Note that Java may not show full stacks to begin with, due to hotspot on x86 omitting the frame pointer (just like gcc). On newer versions (JDK 8u60+), you can use the -XX:+PreserveFramePointer option to fix this behavior, and profile fully using perf. See my Netflix Tech Blog post, Java in Flames, for a full writeup, and my Java flame graphs section, which links to an older patch and includes an example resulting flame graph. I also summarized the latest in my JavaOne 2016 talk Java Performance Analysis on Linux with Flame Graphs.
+注意，由于hotspot在x86上省略了帧指针(就像gcc一样)，Java可能一开始就没有显示完整的堆栈。在较新的版本(JDK 8u60+)上，您可以使用-XX:+PreserveFramePointer选项来修复此行为，并使用perf完全配置文件。请参阅我的Netflix技术博客文章，[Java in flame](http://techblog.netflix.com/2015/07/java-in-flames.html)，以获得完整的描述，以及我的[Java火焰图部分](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#Java)，其中链接到一个较老的补丁，并包括一个生成火焰图的示例。我还在我的演讲中总结了最新的用法 [Java Performance Analysis on Linux with Flame Graphs.](http://www.slideshare.net/brendangregg/java-performance-analysis-on-linux-with-flame-graphs)
 
-### 4.4 Stack Traces
+### 4.4 Stack Traces 堆栈追踪
 Always compile with frame pointers. Omitting frame pointers is an evil compiler optimization that breaks debuggers, and sadly, is often the default. Without them, you may see incomplete stacks from perf_events, like seen in the earlier sshd symbols example. There are three ways to fix this: either using dwarf data to unwind the stack, using last branch record (LBR) if available (a processor feature), or returning the frame pointers.
+总是使用框架指针进行编译。省略帧指针是一种糟糕的编译器优化，它会破坏调试器，不幸的是，它通常是默认的。如果没有它们，您可能会从perf_events中看到不完整的堆栈，就像前面的sshd符号示例中看到的那样。有三种方法可以解决这个问题:要么使用**dwarf**数据展开堆栈，要么使用可用的最后一个分支记录(**LBR**)(如果处理器特性支持)，要么**返回帧指针**。
 
 There are other stack walking techniques, like BTS (Branch Trace Store), and the new ORC unwinder. I'll add docs for them at some point (and as perf support arrives).
+还有其他堆栈遍历技术，比如BTS(分支跟踪存储)和新的ORC解卷器。我将在某个时候为它们添加文档。
 
-Frame Pointers
+#### Frame Pointers 帧指针
 
 The earlier sshd example was a default build of OpenSSH, which uses compiler optimizations (-O2), which in this case has omitted the frame pointer. Here's how it looks after recompiling OpenSSH with -fno-omit-frame-pointer:
+早期的sshd示例是OpenSSH的默认构建，它使用编译器优化(-O2)，省略了帧指针。下面是用-fno-omit-frame-pointer(省略帧指针)重新编译OpenSSH后，进行剖析的结果:
+
 ```bash
-    100.00%     sshd  libc-2.15.so   [.] __GI___connect_internal
-               |
-               --- __GI___connect_internal
-                  |          
-                  |--30.00%-- add_one_listen_addr.isra.0
-                  |          add_listen_addr
-                  |          fill_default_server_options
-                  |          main
-                  |          __libc_start_main
-                  |          
-                  |--20.00%-- __nscd_get_mapping
-                  |          __nscd_get_map_ref
-                  |          
-                  |--20.00%-- __nscd_open_socket
-                   --30.00%-- [...]
+100.00%     sshd  libc-2.15.so   [.] __GI___connect_internal
+            |
+            --- __GI___connect_internal
+              |          
+              |--30.00%-- add_one_listen_addr.isra.0
+              |          add_listen_addr
+              |          fill_default_server_options
+              |          main
+              |          __libc_start_main
+              |          
+              |--20.00%-- __nscd_get_mapping
+              |          __nscd_get_map_ref
+              |          
+              |--20.00%-- __nscd_open_socket
+                --30.00%-- [...]
 ```
 Now the ancestry from add_one_listen_addr() can be seen, down to main() and __libc_start_main().
+现在可以看到来自add_one_listen_addr()的祖先，一直到main()和libc_start_main()。意思是省略帧指针后，堆栈信息显示不完整
 
 The kernel can suffer the same problem. Here's an example CPU profile collected on an idle server, with stack traces (-g):
-```bash
-    99.97%  swapper  [kernel.kallsyms]  [k] default_idle
-            |
-            --- default_idle
+内核也有类似省略帧指针的问题。下面是一个在空闲服务器上收集的带有堆栈跟踪(-g)的 CPU 剖析信息:
 
-     0.03%     sshd  [kernel.kallsyms]  [k] iowrite16   
-               |
-               --- iowrite16
-                   __write_nocancel
-                   (nil)
+```bash
+99.97%  swapper  [kernel.kallsyms]  [k] default_idle
+        |
+        --- default_idle
+
+  0.03%     sshd  [kernel.kallsyms]  [k] iowrite16   
+            |
+            --- iowrite16
+                __write_nocancel
+                (nil)
 ```
 The kernel stack traces are incomplete. Now a similar profile with CONFIG_FRAME_POINTER=y:
+内核堆栈跟踪是不完整的。下面是启用 CONFIG_FRAME_POINTER=y 编译选项后类似的剖析结果:
 
 ```bash
-    99.97%  swapper  [kernel.kallsyms]  [k] default_idle
-            |
-            --- default_idle
-                cpu_idle
-               |          
-               |--87.50%-- start_secondary
-               |          
-                --12.50%-- rest_init
-                          start_kernel
-                          x86_64_start_reservations
-                          x86_64_start_kernel
+99.97%  swapper  [kernel.kallsyms]  [k] default_idle
+        |
+        --- default_idle
+            cpu_idle
+            |          
+            |--87.50%-- start_secondary
+            |          
+            --12.50%-- rest_init
+                      start_kernel
+                      x86_64_start_reservations
+                      x86_64_start_kernel
 
-     0.03%     sshd  [kernel.kallsyms]  [k] iowrite16
-               |
-               --- iowrite16
-                   vp_notify
-                   virtqueue_kick
-                   start_xmit
-                   dev_hard_start_xmit
-                   sch_direct_xmit
-                   dev_queue_xmit
-                   ip_finish_output
-                   ip_output
-                   ip_local_out
-                   ip_queue_xmit
-                   tcp_transmit_skb
-                   tcp_write_xmit
-                   __tcp_push_pending_frames
-                   tcp_sendmsg
-                   inet_sendmsg
-                   sock_aio_write
-                   do_sync_write
-                   vfs_write
-                   sys_write
-                   system_call_fastpath
-                   __write_nocancel
+  0.03%     sshd  [kernel.kallsyms]  [k] iowrite16
+            |
+            --- iowrite16
+                vp_notify
+                virtqueue_kick
+                start_xmit
+                dev_hard_start_xmit
+                sch_direct_xmit
+                dev_queue_xmit
+                ip_finish_output
+                ip_output
+                ip_local_out
+                ip_queue_xmit
+                tcp_transmit_skb
+                tcp_write_xmit
+                __tcp_push_pending_frames
+                tcp_sendmsg
+                inet_sendmsg
+                sock_aio_write
+                do_sync_write
+                vfs_write
+                sys_write
+                system_call_fastpath
+                __write_nocancel
 ```
 Much better -- the entire path from the write() syscall (__write_nocancel) to iowrite16() can be seen.
+效果好很多，可以看到 write() 系统调用的完整信息。
 
 #### Dwarf
 
 Since about the 3.9 kernel, perf_events has supported a workaround for missing frame pointers in user-level stacks: libunwind, which uses dwarf. This can be enabled using "--call-graph dwarf" (or "-g dwarf").
+从3.9内核开始，perf_events就支持用户级栈中缺少帧指针的解决方案:libunwind，叫做 dwarf。可以使用"--call-graph dwarf"(或“-g dwarf”)启用此功能。
 
 Also see the Building section for other notes about building perf_events, as without the right library, it may build itself without dwarf support.
+perf 可以在没有 dwarf 支持的情况下构建。因此是否支持 dwarf 要查阅安装信息。
 
-LBR
+#### LBR
 
 You must have Last Branch Record access to be able to use this. It is disabled in most cloud environments, where you'll get this error:
+您必须拥有最后一个分支记录访问权才能使用它。它在大多数云环境中是禁用的，你会得到这个错误:
 
-# perf record -F 99 -a --call-graph lbr
+```bash
+> perf record -F 99 -a --call-graph lbr
 Error:
 PMU Hardware doesn't support sampling/overflow-interrupts.
-Here's an example of it working:
+```
 
-# perf record -F 99 -a --call-graph lbr
+Here's an example of it working:
+下面是它能工作的一个例子:
+
+```bash
+> perf record -F 99 -a --call-graph lbr
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.903 MB perf.data (163 samples) ]
-# perf script
+
+> perf script
 [...]
 stackcollapse-p 23867 [007] 4762187.971824:   29003297 cycles:ppp:
                   1430c0 Perl_re_intuit_start (/usr/bin/perl)
@@ -781,14 +825,20 @@ stackcollapse-p 23867 [007] 4762187.989283:   32341031 cycles:ppp:
                    cbee3 Perl_runops_standard (/usr/bin/perl)
                    51fb3 perl_run (/usr/bin/perl)
                    2b168 main (/usr/bin/perl)
+```
 Nice! Note that LBR is usually limited in stack depth (either 8, 16, or 32 frames), so it may not be suitable for deep stacks or flame graph generation, as flame graphs need to walk to the common root for merging.
 
-Here's that same program sampled using the by-default frame pointer walk:
+很好!但是注意，LBR通常限制了堆栈深度(8、16或32帧)，所以它可能不适合深度堆栈或火焰图生成，因为火焰图需要走到用于合并的公共根。
 
-# perf record -F 99 -a -g
+Here's that same program sampled using the by-default frame pointer walk:
+下面是使用默认栈指针输出的剖析信息
+
+```bash
+> perf record -F 99 -a -g
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.882 MB perf.data (81 samples) ]
-# perf script
+
+> perf script
 [...]
 stackcollapse-p 23883 [005] 4762405.747834:   35044916 cycles:ppp:
                   135b83 [unknown] (/usr/bin/perl)
@@ -798,24 +848,35 @@ stackcollapse-p 23883 [005] 4762405.757935:   35036297 cycles:ppp:
 
 stackcollapse-p 23883 [005] 4762405.768038:   35045174 cycles:ppp:
                   137334 [unknown] (/usr/bin/perl)
+```
+
 You can recompile Perl with frame pointer support (in its ./Configure, it asks what compiler options: add -fno-omit-frame-pointer). Or you can use LBR if it's available, and you don't need very long stacks.
 
-4.5. Audience
-To use perf_events, you'll either:
+### 4.5. Audience
 
-Develop your own commands
-Run example commands
+To use perf_events, you'll either:
+1. Develop your own commands
+2. Run example commands
+
 Developing new invocations of perf_events requires the study of kernel and application code, which isn't for everyone. Many more people will use perf_events by running commands developed by other people, like the examples on this page. This can work out fine: your organization may only need one or two people who can develop perf_events commands or source them, and then share them for use by the entire operation and support groups.
 
+开发新的perf_events调用需要研究内核和应用程序代码，这并不适合所有人。更多的人将通过运行其他人开发的命令来使用perf_events，就像本文中的示例一样。这可以很好地解决问题:您的组织可能只需要一到两个人，他们可以开发perf_events命令或获取它们的源代码，然后共享它们供整个操作和支持组使用。
+
 Either way, you need to know the capabilities of perf_events so you know when to reach for it, whether that means searching for an example command or writing your own. One goal of the examples that follow is just to show you what can be done, to help you learn these capabilities. You should also browse examples on other sites (Links).
+无论使用哪种方法，您都需要了解perf_events的功能，这样才能有效的搜索。下面的示例的一个目标就是向您展示可以做什么，以帮助您学习这些功能。您还应该在其他站点(链接)上浏览示例[](http://www.brendangregg.com/perf.html#Links)。
 
 If you've never used perf_events before, you may want to test before production use (it has had kernel panic bugs in the past). My experience has been a good one (no panics).
+如果您以前从未使用过perf_events，那么您可能希望在生产环境使用之前进行测试(它以前出现过[内核故障](http://web.eecs.utk.edu/~vweaver1/projects/perf-events/kernel_panics.html))。我的经历很好(不用恐慌)。
 
-4.6. Usage
+### 4.6. Usage
+
 perf_events provides a command line tool, perf, and subcommands for various profiling activities. This is a single interface for the different instrumentation frameworks that provide the various events.
+perf_events为各种分析活动提供了 perf 密令。这是用于提供各种事件的不同工具框架的单个接口。
 
 The perf command alone will list the subcommands; here is perf version 4.10 (for the Linux 4.10 kernel):
+不带参数的 perf 命令将会列出所有子命令;下面是perf 4.10版本的输出(适用于Linux 4.10内核):
 
+```bash
 # perf
 
  usage: perf [--version] [--help] [OPTIONS] COMMAND [ARGS]
@@ -848,66 +909,115 @@ The perf command alone will list the subcommands; here is perf version 4.10 (for
    trace           strace inspired tool
 
  See 'perf help COMMAND' for more information on a specific command.
+```
+
 Apart from separate help for each subcommand, there is also documentation in the kernel source under tools/perf/Documentation. perf has evolved, with different functionality added over time, so on an older kernel you may be missing some subcommands or functionality. Also, its usage may not feel consistent as you switch between activities. It's best to think of it as a multi-tool.
+除了每个子命令的单独帮助之外，在工具/perf/Documentation下的内核源代码中也有文档。perf不断发展，随着时间的推移添加了不同的功能，因此在较老的内核中，您可能会丢失一些子命令或功能。而且，当您在活动之间切换时，它的用法可能感觉不一致。最好将其视为一个多工具。
 
 perf_events can instrument in three ways (now using the perf_events terminology):
 
-counting events in-kernel context, where a summary of counts is printed by perf. This mode does not generate a perf.data file.
-sampling events, which writes event data to a kernel buffer, which is read at a gentle asynchronous rate by the perf command to write to the perf.data file. This file is then read by the perf report or perf script commands.
-bpf programs on events, a new feature in Linux 4.4+ kernels that can execute custom user-defined programs in kernel space, which can perform efficient filters and summaries of the data. Eg, efficiently-measured latency histograms.
+1. counting events in-kernel context, where a summary of counts is printed by perf. This mode does not generate a perf.data file.
+2. sampling events, which writes event data to a kernel buffer, which is read at a gentle asynchronous rate by the perf command to write to the perf.data file. This file is then read by the perf report or perf script commands.
+3. bpf programs on events, a new feature in Linux 4.4+ kernels that can execute custom user-defined programs in kernel space, which can perform efficient filters and summaries of the data. Eg, efficiently-measured latency histograms.
+
+perf_events有三种使用方式(现在使用perf_events术语):
+
+1. 计数模式: 对应 perf stat 命令，其在内核上下文中计数事件，其中计数的摘要由perf打印。此模式不生成perf.data文件
+2. 采样事件：它将事件数据写入内核缓冲区，由perf命令以缓慢的异步速率读取内核缓冲区，以便写入到perf.data 文件。然后，perf report 或perf script 命令读取此文件。
+3. 事件上的bpf程序，这是Linux 4.4+内核中的一个新特性，它可以在内核空间中执行自定义用户定义的程序，可以执行高效的数据筛选和总结。
+
 Try starting by counting events using the perf stat command, to see if this is sufficient. This subcommand costs the least overhead.
+尝试从使用perf stat命令计算事件开始，看看这是否足够。这个子命令开销最小。
 
 When using the sampling mode with perf record, you'll need to be a little careful about the overheads, as the capture files can quickly become hundreds of Mbytes. It depends on the rate of the event you are tracing: the more frequent, the higher the overhead and larger the perf.data size.
+在使用perf记录的采样模式时，您需要注意开销，因为捕获文件可能很快就会变成数百兆字节。这取决于您正在跟踪的事件的频率:频率越高，开销越大，性能越大。数据的大小。
 
 To really cut down overhead and generate more advanced summaries, write BPF programs executed by perf. See the eBPF section.
+要真正减少开销并生成更高级的摘要，可以编写由perf执行的BPF程序。请参阅[eBPF部分](http://www.brendangregg.com/perf.html#eBPF)。
 
-4.7. Usage Examples
+### 4.7. Usage Examples
 These example sequences have been chosen to illustrate some different ways that perf is used, from gathering to reporting.
+选择这些示例序列是为了说明使用perf的一些不同方式，从收集到报告。
 
 Performance counter summaries, including IPC, for the gzip command:
+gzip命令的性能计数器总结，包括IPC:
 
+```bash
 # perf stat gzip largefile
+```
+
 Count all scheduler process events for 5 seconds, and count by tracepoint:
+按照静态探针对进程调度事件进行计数，持续 5s
 
+```bash
 # perf stat -e 'sched:sched_process_*' -a sleep 5
-Trace all scheduler process events for 5 seconds, and count by both tracepoint and process name:
+```
 
+Trace all scheduler process events for 5 seconds, and count by both tracepoint and process name:
+按照静态探针跟踪进程调度事件，持续 5s
+```bash
 # perf record -e 'sched:sched_process_*' -a sleep 5
 # perf report
-Trace all scheduler process events for 5 seconds, and dump per-event details:
+```
 
+Trace all scheduler process events for 5 seconds, and dump per-event details:
+按照静态探针跟踪进程调度事件，持续 5s，并转储事件信息信息
+```bash
 # perf record -e 'sched:sched_process_*' -a sleep 5
 # perf script
+```
+
 Trace read() syscalls, when requested bytes is less than 10:
-
+跟踪请求的字节小于10 的 read() 系统调用
+```bash
 # perf record -e 'syscalls:sys_enter_read' --filter 'count < 10' -a
-Sample CPU stacks at 99 Hertz, for 5 seconds:
+```
 
+Sample CPU stacks at 99 Hertz, for 5 seconds:
+以 99hz 的频率抽样CPU堆栈
+```bash
 # perf record -F 99 -ag -- sleep 5
 # perf report
+```
 Dynamically instrument the kernel tcp_sendmsg() function, and trace it for 5 seconds, with stack traces:
-
+添加 tcp_sendmsg 动态探针，追踪 5s，并记录堆栈
+```bash
 # perf probe --add tcp_sendmsg
 # perf record -e probe:tcp_sendmsg -ag -- sleep 5
 # perf probe --del tcp_sendmsg
 # perf report
+```
 Deleting the tracepoint (--del) wasn't necessary; I included it to show how to return the system to its original state.
+没有必要删除跟踪点(- del);我包含它是为了说明如何将系统返回到其原始状态。
 
-Caveats
-The use of -p PID as a filter doesn't work properly on some older kernel versions (Linux 3.x): perf hits 100% CPU and needs to be killed. It's annoying. The workaround is to profile all CPUs (-a), and filter PIDs later.
+Caveats The use of -p PID as a filter doesn't work properly on some older kernel versions (Linux 3.x): perf hits 100% CPU and needs to be killed. It's annoying. The workaround is to profile all CPUs (-a), and filter PIDs later.
+警告使用-p PID作为过滤器在一些较老的内核版本(Linux 3.x)上不能正常工作。解决方法是配置所有cpu (-a)，然后 filter 选项过滤出所需的 PID 信息。
 
-4.8. Special Usage
+### 4.8. Special Usage
+
 There's a number of subcommands that provide special purpose functionality. These include:
 
-perf c2c (Linux 4.10+): cache-2-cache and cacheline false sharing analysis.
-perf kmem: kernel memory allocation analysis.
-perf kvm: KVM virtual guest analysis.
-perf lock: lock analysis.
-perf mem: memory access analysis.
-perf sched: kernel scheduler statistics. Examples.
-These make use of perf's existing instrumentation capabilities, recording selected events and reporting them in custom ways.
+1. perf c2c (Linux 4.10+): cache-2-cache and cacheline false sharing analysis.
+2. perf kmem: kernel memory allocation analysis.
+3. perf kvm: KVM virtual guest analysis.
+4. perf lock: lock analysis.
+5. perf mem: memory access analysis.
+6. perf sched: kernel scheduler statistics. Examples.
+7. These make use of perf's existing instrumentation capabilities, recording selected events and reporting them in custom ways.
 
-5. Events
+有许多子命令提供特殊用途的功能。这些包括:
+
+1. perf c2c (Linux 4.10+): cache-2-cache and cacheline false 共享分析
+2. perf kmem: 内核内存分配分析。
+3. perf kvm：KVM虚拟客户端分析。
+4. perf lock: 锁分析
+5. perf mem: 内存访问分析。
+6. perf sched: 内核调度器的统计数据。[示例](http://www.brendangregg.com/perf.html#SchedulerAnalysis)
+
+它们利用perf现有的检测功能，记录选定的事件并以定制的方式报告它们。
+
+## 5. Events
+
 perf_events instruments "events", which are a unified interface for different kernel instrumentation frameworks. The following map (from my SCaLE13x talk) illustrates the event sources:
 
 
