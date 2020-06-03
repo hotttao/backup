@@ -1019,20 +1019,33 @@ There's a number of subcommands that provide special purpose functionality. Thes
 ## 5. Events
 
 perf_events instruments "events", which are a unified interface for different kernel instrumentation frameworks. The following map (from my SCaLE13x talk) illustrates the event sources:
-
+perf_events工具“事件”，它是不同内核工具框架的统一接口。下面的地图(来自我的SCaLE13x演讲)说明了事件来源:
 
 The types of events are:
 
-Hardware Events: CPU performance monitoring counters.
-Software Events: These are low level events based on kernel counters. For example, CPU migrations, minor faults, major faults, etc.
-Kernel Tracepoint Events: This are static kernel-level instrumentation points that are hardcoded in interesting and logical places in the kernel.
-User Statically-Defined Tracing (USDT): These are static tracepoints for user-level programs and applications.
-Dynamic Tracing: Software can be dynamically instrumented, creating events in any location. For kernel software, this uses the kprobes framework. For user-level software, uprobes.
-Timed Profiling: Snapshots can be collected at an arbitrary frequency, using perf record -FHz. This is commonly used for CPU usage profiling, and works by creating custom timed interrupt events.
+1. Hardware Events: CPU performance monitoring counters.
+2. Software Events: These are low level events based on kernel counters. For example, CPU migrations, minor faults, major faults, etc.
+3. Kernel Tracepoint Events: This are static kernel-level instrumentation points that are hardcoded in interesting and logical places in the kernel.
+4. User Statically-Defined Tracing (USDT): These are static tracepoints for user-level programs and applications.
+5. Dynamic Tracing: Software can be dynamically instrumented, creating events in any location. For kernel software, this uses the kprobes framework. For user-level software, uprobes.
+6. Timed Profiling: Snapshots can be collected at an arbitrary frequency, using perf record -FHz. This is commonly used for CPU usage profiling, and works by creating custom timed interrupt events.
+
+event 有如下类型:
+
+1. Hardware Events: CPU性能监视计数器
+2. Software Events: 这些是基于内核计数器的低级事件。例如，CPU迁移、主次缺页异常等等。
+3. Kernel Tracepoint Events: 硬编码在内核中的静态内核级的检测点，
+4. User Statically-Defined Tracing (USDT): 这些是用户级程序和应用程序的静态跟踪点。
+5. Dynamic Tracing: 可以被放置在任何地方的动态探针。对于内核软件，它使用kprobes框架。对于用户级软件，uprobes。
+6. Timed Profiling: 使用perf -FHz 选项以指定频率收集的快照。这通常用于CPU使用情况分析，其工作原理是周期性的产生时钟中断事件。
+
 Details about the events can be collected, including timestamps, the code path that led to it, and other specific details. The capabilities of perf_events are enormous, and you're likely to only ever use a fraction.
+可以收集事件的详细信息，包括时间戳、导致事件的代码路径和其他特定细节。perf_events的功能非常强大，您可能只会使用一小部分。
 
 Currently available events can be listed using the list subcommand:
+可以使用list子命令列出当前可用的事件:
 
+```bash
 # perf list
 List of pre-defined events (to be used in -e):
   cpu-cycles OR cycles                               [Hardware event]
@@ -1072,11 +1085,15 @@ List of pre-defined events (to be used in -e):
 [...]
 # perf list | wc -l
      657
+```
 When you use dynamic tracing, you are extending this list. The probe:tcp_sendmsg tracepoint in this list is an example, which I added by instrumenting tcp_sendmsg(). Profiling (sampling) events are not listed.
+当您使用动态跟踪时，您是在扩展这个列表。这个列表中的 probe:tcp_sendmsg 探针就是我动态插入 tcp_sendmsg() 的例子。
 
-5.1. Software Events
+### 5.1. Software Events
 There is a small number of fixed software events provided by perf:
+perf提供了少量固定的软件事件:
 
+```bash
 # perf list
 
 List of pre-defined events (to be used in -e):
@@ -1093,8 +1110,12 @@ List of pre-defined events (to be used in -e):
   page-faults OR faults                              [Software event]
   task-clock                                         [Software event]
 [...]
-These are also documented in the man page perf_event_open(2):
+```
 
+These are also documented in the man page perf_event_open(2):
+这些也记录在手册页perf_event_open(2):
+
+```bash
 [...]
                    PERF_COUNT_SW_CPU_CLOCK
                           This reports the CPU clock, a  high-resolution  per-
@@ -1120,10 +1141,14 @@ These are also documented in the man page perf_event_open(2):
                           This  counts the number of minor page faults.  These
                           did not require disk I/O to handle.
 [...]
-The kernel also supports traecpoints, which are very similar to software events, but have a different more extensible API.
+```
+The kernel also supports [traecpoints](http://www.brendangregg.com/perf.html#Tracepoints), which are very similar to software events, but have a different more extensible API.
+内核也支持traecpoints，它与软件事件非常相似，但具有不同的更具可扩展性的API。
 
 Software events may have a default period. This means that when you use them for sampling, you're sampling a subset of events, not tracing every event. You can check with perf record -vv:
+软件事件可能有一个默认的周期。这意味着当您使用它们进行抽样时，您是在对事件的子集进行抽样，而不是跟踪每个事件。你可以通过 perf record -vv 查看:
 
+```bash
 # perf record -vv -e context-switches /bin/true
 Using CPUID GenuineIntel-6-55
 ------------------------------------------------------------
@@ -1140,8 +1165,12 @@ perf_event_attr:
   freq                             1
   enable_on_exec                   1
 [...]
-See the perf_event_open(2) man page for a description of these fields. This default means is that the kernel adjusts the rate of sampling so that it's capturing about 4,000 context switch events per second. If you really meant to record them all, use -c 1:
+```
 
+See the perf_event_open(2) man page for a description of these fields. This default means is that the kernel adjusts the rate of sampling so that it's capturing about 4,000 context switch events per second. If you really meant to record them all, use -c 1:
+有关这些字段的描述，请参见perf_event_open(2)手册页。这个默认的意思是内核调整采样率，以便它每秒捕获大约4000个上下文切换事件。如果你真的想把它们全部记录下来，请使用- c1:
+
+```bash
 # perf record -vv -e context-switches -c 1 /bin/true
 Using CPUID GenuineIntel-6-55
 ------------------------------------------------------------
@@ -1156,27 +1185,39 @@ perf_event_attr:
   mmap                             1
   comm                             1
   enable_on_exec                   1
+```
+
 Check the rate of events using perf stat first, so that you can estimate the volume of data you'll be capturing. Sampling a subset by default may be a good thing, especially for high frequency events like context switches.
+首先使用perf stat检查事件的速率，这样您就可以估计将要捕获的数据量。在默认情况下对子集进行采样可能是一件好事，特别是对于上下文切换这样的高频率事件。
 
 Many other events (like tracepoints) have a default of 1 anyway. You'll encounter a non-1 default for many software and hardware events.
+许多其他事件(比如跟踪点)的默认值都是1。对于许多软件和硬件事件，您将遇到非1的缺省值。
 
-5.2. Hardware Events (PMCs)
+### 5.2. Hardware Events (PMCs)
 perf_events began life as a tool for instrumenting the processor's performance monitoring unit (PMU) hardware counters, also called performance monitoring counters (PMCs), or performance instrumentation counters (PICs). These instrument low-level processor activity, for example, CPU cycles, instructions retired, memory stall cycles, level 2 cache misses, etc. Some will be listed as Hardware Cache Events.
+perf_events最初作为一种工具用于检测处理器的性能监视单元 PMU，PMU 被称为硬件计数器，也叫做性能监视计数器(pmmc)或性能仪表计数器(PICs)。它监测低层次的处理器活动，例如，CPU周期，指令退役，内存失速周期，二级缓存丢失，等等。其中一些将作为硬件缓存事件列出。
 
 PMCs are documented in the Intel 64 and IA-32 Architectures Software Developer's Manual Volume 3B: System Programming Guide, Part 2 and the BIOS and Kernel Developer's Guide (BKDG) For AMD Family 10h Processors. There are thousands of different PMCs available.
+pmc在Intel 64和IA-32架构软件开发人员手册卷3B:系统编程指南，第2部分和AMD家族10h处理器的BIOS和内核开发人员指南(BKDG)中有文档记录。有数千种不同的pmc可用。
 
 A typical processor will implement PMCs in the following way: only a few or several can be recorded at the same time, from the many thousands that are available. This is because they are a fixed hardware resource on the processor (a limited number of registers), and are programmed to begin counting the selected events.
+典型的处理器将以以下方式实现pmc:在可用的数千个pmc中，只能同时记录几个pmc。这是因为它们是处理器上的固定硬件资源(寄存器的有限数量)，并且被编程为开始计算所选事件。
 
 For examples of using PMCs, see CPU Statistics.
+有关使用pmc的示例，请参见[CPU统计信息](http://www.brendangregg.com/perf.html#CPUstatistics)。
 
-5.3. Kernel Tracepoints
+### 5.3. Kernel Tracepoints
 These tracepoints are hard coded in interesting and logical locations of the kernel, so that higher-level behavior can be easily traced. For example, system calls, TCP events, file system I/O, disk I/O, etc. These are grouped into libraries of tracepoints; eg, "sock:" for socket events, "sched:" for CPU scheduler events. A key value of tracepoints is that they should have a stable API, so if you write tools that use them on one kernel version, they should work on later versions as well.
+这些跟踪点被硬编码在内核的有用的位置上，以便更高层次的行为可以很容易地被跟踪。例如，系统调用、TCP事件、文件系统I/O、磁盘I/O等等。它们被分组到跟踪点库中;例如，“sock:”表示套接字事件，“sched:”表示CPU调度器事件。跟踪点的一个关键价值是它们应该有一个稳定的API，因此如果您编写的工具在一个内核版本上使用它们，那么它们也应该适用于以后的版本。
 
 Tracepoints are usually added to kernel code by placing a macro from include/trace/events/*. XXX cover implementation.
+跟踪点通常通过放置在 include/trace/events/*.XXX 中的宏添加到内核代码中来实现。
 
 Summarizing the tracepoint library names and numbers of tracepoints, on my Linux 4.10 system:
+下面是 Linux4.10 系统上对 tracepoint 库和数量的统计。
 
-# perf list | awk -F: '/Tracepoint event/ { lib[$1]++ } END {
+```bash
+> perf list | awk -F: '/Tracepoint event/ { lib[$1]++ } END {
     for (l in lib) { printf "  %-16.16s %d\n", l, lib[l] } }' | sort | column
     alarmtimer     4	    i2c            8	    page_isolation 1	    swiotlb        1
     block          19	    iommu          7	    pagemap        2	    syscalls       614
@@ -1196,32 +1237,52 @@ Summarizing the tracepoint library names and numbers of tracepoints, on my Linux
     ftrace         1	    net            10	    skb            3	    xhci-hcd       9
     gpio           2	    nmi            1	    sock           2
     huge_memory    4	    oom            1	    spi            7
+```
 These include:
 
-block: block device I/O
-ext4: file system operations
-kmem: kernel memory allocation events
-random: kernel random number generator events
-sched: CPU scheduler events
-syscalls: system call enter and exits
-task: task events
+1. block: block device I/O
+2. ext4: file system operations
+3. kmem: kernel memory allocation events
+4. random: kernel random number generator events
+5. sched: CPU scheduler events
+6. syscalls: system call enter and exits
+7. task: task events
+
+这些包括:
+1. block: 块设备I/O
+2. ext4: 文件系统操作
+3. kmem: 内核内存分配事件
+4. random: 内核随机数生成器事件
+5. sched: CPU调度器事件
+6. random: 系统调用的进入和返回
+7. task: 任务事件
+
 It's worth checking the list of tracepoints after every kernel upgrade, to see if any are new. The value of adding them has been debated from time to time, with it wondered how many people will use them (I do). There is a balance to aim for: I'd include the smallest number of probes that sufficiently covers common needs, and anything unusual or uncommon can be left to dynamic tracing.
+在每次内核升级之后，都有必要检查跟踪点列表，看看是否有新的跟踪点。添加它们是经过充分考虑的，包括评估有多少人会使用它们。需要实现一个平衡:我将包括尽可能少的探测，以充分满足常见需求，任何不寻常或不常见的情况都可以留给动态跟踪。
 
 For examples of using tracepoints, see Static Kernel Tracing.
+有关使用跟踪点的示例，请参见[静态内核跟踪](http://www.brendangregg.com/perf.html#StaticKernelTracing)。
 
-5.4. User-Level Statically Defined Tracing (USDT)
+### 5.4. User-Level Statically Defined Tracing (USDT)
 Similar to kernel tracepoints, these are hardcoded (usually by placing macros) in the application source at logical and interesting locations, and presented (event name and arguments) as a stable API. Many applications already include tracepoints, added to support DTrace. However, many of these applications do not compile them in by default on Linux. Often you need to compile the application yourself using a --with-dtrace flag.
+与内核跟踪点类似，这些跟踪点是硬编码的(通常通过将宏放置在应用程序源代码中)，并作为稳定的API呈现(事件名称和参数)。许多应用程序已经包括跟踪点，这些跟踪点是为了支持DTrace而添加的。然而，许多这些应用程序在Linux上默认情况下并不编译它们。通常需要使用—with-dtrace标志自己编译应用程序。
 
 For example, compiling USDT events with this version of Node.js:
+例如，用这个版本的Node.js编译USDT事件:
 
+```bash
 $ sudo apt-get install systemtap-sdt-dev       # adds "dtrace", used by node build
 $ wget https://nodejs.org/dist/v4.4.1/node-v4.4.1.tar.gz
 $ tar xvf node-v4.4.1.tar.gz 
 $ cd node-v4.4.1
 $ ./configure --with-dtrace
 $ make -j 8
-To check that the resulting node binary has probes included:
+```
 
+To check that the resulting node binary has probes included:
+检查产生的二进制程序是否包含了 USDT 探测点:
+
+```bash
 $ readelf -n node
 
 Displaying notes found at file offset 0x00000254 with length 0x00000020:
@@ -1276,27 +1337,35 @@ Displaying notes found at file offset 0x00e70994 with length 0x000003c4:
     Name: http__server__request
     Location: 0x0000000000dc2e69, Base: 0x000000000112e064, Semaphore: 0x0000000001470954
     Arguments: 8@%r14 8@%rax 8@-4344(%rbp) -4@-4348(%rbp) 8@-4304(%rbp) 8@-4312(%rbp) -4@-4352(%rbp)
+```
 For examples of using USDT events, see Static User Tracing.
+有关使用USDT事件的示例，请参见[静态用户跟踪](http://www.brendangregg.com/perf.html#StaticUserTracing)。
 
-5.5. Dynamic Tracing
+### 5.5. Dynamic Tracing
 The difference between tracepoints and dynamic tracing is shown in the following figure, which illustrates the coverage of common tracepoint libraries:
+跟踪点和动态跟踪之间的区别如下图所示，它说明了通用跟踪点库的覆盖范围:
 
-
+![perf_tracepoints_1700](/images/linux_pf/perf_tracepoints_1700.png)
 
 While dynamic tracing can see everything, it's also an unstable interface since it is instrumenting raw code. That means that any dynamic tracing tools you develop may break after a kernel patch or update. Try to use the static tracepoints first, since their interface should be much more stable. They can also be easier to use and understand, since they have been designed with a tracing end-user in mind.
+虽然动态跟踪可以看到所有东西，但它也是一个不稳定的接口，因为它检测的是原始代码。这意味着您开发的任何动态跟踪工具在内核补丁或更新之后可能会中断。首先尝试使用静态跟踪点，因为它们的接口应该更加稳定。它们也更容易使用和理解，因为它们是为跟踪最终用户而设计的。
 
 One benefit of dynamic tracing is that it can be enabled on a live system without restarting anything. You can take an already-running kernel or application and then begin dynamic instrumentation, which (safely) patches instructions in memory to add instrumentation. That means there is zero overhead or tax for this feature until you begin using it. One moment your binary is running unmodified and at full speed, and the next, it's running some extra instrumentation instructions that you dynamically added. Those instructions should eventually be removed once you've finished using your session of dynamic tracing.
+动态跟踪的一个好处是，它可以在活动的系统上启用，而不需要重新启动任何东西。您可以使用一个已经运行的内核或应用程序，然后开始动态检测，它(安全地)在内存中修补指令以添加检测。这意味着在您开始使用此功能之前，此功能的开销或税收为零。这一刻，您的二进制文件还在以全速运行，而下一刻，它又在运行一些您动态添加的额外的检测指令。当您使用完动态跟踪会话后，这些指令最终应该被删除。
 
 The overhead while dynamic tracing is in use, and extra instructions are being executed, is relative to the frequency of instrumented events multiplied by the work done on each instrumentation.
+在使用动态跟踪和执行额外指令时的开销，与插装事件的频率乘以在每个插装上所做的工作有关。
 
 For examples of using dynamic tracing, see 6.5. Dynamic Tracing.
+有关使用动态跟踪的示例，请参见 6.5. Dynamic Tracing
 
-6. Examples
+## 6. Examples
 These are some examples of perf_events, collected from a variety of 3.x Linux systems.
 
-6.1. CPU Statistics
+### 6.1. CPU Statistics
 The perf stat command instruments and summarizes key CPU counters (PMCs). This is from perf version 3.5.7.2:
 
+```bash
 # perf stat gzip file1
 
  Performance counter stats for 'gzip file1':
@@ -1314,20 +1383,23 @@ The perf stat command instruments and summarizes key CPU counters (PMCs). This i
         53,395,139 branch-misses             #    3.59% of all branches         [83.78%]
 
        1.936842598 seconds time elapsed
+```
+
 This includes instructions per cycle (IPC), labled "insns per cycle", or in earlier versions, "IPC". This is a commonly examined metric, either IPC or its invert, CPI. Higher IPC values mean higher instruction throughput, and lower values indicate more stall cycles. I'd generally interpret high IPC values (eg, over 1.0) as good, indicating optimal processing of work. However, I'd want to double check what the instructions are, in case this is due to a spin loop: a high rate of instructions, but a low rate of actual work completed.
 
 There are some advanced metrics now included in perf stat: frontend cycles idle, backend cycles idle, and stalled cycles per insn. To really understand these, you'll need some knowledge of CPU microarchitecture.
 
-CPU Microarchitecture
+**CPU Microarchitecture**
 The frontend and backend metrics refer to the CPU pipeline, and are also based on stall counts. The frontend processes CPU instructions, in order. It involves instruction fetch, along with branch prediction, and decode. The decoded instructions become micro-operations (uops) which the backend processes, and it may do so out of order. For a longer summary of these components, see Shannon Cepeda's great posts on frontend and backend.
 
 The backend can also process multiple uops in parallel; for modern processors, three or four. Along with pipelining, this is how IPC can become greater than one, as more than one instruction can be completed ("retired") per CPU cycle.
 
 Stalled cycles per instruction is similar to IPC (inverted), however, only counting stalled cycles, which will be for memory or resource bus access. This makes it easy to interpret: stalls are latency, reduce stalls. I really like it as a metric, and hope it becomes as commonplace as IPC/CPI. Lets call it SCPI.
 
-Detailed Mode
+**Detailed Mode**
 There is a "detailed" mode for perf stat:
 
+```bash
 # perf stat -d gzip file1
 
  Performance counter stats for 'gzip file1':
@@ -1349,11 +1421,14 @@ There is a "detailed" mode for perf stat:
                  0 LLC-load-misses           #    0.00% of all LL-cache hits    [39.61%]
 
        1.614165346 seconds time elapsed
+```
+
 This includes additional counters for Level 1 data cache events, and last level cache (LLC) events.
 
-Specific Counters
+**Specific Counters**
 Hardware cache event counters, seen in perf list, can be instrumented. Eg:
 
+```bash
 # perf list | grep L1-dcache
   L1-dcache-loads                                    [Hardware cache event]
   L1-dcache-load-misses                              [Hardware cache event]
@@ -1373,13 +1448,15 @@ Hardware cache event counters, seen in perf list, can be instrumented. Eg:
                                            
 
        1.538038091 seconds time elapsed
+```
 The percentage printed is a convenient calculation that perf_events has included, based on the counters I specified. If you include the "cycles" and "instructions" counters, it will include an IPC calculation in the output.
 
 These hardware events that can be measured are often specific to the processor model. Many may not be available from within a virtualized environment.
 
-Raw Counters
+**Raw Counters**
 The Intel 64 and IA-32 Architectures Software Developer's Manual Volume 3B: System Programming Guide, Part 2 and the BIOS and Kernel Developer's Guide (BKDG) For AMD Family 10h Processors are full of interesting counters, but most cannot be found in perf list. If you find one you want to instrument, you can specify it as a raw event with the format: rUUEE, where UU == umask, and EE == event number. Here's an example where I've added a couple of raw counters:
 
+```bash
 # perf stat -e cycles,instructions,r80a2,r2b1 gzip file1
 
  Performance counter stats for 'gzip file1':
@@ -1390,13 +1467,16 @@ The Intel 64 and IA-32 Architectures Software Developer's Manual Volume 3B: Syst
     11,855,777,803 raw 0x2b1                                                   
 
        1.588618969 seconds time elapsed
+```
+
 If I did this right, then r80a2 has instrumented RESOURCE_STALLS.OTHER, and r2b1 has instrumented UOPS_DISPATCHED.CORE: the number of uops dispatched each cycle. It's easy to mess this up, and you'll want to double check that you are on the right page of the manual for your processor.
 
 If you do find an awesome raw counter, please suggest it be added as an alias in perf_events, so we all can find it in perf list.
 
-Other Options
+**Other Options**
 The perf subcommands, especially perf stat, have an extensive option set which can be listed using "-h". I've included the full output for perf stat here from version 3.9.3, not as a reference, but as an illustration of the interface:
 
+```bash
 # perf stat -h
 
  usage: perf stat [<options>] [<command>]
@@ -1429,22 +1509,27 @@ The perf subcommands, especially perf stat, have an extensive option set which c
     -I, --interval-print <n>
                           print counts at regular interval in ms (>= 100)
         --aggr-socket     aggregate counts per processor socket
+```
 Options such as --repeat, --sync, --pre, and --post can be quite useful when doing automated testing or micro-benchmarking.
 
-6.2. Timed Profiling
+### 6.2. Timed Profiling
 perf_events can profile CPU usage based on sampling the instruction pointer or stack trace at a fixed interval (timed profiling).
 
 Sampling CPU stacks at 99 Hertz (-F 99), for the entire system (-a, for all CPUs), with stack traces (-g, for call graphs), for 10 seconds:
 
+```bash
 # perf record -F 99 -a -g -- sleep 30
 [ perf record: Woken up 9 times to write data ]
 [ perf record: Captured and wrote 3.135 MB perf.data (~136971 samples) ]
 # ls -lh perf.data
 -rw------- 1 root root 3.2M Jan 26 07:26 perf.data
+```
+
 The choice of 99 Hertz, instead of 100 Hertz, is to avoid accidentally sampling in lockstep with some periodic activity, which would produce skewed results. This is also coarse: you may want to increase that to higher rates (eg, up to 997 Hertz) for finer resolution, especially if you are sampling short bursts of activity and you'd still like enough resolution to be useful. Bear in mind that higher frequencies means higher overhead.
 
 The perf.data file can be processed in a variety of ways. On recent versions, the perf report command launches an ncurses navigator for call graph inspection. Older versions of perf (or if you use --stdio in the new version) print the call graph as a tree, annotated with percentages:
 
+```bash
 # perf report --stdio
 # ========
 # captured on: Mon Jan 26 07:26:40 2014
@@ -1494,23 +1579,27 @@ The perf.data file can be processed in a variety of ways. On recent versions, th
                     |          
                     |--1.60%-- mix_pool_bytes.constprop.17
 [...]
+```
 This tree starts with the on-CPU functions and works back through the ancestry. This approach is called a "callee based call graph". This can be flipped by using -G for an "inverted call graph", or by using the "caller" option to -g/--call-graph, instead of the "callee" default.
 
 The hottest (most frequent) stack trace in this perf call graph occurred in 90.99% of samples, which is the product of the overhead percentage and top stack leaf (94.12% x 96.67%, which are relative rates). perf report can also be run with "-g graph" to show absolute overhead rates, in which case "90.99%" is directly displayed on the stack leaf:
 
+```bash
     94.12%       dd  [kernel.kallsyms]  [k] _raw_spin_unlock_irqrestore
                  |
                  --- _raw_spin_unlock_irqrestore
                     |          
                     |--90.99%-- extract_buf
 [...]
+```
 If user-level stacks look incomplete, you can try perf record with "--call-graph dwarf" as a different technique to unwind them. See the Stacks section.
 
 The output from perf report can be many pages long, which can become cumbersome to read. Try generating Flame Graphs from the same data.
 
-6.3. Event Profiling
+### 6.3. Event Profiling
 Apart from sampling at a timed interval, taking samples triggered by CPU hardware counters is another form of CPU profiling, which can be used to shed more light on cache misses, memory stall cycles, and other low-level processor events. The available events can be found using perf list:
 
+```bash
 # perf list | grep Hardware
   cpu-cycles OR cycles                               [Hardware event]
   instructions                                       [Hardware event]
@@ -1527,11 +1616,15 @@ Apart from sampling at a timed interval, taking samples triggered by CPU hardwar
   L1-dcache-stores                                   [Hardware cache event]
   L1-dcache-store-misses                             [Hardware cache event]
 [...]
+```
+
 For many of these, gathering a stack on every occurrence would induce far too much overhead, and would slow down the system and change the performance characteristics of the target. It's usually sufficient to only instrument a small fraction of their occurrences, rather than all of them. This can be done by specifying a threshold for triggering event collection, using "-c" and a count.
 
 For example, the following one-liner instruments Level 1 data cache load misses, collecting a stack trace for one in every 10,000 occurrences:
-
+```bash
 # perf record -e L1-dcache-load-misses -c 10000 -ag -- sleep 5
+```
+
 The mechanics of "-c count" are implemented by the processor, which only interrupts the kernel when the threshold has been reached.
 
 See the earlier Raw Counters section for an example of specifying a custom counter, and the next section about skew.
@@ -1551,14 +1644,17 @@ address should be. The 'p' modifier can be specified multiple times:
 In some cases, perf will default to using precise sampling without you needing to specify it. Run "perf record -vv ..." to see the value of "precise_ip". Also note that only some PMCs support PEBS.
 
 If PEBS isn't working at all for you, check dmesg:
-
+```bash
 # dmesg | grep -i pebs
 [    0.387014] Performance Events: PEBS fmt1+, SandyBridge events, 16-deep LBR, full-width counters, Intel PMU driver.
 [    0.387034] core: PEBS disabled due to CPU errata, please upgrade microcode
+```
 The fix (on Intel):
 
+```bash
 # apt-get install -y intel-microcode
 [...]
+```
 intel-microcode: microcode will be updated at next boot
 Processing triggers for initramfs-tools (0.125ubuntu5) ...
 update-initramfs: Generating /boot/initrd.img-4.8.0-41-generic
@@ -1569,14 +1665,17 @@ update-initramfs: Generating /boot/initrd.img-4.8.0-41-generic
 # dmesg | grep -i pebs
 [    0.386596] Performance Events: PEBS fmt1+, SandyBridge events, 16-deep LBR, full-width counters, Intel PMU driver.
 #
+```
+
 XXX: Need to cover more PEBS problems and other caveats.
 
-6.4. Static Kernel Tracing
+### 6.4. Static Kernel Tracing
 The following examples demonstrate static tracing: the instrumentation of tracepoints and other static events.
 
 Counting Syscalls
 The following simple one-liner counts system calls for the executed command, and prints a summary (of non-zero counts):
 
+```bash
 # perf stat -e 'syscalls:sys_enter_*' gzip file1 2>&1 | awk '$1 != 0'
 
  Performance counter stats for 'gzip file1':
@@ -1604,6 +1703,8 @@ The following simple one-liner counts system calls for the executed command, and
                 14 syscalls:sys_enter_mmap                    
 
        1.543990940 seconds time elapsed
+```
+
 In this case, a gzip command was analyzed. The report shows that there were 3,201 write() syscalls, and half that number of read() syscalls. Many of the other syscalls will be due to process and library initialization.
 
 A similar report can be seen using strace -c, the system call tracer, however it may induce much higher overhead than perf, as perf buffers data in-kernel.
@@ -1611,6 +1712,7 @@ A similar report can be seen using strace -c, the system call tracer, however it
 perf vs strace
 To explain the difference a little further: the current implementation of strace uses ptrace(2) to attach to the target process and stop it during system calls, like a debugger. This is violent, and can cause serious overhead. To demonstrate this, the following syscall-heavy program was run by itself, with perf, and with strace. I've only included the line of output that shows its performance:
 
+```bash
 # dd if=/dev/zero of=/dev/null bs=512 count=10000k
 5242880000 bytes (5.2 GB) copied, 3.53031 s, 1.5 GB/s
 
@@ -1619,6 +1721,8 @@ To explain the difference a little further: the current implementation of strace
 
 # strace -c dd if=/dev/zero of=/dev/null bs=512 count=10000k
 5242880000 bytes (5.2 GB) copied, 218.915 s, 23.9 MB/s
+```
+
 With perf, the program ran 2.5x slower. But with strace, it ran 62x slower. That's likely to be a worst-case result: if syscalls are not so frequent, the difference between the tools will not be as great.
 
 Recent version of perf have included a trace subcommand, to provide some similar functionality to strace, but with much lower overhead.
@@ -1626,6 +1730,7 @@ Recent version of perf have included a trace subcommand, to provide some similar
 New Processes
 Tracing new processes triggered by a "man ls":
 
+```bash
 # perf record -e sched:sched_process_exec -a
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.064 MB perf.data (~2788 samples) ]
@@ -1643,6 +1748,7 @@ Tracing new processes triggered by a "man ls":
     11.11%             1   locale
     11.11%             1   grotty
     11.11%             1    groff
+```
 Nine different commands were executed, each once. I used -n to print the "Samples" column, and "--sort comm" to customize the remaining columns.
 
 This works by tracing sched:sched_process_exec, when a process runs exec() to execute a different binary. This is often how new processes are created, but not always. An application may fork() to create a pool of worker processes, but not exec() a different binary. An application may also reexec: call exec() again, on itself, usually to clean up its address space. In that case, it's will be seen by this exec tracepoint, but it's not a new process.
@@ -1653,7 +1759,7 @@ Outbound Connections
 There can be times when it's useful to double check what network connections are initiated by a server, from which processes, and why. You might be surprised. These connections can be important to understand, as they can be a source of latency.
 
 For this example, I have a completely idle ubuntu server, and while tracing I'll login to it using ssh. I'm going to trace outbound connections via the connect() syscall. Given that I'm performing an inbound connection over SSH, will there be any outbound connections at all?
-
+```bash
 # perf record -e syscalls:sys_enter_connect -a
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.057 MB perf.data (~2489 samples) ]
@@ -1686,10 +1792,11 @@ For this example, I have a completely idle ubuntu server, and while tracing I'll
      9.52%     sshd  libpthread-2.15.so  [.] __connect_internal     
      9.52%     mesg  libc-2.15.so        [.] __GI___connect_internal
      9.52%     bash  libc-2.15.so        [.] __GI___connect_internal
+```
 The report shows that sshd, groups, mesg, and bash are all performing connect() syscalls. Ring a bell?
 
 The stack traces that led to the connect() can explain why:
-
+```bash
 # perf record -e syscalls:sys_enter_connect -ag
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.057 MB perf.data (~2499 samples) ]
@@ -1733,6 +1840,7 @@ The stack traces that led to the connect() can explain why:
      5.00%     sshd  libpthread-2.15.so  [.] __connect_internal     
                |
                --- __connect_internal
+```
 Ah, these are nscd calls: the name service cache daemon. If you see hexadecimal numbers and not function names, you will need to install debug info: see the earlier section on Symbols. These nscd calls are likely triggered by calling getaddrinfo(), which server software may be using to resolve IP addresses for logging, or for matching hostnames in config files. Browsing the stack traces should identify why.
 
 For sshd, this was called via add_one_listen_addr(): a name that was only visible after adding the openssh-server-dbgsym package. Unfortunately, the stack trace doesn't continue after add_one_listen_add(). I can browse the OpenSSH code to figure out the reasons we're calling into add_one_listen_add(), or, I can get the stack traces to work. See the earlier section on Stack Traces.
@@ -1741,7 +1849,7 @@ I took a quick look at the OpenSSH code, and it looks like this code-path is due
 
 Socket Buffers
 Tracing the consumption of socket buffers, and the stack traces, is one way to identify what is leading to socket or network I/O.
-
+```bash
 # perf record -e 'skb:consume_skb' -ag
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.065 MB perf.data (~2851 samples) ]
@@ -1789,11 +1897,12 @@ Tracing the consumption of socket buffers, and the stack traces, is one way to i
                    sys_write
                    system_call_fastpath
                    __write_nocancel
+```
 The swapper stack shows the network receive path, triggered by an interrupt. The sshd path shows writes.
 
-6.5. Static User Tracing
+### 6.5. Static User Tracing
 Support was added in later 4.x series kernels. The following demonstrates Linux 4.10 (with an additional patchset), and tracing the Node.js USDT probes:
-
+```bash
 # perf buildid-cache --add `which node`
 # perf list | grep sdt_node
   sdt_node:gc__done                                  [SDT event]
@@ -1811,16 +1920,18 @@ Support was added in later 4.x series kernels. The following demonstrates Linux 
             node  7646 [002]   361.012364: sdt_node:http__server__request: (dc2e69)
             node  7646 [002]   361.204718: sdt_node:http__server__request: (dc2e69)
             node  7646 [002]   361.363043: sdt_node:http__server__request: (dc2e69)
+```
 XXX fill me in, including how to use arguments.
 
 If you are on an older kernel, say, Linux 4.4-4.9, you can probably get these to work with adjustments (I've even hacked them up with ftrace for older kernels), but since they have been in development, I haven't seen documentation outside of lkml, so you'll need to figure it out. (On this kernel range, you might find more documentation for tracing these with bcc/eBPF, including using the trace.py tool.)
 
-6.6. Dynamic Tracing
+### 6.6. Dynamic Tracing
 For kernel analysis, I'm using CONFIG_KPROBES=y and CONFIG_KPROBE_EVENTS=y, to enable kernel dynamic tracing, and CONFIG_FRAME_POINTER=y, for frame pointer-based kernel stacks. For user-level analysis, CONFIG_UPROBES=y and CONFIG_UPROBE_EVENTS=y, for user-level dynamic tracing.
 
 Kernel: tcp_sendmsg()
 This example shows instrumenting the kernel tcp_sendmsg() function on the Linux 3.9.3 kernel:
 
+```bash
 # perf probe --add tcp_sendmsg
 Failed to find path of kernel module.
 Added new event:
@@ -1829,13 +1940,19 @@ Added new event:
 You can now use it in all perf tools, such as:
 
 	perf record -e probe:tcp_sendmsg -aR sleep 1
+```
+
 This adds a new tracepoint event. It suggests using the -R option, to collect raw sample records, which is already the default for tracepoints. Tracing this event for 5 seconds, recording stack traces:
 
+```bash
 # perf record -e probe:tcp_sendmsg -a -g -- sleep 5
 [ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.228 MB perf.data (~9974 samples) ]
+```
+
 And the report:
 
+```bash
 # perf report --stdio
 # ========
 # captured on: Fri Jan 31 20:10:14 2014
@@ -1873,6 +1990,8 @@ And the report:
                   |          
                   |--8.33%-- 0x50f00000001b810
                    --91.67%-- [...]
+```
+
 This shows the path from the write() system call to tcp_sendmsg().
 
 You can delete these dynamic tracepoints if you want after use, using perf probe --del.
@@ -1882,6 +2001,7 @@ If your kernel has debuginfo (CONFIG_DEBUG_INFO=y), you can fish out kernel vari
 
 Listing variables available for tcp_sendmsg():
 
+```bash
 # perf probe -V tcp_sendmsg
 Available variables at tcp_sendmsg
         @<tcp_sendmsg+0>
@@ -1889,8 +2009,10 @@ Available variables at tcp_sendmsg
                 struct kiocb*   iocb
                 struct msghdr*  msg
                 struct sock*    sk
+```
 Creating a probe for tcp_sendmsg() with the "size" variable:
 
+```bash
 # perf probe --add 'tcp_sendmsg size'
 Added new event:
   probe:tcp_sendmsg    (on tcp_sendmsg with size)
@@ -1898,8 +2020,11 @@ Added new event:
 You can now use it in all perf tools, such as:
 
 	perf record -e probe:tcp_sendmsg -aR sleep 1
+```
+
 Tracing this probe:
 
+```bash
 # perf record -e probe:tcp_sendmsg -a
 ^C[ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 0.052 MB perf.data (~2252 samples) ]
@@ -1935,11 +2060,13 @@ Tracing this probe:
             sshd  2371 [000]   504.118728: probe:tcp_sendmsg: (ffffffff81505d80) size=30
             sshd  2371 [000]   504.192575: probe:tcp_sendmsg: (ffffffff81505d80) size=70
 [...]
+```
+
 The size is shown as hexadecimal.
 
 Kernel: tcp_sendmsg() line number and local variable
 With debuginfo, perf_events can create tracepoints for lines within kernel functions. Listing available line probes for tcp_sendmsg():
-
+```bash
 # perf probe -L tcp_sendmsg
 <tcp_sendmsg@/mnt/src/linux-3.14.5/net/ipv4/tcp.c:0>
       0  int tcp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
@@ -1967,8 +2094,11 @@ With debuginfo, perf_events can create tracepoints for lines within kernel funct
      90                         if (copy <= 0) {
          new_segment:
 [...]
+```
+
 This is Linux 3.14.5; your kernel version may look different. Lets check what variables are available on line 81:
 
+```bash
 # perf probe -V tcp_sendmsg:81
 Available variables at tcp_sendmsg:81
         @<tcp_sendmsg+537>
@@ -1984,8 +2114,10 @@ Available variables at tcp_sendmsg:81
                 struct iovec*   iov
                 struct sock*    sk
                 unsigned char*  from
+```
 Now lets trace line 81, with the seglen variable that is checked in the loop:
 
+```bash
 # perf probe --add 'tcp_sendmsg:81 seglen'
 Added new event:
   probe:tcp_sendmsg    (on tcp_sendmsg:81 with seglen)
@@ -2005,9 +2137,10 @@ You can now use it in all perf tools, such as:
         postgres  2422 [001] 2082360.971099: probe:tcp_sendmsg: (ffffffff81642ca9) seglen=0xb
    app_plugin.pl  2400 [000] 2082360.971140: probe:tcp_sendmsg: (ffffffff81642ca9) seglen=0x55
 [...]
+```
 This is pretty amazing. Remember that you can also include in-kernel filtering using --filter, to match only the data you want.
 
-User: malloc()
+**User: malloc()**
 While this is an interesting example, I want to say right off the bat that malloc() calls are very frequent, so you will need to consider the overheads of tracing calls like this.
 
 Adding a libc malloc() probe:
