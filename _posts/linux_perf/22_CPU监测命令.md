@@ -20,6 +20,7 @@ tags:
 |vmstat|vmstat|系统范围的CPU平均负载|
 |mpstat|mpstat|单个CPU统计信息|
 |time|ptime|命令计时，带CPU用量分解|
+|dstat||等于 vmstat + iostat + ifstat<br>可同时观察CPU、磁盘 I/O、网络以及内存使用情况|
 |sar|sar|可统计包括内存，磁盘，中断等各种信息|
 |ps|ps|进程状态|
 |top|prstat|监控每个进程的基本信息|
