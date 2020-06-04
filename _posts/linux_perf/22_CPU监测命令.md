@@ -12,7 +12,17 @@ tags:
 
 
 ## 1. 命令总览
-我们会介绍如下 CPU 统计信息的工具
+
+下面的图片摘录自[极客时间专栏-Linux性能优化实战](https://time.geekbang.org/column/intro/140)，分别从下面 3 个方面总结了 CPU 相关的性能检测工具:
+1. 从 CPU 的性能指标出发，根据指标找工具
+2. 从工具出发，根据工具找指标
+3. 根据工具指标之间的内在联系，掌握 CPU 分析的套路
+
+![cpu_quota](/images/linux_pf/cpu_quota.png) 
+![cpu_command](/images/linux_pf/cpu_command.png)
+![cpu_relation](/images/linux_pf/cpu_relation.png)
+
+有些工具是通用的分析工具，后面会在单独的章节中详细说明他们的使用。本节会介绍 CPU 专用的分析工具的使用
 
 |Linux|Solaris|作用|
 |:---|:---|:---|
