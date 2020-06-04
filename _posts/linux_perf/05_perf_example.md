@@ -1361,9 +1361,11 @@ For examples of using dynamic tracing, see 6.5. Dynamic Tracing.
 
 ## 6. Examples
 These are some examples of perf_events, collected from a variety of 3.x Linux systems.
+下面是 Linux3.x perf_events的一些示例。
 
 ### 6.1. CPU Statistics
 The perf stat command instruments and summarizes key CPU counters (PMCs). This is from perf version 3.5.7.2:
+下面是 3.5.7.2版本的 perf stat 子命令输出的 PMCs 计数器统计值。
 
 ```bash
 # perf stat gzip file1
@@ -1377,7 +1379,7 @@ The perf stat command instruments and summarizes key CPU counters (PMCs). This i
      5,649,595,479 cycles                    #    2.942 GHz                     [83.43%]
      1,808,339,931 stalled-cycles-frontend   #   32.01% frontend cycles idle    [83.54%]
      1,171,884,577 stalled-cycles-backend    #   20.74% backend  cycles idle    [66.77%]
-     8,625,207,199 instructions              #    1.53  insns per cycle        
+     8,625,207,199 instructions              #    1.53  insns per cycle                  # 每周期指令数
                                              #    0.21  stalled cycles per insn [83.51%]
      1,488,797,176 branches                  #  775.351 M/sec                   [82.58%]
         53,395,139 branch-misses             #    3.59% of all branches         [83.78%]
@@ -1386,18 +1388,26 @@ The perf stat command instruments and summarizes key CPU counters (PMCs). This i
 ```
 
 This includes instructions per cycle (IPC), labled "insns per cycle", or in earlier versions, "IPC". This is a commonly examined metric, either IPC or its invert, CPI. Higher IPC values mean higher instruction throughput, and lower values indicate more stall cycles. I'd generally interpret high IPC values (eg, over 1.0) as good, indicating optimal processing of work. However, I'd want to double check what the instructions are, in case this is due to a spin loop: a high rate of instructions, but a low rate of actual work completed.
+这包括每个周期的指令(IPC)，标签为“每个周期的insns”，或者在早期版本中为“IPC”。这是一个经常被检验的指标，无论是IPC还是它的倒数CPI。更高的IPC值意味着更高的指令吞吐量，更低的值表示更多的停顿周期。一般来说，我认为IPC值越高(例如，超过1.0)就越好，表示工作的最佳处理。但是，需要检查执行指令是什么，以防这是一个旋转循环: 指令率高，但实际完成的工作率低。
 
 There are some advanced metrics now included in perf stat: frontend cycles idle, backend cycles idle, and stalled cycles per insn. To really understand these, you'll need some knowledge of CPU microarchitecture.
+现在perf stat中包含了一些高级指标:frontend cycles idle, backend cycles idle, 和 stalled cycles per insn.。要真正理解这些，您需要一些CPU微架构的知识。
 
 **CPU Microarchitecture**
-The frontend and backend metrics refer to the CPU pipeline, and are also based on stall counts. The frontend processes CPU instructions, in order. It involves instruction fetch, along with branch prediction, and decode. The decoded instructions become micro-operations (uops) which the backend processes, and it may do so out of order. For a longer summary of these components, see Shannon Cepeda's great posts on frontend and backend.
+CPU 微内核架构
+
+The frontend and backend metrics refer to the CPU pipeline, and are also based on stall counts. The frontend processes CPU instructions, in order. It involves instruction fetch, along with branch prediction, and decode. The decoded instructions become micro-operations (uops) which the backend processes, and it may do so out of order. For a longer summary of these components, see Shannon Cepeda's great posts on [frontend](http://software.intel.com/en-us/blogs/2011/11/22/pipeline-speak-learning-more-about-intel-microarchitecture-codename-sandy-bridge) and [backend](http://software.intel.com/en-us/blogs/2011/12/01/pipeline-speak-part-2-the-second-part-of-the-sandy-bridge-pipeline).
+前端和后端指标指的是CPU管道，统计的是它们的停顿次数。前端按顺序处理CPU指令。它包括指令获取，以及分支预测和解码。解码后的指令成为后端处理的微操作(uops)，并且可能会乱序地执行。对于这些组件的更长的总结，请参阅Shannon Cepeda关于前端和后端的优秀文章。
 
 The backend can also process multiple uops in parallel; for modern processors, three or four. Along with pipelining, this is how IPC can become greater than one, as more than one instruction can be completed ("retired") per CPU cycle.
+后台也可以并行处理多个uops;对于现代处理器来说，有三到四个。与流水线操作一起，IPC可以变得大于1，因为每个CPU周期可以完成多条指令(“已退役”)。
 
 Stalled cycles per instruction is similar to IPC (inverted), however, only counting stalled cycles, which will be for memory or resource bus access. This makes it easy to interpret: stalls are latency, reduce stalls. I really like it as a metric, and hope it becomes as commonplace as IPC/CPI. Lets call it SCPI.
+每条指令的停滞周期类似于IPC(反向)，但是，只计算停滞周期，这将用于内存或资源总线访问。这很容易解释:档位是延迟，减少档位。我真的很喜欢把它作为一个度量标准，并希望它能像IPC/CPI一样普及。我们叫它SCPI。
 
 **Detailed Mode**
 There is a "detailed" mode for perf stat:
+下面是 perf stat 的详细输出模式
 
 ```bash
 # perf stat -d gzip file1
@@ -1424,9 +1434,11 @@ There is a "detailed" mode for perf stat:
 ```
 
 This includes additional counters for Level 1 data cache events, and last level cache (LLC) events.
+这包括用于一级数据缓存事件和最后一级缓存(LLC)事件的额外计数器。
 
 **Specific Counters**
 Hardware cache event counters, seen in perf list, can be instrumented. Eg:
+perf list 可以像下面这样查看硬件缓存事件
 
 ```bash
 # perf list | grep L1-dcache
@@ -1449,12 +1461,17 @@ Hardware cache event counters, seen in perf list, can be instrumented. Eg:
 
        1.538038091 seconds time elapsed
 ```
+
 The percentage printed is a convenient calculation that perf_events has included, based on the counters I specified. If you include the "cycles" and "instructions" counters, it will include an IPC calculation in the output.
+根据我指定的计数器，perf_events包含了打印的百分比，这是一个很方便的计算。如果包含“cycle”和“instructions”计数器，那么它将在输出中包含IPC计算。
 
 These hardware events that can be measured are often specific to the processor model. Many may not be available from within a virtualized environment.
+这些可以测量的硬件事件通常是特定于处理器模型的。许多可能无法从虚拟化环境中获得。
 
 **Raw Counters**
 The Intel 64 and IA-32 Architectures Software Developer's Manual Volume 3B: System Programming Guide, Part 2 and the BIOS and Kernel Developer's Guide (BKDG) For AMD Family 10h Processors are full of interesting counters, but most cannot be found in perf list. If you find one you want to instrument, you can specify it as a raw event with the format: rUUEE, where UU == umask, and EE == event number. Here's an example where I've added a couple of raw counters:
+Intel 64和cia -32架构软件开发人员手册卷3B:系统编程指南，第2部分和AMD家族10h处理器的BIOS和内核开发人员指南(BKDG)充满了有趣的计数器，但大部分不能在perf列表中找到。如果您找到一个想要检测的事件，可以将其指定为原始事件，格式为:rUUEE，其中UU == umask, EE ==事件编号。这里有一个例子，我已经添加了一对原始计数器:
+
 
 ```bash
 # perf stat -e cycles,instructions,r80a2,r2b1 gzip file1
@@ -1470,11 +1487,14 @@ The Intel 64 and IA-32 Architectures Software Developer's Manual Volume 3B: Syst
 ```
 
 If I did this right, then r80a2 has instrumented RESOURCE_STALLS.OTHER, and r2b1 has instrumented UOPS_DISPATCHED.CORE: the number of uops dispatched each cycle. It's easy to mess this up, and you'll want to double check that you are on the right page of the manual for your processor.
+如果我做对了，那么r80a2已经检测了resource_stall。r2b1已经检测了uops_dispatch。核心:每个周期分派的uops数量。这很容易搞砸，您需要再次检查是否在处理程序手册的正确页面。
 
 If you do find an awesome raw counter, please suggest it be added as an alias in perf_events, so we all can find it in perf list.
+如果你发现一个非常棒的原始计数器，请建议将它作为别名添加到perf_events中，这样我们就可以在perf列表中找到它。
 
 **Other Options**
 The perf subcommands, especially perf stat, have an extensive option set which can be listed using "-h". I've included the full output for perf stat here from version 3.9.3, not as a reference, but as an illustration of the interface:
+perf子命令，特别是perf stat，有一个广泛的选项集，可以使用“-h”列出。这里我包含了perf stat 3.9.3版本的完整输出，不是作为参考，而是作为界面的说明:
 
 ```bash
 # perf stat -h
@@ -1511,11 +1531,14 @@ The perf subcommands, especially perf stat, have an extensive option set which c
         --aggr-socket     aggregate counts per processor socket
 ```
 Options such as --repeat, --sync, --pre, and --post can be quite useful when doing automated testing or micro-benchmarking.
+在进行自动化测试或微基准测试时，--repeat, --sync, --pre, 和 --post等选项非常有用。
 
 ### 6.2. Timed Profiling
 perf_events can profile CPU usage based on sampling the instruction pointer or stack trace at a fixed interval (timed profiling).
+perf_events可以基于对指令指针或堆栈跟踪的固定间隔采样(定时分析)来分析CPU使用情况。
 
 Sampling CPU stacks at 99 Hertz (-F 99), for the entire system (-a, for all CPUs), with stack traces (-g, for call graphs), for 10 seconds:
+以99赫兹(-F 99)，对整个系统(-a，对所有CPU)采样CPU堆栈，采样10秒，并记录堆栈(-g，调用图):
 
 ```bash
 # perf record -F 99 -a -g -- sleep 30
@@ -1526,8 +1549,10 @@ Sampling CPU stacks at 99 Hertz (-F 99), for the entire system (-a, for all CPUs
 ```
 
 The choice of 99 Hertz, instead of 100 Hertz, is to avoid accidentally sampling in lockstep with some periodic activity, which would produce skewed results. This is also coarse: you may want to increase that to higher rates (eg, up to 997 Hertz) for finer resolution, especially if you are sampling short bursts of activity and you'd still like enough resolution to be useful. Bear in mind that higher frequencies means higher overhead.
+选择99赫兹而不是100赫兹，是为了避免偶然地与某些周期性活动同步采样，以免产生扭曲的结果。这也是粗糙的:你可能想要增加到更高的速率(例如，高达997赫兹)以获得更好的分辨率，特别是当你采样活动的短脉冲时，你仍然希望有足够的分辨率。请记住，更高的频率意味着更高的开销。
 
 The perf.data file can be processed in a variety of ways. On recent versions, the perf report command launches an ncurses navigator for call graph inspection. Older versions of perf (or if you use --stdio in the new version) print the call graph as a tree, annotated with percentages:
+perf.data 文件可以用多种方法处理。在最近的版本中，perf report命令启动ncurses导航器来检查调用图。旧版本的perf(或者如果你在新版本中使用--stdio)将调用图打印成树状，并标注百分比:
 
 ```bash
 # perf report --stdio
@@ -1581,6 +1606,7 @@ The perf.data file can be processed in a variety of ways. On recent versions, th
 [...]
 ```
 This tree starts with the on-CPU functions and works back through the ancestry. This approach is called a "callee based call graph". This can be flipped by using -G for an "inverted call graph", or by using the "caller" option to -g/--call-graph, instead of the "callee" default.
+这个树从on-CPU函数开始，并通过祖先开始工作。这种方法称为“基于调用者的调用图”。这可以通过使用-G来反转调用关系图，对于 -g/--call-graph 记录的调用图，也可以使用 caller 来代替 默认值callee，以反转调用关系图。默认是用 -g 选项记录的是“基于调用者的调用图”，使用 -g caller 将反转调用关系图。
 
 The hottest (most frequent) stack trace in this perf call graph occurred in 90.99% of samples, which is the product of the overhead percentage and top stack leaf (94.12% x 96.67%, which are relative rates). perf report can also be run with "-g graph" to show absolute overhead rates, in which case "90.99%" is directly displayed on the stack leaf:
 
@@ -2145,6 +2171,7 @@ While this is an interesting example, I want to say right off the bat that mallo
 
 Adding a libc malloc() probe:
 
+```bash
 # perf probe -x /lib/x86_64-linux-gnu/libc-2.15.so --add malloc
 Added new event:
   probe_libc:malloc    (on 0x82f20)
@@ -2152,13 +2179,17 @@ Added new event:
 You can now use it in all perf tools, such as:
 
 	perf record -e probe_libc:malloc -aR sleep 1
+```
 Tracing it system-wide:
 
+```bash
 # perf record -e probe_libc:malloc -a
 ^C[ perf record: Woken up 12 times to write data ]
 [ perf record: Captured and wrote 3.522 MB perf.data (~153866 samples) ]
-The report:
+```
 
+The report:
+```bash
 # perf report -n
 [...]
 # Samples: 45K of event 'probe_libc:malloc'
@@ -2202,30 +2233,38 @@ The report:
      0.04%            17         rsyslogd  libc-2.15.so   [.] malloc
      0.03%            12             stty  libc-2.15.so   [.] malloc
      0.00%             1             cron  libc-2.15.so   [.] malloc
+```
 This shows the most malloc() calls were by apt-config, while I was tracing.
 
 User: malloc() with size
 As of the Linux 3.13.1 kernel, this is not supported yet:
 
+```bash
 # perf probe -x /lib/x86_64-linux-gnu/libc-2.15.so --add 'malloc size'
 Debuginfo-analysis is not yet supported with -x/--exec option.
   Error: Failed to add events. (-38)
+```
 As a workaround, you can access the registers (on Linux 3.7+). For example, on x86_64:
 
+```bash
 # perf probe -x /lib64/libc-2.17.so '--add=malloc size=%di'
        probe_libc:malloc    (on 0x800c0 with size=%di)
+```
 These registers ("%di" etc) are dependent on your processor architecture. To figure out which ones to use, see the X86 calling conventions on Wikipedia, or page 24 of the AMD64 ABI (PDF). (Thanks Jose E. Nunez for digging out these references.)
 
-6.7. Scheduler Analysis
+### 6.7. Scheduler Analysis
 The perf sched subcommand provides a number of tools for analyzing kernel CPU scheduler behavior. You can use this to identify and quantify issues of scheduler latency.
 
 The current overhead of this tool (as of up to Linux 4.10) may be noticeable, as it instruments and dumps scheduler events to the perf.data file for later analysis. For example:
-
+```bash
 # perf sched record -- sleep 1
 [ perf record: Woken up 1 times to write data ]
 [ perf record: Captured and wrote 1.886 MB perf.data (13502 samples) ]
+```
+
 That's 1.9 Mbytes for one second, including 13,502 samples. The size and rate will be relative to your workload and number of CPUs (this example is an 8 CPU server running a software build). How this is written to the file system has been optimized: it only woke up one time to read the event buffers and write them to disk, which greatly reduces overhead. That said, there are still significant overheads with instrumenting all scheduler events and writing event data to the file system. These events:
 
+```bash
 # perf script --header
 # ========
 # captured on: Sun Feb 26 19:40:00 2017
@@ -2257,10 +2296,11 @@ That's 1.9 Mbytes for one second, including 13,502 samples. The size and rate wi
 #
     perf 16984 [005] 991962.879966:       sched:sched_wakeup: comm=perf pid=16999 prio=120 target_cpu=005
 [...]
+```
 If overhead is a problem, you can use my eBPF/bcc Tools including runqlat and runqlen which use in-kernel summaries of scheduler events, reducing overhead further. An advantage of perf sched dumping all events is that you aren't limited to the summary. If you caught an intermittent event, you can analyze those recorded events in custom ways until you understood the issue, rather than needing to catch it a second time.
 
 The captured trace file can be reported in a number of ways, summarized by the help message:
-
+```bash
 # perf sched -h
 
  Usage: perf sched [] {record|latency|map|replay|script|timehist}
@@ -2269,8 +2309,10 @@ The captured trace file can be reported in a number of ways, summarized by the h
     -f, --force           don't complain, do it
     -i, --input     input file name
     -v, --verbose         be more verbose (show symbol address, etc)
+```
 perf sched latency will summarize scheduler latencies by task, including average and maximum delay:
 
+```bash
 # perf sched latency
 
  -----------------------------------------------------------------------------------------------------------------
@@ -2291,17 +2333,21 @@ perf sched latency will summarize scheduler latencies by task, including average
   gcc:(18)              |     43.596 ms |       40 | avg:    3.905 ms | max:   26.994 ms | max at: 991963.380069 s
   ps:17073              |     27.158 ms |        4 | avg:    3.751 ms | max:    8.000 ms | max at: 991963.332070 s
 [...]
+```
 To shed some light as to how this is instrumented and calculated, I'll show the events that led to the top event's "Maximum delay at" of 29.702 ms. Here are the raw events from perf sched script:
 
+```bash
       sh 17028 [001] 991962.918368:   sched:sched_wakeup_new: comm=sh pid=17030 prio=120 target_cpu=002
 [...]
      cc1 16819 [002] 991962.948070:       sched:sched_switch: prev_comm=cc1 prev_pid=16819 prev_prio=120
                                                             prev_state=R ==> next_comm=sh next_pid=17030 next_prio=120
 [...]
+```
 The time from the wakeup (991962.918368, which is in seconds) to the context switch (991962.948070) is 29.702 ms. This process is listed as "sh" (shell) in the raw events, but execs "cat" soon after, so is shown as "cat" in the perf sched latency output.
 
 perf sched map shows all CPUs and context-switch events, with columns representing what each CPU was doing and when. It's the kind of data you see visualized in scheduler analysis GUIs (including perf timechart, with the layout rotated 90 degrees). Example output:
 
+```bash
 # perf sched map
                       *A0           991962.879971 secs A0 => perf:16999
                        A0     *B0   991962.880070 secs B0 => cc1:16863
@@ -2326,12 +2372,13 @@ perf sched map shows all CPUs and context-switch events, with columns representi
    G0  S0  O0 *T0  Q0  J0  R0  B0   991962.886893 secs T0 => :17014:17014
    G0  S0  O0 *K0  Q0  J0  R0  B0   991962.886917 secs 
 [...]
+```
 This is an 8 CPU system, and you can see the 8 columns for each CPU starting from the left. Some CPU columns begin blank, as we've yet to trace an event on that CPU at the start of the profile. They quickly become populated.
 
 The two character codes you see ("A0", "C0") are identifiers for tasks, which are mapped on the right ("=>"). This is more compact than using process (task) IDs. The "*" shows which CPU had the context switch event, and the new event that was running. For example, the very last line shows that at 991962.886917 (seconds) CPU 4 context-switched to K0 (a "cc1" process, PID 16945).
 
 That example was from a busy system. Here's an idle system:
-
+```bash
 # perf sched map
                       *A0           993552.887633 secs A0 => perf:26596
   *.                   A0           993552.887781 secs .  => swapper:0
@@ -2351,12 +2398,14 @@ That example was from a busy system. Here's an idle system:
    .      *.   .       .   .        993552.889764 secs 
    .       .  *E0      .   .        993552.889767 secs E0 => bash:7902
 [...]
+```
 Idle CPUs are shown as ".".
 
 Remember to examine the timestamp column to make sense of this visualization (GUIs use that as a dimension, which is easier to comprehend, but here the numbers are just listed). It's also only showing context switch events, and not scheduler latency. The newer timehist command has a visualization (-V) that can include wakeup events.
 
 perf sched timehist was added in Linux 4.10, and shows the scheduler latency by event, including the time the task was waiting to be woken up (wait time) and the scheduler latency after wakeup to running (sch delay). It's the scheduler latency that we're more interested in tuning. Example output:
 
+```bash
 # perf sched timehist
 Samples do not have callchains.
            time    cpu  task name                       wait time  sch delay   run time
@@ -2378,10 +2427,12 @@ Samples do not have callchains.
   991963.885740 [0001]  :17008[17008]                      25.613      0.000      0.057 
   991963.886009 [0001]  sleep[16999]                     1000.104      0.006      0.269 
   991963.886018 [0005]  cc1[17083]                         19.998      0.000      9.948 
+```
+
 This output includes the sleep command run to set the duration of perf itself to one second. Note that sleep's wait time is 1000.104 milliseconds because I had run "sleep 1": that's the time it was asleep waiting its timer wakeup event. Its scheduler latency was only 0.006 milliseconds, and its time on-CPU was 0.269 milliseconds.
 
 There are a number of options to timehist, including -V to add a CPU visualization column, -M to add migration events, and -w for wakeup events. For example:
-
+```bash
 # perf sched timehist -MVw
 Samples do not have callchains.
            time    cpu  012345678  task name           wait time  sch delay   run time
@@ -2410,25 +2461,30 @@ Samples do not have callchains.
   991963.886005 [0001]             sleep[16999]                                         awakened: perf[16984]
   991963.886009 [0001]   s         sleep[16999]         1000.104      0.006      0.269
   991963.886018 [0005]       s     cc1[17083]             19.998      0.000      9.948 
+```
 The CPU visualization column ("012345678") has "s" for context-switch events, and "m" for migration events, showing the CPU of the event. If you run perf sched record -g, then the stack traces are appended on the right in a single line (not shown here).
 
 The last events in that output include those related to the "sleep 1" command used to time perf. The wakeup happened at 991963.885734, and at 991963.885740 (6 microseconds later) CPU 1 begins to context-switch to the sleep process. The column for that event still shows ":17008[17008]" for what was on-CPU, but the target of the context switch (sleep) is not shown. It is in the raw events:
 
+```bash
   :17008 17008 [001] 991963.885740:       sched:sched_switch: prev_comm=cc1 prev_pid=17008 prev_prio=120
                                                              prev_state=R ==> next_comm=sleep next_pid=16999 next_prio=120
+```
 The 991963.886005 event shows that the perf command received a wakeup while sleep was running (almost certainly sleep waking up its parent process because it terminated), and then we have the context switch on 991963.886009 where sleep stops running, and a summary is printed out: 1000.104 ms waiting (the "sleep 1"), with 0.006 ms scheduler latency, and 0.269 ms of CPU runtime.
 
 Here I've decorated the timehist output with the details of the context switch destination in red:
-
+```bash
   991963.885734 [0001]             :17008[17008]                                        awakened: sleep[16999]
   991963.885740 [0001]   s         :17008[17008]          25.613      0.000      0.057  next: sleep[16999]
   991963.886005 [0001]             sleep[16999]                                         awakened: perf[16984]
   991963.886009 [0001]   s         sleep[16999]         1000.104      0.006      0.269  next: cc1[17008]
   991963.886018 [0005]       s     cc1[17083]             19.998      0.000      9.948  next: perf[16984]
+```
 When sleep finished, a waiting "cc1" process then executed. perf ran on the following context switch, and is the last event in the profile (perf terminated). I've added this as a -n/--next option to perf (should arrive in Linux 4.11 or 4.12).
 
 perf sched script dumps all events (similar to perf script):
 
+```bash
 # perf sched script
 
     perf 16984 [005] 991962.879960: sched:sched_stat_runtime: comm=perf pid=16984 runtime=3901506 [ns] vruntime=165...
@@ -2439,12 +2495,13 @@ perf sched script dumps all events (similar to perf script):
   :17024 17024 [004] 991962.880058: sched:sched_stat_runtime: comm=cc1 pid=17024 runtime=3866637 [ns] vruntime=7810...
      cc1 16900 [001] 991962.880058: sched:sched_stat_runtime: comm=cc1 pid=16900 runtime=3006028 [ns] vruntime=7772...
      cc1 16825 [006] 991962.880058: sched:sched_stat_runtime: comm=cc1 pid=16825 runtime=3999423 [ns] vruntime=7876...
+```
 Each of these events ("sched:sched_stat_runtime" etc) are tracepoints you can instrument directly using perf record.
 
 As I've shown earlier, this raw output can be useful for digging further than the summary commands.
 
 perf sched replay will take the recorded scheduler events, and then simulate the workload by spawning threads with similar runtimes and context switches. Useful for testing and developing scheduler changes and configuration. Don't put too much faith in this (and other) workload replayers: they can be a useful load generator, but it's difficult to simulate the real workload completely. Here I'm running replay with -r -1, to repeat the workload:
-
+```bash
 # perf sched replay -r -1
 run measurement overhead: 84 nsecs
 sleep measurement overhead: 146710 nsecs
@@ -2471,7 +2528,9 @@ task    534 (                  sh:     17149), nr_events: 1
 #4  : 943.541, ravg: 966.00, cpu: 761.72 / 798.24
 #5  : 914.643, ravg: 966.00, cpu: 1604.32 / 798.24
 [...]
-6.8. eBPF
+```
+
+### 6.8. eBPF
 As of Linux 4.4, perf has some enhanced BPF support (aka eBPF or just "BPF"), with more in later kernels. BPF makes perf tracing programmatic, and takes perf from being a counting & sampling-with-post-processing tracer, to a fully in-kernel programmable tracer.
 
 eBPF is currently a little restricted and difficult to use from perf. It's getting better all the time. A different and currently easier way to access eBPF is via the bcc Python interface, which is described on my eBPF Tools page. On this page, I'll discuss perf.
@@ -2482,6 +2541,7 @@ Linux 4.4 at least. Newer versions have more perf/BPF features, so the newer the
 kmem_cache_alloc from Example
 This program traces the kernel kmem_cache_alloc() function, only if its calling function matches a specified range, filtered in kernel context. You can imagine doing this for efficiency: instead of tracing all allocations, which can be very frequent and add significant overhead, you filter for just a range of kernel calling functions of interest, such as a kernel module. I'll loosely match tcp functions as an example, which are in memory at these addresses:
 
+```bash
 # grep tcp /proc/kallsyms | more
 [...]
 ffffffff817c1bb0 t tcp_get_info_chrono_stats
@@ -2498,10 +2558,12 @@ ffffffff818648a0 t tcp6_gro_complete
 ffffffff81864910 t tcp6_gro_receive
 ffffffff81864ae0 t tcp6_gso_segment
 ffffffff8187bd89 t tcp_v4_inbound_md5_hash
+```
 I'll assume these functions are contiguous, so that by tracing the range 0xffffffff817c1bb0 to 0xffffffff8187bd89, I'm matching much of tcp.
 
 Here is my BPF program, kca_from.c:
 
+```bash
 #include <uapi/linux/bpf.h>
 #include <uapi/linux/ptrace.h>
 
@@ -2551,8 +2613,10 @@ int func(struct pt_regs *ctx)
 
 char _license[] SEC("license") = "GPL";
 int _version SEC("version") = LINUX_VERSION_CODE;
+```
 Now I'll execute it, then dump the events:
 
+```bash
 # perf record -e bpf-output/no-inherit,name=evt/ -e ./kca_from.c/map:channel.event=evt/ -a -- sleep 1
 bpf: builtin compilation failed: -95, try external compiler
 [ perf record: Woken up 1 times to write data ]
@@ -2570,10 +2634,12 @@ bpf: builtin compilation failed: -95, try external compiler
     redis-server  1871 [005] 481432.395456:          0     evt:  ffffffff81210f51 kmem_cache_alloc (/lib/modules/...)
       BPF output: 0000: fe dc 7d 81 ff ff ff ff  ..}.....
                   0008: 00 00 00 00              ....    
+```
 It worked: the "BPF output" records contain addresses in our range: 0xffffffff817cb40f, and so on. kmem_cache_alloc() is a frequently called function, so that it only matched a few entries in one second of tracing is an indication it is working (I can also relax that range to confirm it).
 
 Adding stack traces with -g:
 
+```bash
 # perf record -e bpf-output/no-inherit,name=evt/ -e ./kca_from.c/map:channel.event=evt/ -a -g -- sleep 1
 bpf: builtin compilation failed: -95, try external compiler
 [ perf record: Woken up 1 times to write data ]
@@ -2671,38 +2737,40 @@ redis-server  1871 [003] 481518.262870:          0                 evt:
 
       BPF output: 0000: fe dc 7d 81 ff ff ff ff  ..}.....
                   0008: 00 00 00 00              ....    
+```
 This confirms the parent functions that were matched by the range.
 
 More Examples
 XXX fill me in.
 
-7. Visualizations
+## 7. Visualizations
 perf_events has a builtin visualization: timecharts, as well as text-style visualization via its text user interface (TUI) and tree reports. The following two sections show visualizations of my own: flame graphs and heat maps. The software I'm using is open source and on github, and produces these from perf_events collected data.
 
-7.1. Flame Graphs
-Flame Graphs can be produced from perf_events profiling data using the FlameGraph tools software. This visualizes the same data you see in perf report, and works with any perf.data file that was captured with stack traces (-g).
+### 7.1. Flame Graphs
+[Flame Graphs](http://www.brendangregg.com/flamegraphs.html) can be produced from perf_events profiling data using the [FlameGraph tools](https://github.com/brendangregg/FlameGraph) software. This visualizes the same data you see in perf report, and works with any perf.data file that was captured with stack traces (-g).
 
-Example
-This example CPU flame graph shows a network workload for the 3.2.9-1 Linux kernel, running as a KVM instance (SVG, PNG):
+**Example**
+This example CPU flame graph shows a network workload for the 3.2.9-1 Linux kernel, running as a KVM instance ([SVG](http://www.brendangregg.com/FlameGraphs/cpu-linux-tcpsend.svg), [PNG](http://www.brendangregg.com/FlameGraphs/cpu-linux-tcpsend.png)):
 
 
-
-Flame Graphs show the sample population across the x-axis, and stack depth on the y-axis. Each function (stack frame) is drawn as a rectangle, with the width relative to the number of samples. See the CPU Flame Graphs page for the full description of how these work.
+Flame Graphs show the sample population across the x-axis, and stack depth on the y-axis. Each function (stack frame) is drawn as a rectangle, with the width relative to the number of samples. See the [CPU Flame Graphs](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs) page for the full description of how these work.
 
 You can use the mouse to explore where kernel CPU time is spent, quickly quantifying code-paths and determining where performance tuning efforts are best spent. This example shows that most time was spent in the vp_notify() code-path, spending 70.52% of all on-CPU samples performing iowrite16(), which is handled by the KVM hypervisor. This information has been extremely useful for directing KVM performance efforts.
 
 A similar network workload on a bare metal Linux system looks quite different, as networking isn't processed via the virtio-net driver, for a start.
 
-Generation
+**Generation**
 The example flame graph was generated using perf_events and the FlameGraph tools:
-
+```bash
 # git clone https://github.com/brendangregg/FlameGraph  # or download it from github
 # cd FlameGraph
 # perf record -F 99 -ag -- sleep 60
 # perf script | ./stackcollapse-perf.pl > out.perf-folded
 # cat out.perf-folded | ./flamegraph.pl > perf-kernel.svg
+```
 The first perf command profiles CPU stacks, as explained earlier. I adjusted the rate to 99 Hertz here; I actually generated the flame graph from a 1000 Hertz profile, but I'd only use that if you had a reason to go faster, which costs more in overhead. The samples are saved in a perf.data file, which can be viewed using perf report:
 
+```bash
 # perf report --stdio
 [...]
 # Overhead          Command          Shared Object                               Symbol
@@ -2737,6 +2805,7 @@ The first perf command profiles CPU stacks, as explained earlier. I adjusted the
                          |          |          
                          |           --1.84%-- __tcp_push_pending_frames
 [...]
+```
 This tree follows the flame graph when reading it top-down. When using -g/--call-graph (for "caller", instead of the "callee" default), it generates a tree that follows the flame graph when read bottom-up. The hottest stack trace in the flame graph (@70.52%) can be seen in this perf call graph as the product of the top three nodes (72.18% x 99.53% x 98.16%).
 
 The perf report tree (and the ncurses navigator) do an excellent job at presenting this information as text. However, with text there are limitations. The output often does not fit in one screen (you could say it doesn't need to, if the bulk of the samples are identified on the first page). Also, identifying the hottest code paths requires reading the percentages. With the flame graph, all the data is on screen at once, and the hottest code-paths are immediately obvious as the widest functions.
@@ -2745,13 +2814,14 @@ For generating the flame graph, the perf script command dumps the stack samples,
 
 Piping
 A flame graph can be generated directly by piping all the steps:
-
+```bash
 # perf script | ./stackcollapse-perf.pl | ./flamegraph.pl > perf-kernel.svg
+```
 In practice I don't do this, as I often re-run flamegraph.pl multiple times, and this one-liner would execute everything multiple times. The output of perf script can be dozens of Mbytes, taking many seconds to process. By writing stackcollapse-perf.pl to a file, you've cached the slowest step, and can also edit the file (vi) to delete unimportant stacks, such as CPU idle threads.
 
 Filtering
 The one-line-per-stack output of stackcollapse-perf.pl is also convenient for grep(1). Eg:
-
+```bash
 # perf script | ./stackcollapse-perf.pl > out.perf-folded
 
 # grep -v cpu_idle out.perf-folded | ./flamegraph.pl > nonidle.svg
@@ -2759,34 +2829,34 @@ The one-line-per-stack output of stackcollapse-perf.pl is also convenient for gr
 # grep ext4 out.perf-folded | ./flamegraph.pl > ext4internals.svg
 
 # egrep 'system_call.*sys_(read|write)' out.perf-folded | ./flamegraph.pl > rw.svg
+```
 I frequently elide the cpu_idle threads in this way, to focus on the real threads that are consuming CPU resources. If I miss this step, the cpu_idle threads can often dominate the flame graph, squeezing the interesting code paths.
 
 Note that it would be a little more efficient to process the output of perf report instead of perf script; better still, perf report could have a report style (eg, "-g folded") that output folded stacks directly, obviating the need for stackcollapse-perf.pl. There could even be a perf mode that output the SVG directly (which wouldn't be the first one; see perf-timechart), although, that would miss the value of being able to grep the folded stacks (which I use frequently).
 
-There are more examples of perf_events CPU flame graphs on the CPU flame graph page, including a summary of these instructions. I have also shared an example of using perf for a Block Device I/O Flame Graph.
+There are more examples of perf_events CPU flame graphs on the [CPU flame graph](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#Examples) page, including a [summary](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#perf) of these instructions. I have also shared an example of using perf for a [Block Device I/O Flame Graph.](http://www.brendangregg.com/FlameGraphs/offcpuflamegraphs.html#BlockIO)
 
-7.2. Heat Maps
+### 7.2. Heat Maps
 Since perf_events can record high resolution timestamps (microseconds) for events, some latency measurements can be derived from trace data.
 
 Example
-The following heat map visualizes disk I/O latency data collected from perf_events (SVG, PNG):
-
-
+The following heat map visualizes disk I/O latency data collected from perf_events ([SVG](http://www.brendangregg.com/perf_events/perf_block_latencyheatmap.svg), [PNG](http://www.brendangregg.com/perf_events/perf_block_latencyheatmap.png)):
 
 Mouse-over blocks to explore the latency distribution over time. The x-axis is the passage of time, the y-axis latency, and the z-axis (color) is the number of I/O at that time and latency range. The distribution is bimodal, with the dark line at the bottom showing that many disk I/O completed with sub-millisecond latency: cache hits. There is a cloud of disk I/O from about 3 ms to 25 ms, which would be caused by random disk I/O (and queueing). Both these modes averaged to the 9 ms we saw earlier.
 
 The following iostat output was collected at the same time as the heat map data was collected (shows a typical one second summary):
-
+```bash
 # iostat -x 1
 [...]
 Device: rrqm/s wrqm/s    r/s   w/s   rkB/s wkB/s avgrq-sz avgqu-sz await r_await w_await svctm  %util
 vda       0.00   0.00   0.00  0.00    0.00  0.00     0.00     0.00  0.00    0.00    0.00  0.00   0.00
 vdb       0.00   0.00 334.00  0.00 2672.00  0.00    16.00     2.97  9.01    9.01    0.00  2.99 100.00
+```
 This workload has an average I/O time (await) of 9 milliseconds, which sounds like a fairly random workload on 7200 RPM disks. The problem is that we don't know the distribution from the iostat output, or any similar latency average. There could be latency outliers present, which is not visible in the average, and yet are causing problems. The heat map did show I/O up to 50 ms, which you might not have expected from that iostat output. There could also be multiple modes, as we saw in the heat map, which are also not visible in an average.
 
 Gathering
 I used perf_events to record the block request (disk I/O) issue and completion static tracepoints:
-
+```bash
 # perf record -e block:block_rq_issue -e block:block_rq_complete -a sleep 120
 [ perf record: Woken up 36 times to write data ]
 [ perf record: Captured and wrote 8.885 MB perf.data (~388174 samples) ]
@@ -2802,13 +2872,14 @@ I used perf_events to record the block request (disk I/O) issue and completion s
      randread.pl  2522 [000]  6011.838051: block:block_rq_issue: 254,16 R 0 () 108589633 + 16 [randread.pl]
          swapper     0 [000]  6011.850615: block:block_rq_complete: 254,16 R () 108589633 + 16 [0]
 [...]
+```
 The full output from perf script is about 70,000 lines. I've included some here so that you can see the kind of data available.
 
 Processing
 To calculate latency for each I/O, I'll need to pair up the issue and completion events, so that I can calculate the timestamp delta. The columns look straightforward (and are in include/trace/events/block.h), with the 4th field the timestamp in seconds (with microsecond resolution), the 6th field the disk device ID (major, minor), and a later field (which varies based on the tracepoint) has the disk offset. I'll use the disk device ID and offset as the unique identifier, assuming the kernel will not issue concurrent I/O to the exact same location.
 
 I'll use awk to do these calculations and print the completion times and latency:
-
+```bash
 # perf script | awk '{ gsub(/:/, "") } $5 ~ /issue/ { ts[$6, $10] = $4 }
     $5 ~ /complete/ { if (l = ts[$6, $9]) { printf "%.f %.f\n", $4 * 1000000,
     ($4 - l) * 1000000; ts[$6, $10] = 0 } }' > out.lat_us
@@ -2820,12 +2891,14 @@ I'll use awk to do these calculations and print the completion times and latency
 6011824680 18210
 6011824693 21908
 [...]
+```
 I converted both columns to be microseconds, to make the next step easier.
 
-Generation
+**Generation**
 Now I can use my trace2heatmap.pl program (github), to generate the interactive SVG heatmap from the trace data (and uses microseconds by default):
-
+```bash
 # ./trace2heatmap.pl --unitstime=us --unitslat=us --maxlat=50000 out.lat_us > out.svg
+```
 When I generated the heatmap, I truncated the y scale to 50 ms. You can adjust it to suit your investigation, increasing it to see more of the latency outliers, or decreasing it to reveal more resolution for the lower latencies: for example, with a 250 us limit.
 
 Overheads
@@ -2833,19 +2906,20 @@ While this can be useful to do, be mindful of overheads. In my case, I had a low
 
 For more about latency heatmaps, see my LISA 2010 presentation slides, and my CACM 2010 article, both about heat maps. Also see my Perf Heat Maps blog post.
 
-8. Targets
+## 8. Targets
 Notes on specific targets.
 
 Under construction.
 
-8.1. Java
-8.2. Node.js
+### 8.1. Java
+### 8.2. Node.js
 Node.js V8 JIT internals with annotation support https://twitter.com/brendangregg/status/755838455549001728
-9. More
+
+## 9. More
 There's more capabilities to perf_events than I've demonstrated here. I'll add examples of the other subcommands when I get a chance.
 
 Here's a preview of perf trace, which was added in 3.7, demonstrated on 3.13.1:
-
+```bash
 # perf trace ls
      0.109 ( 0.000 ms):  ... [continued]: read()) = 1
      0.430 ( 0.000 ms):  ... [continued]: execve()) = -2
@@ -2869,9 +2943,10 @@ Here's a preview of perf trace, which was added in 3.7, demonstrated on 3.13.1:
      3.684 ( 0.042 ms): fstat(arg0: 3, arg1: 140737350651216, arg2: 140737350651216, arg3: 354389249727...
      3.814 ( 0.054 ms): mmap(arg0: 0, arg1: 2221680, arg2: 5, arg3: 2050, arg4: 3, arg5: 0    ) = 0xb36...
 [...]
+```
 An advantage is that this is buffered tracing, which costs much less overhead than strace, as I described earlier. The perf trace output seen from this 3.13.1 kernel does, however, looks suspicious for a number of reasons. I think this is still an in-development feature. It reminds me of my dtruss tool, which has a similar role, before I added code to print each system call in a custom and appropriate way.
 
-10. Building
+## 10. Building
 The steps to build perf_events depends on your kernel version and Linux distribution. In summary:
 
 Get the Linux kernel source that matches your currently running kernel (eg, from the linux-source package, or kernel.org).
@@ -2882,7 +2957,7 @@ Fix all errors, and most warnings, from (4).
 The first error may be that you are missing make, or a compiler (gcc). Once you have those, you may then see various warnings about missing libraries, which disable perf features. I'd install as many as possible, and take note of the ones you are missing.
 
 These perf build warnings are really helpful, and are generated by its Makefile. Here's the makefile from 3.9.3:
-
+```bash
 # grep found Makefile
 msg := $(warning No libelf found, disables 'probe' tool, please install elfutils-libelf-devel/libelf-dev);
 msg := $(error No gnu/libc-version.h found, please install glibc-dev[el]/glibc-static);
@@ -2896,6 +2971,7 @@ $(if $(1),$(warning No $(1) was found))
 msg := $(warning No bfd.h/libbfd found, install binutils-dev[el]/zlib-static to gain symbol demangling)
 msg := $(warning No numa.h found, disables 'perf bench numa mem' benchmark, please install numa-libs-devel or
  libnuma-dev);
+```
 Take the time to read them. This list is likely to grow as new features are added to perf_events.
 
 The following notes show what I've specifically done for kernel versions and distributions, in case it is helpful.
@@ -2905,7 +2981,7 @@ Packages required for key functionality: gcc make bison flex elfutils libelf-dev
 
 Kernel Config: 3.8.6
 Here are some kernel CONFIG options for perf_events functionality:
-
+```bash
 # for perf_events:
 CONFIG_PERF_EVENTS=y
 # for stack traces:
@@ -2930,30 +3006,33 @@ CONFIG_LOCKDEP=y
 CONFIG_LOCK_STAT=y
 # kernel dynamic tracepoint variables:
 CONFIG_DEBUG_INFO=y
+```
 You may need to build your own kernel to enable these. The exact set you need depends on your needs and kernel version, and list is likely to grow as new features are added to perf_events.
 
-10.1. Static Builds
+### 10.1. Static Builds
 I've sometimes done this so that I have a single perf binary that can be copied into Docker containers for execution. Steps, given the Linux source:
-
+```bash
 cd tools/perf
 vi Makefile.perf
   LDFLAGS=-static
 make clean; make
-11. Troubleshooting
+```
+## 11. Troubleshooting
 If you see hexadecimal numbers instead of symbols, or have truncated stack traces, see the Prerequisites section.
 
 Here are some rough notes from other issues I've encountered.
 
 This sometimes works (3.5.7.2) and sometimes throws the following error (3.9.3):
-
+```bash
 ubuntu# perf stat -e 'syscalls:sys_enter_*' -a sleep 5
 Error:
 Too many events are opened.
 Try again after reducing the number of events.
+```
 This can be fixed by increasing the file descriptor limit using ulimit -n.
 
 Type 3 errors:
-
+```bash
 ubuntu# perf report
 0xab7e48 [0x30]: failed to process type: 3
 # ========
@@ -2977,60 +3056,65 @@ ubuntu# perf report
 # ========
 #
 Warning: Timestamp below last timeslice flush
-12. Other Tools
+```
+
+## 12. Other Tools
 perf_events has the capabilities from many other tools rolled into one: strace(1), for tracing system calls, tcpdump(8), for tracing network packets, and blktrace(1), for tracing block device I/O (disk I/O), and other targets including file system and scheduler events. Tracing all events from one tool is not only convenient, it also allows direct correlations, including timestamps, between different instrumentation sources. Unlike these other tools, some assembly is required, which may not be for everyone (as explained in Audience).
 
-13. Resources
+## 13. Resources
 Resources for further study.
 
-13.1. Posts
+### 13.1. Posts
 I've been writing blog posts on specific perf_events topics. My suggested reading order is from oldest to newest (top down):
 
-22 Jun 2014: perf CPU Sampling
-29 Jun 2014: perf Static Tracepoints
-01 Jul 2014: perf Heat Maps
-03 Jul 2014: perf Counting
-10 Jul 2014: perf Hacktogram
-11 Sep 2014: Linux perf Rides the Rocket: perf Kernel Line Tracing
-17 Sep 2014: node.js Flame Graphs on Linux
-26 Feb 2015: Linux perf_events Off-CPU Time Flame Graph
-27 Feb 2015: Linux Profiling at Netflix
-24 Jul 2015: Java Mixed-Mode Flame Graphs (PDF)
-30 Apr 2016: Linux 4.5 perf folded format
+- 22 Jun 2014: perf CPU Sampling
+- 29 Jun 2014: perf Static Tracepoints
+- 01 Jul 2014: perf Heat Maps
+- 03 Jul 2014: perf Counting
+- 10 Jul 2014: perf Hacktogram
+- 11 Sep 2014: Linux perf Rides the Rocket: perf Kernel Line Tracing
+- 17 Sep 2014: node.js Flame Graphs on Linux
+- 26 Feb 2015: Linux perf_events Off-CPU Time Flame Graph
+- 27 Feb 2015: Linux Profiling at Netflix
+- 24 Jul 2015: Java Mixed-Mode Flame Graphs (PDF)
+- 30 Apr 2016: Linux 4.5 perf folded format
+
 And posts on ftrace:
 
-13 Jul 2014: Linux ftrace Function Counting
-16 Jul 2014: iosnoop for Linux
-23 Jul 2014: Linux iosnoop Latency Heat Maps
-25 Jul 2014: opensnoop for Linux
-28 Jul 2014: execsnoop for Linux: See Short-Lived Processes
-30 Aug 2014: ftrace: The Hidden Light Switch
-06 Sep 2014: tcpretrans: Tracing TCP retransmits
-31 Dec 2014: Linux Page Cache Hit Ratio
-28 Jun 2015: uprobe: User-Level Dynamic Tracing
-03 Jul 2015: Hacking Linux USDT
-13.2. Links
+- 13 Jul 2014: Linux ftrace Function Counting
+- 16 Jul 2014: iosnoop for Linux
+- 23 Jul 2014: Linux iosnoop Latency Heat Maps
+- 25 Jul 2014: opensnoop for Linux
+- 28 Jul 2014: execsnoop for Linux: See Short-Lived Processes
+- 30 Aug 2014: ftrace: The Hidden Light Switch
+- 06 Sep 2014: tcpretrans: Tracing TCP retransmits
+- 31 Dec 2014: Linux Page Cache Hit Ratio
+- 28 Jun 2015: uprobe: User-Level Dynamic Tracing
+- 03 Jul 2015: Hacking Linux USDT
+
+### 13.2. Links
 perf_events:
 
-perf-tools (github), a collection of my performance analysis tools based on Linux perf_events and ftrace.
-perf Main Page.
-The excellent perf Tutorial, which focuses more on CPU hardware counters.
-The Unofficial Linux Perf Events Web-Page by Vince Weaver.
-The perf user mailing list.
-Mischa Jonker's presentation Fighting latency: How to optimize your system using perf (PDF) (2013).
-The OMG SO PERF T-shirt (site has coarse language).
-Shannon Cepeda's great posts on pipeline speak: frontend and backend.
-Jiri Olsa's dwarf mode callchain patch.
-Linux kernel source: tools/perf/Documentation/examples.txt.
-Linux kernel source: tools/perf/Documentation/perf-record.txt.
-... and other documentation under tools/perf/Documentation.
-A good case study for Transparent Hugepages: measuring the performance impact using perf and PMCs.
-Julia Evans created a perf cheatsheet based on my one-liners (2017).
+- perf-tools (github), a collection of my performance analysis tools based on Linux perf_events and ftrace.
+- perf Main Page.
+- The excellent perf Tutorial, which focuses more on CPU hardware counters.
+- The Unofficial Linux Perf Events Web-Page by Vince Weaver.
+- The perf user mailing list.
+- Mischa Jonker's presentation Fighting latency: How to optimize your system using perf (PDF) (2013).
+- The OMG SO PERF T-shirt (site has coarse language).
+- Shannon Cepeda's great posts on pipeline speak: frontend and backend.
+- Jiri Olsa's dwarf mode callchain patch.
+- Linux kernel source: tools/perf/Documentation/examples.txt.
+- Linux kernel source: tools/perf/Documentation/perf-record.txt.
+- ... and other documentation under tools/perf/Documentation.
+- A good case study for Transparent Hugepages: measuring the performance impact using perf and PMCs.
+- Julia Evans created a perf cheatsheet based on my one-liners (2017).
+
 ftrace:
 
-perf-tools (github), a collection of my performance analysis tools based on Linux perf_events and ftrace.
-Ftrace: The hidden light switch, by myself for lwn.net, Aug 2014.
-Linux kernel source: Documentation/trace/ftrace.txt.
-lwn.net Secrets of the Ftrace function tracer, by Steven Rostedt, Jan 2010.
-lwn.net Debugging the kernel using Ftrace - part 1, by Steven Rostedt, Dec 2009.
-lwn.net Debugging the kernel using Ftrace - part 2, by Steven Rostedt, Dec 2009.
+- perf-tools (github), a collection of my performance analysis tools based on Linux perf_events and ftrace.
+- Ftrace: The hidden light switch, by myself for lwn.net, Aug 2014.
+- Linux kernel source: Documentation/trace/ftrace.txt.
+- lwn.net Secrets of the Ftrace function tracer, by Steven Rostedt, Jan 2010.
+- lwn.net Debugging the kernel using Ftrace - part 1, by Steven Rostedt, Dec 2009.
+- lwn.net Debugging the kernel using Ftrace - part 2, by Steven Rostedt, Dec 2009.
