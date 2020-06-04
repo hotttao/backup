@@ -1606,9 +1606,11 @@ perf.data 文件可以用多种方法处理。在最近的版本中，perf repor
 [...]
 ```
 This tree starts with the on-CPU functions and works back through the ancestry. This approach is called a "callee based call graph". This can be flipped by using -G for an "inverted call graph", or by using the "caller" option to -g/--call-graph, instead of the "callee" default.
-这个树从on-CPU函数开始，并通过祖先开始工作。这种方法称为“基于调用者的调用图”。这可以通过使用-G来反转调用关系图，对于 -g/--call-graph 记录的调用图，也可以使用 caller 来代替 默认值callee，以反转调用关系图。默认是用 -g 选项记录的是“基于调用者的调用图”，使用 -g caller 将反转调用关系图。
+这个树从on-CPU函数开始，并通过祖先开始工作。这种方法称为“基于调用者的调用图”。这可以通过使用-G来反转调用关系图，对于 -g/--call-graph 记录的调用图，也可以使用 caller 来代替 默认值callee，以反转调用关系图。默认是用 -g 选项记录的是“基于调用者的调用图”，使用 -g caller 或者 --children 将反转调用关系图。
 
 The hottest (most frequent) stack trace in this perf call graph occurred in 90.99% of samples, which is the product of the overhead percentage and top stack leaf (94.12% x 96.67%, which are relative rates). perf report can also be run with "-g graph" to show absolute overhead rates, in which case "90.99%" is directly displayed on the stack leaf:
+
+上面的perf调用图显示采样中最热(最频繁)的堆栈跟踪发生频率是 90.99%，它是Overhead列的百分比和顶部堆栈叶(94.12% x 96.67%，它们是相对比率)的乘积。perf报告也可以用“-g graph”运行，直接显示绝对的开销占比。此时将像下面这样，“90.99%”直接显示在堆栈叶上:
 
 ```bash
     94.12%       dd  [kernel.kallsyms]  [k] _raw_spin_unlock_irqrestore
@@ -1619,11 +1621,15 @@ The hottest (most frequent) stack trace in this perf call graph occurred in 90.9
 [...]
 ```
 If user-level stacks look incomplete, you can try perf record with "--call-graph dwarf" as a different technique to unwind them. See the Stacks section.
+如果用户级堆栈看起来不完整，您可以尝试使用“--call-graph dwarf”作为另一种技术来展开它们。请参阅书库部分。
 
 The output from perf report can be many pages long, which can become cumbersome to read. Try generating Flame Graphs from the same data.
+perf报告的输出可能有很多页长，读起来可能很麻烦。可以尝试生成火焰图来查看。
 
 ### 6.3. Event Profiling
 Apart from sampling at a timed interval, taking samples triggered by CPU hardware counters is another form of CPU profiling, which can be used to shed more light on cache misses, memory stall cycles, and other low-level processor events. The available events can be found using perf list:
+
+除了按时间间隔采样外，由CPU硬件计数器触发的采样是CPU分析的另一种形式，它可以用来更清楚地了解缓存丢失、内存停滞周期和其他低级处理器事件。可用事件可以找到使用perf列表:
 
 ```bash
 # perf list | grep Hardware
@@ -1646,16 +1652,23 @@ Apart from sampling at a timed interval, taking samples triggered by CPU hardwar
 
 For many of these, gathering a stack on every occurrence would induce far too much overhead, and would slow down the system and change the performance characteristics of the target. It's usually sufficient to only instrument a small fraction of their occurrences, rather than all of them. This can be done by specifying a threshold for triggering event collection, using "-c" and a count.
 
+对于其中的许多情况，在每次出现时都收集堆栈会导致过多的开销，并会降低系统速度并改变目标的性能特征。通常，只测量它们出现的一小部分，而不是全部，就足够了。这可以通过使用“-c” 指定触发事件收集的阈值来实现。
+
 For example, the following one-liner instruments Level 1 data cache load misses, collecting a stack trace for one in every 10,000 occurrences:
+
+例如，下面的一行程序统计 1级数据缓存加载失败次数，每10000次失败收集一次堆栈跟踪:
+
 ```bash
 # perf record -e L1-dcache-load-misses -c 10000 -ag -- sleep 5
 ```
 
 The mechanics of "-c count" are implemented by the processor, which only interrupts the kernel when the threshold has been reached.
+“-c count”机制是由处理器实现的，它只在达到阈值时中断内核。
 
 See the earlier Raw Counters section for an example of specifying a custom counter, and the next section about skew.
+有关指定自定义计数器的示例，请参阅前面的Raw计数器部分，和下一节。
 
-Skew and PEBS
+**Skew and PEBS**
 There's a problem with event profiling that you don't really encounter with CPU profiling (timed sampling). With timed sampling, it doesn't matter if there was a small sub-microsecond delay between the interrupt and reading the instruction pointer (IP). Some CPU profilers introduce this jitter on purpose, as another way to avoid lockstep sampling. But for event profiling, it does matter: if you're trying to capture the IP on some PMC event, and there's a delay between the PMC overflow and capturing the IP, then the IP will point to the wrong address. This is skew. Another contributing problem is that micro-ops are processed in parallel and out-of-order, while the instruction pointer points to the resumption instruction, not the instruction that caused the event. I've talked about this before.
 
 The solution is "precise sampling", which on Intel is PEBS (Precise Event-Based Sampling), and on AMD it is IBS (Instruction-Based Sampling). These use CPU hardware support to capture the real state of the CPU at the time of the event. perf can use precise sampling by adding a :p modifier to the PMC event name, eg, "-e instructions:p". The more p's, the more accurate. Here are the docs from tools/perf/Documentation/perf-list.txt:
