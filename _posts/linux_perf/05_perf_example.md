@@ -1670,19 +1670,27 @@ See the earlier Raw Counters section for an example of specifying a custom count
 
 **Skew and PEBS**
 There's a problem with event profiling that you don't really encounter with CPU profiling (timed sampling). With timed sampling, it doesn't matter if there was a small sub-microsecond delay between the interrupt and reading the instruction pointer (IP). Some CPU profilers introduce this jitter on purpose, as another way to avoid lockstep sampling. But for event profiling, it does matter: if you're trying to capture the IP on some PMC event, and there's a delay between the PMC overflow and capturing the IP, then the IP will point to the wrong address. This is skew. Another contributing problem is that micro-ops are processed in parallel and out-of-order, while the instruction pointer points to the resumption instruction, not the instruction that caused the event. I've talked about this before.
+事件分析存在一个CPU分析不会遇到的问题(定时采样)。对于定时采样，在中断和读取指令指针(IP)之间是否有一个亚微秒的延迟并不重要。一些CPU分析器故意引入这种抖动，作为避免同步采样的另一种方法。但是对于事件分析来说，这确实很重要:如果您试图捕获某个PMC事件上的IP，并且在PMC溢出和捕获IP之间存在延迟，那么IP将指向错误的地址。这是倾斜。另一个问题是微操作是并行和无序处理的，而指令指针指向的是恢复指令，而不是导致事件的指令。我之前讲过这个。·
 
 The solution is "precise sampling", which on Intel is PEBS (Precise Event-Based Sampling), and on AMD it is IBS (Instruction-Based Sampling). These use CPU hardware support to capture the real state of the CPU at the time of the event. perf can use precise sampling by adding a :p modifier to the PMC event name, eg, "-e instructions:p". The more p's, the more accurate. Here are the docs from tools/perf/Documentation/perf-list.txt:
+解决方案是“精确采样”，在英特尔上是PEBS(基于事件的精确采样)，在AMD上是IBS(基于指令的采样)。它们使用CPU硬件支持来捕获事件发生时CPU的真实状态。perf可以通过在PMC事件名称中添加一个:p修饰符来使用精确的采样，例如，“-e instructions:p”。p越多，越准确。以下是[tools/perf/Documentation/perf-list.txt](https://github.com/torvalds/linux/blob/master/tools/perf/Documentation/perf-list.txt)提供的文档:
 
+```bash
 The 'p' modifier can be used for specifying how precise the instruction
 address should be. The 'p' modifier can be specified multiple times:
+'p'修饰符可以用来指定指令地址的精确程度。“p”修饰符可以被指定多次:
 
- 0 - SAMPLE_IP can have arbitrary skid
- 1 - SAMPLE_IP must have constant skid
- 2 - SAMPLE_IP requested to have 0 skid
- 3 - SAMPLE_IP must have 0 skid
+ 0 - SAMPLE_IP can have arbitrary skid  SAMPLE_IP可以任意滑动
+ 1 - SAMPLE_IP must have constant skid  SAMPLE_IP必须有持续的滑动
+ 2 - SAMPLE_IP requested to have 0 skid SAMPLE_IP请求没有滑动
+ 3 - SAMPLE_IP must have 0 skid SAMPLE_IP必须是0滑块
+```
 In some cases, perf will default to using precise sampling without you needing to specify it. Run "perf record -vv ..." to see the value of "precise_ip". Also note that only some PMCs support PEBS.
+在某些情况下，perf将默认使用精确采样，而不需要您指定它。运行"perf record -vv…"可以看到"precise_ip"的值。还要注意，只有一些pmc支持PEBS。
 
 If PEBS isn't working at all for you, check dmesg:
+如果PEBS根本不适合你，查看dmesg:
+
 ```bash
 # dmesg | grep -i pebs
 [    0.387014] Performance Events: PEBS fmt1+, SandyBridge events, 16-deep LBR, full-width counters, Intel PMU driver.
@@ -1693,7 +1701,7 @@ The fix (on Intel):
 ```bash
 # apt-get install -y intel-microcode
 [...]
-```
+
 intel-microcode: microcode will be updated at next boot
 Processing triggers for initramfs-tools (0.125ubuntu5) ...
 update-initramfs: Generating /boot/initrd.img-4.8.0-41-generic
@@ -1707,6 +1715,7 @@ update-initramfs: Generating /boot/initrd.img-4.8.0-41-generic
 ```
 
 XXX: Need to cover more PEBS problems and other caveats.
+需要覆盖更多的PEBS问题和其他警告。
 
 ### 6.4. Static Kernel Tracing
 The following examples demonstrate static tracing: the instrumentation of tracepoints and other static events.
