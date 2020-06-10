@@ -1719,9 +1719,11 @@ XXX: Need to cover more PEBS problems and other caveats.
 
 ### 6.4. Static Kernel Tracing
 The following examples demonstrate static tracing: the instrumentation of tracepoints and other static events.
+下面的示例演示了如何进行静态跟踪: 跟踪点和其他静态事件。
 
-Counting Syscalls
+**Counting Syscalls**
 The following simple one-liner counts system calls for the executed command, and prints a summary (of non-zero counts):
+下面是一个统计系统调用并打印摘要(非零计数)的简单命令:
 
 ```bash
 # perf stat -e 'syscalls:sys_enter_*' gzip file1 2>&1 | awk '$1 != 0'
@@ -1754,11 +1756,14 @@ The following simple one-liner counts system calls for the executed command, and
 ```
 
 In this case, a gzip command was analyzed. The report shows that there were 3,201 write() syscalls, and half that number of read() syscalls. Many of the other syscalls will be due to process and library initialization.
+在本例中，分析了gzip命令。报告显示有3201个write()系统调用，而read()系统调用只有这个数量的一半。许多其他系统崩溃都是由于进程和库的初始化。
 
 A similar report can be seen using strace -c, the system call tracer, however it may induce much higher overhead than perf, as perf buffers data in-kernel.
+使用系统调用跟踪程序`strace -c`可以看到类似的报告，但是它可能导致比perf高得多的开销，因为perf在内核中缓冲数据。
 
-perf vs strace
+**perf vs strace**
 To explain the difference a little further: the current implementation of strace uses ptrace(2) to attach to the target process and stop it during system calls, like a debugger. This is violent, and can cause serious overhead. To demonstrate this, the following syscall-heavy program was run by itself, with perf, and with strace. I've only included the line of output that shows its performance:
+为了进一步解释这种差异:strace的当前实现使用ptrace(2)附加到目标进程并在系统调用期间停止它，就像调试器一样。这是暴力的，并可能导致严重的开销。为了演示这一点，下面使用perf和strace单独运行具有大量系统调用的程序。我只包含了显示其性能的输出行:
 
 ```bash
 # dd if=/dev/zero of=/dev/null bs=512 count=10000k
@@ -1772,11 +1777,14 @@ To explain the difference a little further: the current implementation of strace
 ```
 
 With perf, the program ran 2.5x slower. But with strace, it ran 62x slower. That's likely to be a worst-case result: if syscalls are not so frequent, the difference between the tools will not be as great.
+使用perf，程序运行速度慢了2.5倍。但使用strace时，它的运行速度慢了62倍。这可能是最糟糕的结果:如果系统调用不那么频繁，那么工具之间的差异就不会那么大。
 
 Recent version of perf have included a trace subcommand, to provide some similar functionality to strace, but with much lower overhead.
+perf的最新版本包含了一个跟踪子命令，以提供一些与strace类似的功能，但开销要低得多。
 
-New Processes
+**New Processes**
 Tracing new processes triggered by a "man ls":
+下面跟踪`man ls`命令创建的新进程
 
 ```bash
 # perf record -e sched:sched_process_exec -a
@@ -1798,15 +1806,21 @@ Tracing new processes triggered by a "man ls":
     11.11%             1    groff
 ```
 Nine different commands were executed, each once. I used -n to print the "Samples" column, and "--sort comm" to customize the remaining columns.
+可以看到执行了9个不同的命令，每个命令执行一次。我使用-n来打印“Samples”列，使用`—sort comm`来定制其余的列。
 
 This works by tracing sched:sched_process_exec, when a process runs exec() to execute a different binary. This is often how new processes are created, but not always. An application may fork() to create a pool of worker processes, but not exec() a different binary. An application may also reexec: call exec() again, on itself, usually to clean up its address space. In that case, it's will be seen by this exec tracepoint, but it's not a new process.
+通过跟踪sched:sched_process_exec，可以跟踪进程通过 exec() 执行的不同的二进制文件。新流程通常是这样创建的，但并不总是这样。应用程序可以使用fork()创建工作进程池，而不是通过 exec() 运行一个二进制文件。应用程序也可以重新执行:在自身上再次调用exec()，通常是为了清理其地址空间。在这种情况下，它将被这个exec跟踪点看到，但它不是一个新的进程。
 
 The sched:sched_process_fork tracepoint can be traced to only catch new processes, created via fork(). The downside is that the process identified is the parent, not the new target, as the new process has yet to exec() it's final program.
+sched:sched_process_fork跟踪点可以被跟踪到仅捕获通过fork()创建的新进程。缺点是所标识的进程是父进程，而不是新目标，因为新进程还没有执行exec()它的最终程序。
 
-Outbound Connections
+**Outbound Connections**
 There can be times when it's useful to double check what network connections are initiated by a server, from which processes, and why. You might be surprised. These connections can be important to understand, as they can be a source of latency.
+有时候，仔细检查服务器启动了哪些网络连接、从哪些进程启动以及为什么启动是很有用的。你可能会感到惊讶。理解这些连接很重要，因为它们可能是延迟的来源。
 
 For this example, I have a completely idle ubuntu server, and while tracing I'll login to it using ssh. I'm going to trace outbound connections via the connect() syscall. Given that I'm performing an inbound connection over SSH, will there be any outbound connections at all?
+对于本例，我有一个完全空闲的ubuntu服务器，在跟踪时，我将使用ssh登录到它。我将通过connect()系统调用跟踪出站连接。假设我正在通过SSH执行入站连接，那么还会有出站连接吗?
+
 ```bash
 # perf record -e syscalls:sys_enter_connect -a
 ^C[ perf record: Woken up 1 times to write data ]
@@ -1842,8 +1856,11 @@ For this example, I have a completely idle ubuntu server, and while tracing I'll
      9.52%     bash  libc-2.15.so        [.] __GI___connect_internal
 ```
 The report shows that sshd, groups, mesg, and bash are all performing connect() syscalls. Ring a bell?
+报告显示，sshd, groups, mesg, 和 bash都在执行connect()系统调用。?
 
 The stack traces that led to the connect() can explain why:
+导致connect()的堆栈跟踪可以解释为什么:
+
 ```bash
 # perf record -e syscalls:sys_enter_connect -ag
 ^C[ perf record: Woken up 1 times to write data ]
@@ -1890,13 +1907,18 @@ The stack traces that led to the connect() can explain why:
                --- __connect_internal
 ```
 Ah, these are nscd calls: the name service cache daemon. If you see hexadecimal numbers and not function names, you will need to install debug info: see the earlier section on Symbols. These nscd calls are likely triggered by calling getaddrinfo(), which server software may be using to resolve IP addresses for logging, or for matching hostnames in config files. Browsing the stack traces should identify why.
+啊，这些是nscd调用:名称服务缓存守护进程。如果您看到的是十六进制数字而不是函数名，则需要安装调试信息:请参阅前面关于符号的部分。这些nscd调用可能是通过调用getaddrinfo()触发的，服务器软件可能使用该函数来解析用于日志记录的IP地址，或者用于匹配配置文件中的主机名。浏览堆栈跟踪应该确定原因。
 
 For sshd, this was called via add_one_listen_addr(): a name that was only visible after adding the openssh-server-dbgsym package. Unfortunately, the stack trace doesn't continue after add_one_listen_add(). I can browse the OpenSSH code to figure out the reasons we're calling into add_one_listen_add(), or, I can get the stack traces to work. See the earlier section on Stack Traces.
+对于sshd，这是通过add_one_listen_addr()调用的:这个名称只有在添加openssh-server-dbgsym包之后才可见。不幸的是，在add_one_listen_add()之后，堆栈跟踪不会继续。我可以浏览OpenSSH代码来找出调用add_one_listen_add()的原因，或者，我可以让堆栈跟踪工作。请参阅前面关于堆栈跟踪的部分。
 
 I took a quick look at the OpenSSH code, and it looks like this code-path is due to parsing ListenAddress from the sshd_config file, which can contain either an IP address or a hostname.
+我快速查看了OpenSSH代码，该代码路径似乎是由于从sshd_config文件解析ListenAddress而产生的，该文件可以包含IP地址或主机名。
 
-Socket Buffers
+**Socket Buffers**
 Tracing the consumption of socket buffers, and the stack traces, is one way to identify what is leading to socket or network I/O.
+跟踪套接字缓冲区的消耗和堆栈跟踪是识别导致套接字或网络I/O的原因的一种方法。
+
 ```bash
 # perf record -e 'skb:consume_skb' -ag
 ^C[ perf record: Woken up 1 times to write data ]
@@ -1947,6 +1969,7 @@ Tracing the consumption of socket buffers, and the stack traces, is one way to i
                    __write_nocancel
 ```
 The swapper stack shows the network receive path, triggered by an interrupt. The sshd path shows writes.
+交换器堆栈显示由中断触发的网络接收路径。sshd路径显示写操作。
 
 ### 6.5. Static User Tracing
 Support was added in later 4.x series kernels. The following demonstrates Linux 4.10 (with an additional patchset), and tracing the Node.js USDT probes:
