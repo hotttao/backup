@@ -24,19 +24,19 @@ tags:
 
 有些工具是通用的分析工具，后面会在单独的章节中详细说明他们的使用。本节会介绍 CPU 专用的分析工具的使用
 
-|Linux|Solaris|作用|
-|:---|:---|:---|
-|uptime|uptime|平均负载|
-|vmstat|vmstat|系统范围的CPU平均负载|
-|mpstat|mpstat|单个CPU统计信息|
-|time|ptime|命令计时，带CPU用量分解|
-|dstat||等于 vmstat + iostat + ifstat<br>可同时观察CPU、磁盘 I/O、网络以及内存使用情况|
-|sar|sar|可统计包括内存，磁盘，中断等各种信息|
-|ps|ps|进程状态|
-|top|prstat|监控每个进程的基本信息|
-|pidstat|prstat|统计每个进程的内存，IO，上下文切换等信息|
-|stap，perf|Dtrace|CPU剖析和跟踪|
-|perf|cpustat|CPU性能计数器分析|
+|Linux|Solaris|作用|说明|
+|:---|:---|:---|:---|
+|uptime|uptime|平均负载||
+|vmstat|vmstat|系统范围的CPU平均负载||
+|mpstat|mpstat|单个CPU统计信息||
+|time|ptime|命令计时，带CPU用量分解||
+|dstat||等于 vmstat + iostat + ifstat<br>可同时观察CPU、磁盘 I/O、网络以及内存使用情况|通用命令，位于独立的一节中|
+|sar|sar|可统计包括内存，磁盘，中断等各种信息|通用命令，位于独立的一节中|
+|ps|ps|进程状态|通用命令，位于独立的一节中|
+|top|prstat|监控每个进程的基本信息|通用命令，位于独立的一节中|
+|pidstat|prstat|统计每个进程的内存，IO，上下文切换等信息|通用命令，位于独立的一节中|
+|stap，perf|Dtrace|CPU剖析和跟踪|通用命令，位于独立的一节中|
+|perf|cpustat|CPU性能计数器分析|通用命令，位于独立的一节中|
 
 除了上述命令之外，还包括以下内容:
 1. CPU 调度延迟统计
