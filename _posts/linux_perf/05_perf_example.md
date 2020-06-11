@@ -1973,6 +1973,8 @@ The swapper stack shows the network receive path, triggered by an interrupt. The
 
 ### 6.5. Static User Tracing
 Support was added in later 4.x series kernels. The following demonstrates Linux 4.10 (with an additional patchset), and tracing the Node.js USDT probes:
+在4.x 的内核中，添加了用户态静态追踪机制。下面演示了Linux 4.10(附加了一个补丁集)，如何跟踪Node.js 的USDT探针:
+
 ```bash
 # perf buildid-cache --add `which node`
 # perf list | grep sdt_node
@@ -1993,14 +1995,18 @@ Support was added in later 4.x series kernels. The following demonstrates Linux 
             node  7646 [002]   361.363043: sdt_node:http__server__request: (dc2e69)
 ```
 XXX fill me in, including how to use arguments.
+XXX告诉我，包括如何使用参数。
 
 If you are on an older kernel, say, Linux 4.4-4.9, you can probably get these to work with adjustments (I've even hacked them up with ftrace for older kernels), but since they have been in development, I haven't seen documentation outside of lkml, so you'll need to figure it out. (On this kernel range, you might find more documentation for tracing these with bcc/eBPF, including using the trace.py tool.)
+如果您使用的是一个较老的内核，比如Linux 4.4-4.9，你可以做相应的调整来使用用户态追踪(我甚至用ftrace对较老的内核进行了分解)，但是由于它们已经在开发中，我还没有看到lkml之外的文档，所以您需要弄清楚它。(在这个内核范围内，您可能会找到更多使用bcc/eBPF跟踪这些文件的文档，包括使用trace.py工具。)
 
 ### 6.6. Dynamic Tracing
 For kernel analysis, I'm using CONFIG_KPROBES=y and CONFIG_KPROBE_EVENTS=y, to enable kernel dynamic tracing, and CONFIG_FRAME_POINTER=y, for frame pointer-based kernel stacks. For user-level analysis, CONFIG_UPROBES=y and CONFIG_UPROBE_EVENTS=y, for user-level dynamic tracing.
+对于内核分析，使用CONFIG_KPROBES=y和CONFIG_KPROBE_EVENTS=y来启用内核动态跟踪，对于基于框架指针的内核堆栈，使用CONFIG_FRAME_POINTER=y。对于用户级分析，CONFIG_UPROBES=y和CONFIG_UPROBE_EVENTS=y用于启用用户级动态跟踪。
 
-Kernel: tcp_sendmsg()
+**Kernel: tcp_sendmsg()**
 This example shows instrumenting the kernel tcp_sendmsg() function on the Linux 3.9.3 kernel:
+下面的例子展示了在Linux 3.9.3内核上检测内核tcp_sendmsg()函数:
 
 ```bash
 # perf probe --add tcp_sendmsg
@@ -2014,6 +2020,7 @@ You can now use it in all perf tools, such as:
 ```
 
 This adds a new tracepoint event. It suggests using the -R option, to collect raw sample records, which is already the default for tracepoints. Tracing this event for 5 seconds, recording stack traces:
+这将添加一个新的跟踪点事件。它建议使用-R选项来收集原始示例记录，这已经是跟踪点的默认值。-R 用于设置跟踪事件5秒，并记录堆栈跟踪:
 
 ```bash
 # perf record -e probe:tcp_sendmsg -a -g -- sleep 5
@@ -2022,6 +2029,7 @@ This adds a new tracepoint event. It suggests using the -R option, to collect ra
 ```
 
 And the report:
+下面是输出报告
 
 ```bash
 # perf report --stdio
@@ -2064,13 +2072,17 @@ And the report:
 ```
 
 This shows the path from the write() system call to tcp_sendmsg().
+这显示了从write()系统调用到tcp_sendmsg()的路径。
 
 You can delete these dynamic tracepoints if you want after use, using perf probe --del.
+如果需要，可以在使用后删除这些动态跟踪点，使用perf probe --del。
 
-Kernel: tcp_sendmsg() with size
+**Kernel: tcp_sendmsg() with size**
 If your kernel has debuginfo (CONFIG_DEBUG_INFO=y), you can fish out kernel variables from functions. This is a simple example of examining a size_t (integer), on Linux 3.13.1.
+如果内核有debuginfo (CONFIG_DEBUG_INFO=y)，那么可以从函数中提取内核变量。这是在Linux 3.13.1上检查size_t(整数)的一个简单示例。
 
 Listing variables available for tcp_sendmsg():
+列出tcp_sendmsg()可用的变量:
 
 ```bash
 # perf probe -V tcp_sendmsg
@@ -2082,6 +2094,7 @@ Available variables at tcp_sendmsg
                 struct sock*    sk
 ```
 Creating a probe for tcp_sendmsg() with the "size" variable:
+使用变量“size”为tcp_sendmsg()创建一个探针:
 
 ```bash
 # perf probe --add 'tcp_sendmsg size'
@@ -2094,6 +2107,7 @@ You can now use it in all perf tools, such as:
 ```
 
 Tracing this probe:
+跟踪此探针
 
 ```bash
 # perf record -e probe:tcp_sendmsg -a
@@ -2134,9 +2148,14 @@ Tracing this probe:
 ```
 
 The size is shown as hexadecimal.
+大小显示为十六进制。
 
 Kernel: tcp_sendmsg() line number and local variable
+内核:将显示 tcp_sendmsg()行号和本地变量值
+
 With debuginfo, perf_events can create tracepoints for lines within kernel functions. Listing available line probes for tcp_sendmsg():
+使用debuginfo, perf_events可以为内核函数中的行创建跟踪点。列出tcp_sendmsg()可用的行探测:
+
 ```bash
 # perf probe -L tcp_sendmsg
 <tcp_sendmsg@/mnt/src/linux-3.14.5/net/ipv4/tcp.c:0>
@@ -2168,6 +2187,7 @@ With debuginfo, perf_events can create tracepoints for lines within kernel funct
 ```
 
 This is Linux 3.14.5; your kernel version may look different. Lets check what variables are available on line 81:
+这是Linux 3.14.5;您的内核版本可能看起来不同。让我们检查在第81行有哪些变量可用:
 
 ```bash
 # perf probe -V tcp_sendmsg:81
@@ -2187,6 +2207,7 @@ Available variables at tcp_sendmsg:81
                 unsigned char*  from
 ```
 Now lets trace line 81, with the seglen variable that is checked in the loop:
+现在让我们跟踪第81行，并使用循环中的seglen变量:
 
 ```bash
 # perf probe --add 'tcp_sendmsg:81 seglen'
@@ -2210,11 +2231,14 @@ You can now use it in all perf tools, such as:
 [...]
 ```
 This is pretty amazing. Remember that you can also include in-kernel filtering using --filter, to match only the data you want.
+这是相当惊人的。请记住，还可以使用--filter包括内核内筛选，以便只匹配所需的数据。
 
 **User: malloc()**
 While this is an interesting example, I want to say right off the bat that malloc() calls are very frequent, so you will need to consider the overheads of tracing calls like this.
+虽然这是一个有趣的示例，但我想马上说明malloc()调用非常频繁，因此需要考虑跟踪这样的调用的开销。
 
 Adding a libc malloc() probe:
+添加一个 libc malloc 探针
 
 ```bash
 # perf probe -x /lib/x86_64-linux-gnu/libc-2.15.so --add malloc
@@ -2280,9 +2304,11 @@ The report:
      0.00%             1             cron  libc-2.15.so   [.] malloc
 ```
 This shows the most malloc() calls were by apt-config, while I was tracing.
+这显示了大多数malloc()调用是通过apt-config进行的。
 
-User: malloc() with size
+**User: malloc() with size**
 As of the Linux 3.13.1 kernel, this is not supported yet:
+在Linux 3.13.1内核中，这还不被支持:
 
 ```bash
 # perf probe -x /lib/x86_64-linux-gnu/libc-2.15.so --add 'malloc size'
@@ -2296,11 +2322,15 @@ As a workaround, you can access the registers (on Linux 3.7+). For example, on x
        probe_libc:malloc    (on 0x800c0 with size=%di)
 ```
 These registers ("%di" etc) are dependent on your processor architecture. To figure out which ones to use, see the X86 calling conventions on Wikipedia, or page 24 of the AMD64 ABI (PDF). (Thanks Jose E. Nunez for digging out these references.)
+这些寄存器(“%di”等)依赖于你的处理器架构。要确定使用哪些，请参阅Wikipedia上的[X86调用](https://en.wikipedia.org/wiki/X86_calling_conventions#System_V_AMD64_ABI)约定，或[AMD64 ABI](http://x86-64.org/documentation/abi.pdf) (PDF)的第24页。(感谢何塞·e·努涅斯(Jose E. Nunez)挖掘出这些参考资料。)
 
 ### 6.7. Scheduler Analysis
 The perf sched subcommand provides a number of tools for analyzing kernel CPU scheduler behavior. You can use this to identify and quantify issues of scheduler latency.
+perf sched子命令提供了许多用于分析内核CPU调度器行为的工具。您可以使用它来识别和量化调度器延迟的问题。
 
 The current overhead of this tool (as of up to Linux 4.10) may be noticeable, as it instruments and dumps scheduler events to the perf.data file for later analysis. For example:
+这个工具的当前开销(从Linux 4.10开始)可能是显而易见的，因为它将调度器事件转储到perf。供以后分析使用。例如:
+
 ```bash
 # perf sched record -- sleep 1
 [ perf record: Woken up 1 times to write data ]
@@ -2308,6 +2338,7 @@ The current overhead of this tool (as of up to Linux 4.10) may be noticeable, as
 ```
 
 That's 1.9 Mbytes for one second, including 13,502 samples. The size and rate will be relative to your workload and number of CPUs (this example is an 8 CPU server running a software build). How this is written to the file system has been optimized: it only woke up one time to read the event buffers and write them to disk, which greatly reduces overhead. That said, there are still significant overheads with instrumenting all scheduler events and writing event data to the file system. These events:
+一秒是1.9兆字节，包括13502个样本。大小和速率将与您的工作负载和CPU数量相关(本例是运行软件构建的8 CPU服务器)。如何将其写入文件系统已经进行了优化:它只唤醒一次来读取事件缓冲区并将其写入磁盘，这大大减少了开销。也就是说，在检测所有调度器事件和向文件系统写入事件数据方面仍然存在很大的开销。
 
 ```bash
 # perf script --header
@@ -2343,8 +2374,11 @@ That's 1.9 Mbytes for one second, including 13,502 samples. The size and rate wi
 [...]
 ```
 If overhead is a problem, you can use my eBPF/bcc Tools including runqlat and runqlen which use in-kernel summaries of scheduler events, reducing overhead further. An advantage of perf sched dumping all events is that you aren't limited to the summary. If you caught an intermittent event, you can analyze those recorded events in custom ways until you understood the issue, rather than needing to catch it a second time.
+如果开销是一个问题，您可以使用我的[eBPF/bcc工具](http://www.brendangregg.com/ebpf.html#bcc)，包括runqlat和runqlen，它们使用内核内的调度器事件摘要，进一步减少开销。perf sched转储所有事件的一个优点是您不局限于摘要。如果捕捉到一个间歇事件，您可以用自定义的方式分析那些记录的事件，直到您理解问题为止，而不需要再次捕捉它。
 
 The captured trace file can be reported in a number of ways, summarized by the help message:
+捕获的跟踪文件可以用多种方式报告，通过帮助可以查看这些处理方式
+:
 ```bash
 # perf sched -h
 
@@ -2356,6 +2390,7 @@ The captured trace file can be reported in a number of ways, summarized by the h
     -v, --verbose         be more verbose (show symbol address, etc)
 ```
 perf sched latency will summarize scheduler latencies by task, including average and maximum delay:
+perf sched latency 将按任务统计调度程序延迟，包括平均延迟和最大延迟:
 
 ```bash
 # perf sched latency
@@ -2380,6 +2415,7 @@ perf sched latency will summarize scheduler latencies by task, including average
 [...]
 ```
 To shed some light as to how this is instrumented and calculated, I'll show the events that led to the top event's "Maximum delay at" of 29.702 ms. Here are the raw events from perf sched script:
+为了说明如何测量和计算它，我将展示导致最高事件的“最大延迟”为29.702 ms的事件。下面是来自perf sched脚本的原始事件:
 
 ```bash
       sh 17028 [001] 991962.918368:   sched:sched_wakeup_new: comm=sh pid=17030 prio=120 target_cpu=002
@@ -2389,8 +2425,11 @@ To shed some light as to how this is instrumented and calculated, I'll show the 
 [...]
 ```
 The time from the wakeup (991962.918368, which is in seconds) to the context switch (991962.948070) is 29.702 ms. This process is listed as "sh" (shell) in the raw events, but execs "cat" soon after, so is shown as "cat" in the perf sched latency output.
+从唤醒(991962.918368，单位是秒)到上下文切换(991962.948070)的时间是29.702 ms。这个过程在原始事件中以“sh”(shell)的形式列出，但是execs“cat”紧随其后，所以在perf sched延迟输出中显示为“cat”。
 
 perf sched map shows all CPUs and context-switch events, with columns representing what each CPU was doing and when. It's the kind of data you see visualized in scheduler analysis GUIs (including perf timechart, with the layout rotated 90 degrees). Example output:
+
+perf sched map 显示所有CPU和上下文切换事件，其中的列表示每个CPU正在做什么以及何时做。它是在调度器分析gui中可以看到的可视化数据(包括将布局旋转90度的perf timechart)。示例输出:
 
 ```bash
 # perf sched map
@@ -2419,10 +2458,13 @@ perf sched map shows all CPUs and context-switch events, with columns representi
 [...]
 ```
 This is an 8 CPU system, and you can see the 8 columns for each CPU starting from the left. Some CPU columns begin blank, as we've yet to trace an event on that CPU at the start of the profile. They quickly become populated.
+这是一个8 CPU的系统，您可以看到每个CPU从左侧开始的8列。一些CPU列开始时是空白的，因为我们还没有跟踪配置文件开始时那个CPU上的事件。它们很快就有了人口。
 
 The two character codes you see ("A0", "C0") are identifiers for tasks, which are mapped on the right ("=>"). This is more compact than using process (task) IDs. The "*" shows which CPU had the context switch event, and the new event that was running. For example, the very last line shows that at 991962.886917 (seconds) CPU 4 context-switched to K0 (a "cc1" process, PID 16945).
+您看到的两个字符代码(“A0”、“C0”)是任务的标识符，它们被映射在右侧(“=>”)。这比使用进程(任务)id更紧凑。“*”显示哪个CPU拥有上下文切换事件，以及正在运行的新事件。例如，最后一行显示在991962.886917(秒)处，CPU 4上下文切换到K0(一个“cc1”进程，PID 16945)。
 
 That example was from a busy system. Here's an idle system:
+上面的例子来自一个繁忙的系统。下面是一个空闲系统:
 ```bash
 # perf sched map
                       *A0           993552.887633 secs A0 => perf:26596
@@ -2445,10 +2487,13 @@ That example was from a busy system. Here's an idle system:
 [...]
 ```
 Idle CPUs are shown as ".".
+空闲cpu显示为"."。
 
 Remember to examine the timestamp column to make sense of this visualization (GUIs use that as a dimension, which is easier to comprehend, but here the numbers are just listed). It's also only showing context switch events, and not scheduler latency. The newer timehist command has a visualization (-V) that can include wakeup events.
+请记住检查timestamp列以理解这种可视化(gui使用它作为维度，这更容易理解，但这里只列出数字)。它还只显示上下文切换事件，而没有显示调度程序延迟。更新的`timehist`命令有一个可视化(-V)，可以包含唤醒事件。
 
 perf sched timehist was added in Linux 4.10, and shows the scheduler latency by event, including the time the task was waiting to be woken up (wait time) and the scheduler latency after wakeup to running (sch delay). It's the scheduler latency that we're more interested in tuning. Example output:
+perf sched timehist是在Linux 4.10中添加的，它按事件显示调度程序延迟，包括任务等待被唤醒的时间(等待时间)和调度程序从唤醒到运行的延迟(sch delay)。我们更感兴趣的是调优调度程序延迟。示例输出:
 
 ```bash
 # perf sched timehist
@@ -2475,8 +2520,11 @@ Samples do not have callchains.
 ```
 
 This output includes the sleep command run to set the duration of perf itself to one second. Note that sleep's wait time is 1000.104 milliseconds because I had run "sleep 1": that's the time it was asleep waiting its timer wakeup event. Its scheduler latency was only 0.006 milliseconds, and its time on-CPU was 0.269 milliseconds.
+该输出包括sleep命令run，用于将perf本身的持续时间设置为1秒。注意，sleep的等待时间是1000.104毫秒，因为我已经运行了“sleep 1”:这是它在休眠等待计时器唤醒事件的时间。它的调度器延迟只有0.006毫秒，它在cpu上的时间是0.269毫秒。
 
 There are a number of options to timehist, including -V to add a CPU visualization column, -M to add migration events, and -w for wakeup events. For example:
+timehist有许多选项，包括添加CPU可视化列的-V，添加迁移事件的-M，以及用于唤醒事件的-w。例如:
+
 ```bash
 # perf sched timehist -MVw
 Samples do not have callchains.
@@ -2508,8 +2556,11 @@ Samples do not have callchains.
   991963.886018 [0005]       s     cc1[17083]             19.998      0.000      9.948 
 ```
 The CPU visualization column ("012345678") has "s" for context-switch events, and "m" for migration events, showing the CPU of the event. If you run perf sched record -g, then the stack traces are appended on the right in a single line (not shown here).
+CPU可视化列(“012345678”)使用“s”表示上下文切换事件，使用“m”表示迁移事件，来显示CPU上的事件。如果您运行perf sched record -g，那么堆栈跟踪将附加在右侧的一行中(这里没有显示)。
 
 The last events in that output include those related to the "sleep 1" command used to time perf. The wakeup happened at 991963.885734, and at 991963.885740 (6 microseconds later) CPU 1 begins to context-switch to the sleep process. The column for that event still shows ":17008[17008]" for what was on-CPU, but the target of the context switch (sleep) is not shown. It is in the raw events:
+
+该输出中的最后一个事件包括与用于为perf计时的“sleep 1”命令相关的事件。唤醒发生在 991963.885734 ，在991963.885740(6微秒后)CPU 1开始上下文切换到睡眠进程。对于cpu上的内容，该事件的列仍然显示“:17008[17008]”，但是没有显示上下文切换(sleep)的目标。它是在原始事件:
 
 ```bash
   :17008 17008 [001] 991963.885740:       sched:sched_switch: prev_comm=cc1 prev_pid=17008 prev_prio=120
@@ -2517,7 +2568,10 @@ The last events in that output include those related to the "sleep 1" command us
 ```
 The 991963.886005 event shows that the perf command received a wakeup while sleep was running (almost certainly sleep waking up its parent process because it terminated), and then we have the context switch on 991963.886009 where sleep stops running, and a summary is printed out: 1000.104 ms waiting (the "sleep 1"), with 0.006 ms scheduler latency, and 0.269 ms of CPU runtime.
 
+991963.886005 事件表明,当 sleep 运行时 perf 命令被唤醒(几乎可以肯定是 sleep 唤醒了它的父进程,因为它终止了),然后我们有 991963.886009 的上下文切换,睡眠停止运行,并打印出总结:1000.104毫秒(“睡眠1”),等待0.006调度器延迟和0.269毫秒的CPU运行时。
+
 Here I've decorated the timehist output with the details of the context switch destination in red:
+这里我用红色的上下文切换目的地的细节装饰了timehist输出:
 ```bash
   991963.885734 [0001]             :17008[17008]                                        awakened: sleep[16999]
   991963.885740 [0001]   s         :17008[17008]          25.613      0.000      0.057  next: sleep[16999]
@@ -2527,7 +2581,10 @@ Here I've decorated the timehist output with the details of the context switch d
 ```
 When sleep finished, a waiting "cc1" process then executed. perf ran on the following context switch, and is the last event in the profile (perf terminated). I've added this as a -n/--next option to perf (should arrive in Linux 4.11 or 4.12).
 
+当休眠结束时，等待的“cc1”进程被执行。perf 在以下上下文切换中运行，并且是 profile 文件中的最后一个事件。我使用 perf的-n/--next选项来显示这些信息(在Linux 4.11或4.12中可用)。
+
 perf sched script dumps all events (similar to perf script):
+perf sched script 转储所有事件(类似于perf脚本):
 
 ```bash
 # perf sched script
@@ -2542,10 +2599,15 @@ perf sched script dumps all events (similar to perf script):
      cc1 16825 [006] 991962.880058: sched:sched_stat_runtime: comm=cc1 pid=16825 runtime=3999423 [ns] vruntime=7876...
 ```
 Each of these events ("sched:sched_stat_runtime" etc) are tracepoints you can instrument directly using perf record.
+这些事件(“sched:sched_stat_runtime”等)都是可以使用perf记录直接检测的跟踪点。
 
 As I've shown earlier, this raw output can be useful for digging further than the summary commands.
+如前所述，这个原始输出对于深入研究summary命令以外的内容很有用。
 
 perf sched replay will take the recorded scheduler events, and then simulate the workload by spawning threads with similar runtimes and context switches. Useful for testing and developing scheduler changes and configuration. Don't put too much faith in this (and other) workload replayers: they can be a useful load generator, but it's difficult to simulate the real workload completely. Here I'm running replay with -r -1, to repeat the workload:
+
+perf sched replay将获取已记录的调度程序事件，然后通过使用类似的运行时和上下文切换生成线程来模拟工作负载。用于测试和开发调度器更改和配置。不要太相信这个(和其他)工作负载重播器:它们可以是一个有用的负载生成器，但是很难完全模拟真实的工作负载。这里我使用了 -r -1 选项来运行重放，以重复工作负载:
+
 ```bash
 # perf sched replay -r -1
 run measurement overhead: 84 nsecs

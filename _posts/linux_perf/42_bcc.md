@@ -158,3 +158,38 @@ Attaching to pid 12512, Ctrl+C to quit.
         child+0x4f [app]
         start_thread+0xdb [libpthread-2.27.so] 
 ```
+
+## 4. 磁盘I/O分析
+### 4.1 filetop
+`filetop`
+- 作用: 主要跟踪内核中文件的读写情况，并输出线程 ID（TID）、读写大小、读写类型以及文件名称。
+
+```bash
+
+# 切换到工具目录 
+$ cd /usr/share/bcc/tools 
+
+# -C 选项表示输出新内容时不清空屏幕 
+$ ./filetop -C 
+
+TID    COMM             READS  WRITES R_Kb    W_Kb    T FILE 
+514    python           0      1      0       2832    R 669.txt 
+514    python           0      1      0       2490    R 667.txt 
+...
+
+TID    COMM             READS  WRITES R_Kb    W_Kb    T FILE 
+514    python           2      0      5957    0       R 651.txt 
+514    python           2      0      5371    0       R 112.txt 
+```
+ 指标含义: 输出了 8 列内容，分别是线程 ID、线程命令行、读写次数、读写的大小（单位 KB）、文件类型以及读写的文件名称。
+
+### 4.2 opensnoop
+`opensnoop`:s
+- 作用: 动态跟踪内核中的 open 系统调用
+
+```bash
+$ opensnoop 
+12280  python              6   0 /tmp/9046db9e-fe25-11e8-b13f-0242ac110002/650.txt 
+12280  python              6   0 /tmp/9046db9e-fe25-11e8-b13f-0242ac110002/651.txt 
+12280  python              6   0 /tmp/9046db9e-fe25-11e8-b13f-0242ac110002/652.txt 
+```
