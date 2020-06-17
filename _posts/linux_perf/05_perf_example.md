@@ -2639,14 +2639,18 @@ task    534 (                  sh:     17149), nr_events: 1
 
 ### 6.8. eBPF
 As of Linux 4.4, perf has some enhanced BPF support (aka eBPF or just "BPF"), with more in later kernels. BPF makes perf tracing programmatic, and takes perf from being a counting & sampling-with-post-processing tracer, to a fully in-kernel programmable tracer.
+从Linux 4.4开始，perf已经增强了对BPF的支持(又名eBPF或简称为“BPF”)，在以后的内核中会有更多的增强。BPF使perf跟踪成为可编程的，并使perf从一个计数和取样与后处理跟踪程序，成为一个完全在内核内可编程跟踪程序。
 
-eBPF is currently a little restricted and difficult to use from perf. It's getting better all the time. A different and currently easier way to access eBPF is via the bcc Python interface, which is described on my eBPF Tools page. On this page, I'll discuss perf.
+eBPF is currently a little restricted and difficult to use from perf. It's getting better all the time. A different and currently easier way to access eBPF is via the bcc Python interface, which is described on my [eBPF Tools](http://www.brendangregg.com/ebpf.html) page. On this page, I'll discuss perf.
+eBPF目前在 perf 上有限制，并且难以使用。不过情况一直在好转。一种不同的、目前更容易的访问eBPF的方法是通过bcc Python接口，它在我的[eBPF工具](http://www.brendangregg.com/ebpf.html)页面上被描述。当前只讨论perf。
 
-Prerequisites
+**Prerequisites**
 Linux 4.4 at least. Newer versions have more perf/BPF features, so the newer the better. Also clang (eg, apt-get install clang).
+至少是Linux 4.4。较新的版本有更多的perf/BPF特性，所以越新越好。还有 clang (eg，apt-get install clang)。
 
-kmem_cache_alloc from Example
+**kmem_cache_alloc from Example**
 This program traces the kernel kmem_cache_alloc() function, only if its calling function matches a specified range, filtered in kernel context. You can imagine doing this for efficiency: instead of tracing all allocations, which can be very frequent and add significant overhead, you filter for just a range of kernel calling functions of interest, such as a kernel module. I'll loosely match tcp functions as an example, which are in memory at these addresses:
+这个程序跟踪内核kmem_cache_alloc()函数，仅当它的调用函数匹配指定的范围(在内核上下文中过滤)。您可以想象这样做是为了提高效率:您不必跟踪所有的分配(这可能非常频繁并增加显著的开销)，而是只过滤感兴趣的一系列内核调用函数，比如内核模块。我将松散匹配tcp函数作为一个例子，这是在内存在这些地址:
 
 ```bash
 # grep tcp /proc/kallsyms | more
@@ -2667,8 +2671,10 @@ ffffffff81864ae0 t tcp6_gso_segment
 ffffffff8187bd89 t tcp_v4_inbound_md5_hash
 ```
 I'll assume these functions are contiguous, so that by tracing the range 0xffffffff817c1bb0 to 0xffffffff8187bd89, I'm matching much of tcp.
+我假设这些函数是连续的，因此通过跟踪范围0xffffffffffff817c1bb0到0xffffffff8187bd89，我匹配了大部分tcp。
 
 Here is my BPF program, kca_from.c:
+这是我的BPF程序，kca_from.c:
 
 ```bash
 #include <uapi/linux/bpf.h>
@@ -2722,6 +2728,7 @@ char _license[] SEC("license") = "GPL";
 int _version SEC("version") = LINUX_VERSION_CODE;
 ```
 Now I'll execute it, then dump the events:
+现在我将执行它，然后转储事件:
 
 ```bash
 # perf record -e bpf-output/no-inherit,name=evt/ -e ./kca_from.c/map:channel.event=evt/ -a -- sleep 1
@@ -2743,8 +2750,10 @@ bpf: builtin compilation failed: -95, try external compiler
                   0008: 00 00 00 00              ....    
 ```
 It worked: the "BPF output" records contain addresses in our range: 0xffffffff817cb40f, and so on. kmem_cache_alloc() is a frequently called function, so that it only matched a few entries in one second of tracing is an indication it is working (I can also relax that range to confirm it).
+eBPF 脚本已经开始工作:“BPF输出”记录包含我们的筛选范围内的地址:0xffffffffff817cb40f，等等。kmem_cache_alloc()是一个经常调用的函数，因此在跟踪过程中，它在一秒钟内只匹配了几个条目，这表明它在工作(我还可以放宽这个范围来确认它)。
 
 Adding stack traces with -g:
+添加堆栈跟踪-g:
 
 ```bash
 # perf record -e bpf-output/no-inherit,name=evt/ -e ./kca_from.c/map:channel.event=evt/ -a -g -- sleep 1
@@ -2846,28 +2855,37 @@ redis-server  1871 [003] 481518.262870:          0                 evt:
                   0008: 00 00 00 00              ....    
 ```
 This confirms the parent functions that were matched by the range.
+这确认了与范围匹配的父函数。
 
 More Examples
 XXX fill me in.
 
-## 7. Visualizations
+## 7. Visualizations(可视化)
 perf_events has a builtin visualization: timecharts, as well as text-style visualization via its text user interface (TUI) and tree reports. The following two sections show visualizations of my own: flame graphs and heat maps. The software I'm using is open source and on github, and produces these from perf_events collected data.
+perf_events有一个内置的可视化:timecharts，以及通过文本用户界面(TUI)和树状报告的文本风格的可视化。下面两个部分展示了我自己的可视化:火焰图和热图。我使用的软件是开源的，并且在github上，并从perf_events收集的数据中生成这些数据。
 
 ### 7.1. Flame Graphs
 [Flame Graphs](http://www.brendangregg.com/flamegraphs.html) can be produced from perf_events profiling data using the [FlameGraph tools](https://github.com/brendangregg/FlameGraph) software. This visualizes the same data you see in perf report, and works with any perf.data file that was captured with stack traces (-g).
+火焰图可以使用FlameGraph工具软件从perf_events分析数据生成。这将可视化您在perf报告中看到的相同数据，并与任何perf一起工作。用堆栈跟踪捕获的数据文件(-g)。
 
 **Example**
 This example CPU flame graph shows a network workload for the 3.2.9-1 Linux kernel, running as a KVM instance ([SVG](http://www.brendangregg.com/FlameGraphs/cpu-linux-tcpsend.svg), [PNG](http://www.brendangregg.com/FlameGraphs/cpu-linux-tcpsend.png)):
+这个示例CPU火焰图显示了3.2.9-1 Linux内核的网络工作负载，它作为一个KVM实例运行([SVG](http://www.brendangregg.com/FlameGraphs/cpu-linux-tcpsend.svg)， [PNG](http://www.brendangregg.com/FlameGraphs/cpu-linux-tcpsend.png)):
 
 
 Flame Graphs show the sample population across the x-axis, and stack depth on the y-axis. Each function (stack frame) is drawn as a rectangle, with the width relative to the number of samples. See the [CPU Flame Graphs](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs) page for the full description of how these work.
+火焰图在x轴上显示样本总体，在y轴上显示堆栈深度。每个函数(堆栈框架)被绘制成一个矩形，宽度与样本的数量相关。请查看[CPU火焰图](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs)页面，以获得如何工作的完整描述。
 
 You can use the mouse to explore where kernel CPU time is spent, quickly quantifying code-paths and determining where performance tuning efforts are best spent. This example shows that most time was spent in the vp_notify() code-path, spending 70.52% of all on-CPU samples performing iowrite16(), which is handled by the KVM hypervisor. This information has been extremely useful for directing KVM performance efforts.
+您可以使用鼠标探索内核CPU时间花在哪里，快速量化代码路径，并确定性能调优工作最好花在哪里。这个示例显示，大部分时间都花在vp_notify()代码路径上，所有cpu上的示例中有70.52%的时间执行iowrite16()，它由KVM管理程序处理。这些信息对于指导KVM性能工作非常有用。
 
 A similar network workload on a bare metal Linux system looks quite different, as networking isn't processed via the virtio-net driver, for a start.
+裸机Linux系统上类似的网络工作负载看起来非常不同，因为首先网络不是通过virtio-net驱动程序处理的。
 
 **Generation**
-The example flame graph was generated using perf_events and the FlameGraph tools:
+The example flame graph was generated using perf_events and the [FlameGraph tools](https://github.com/brendangregg/FlameGraph):
+示例火焰图是使用perf_events和[FlameGraph工具](https://github.com/brendangregg/FlameGraph)生成的:
+
 ```bash
 # git clone https://github.com/brendangregg/FlameGraph  # or download it from github
 # cd FlameGraph
@@ -2876,6 +2894,7 @@ The example flame graph was generated using perf_events and the FlameGraph tools
 # cat out.perf-folded | ./flamegraph.pl > perf-kernel.svg
 ```
 The first perf command profiles CPU stacks, as explained earlier. I adjusted the rate to 99 Hertz here; I actually generated the flame graph from a 1000 Hertz profile, but I'd only use that if you had a reason to go faster, which costs more in overhead. The samples are saved in a perf.data file, which can be viewed using perf report:
+第一个perf命令配置CPU堆栈，如前所述。我把频率调到99赫兹;实际上，我从1000赫兹的数据中生成了火焰图，但只应该在你有理由更快的时候使用更高的频率，这样会花费更多的开销。样本保存在一个perf.data 文件，可使用perf报告查看:
 
 ```bash
 # perf report --stdio
@@ -2914,20 +2933,28 @@ The first perf command profiles CPU stacks, as explained earlier. I adjusted the
 [...]
 ```
 This tree follows the flame graph when reading it top-down. When using -g/--call-graph (for "caller", instead of the "callee" default), it generates a tree that follows the flame graph when read bottom-up. The hottest stack trace in the flame graph (@70.52%) can be seen in this perf call graph as the product of the top three nodes (72.18% x 99.53% x 98.16%).
+堆栈树与火焰图一样，遵循从上到下的查看逻辑，即子函数在上，复函数在下。如果使用 `-g/--call-graph caller` 替代默认的 callee 选项。调用栈和火焰图会倒置。在这个火焰图中个，火焰图(@70.52%)中最热的堆栈轨迹是前三个节点(72.18% x 99.53% x 98.16%)的乘积。
 
 The perf report tree (and the ncurses navigator) do an excellent job at presenting this information as text. However, with text there are limitations. The output often does not fit in one screen (you could say it doesn't need to, if the bulk of the samples are identified on the first page). Also, identifying the hottest code paths requires reading the percentages. With the flame graph, all the data is on screen at once, and the hottest code-paths are immediately obvious as the widest functions.
+perf 输出树(和ncurses导航器)在将这些信息显示为文本方面做得很好。但是，使用文本也有限制。输出常常无法装入一个屏幕(如果在第一页上标识了大部分示例，则可以说不需要)。此外，确定最热门的代码路径需要阅读百分比。通过使用flame图，所有数据都立即显示在屏幕上，最热门的代码路径作为最宽的函数会立即显示出来。
 
 For generating the flame graph, the perf script command dumps the stack samples, which are then aggregated by stackcollapse-perf.pl and folded into single lines per-stack. That output is then converted by flamegraph.pl into the SVG. I included a gratuitous "cat" command to make it clear that flamegraph.pl can process the output of a pipe, which could include Unix commands to filter or preprocess (grep, sed, awk).
 
-Piping
+为了生成火焰图，perf script 命令转储堆栈示例，然后通过 stackcollapse-perf.pl 聚合这些示例，并将其折叠为每个堆栈的单行。然后，该输出由flamegraphic.pl转换为SVG。我附带了一个“cat”命令，以说明flamegraphics.pl可以处理管道的输出，其中可以包括用于过滤或预处理的Unix命令(grep、sed、awk)。
+
+**Piping**
 A flame graph can be generated directly by piping all the steps:
+所有步骤通过管道直接生成火焰图:
 ```bash
 # perf script | ./stackcollapse-perf.pl | ./flamegraph.pl > perf-kernel.svg
 ```
 In practice I don't do this, as I often re-run flamegraph.pl multiple times, and this one-liner would execute everything multiple times. The output of perf script can be dozens of Mbytes, taking many seconds to process. By writing stackcollapse-perf.pl to a file, you've cached the slowest step, and can also edit the file (vi) to delete unimportant stacks, such as CPU idle threads.
+在实际操作中，我不会这样做，因为我经常重复运行多次flamegraphic.pl，而这个一行程序会将所有内容执行多次。perf脚本的输出可能是几十兆字节，处理需要很多秒。通过将stackcollapse-perf.pl的输出写入文件，可以缓存最慢的步骤，还可以编辑文件(vi)来删除不重要的堆栈，比如CPU空闲线程。
 
-Filtering
+**Filtering**
 The one-line-per-stack output of stackcollapse-perf.pl is also convenient for grep(1). Eg:
+stackcollapse-perf.pl 输出的堆栈，每堆栈输出一行，对于grep很方便。例如:
+
 ```bash
 # perf script | ./stackcollapse-perf.pl > out.perf-folded
 
@@ -2938,20 +2965,27 @@ The one-line-per-stack output of stackcollapse-perf.pl is also convenient for gr
 # egrep 'system_call.*sys_(read|write)' out.perf-folded | ./flamegraph.pl > rw.svg
 ```
 I frequently elide the cpu_idle threads in this way, to focus on the real threads that are consuming CPU resources. If I miss this step, the cpu_idle threads can often dominate the flame graph, squeezing the interesting code paths.
+我经常以这种方式省略cpu_idle线程，以便关注消耗CPU资源的实际线程。如果我错过了这一步，cpu_idle线程通常会占据火焰图，挤压感兴趣的代码路径。
 
 Note that it would be a little more efficient to process the output of perf report instead of perf script; better still, perf report could have a report style (eg, "-g folded") that output folded stacks directly, obviating the need for stackcollapse-perf.pl. There could even be a perf mode that output the SVG directly (which wouldn't be the first one; see perf-timechart), although, that would miss the value of being able to grep the folded stacks (which I use frequently).
+注意，处理perf report 的输出比处理perf脚本的输出效率更高一些;更好的是，perf report 可以具有直接输出折叠的堆栈的报告样式(例如“-g folding”)，从而避免了 stackcollapse-perf.pl 的需要。甚至可以有一个直接输出SVG的perf模式(这不是第一个;但是，这将错过能够grep折叠的堆栈(我经常使用它)的价值。
 
 There are more examples of perf_events CPU flame graphs on the [CPU flame graph](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#Examples) page, including a [summary](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#perf) of these instructions. I have also shared an example of using perf for a [Block Device I/O Flame Graph.](http://www.brendangregg.com/FlameGraphs/offcpuflamegraphs.html#BlockIO)
+在[CPU火焰图](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#examples)页面上有更多关于perf_events CPU火焰图的例子，包括一个[摘要](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#perf)。我还分享了一个在[块设备I/O火焰图]中使用perf的例子。
 
 ### 7.2. Heat Maps
 Since perf_events can record high resolution timestamps (microseconds) for events, some latency measurements can be derived from trace data.
+由于perf_events可以记录事件的高分辨率时间戳(微秒)，因此可以从跟踪数据中度量延迟。
 
-Example
+**Example**
 The following heat map visualizes disk I/O latency data collected from perf_events ([SVG](http://www.brendangregg.com/perf_events/perf_block_latencyheatmap.svg), [PNG](http://www.brendangregg.com/perf_events/perf_block_latencyheatmap.png)):
+以下热图显示了从perf_events ([SVG](http://www.brendangregg.com/perf_events/perf_block_latencyheatmap.svg)、[PNG](http://www.brendangregg.com/perf_events/perf_block_latencyheatmap.png)收集的磁盘I/O延迟数据:
 
 Mouse-over blocks to explore the latency distribution over time. The x-axis is the passage of time, the y-axis latency, and the z-axis (color) is the number of I/O at that time and latency range. The distribution is bimodal, with the dark line at the bottom showing that many disk I/O completed with sub-millisecond latency: cache hits. There is a cloud of disk I/O from about 3 ms to 25 ms, which would be caused by random disk I/O (and queueing). Both these modes averaged to the 9 ms we saw earlier.
+将鼠标移到块上，以研究延时随时间的分布。x轴是时间的流逝，y轴是延迟，z轴(颜色)是此时的I/O数量和延迟范围。分布是双峰的，底部的暗线显示许多磁盘I/O在亚毫秒级的延迟下完成:缓存命中。磁盘I/O的云大约在3 ms到25 ms之间，这可能是由随机磁盘I/O(和排队)造成的。这两种模式的平均频率为9毫秒。
 
 The following iostat output was collected at the same time as the heat map data was collected (shows a typical one second summary):
+下面的iostat输出是在收集热图数据的同时收集的(显示一个典型的一秒摘要):
 ```bash
 # iostat -x 1
 [...]
@@ -2960,9 +2994,12 @@ vda       0.00   0.00   0.00  0.00    0.00  0.00     0.00     0.00  0.00    0.00
 vdb       0.00   0.00 334.00  0.00 2672.00  0.00    16.00     2.97  9.01    9.01    0.00  2.99 100.00
 ```
 This workload has an average I/O time (await) of 9 milliseconds, which sounds like a fairly random workload on 7200 RPM disks. The problem is that we don't know the distribution from the iostat output, or any similar latency average. There could be latency outliers present, which is not visible in the average, and yet are causing problems. The heat map did show I/O up to 50 ms, which you might not have expected from that iostat output. There could also be multiple modes, as we saw in the heat map, which are also not visible in an average.
+这个工作负载的平均I/O时间(等待)为9毫秒，这听起来像是在7200 RPM磁盘上相当随机的工作负载。问题是我们不知道iostat输出的分布情况，也不知道任何类似的延迟平均值。可能存在延迟异常值，这在一般情况下是不可见的，但却会导致问题。热图显示I/O最高可达50毫秒，这可能是iostat输出所没有预料到的。也可以有多种模式，正如我们在热图中看到的那样，在平均模式中也不可见。
 
-Gathering
+**Gathering**
 I used perf_events to record the block request (disk I/O) issue and completion static tracepoints:
+我使用perf_events 记录 block_rq_issue(磁盘I/O)和 block_rq_complete 跟踪点:
+
 ```bash
 # perf record -e block:block_rq_issue -e block:block_rq_complete -a sleep 120
 [ perf record: Woken up 36 times to write data ]
@@ -2981,11 +3018,14 @@ I used perf_events to record the block request (disk I/O) issue and completion s
 [...]
 ```
 The full output from perf script is about 70,000 lines. I've included some here so that you can see the kind of data available.
+perf脚本的完整输出约为70,000行。我在这里添加了一些这样你就能看到可用的数据。
 
-Processing
+**Processing**
 To calculate latency for each I/O, I'll need to pair up the issue and completion events, so that I can calculate the timestamp delta. The columns look straightforward (and are in include/trace/events/block.h), with the 4th field the timestamp in seconds (with microsecond resolution), the 6th field the disk device ID (major, minor), and a later field (which varies based on the tracepoint) has the disk offset. I'll use the disk device ID and offset as the unique identifier, assuming the kernel will not issue concurrent I/O to the exact same location.
+为了计算每个I/O的延迟，我需要将问题事件和完成事件配对，以便计算时间戳增量。这些列看起来很简单(位于include/trace/events/block.h中)，第4个字段是时间戳(以秒为单位)，第6个字段是磁盘设备ID(主、次)，后面的字段(根据跟踪点变化)是磁盘偏移量。我将使用磁盘设备ID和偏移量作为唯一标识符，假设内核不会向完全相同的位置发出并发I/O。
 
 I'll use awk to do these calculations and print the completion times and latency:
+我将使用awk来做这些计算，并打印完成时间和延迟:
 ```bash
 # perf script | awk '{ gsub(/:/, "") } $5 ~ /issue/ { ts[$6, $10] = $4 }
     $5 ~ /complete/ { if (l = ts[$6, $9]) { printf "%.f %.f\n", $4 * 1000000,
@@ -3000,18 +3040,23 @@ I'll use awk to do these calculations and print the completion times and latency
 [...]
 ```
 I converted both columns to be microseconds, to make the next step easier.
+我将两个列都转换为微秒，以使下一步更容易。
 
 **Generation**
 Now I can use my trace2heatmap.pl program (github), to generate the interactive SVG heatmap from the trace data (and uses microseconds by default):
+现在我可以使用我的trace2heatmap.pl程序(github)，从跟踪数据生成交互式SVG热图(默认使用微秒):
 ```bash
 # ./trace2heatmap.pl --unitstime=us --unitslat=us --maxlat=50000 out.lat_us > out.svg
 ```
 When I generated the heatmap, I truncated the y scale to 50 ms. You can adjust it to suit your investigation, increasing it to see more of the latency outliers, or decreasing it to reveal more resolution for the lower latencies: for example, with a 250 us limit.
+当我生成热图时，我将y刻度缩短到50毫秒。您可以调整它以适应您的调查，增加它以查看更多的延迟异常值，或者减少它以显示更低延迟的更高分辨率:例如，使用250 us的限制。
 
-Overheads
+**Overheads**
 While this can be useful to do, be mindful of overheads. In my case, I had a low rate of disk I/O (~300 IOPS), which generated an 8 Mbyte trace file after 2 minutes. If your disk IOPS were 100x that, your trace file will also be 100x, and the overheads for gathering and processing will add up.
+虽然这样做很有用，但要注意日常开销。在我的例子中，我的磁盘I/O率很低(~300 IOPS)，这在2分钟后生成了一个8兆字节的跟踪文件。如果您的磁盘IOPS是它的100倍，那么跟踪文件也将是100倍，收集和处理的开销将会增加。
 
-For more about latency heatmaps, see my LISA 2010 presentation slides, and my CACM 2010 article, both about heat maps. Also see my Perf Heat Maps blog post.
+For more about latency heatmaps, see my [LISA 2010](http://www.slideshare.net/brendangregg/lisa2010-visualizations) presentation slides, and my [CACM 2010](http://cacm.acm.org/magazines/2010/7/95062-visualizing-system-latency/fulltext) article, both about heat maps. Also see my Perf Heat Maps blog post.
+有关延迟热图的更多信息，请参阅我的[LISA 2010](http://www.slideshare.net/brendangregg/lisa2010-visualizations)演示幻灯片和我的[CACM 2010](http://cacm.acm.org/magazines/2010/7/95062-visualizing-system-latency/fulltext)文章，都是关于热图的。也可以查看我的Perf [Heat Maps](http://www.brendangregg.com/blog/2014-07-01/perf-heat-maps.html)博客文章。
 
 ## 8. Targets
 Notes on specific targets.
@@ -3021,11 +3066,14 @@ Under construction.
 ### 8.1. Java
 ### 8.2. Node.js
 Node.js V8 JIT internals with annotation support https://twitter.com/brendangregg/status/755838455549001728
+js V8 JIT内部注释支持 https://twitter.com/brendangregg/status/755838455549001728
 
 ## 9. More
 There's more capabilities to perf_events than I've demonstrated here. I'll add examples of the other subcommands when I get a chance.
+perf_events的功能比我在这里演示的更多。如果有机会，我将添加其他子命令的示例。
 
-Here's a preview of perf trace, which was added in 3.7, demonstrated on 3.13.1:
+Here's a preview of perf trace, which was added in [3.7](http://kernelnewbies.org/Linux_3.7), demonstrated on 3.13.1:
+下面是perf trace的预览，它是在3.7中添加的，在3.13.1中演示:
 ```bash
 # perf trace ls
      0.109 ( 0.000 ms):  ... [continued]: read()) = 1
@@ -3052,18 +3100,23 @@ Here's a preview of perf trace, which was added in 3.7, demonstrated on 3.13.1:
 [...]
 ```
 An advantage is that this is buffered tracing, which costs much less overhead than strace, as I described earlier. The perf trace output seen from this 3.13.1 kernel does, however, looks suspicious for a number of reasons. I think this is still an in-development feature. It reminds me of my dtruss tool, which has a similar role, before I added code to print each system call in a custom and appropriate way.
+一个优点是这是缓冲跟踪，它的开销比我前面描述的strace小得多。但是，这个3.13.1内核的perf跟踪输出看起来很可疑，原因有很多。我认为这仍然是一个正在开发的特性。这让我想起了dtruss工具，它具有类似的作用，在添加代码以自定义和适当的方式打印每个系统调用之前。
 
 ## 10. Building
 The steps to build perf_events depends on your kernel version and Linux distribution. In summary:
+构建perf_events的步骤取决于您的内核版本和Linux发行版。总而言之:
 
-Get the Linux kernel source that matches your currently running kernel (eg, from the linux-source package, or kernel.org).
-Unpack the kernel source.
-cd tools/perf
-make
-Fix all errors, and most warnings, from (4).
+1. Get the Linux kernel source that matches your currently running kernel (eg, from the linux-source package, or [kernel.org](http://kernel.org/)).
+2. Unpack the kernel source.
+3. cd tools/perf
+4. make
+5. Fix all errors, and most warnings, from (4).
+
 The first error may be that you are missing make, or a compiler (gcc). Once you have those, you may then see various warnings about missing libraries, which disable perf features. I'd install as many as possible, and take note of the ones you are missing.
+第一个错误可能是您缺少make或编译器(gcc)。一旦有了这些，您可能会看到各种关于丢失库的警告，这些库会禁用perf特性。我会安装尽可能多的，并注意那些你没有安装的。
 
 These perf build warnings are really helpful, and are generated by its Makefile. Here's the makefile from 3.9.3:
+这些perf构建警告非常有用，是由它的Makefile生成的。下面是来自3.9.3的makefile:
 ```bash
 # grep found Makefile
 msg := $(warning No libelf found, disables 'probe' tool, please install elfutils-libelf-devel/libelf-dev);
@@ -3080,14 +3133,18 @@ msg := $(warning No numa.h found, disables 'perf bench numa mem' benchmark, plea
  libnuma-dev);
 ```
 Take the time to read them. This list is likely to grow as new features are added to perf_events.
+花点时间来阅读它们。随着perf_events添加新特性，这个列表很可能会增长。
 
 The following notes show what I've specifically done for kernel versions and distributions, in case it is helpful.
+下面的说明展示了我针对内核版本和发行版所做的具体操作，如果有帮助的话。
 
-Packages: Ubuntu, 3.8.6
+**Packages: Ubuntu, 3.8.6**
 Packages required for key functionality: gcc make bison flex elfutils libelf-dev libdw-dev libaudit-dev. You may also consider python-dev (for python scripting) and binutils-dev (for symbol demangling), which are larger packages.
+关键功能所需的包:gcc make bison flex elfutils libelf-dev libdwi -dev libaudit-dev。您还可以考虑python-dev(用于python脚本)和binutil-dev(用于符号拆分)，它们是更大的包。
 
-Kernel Config: 3.8.6
+**Kernel Config: 3.8.6**
 Here are some kernel CONFIG options for perf_events functionality:
+下面是perf_events功能的一些内核配置选项:
 ```bash
 # for perf_events:
 CONFIG_PERF_EVENTS=y
@@ -3115,9 +3172,12 @@ CONFIG_LOCK_STAT=y
 CONFIG_DEBUG_INFO=y
 ```
 You may need to build your own kernel to enable these. The exact set you need depends on your needs and kernel version, and list is likely to grow as new features are added to perf_events.
+您可能需要构建自己的内核来启用这些功能。您需要的具体设置取决于您的需求和内核版本，随着perf_events添加新特性，列表可能会增长。
 
 ### 10.1. Static Builds
 I've sometimes done this so that I have a single perf binary that can be copied into Docker containers for execution. Steps, given the Linux source:
+我有时这样做，以便我有一个单一的perf二进制文件，可以复制到Docker容器中执行。Steps, given the Linux source:
+
 ```bash
 cd tools/perf
 vi Makefile.perf
@@ -3126,10 +3186,14 @@ make clean; make
 ```
 ## 11. Troubleshooting
 If you see hexadecimal numbers instead of symbols, or have truncated stack traces, see the Prerequisites section.
+如果您看到的是十六进制数字而不是符号，或已截断堆栈跟踪，请参阅先决条件部分。
 
 Here are some rough notes from other issues I've encountered.
+以下是我遇到的其他问题的一些梗概。
 
 This sometimes works (3.5.7.2) and sometimes throws the following error (3.9.3):
+这有时工作(3.5.7.2)，有时抛出以下错误(3.9.3):
+
 ```bash
 ubuntu# perf stat -e 'syscalls:sys_enter_*' -a sleep 5
 Error:
@@ -3137,6 +3201,7 @@ Too many events are opened.
 Try again after reducing the number of events.
 ```
 This can be fixed by increasing the file descriptor limit using ulimit -n.
+这可以通过使用ulimit -n增加文件描述符限制来解决。
 
 Type 3 errors:
 ```bash
@@ -3166,27 +3231,31 @@ Warning: Timestamp below last timeslice flush
 ```
 
 ## 12. Other Tools
-perf_events has the capabilities from many other tools rolled into one: strace(1), for tracing system calls, tcpdump(8), for tracing network packets, and blktrace(1), for tracing block device I/O (disk I/O), and other targets including file system and scheduler events. Tracing all events from one tool is not only convenient, it also allows direct correlations, including timestamps, between different instrumentation sources. Unlike these other tools, some assembly is required, which may not be for everyone (as explained in Audience).
+perf_events has the capabilities from many other tools rolled into one: strace(1), for tracing system calls, tcpdump(8), for tracing network packets, and blktrace(1), for tracing block device I/O (disk I/O), and other targets including file system and scheduler events. Tracing all events from one tool is not only convenient, it also allows direct correlations, including timestamps, between different instrumentation sources. Unlike these other tools, some assembly is required, which may not be for everyone (as explained in [Audience](http://www.brendangregg.com/perf.html#Audience)).
+perf_events可以将许多其他工具的功能集成在一起:strace(1)用于跟踪系统调用，tcpdump(8)用于跟踪网络包，blktrace(1)用于跟踪块设备I/O(磁盘I/O)，以及其他目标，包括文件系统和调度器事件。跟踪来自一个工具的所有事件不仅方便，而且还允许不同检测源之间的直接关联，包括时间戳。与这些其他工具不同，需要进行一些组装，这可能不适用于每个人(就像在[Audience](http://www.brendangregg.com/perf.html#Audience)解释的那样)。
 
 ## 13. Resources
 Resources for further study.
+用于进一步研究的资源。
 
 ### 13.1. Posts
 I've been writing blog posts on specific perf_events topics. My suggested reading order is from oldest to newest (top down):
+我一直在写关于特定perf_events主题的博客文章。我建议的阅读顺序是从老到新(自上而下):
 
-- 22 Jun 2014: perf CPU Sampling
-- 29 Jun 2014: perf Static Tracepoints
-- 01 Jul 2014: perf Heat Maps
-- 03 Jul 2014: perf Counting
-- 10 Jul 2014: perf Hacktogram
-- 11 Sep 2014: Linux perf Rides the Rocket: perf Kernel Line Tracing
-- 17 Sep 2014: node.js Flame Graphs on Linux
-- 26 Feb 2015: Linux perf_events Off-CPU Time Flame Graph
-- 27 Feb 2015: Linux Profiling at Netflix
-- 24 Jul 2015: Java Mixed-Mode Flame Graphs (PDF)
-- 30 Apr 2016: Linux 4.5 perf folded format
+- [22 Jun 2014: perf CPU Sampling](http://www.brendangregg.com/blog/2014-06-22/perf-cpu-sample.html)
+- [29 Jun 2014: perf Static Tracepoints](http://www.brendangregg.com/blog/2014-06-29/perf-static-tracepoints.html)
+- [01 Jul 2014: perf Heat Maps](http://www.brendangregg.com/blog/2014-07-01/perf-heat-maps.html)
+- [03 Jul 2014: perf Counting](http://www.brendangregg.com/blog/2014-07-03/perf-counting.html)
+- [10 Jul 2014: perf Hacktogram](http://www.brendangregg.com/blog/2014-07-10/perf-hacktogram.html)
+- [11 Sep 2014: Linux perf Rides the Rocket: perf Kernel Line Tracing](http://www.brendangregg.com/blog/2014-09-11/perf-kernel-line-tracing.html)
+- [17 Sep 2014: node.js Flame Graphs on Linux](http://www.brendangregg.com/blog/2014-09-17/node-flame-graphs-on-linux.html)
+- [26 Feb 2015: Linux perf_events Off-CPU Time Flame Graph](http://www.brendangregg.com/blog/2015-02-26/linux-perf-off-cpu-flame-graph.html)
+- [27 Feb 2015: Linux Profiling at Netflix](http://www.brendangregg.com/blog/2015-02-27/linux-profiling-at-netflix.html)
+- [24 Jul 2015: Java Mixed-Mode Flame Graphs (PDF)](http://techblog.netflix.com/2015/07/java-in-flames.html)
+- [30 Apr 2016: Linux 4.5 perf folded format](http://www.brendangregg.com/blog/2016-04-30/linux-perf-folded.html)
 
 And posts on ftrace:
+和关于ftrace的文章
 
 - 13 Jul 2014: Linux ftrace Function Counting
 - 16 Jul 2014: iosnoop for Linux
