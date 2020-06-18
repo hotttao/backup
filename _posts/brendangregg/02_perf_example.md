@@ -1,10 +1,11 @@
 ---
-title: 2.3 perf Examples 翻译
-date: 2020-01-05
+title: 2. perf Examples 
+date: 2020-06-18
 categories:
     - 运维
 tags:
-    - Linux性能调优
+    - Brendan Gregg
+    - 
 ---
 
 这是大神 Brendangregg [perf Examples](http://www.brendangregg.com/perf.html) 一文的翻译。ftrace，perf，dtrace，systemtap等等追踪工具依赖的底层技术是类似的，深入了解一个工具，有助于我们学习其他的技术。本人英文能力一般，大家将就着看。
@@ -87,7 +88,7 @@ This page is under construction, and there's a lot more to perf_events that I'd 
 
 Starting with a screenshot, here's perf version 3.9.3 tracing disk I/O:
 
-下面是perf版本3.9.3跟踪磁盘I/O的一个示例:
+下面是perf 3.9.3 版本跟踪磁盘I/O的一个示例:
 
 ```bash
 > perf record -e block:block_rq_issue -ag
@@ -140,7 +141,7 @@ perf report
 ```
 A perf record command was used to trace the block:block_rq_issue probe, which fires when a block device I/O request is issued (disk I/O). Options included -a to trace all CPUs, and -g to capture call graphs (stack traces). Trace data is written to a perf.data file, and tracing ended when Ctrl-C was hit. A summary of the perf.data file was printed using perf report, which builds a tree from the stack traces, coalescing common paths, and showing percentages for each path.
 
-perf record 命令用于跟踪块:block_rq_issue probe，它在块设备I/O请求发出时触发(磁盘I/O)。选项包括 -a 用于跟踪所有cpu， -g用于捕获调用图(堆栈跟踪)。跟踪数据被写入perf.data 文件。当按Ctrl-C时，数据文件和跟踪结束。使用 perf report 命令可以打印 perf.data 内的追踪信息，perf record 从堆栈跟踪构建一个树，合并公共路径，并显示每个路径的百分比。
+上面的 perf record 命令用于跟踪 block:block_rq_issue 探针，它在块设备I/O请求发出时触发(磁盘I/O)。选项 -a 用于跟踪所有cpu， -g用于捕获调用图(堆栈跟踪)。跟踪数据被写入perf.data 文件。当按Ctrl-C时，数据文件和跟踪结束。使用 perf report 命令可以打印 perf.data 内的追踪信息，perf record 从堆栈跟踪构建一个树，合并公共路径，并显示每个路径的百分比。
 
 The perf report output shows that 2,216 events were traced (disk I/O), 32% of which from a dd command. These were issued by the kernel function blk_peek_request(), and walking down the stacks, about half of these 32% were from the close() system call.
 
@@ -158,7 +159,7 @@ Some useful one-liners I've gathered or written. Terminology I'm using, from low
 2. sample: collect details (eg, instruction pointer or stack) from a subset of events (once every ...)
 3. trace: collect details from every event
 
-我收集或编写的一些有用的一行程序。并使用了如下的术语进行说明
+我收集并编写了一些有用的一行程序。并使用了如下的术语进行说明
 
 1. statistics/count: 对事件增加一个整数计数器
 2. sample: 从事件子集收集细节(例如，指令指针或堆栈)(每…一次)
@@ -598,7 +599,7 @@ A video of the talk is on youtube and the slides are on slideshare:
 
 There's also an older version of this talk from 2015, which I've posted about.
 
-brendangregg 层就 Linux perf 发表过两次演讲，下面是视频的链接:
+brendangregg 就 Linux perf 发表过两次演讲，下面是视频的链接:
 1. [2017](https://image.slidesharecdn.com/kernelrecipesperfevents-170929090404/95/kernel-recipes-2017-using-linux-perf-at-netflix-1-638.jpg?cb=1506675940)
 2. [2015](https://youtu.be/UVM3WX8Lq2k)
 
@@ -619,7 +620,7 @@ You can also build and add perf from the Linux kernel source. See the Building s
 您还可以从Linux内核源代码构建和添加perf。
 
 To get the most out perf, you'll want symbols and stack traces. These may work by default in your Linux distribution, or they may require the addition of packages, or recompilation of the kernel with additional config options.
-为了获得最大的性能，您需要符号和堆栈跟踪。这些可能在Linux发行版中默认工作，或者它们可能需要额外的包，或者使用其他配置选项重新编译内核。
+为了获得最大的性能，您需要符号和堆栈跟踪。这些可能在Linux发行版中默认工作，或者可能需要额外的包，或者使用其他配置选项重新编译内核。
 
 ### 4.2. Symbols 符号表
 perf_events, like other debug tools, needs symbol information (symbols). These are used to translate memory addresses into function and variable names, so that they can be read by us humans. Without symbols, you'll see hexadecimal numbers representing the memory addresses profiled.
@@ -677,12 +678,13 @@ Kernel-level symbols are in the kernel debuginfo package, or when the kernel is 
 
 ### 4.3. JIT Symbols (Java, Node.js) JIT 符号表
 Programs that have virtual machines (VMs), like Java's JVM and node's v8, execute their own virtual processor, which has its own way of executing functions and managing stacks. If you profile these using perf_events, you'll see symbols for the VM engine, which have some use (eg, to identify if time is spent in GC), but you won't see the language-level context you might be expecting. Eg, you won't see Java classes and methods.
-拥有虚拟机(VMs)的程序(如Java的JVM和node的v8)执行它们自己的虚拟处理器，它有自己执行函数和管理堆栈的方式。如果您使用perf_events对它们进行配置，您将看到VM引擎的符号，这些符号有一些用途(例如，用于确定是否在GC中花费了时间)，但是您不会看到您可能期望的语言级上下文。你不会看到Java类和方法。
+拥有虚拟机(VMs)的程序(如Java的JVM和node的v8)执行它们自己的虚拟处理器，它有自己执行函数和管理堆栈的方式。如果使用perf_events对它们进行分析，只能看到 VM 引擎的符号，这些符号有一些用途(例如，用于确定是否在GC中花费了时间)，但通常不是期望的语言级上下文。不可能不会看到Java类和方法。
 
 perf_events has JIT support to solve this, which requires the VM to maintain a /tmp/perf-PID.map file for symbol translation. Java can do this with perf-map-agent, and Node.js 0.11.13+ with --perf_basic_prof. See my blog post Node.js flame graphs on Linux for the steps.
-perf_events支持JIT来解决这个问题，这需要VM维护一个 /tmp/perf-PID.map 的符号表转义文件。Java可以使用[perf-map-agent](https://github.com/jvm-profiling-tools/perf-map-agent)实现这一点，而Node.js 0.11.13+可以使用——perf_basic_prof。请参阅我的博客文章[Node.js火焰图在Linux上的步骤](http://www.brendangregg.com/blog/2014-09-17/node-flame-graphs-on-linux.html)。
+perf_events支持JIT来解决这个问题，这需要VM维护一个 /tmp/perf-PID.map 的符号表转义文件。Java可以使用[perf-map-agent](https://github.com/jvm-profiling-tools/perf-map-agent)实现这一点，而Node.js 0.11.13+可以使用--perf_basic_prof 。请参阅我的博客文章[Node.js火焰图在Linux上的步骤](http://www.brendangregg.com/blog/2014-09-17/node-flame-graphs-on-linux.html)。
 
 Note that Java may not show full stacks to begin with, due to hotspot on x86 omitting the frame pointer (just like gcc). On newer versions (JDK 8u60+), you can use the -XX:+PreserveFramePointer option to fix this behavior, and profile fully using perf. See my Netflix Tech Blog post, Java in Flames, for a full writeup, and my Java flame graphs section, which links to an older patch and includes an example resulting flame graph. I also summarized the latest in my JavaOne 2016 talk Java Performance Analysis on Linux with Flame Graphs.
+
 注意，由于hotspot在x86上省略了帧指针(就像gcc一样)，Java可能一开始就没有显示完整的堆栈。在较新的版本(JDK 8u60+)上，您可以使用-XX:+PreserveFramePointer选项来修复此行为，并使用perf完全配置文件。请参阅我的Netflix技术博客文章，[Java in flame](http://techblog.netflix.com/2015/07/java-in-flames.html)，以获得完整的描述，以及我的[Java火焰图部分](http://www.brendangregg.com/FlameGraphs/cpuflamegraphs.html#Java)，其中链接到一个较老的补丁，并包括一个生成火焰图的示例。我还在我的演讲中总结了最新的用法 [Java Performance Analysis on Linux with Flame Graphs.](http://www.slideshare.net/brendangregg/java-performance-analysis-on-linux-with-flame-graphs)
 
 ### 4.4 Stack Traces 堆栈追踪
@@ -715,7 +717,7 @@ The earlier sshd example was a default build of OpenSSH, which uses compiler opt
                 --30.00%-- [...]
 ```
 Now the ancestry from add_one_listen_addr() can be seen, down to main() and __libc_start_main().
-现在可以看到来自add_one_listen_addr()的祖先，一直到main()和libc_start_main()。意思是省略帧指针后，堆栈信息显示不完整
+现在可以看到来自 add_one_listen_addr() 的祖先，一直到main()和libc_start_main()。意思是省略帧指针后，堆栈信息显示不完整
 
 The kernel can suffer the same problem. Here's an example CPU profile collected on an idle server, with stack traces (-g):
 内核也有类似省略帧指针的问题。下面是一个在空闲服务器上收集的带有堆栈跟踪(-g)的 CPU 剖析信息:
@@ -851,6 +853,7 @@ stackcollapse-p 23883 [005] 4762405.768038:   35045174 cycles:ppp:
 ```
 
 You can recompile Perl with frame pointer support (in its ./Configure, it asks what compiler options: add -fno-omit-frame-pointer). Or you can use LBR if it's available, and you don't need very long stacks.
+对于上面的输出，你可以选择使用 -fno-omit-frame-pointer 选项重新编译 Perl，如果你需要深度的堆栈追踪也可以使用 LBR。
 
 ### 4.5. Audience
 
@@ -923,14 +926,14 @@ perf_events can instrument in three ways (now using the perf_events terminology)
 perf_events有三种使用方式(现在使用perf_events术语):
 
 1. 计数模式: 对应 perf stat 命令，其在内核上下文中计数事件，其中计数的摘要由perf打印。此模式不生成perf.data文件
-2. 采样事件：它将事件数据写入内核缓冲区，由perf命令以缓慢的异步速率读取内核缓冲区，以便写入到perf.data 文件。然后，perf report 或perf script 命令读取此文件。
+2. 采样事件：将事件数据写入内核缓冲区，由perf 以缓慢的异步速率读取内核缓冲区，以便写入到perf.data 文件。然后，perf report 或perf script 命令读取此文件。
 3. 事件上的bpf程序，这是Linux 4.4+内核中的一个新特性，它可以在内核空间中执行自定义用户定义的程序，可以执行高效的数据筛选和总结。
 
 Try starting by counting events using the perf stat command, to see if this is sufficient. This subcommand costs the least overhead.
 尝试从使用perf stat命令计算事件开始，看看这是否足够。这个子命令开销最小。
 
 When using the sampling mode with perf record, you'll need to be a little careful about the overheads, as the capture files can quickly become hundreds of Mbytes. It depends on the rate of the event you are tracing: the more frequent, the higher the overhead and larger the perf.data size.
-在使用perf记录的采样模式时，您需要注意开销，因为捕获文件可能很快就会变成数百兆字节。这取决于您正在跟踪的事件的频率:频率越高，开销越大，性能越大。数据的大小。
+在使用perf记录的采样模式时，您需要注意开销，因为捕获文件可能很快就会变成数百兆字节。这取决于您正在跟踪的事件的频率:频率越高，开销越大，性能越大，数据越多
 
 To really cut down overhead and generate more advanced summaries, write BPF programs executed by perf. See the eBPF section.
 要真正减少开销并生成更高级的摘要，可以编写由perf执行的BPF程序。请参阅[eBPF部分](http://www.brendangregg.com/perf.html#eBPF)。
@@ -988,7 +991,7 @@ Dynamically instrument the kernel tcp_sendmsg() function, and trace it for 5 sec
 # perf report
 ```
 Deleting the tracepoint (--del) wasn't necessary; I included it to show how to return the system to its original state.
-没有必要删除跟踪点(- del);我包含它是为了说明如何将系统返回到其原始状态。
+没有必要删除跟踪点(--del);我包含它是为了说明如何将系统返回到其原始状态。
 
 Caveats The use of -p PID as a filter doesn't work properly on some older kernel versions (Linux 3.x): perf hits 100% CPU and needs to be killed. It's annoying. The workaround is to profile all CPUs (-a), and filter PIDs later.
 警告使用-p PID作为过滤器在一些较老的内核版本(Linux 3.x)上不能正常工作。解决方法是配置所有cpu (-a)，然后 filter 选项过滤出所需的 PID 信息。
@@ -1168,7 +1171,7 @@ perf_event_attr:
 ```
 
 See the perf_event_open(2) man page for a description of these fields. This default means is that the kernel adjusts the rate of sampling so that it's capturing about 4,000 context switch events per second. If you really meant to record them all, use -c 1:
-有关这些字段的描述，请参见perf_event_open(2)手册页。这个默认的意思是内核调整采样率，以便它每秒捕获大约4000个上下文切换事件。如果你真的想把它们全部记录下来，请使用- c1:
+有关这些字段的描述，请参见perf_event_open(2)手册页。这个默认的意思是内核调整采样率，以便它每秒捕获大约4000个上下文切换事件。如果你真的想把它们全部记录下来，请使用-c1:
 
 ```bash
 # perf record -vv -e context-switches -c 1 /bin/true
