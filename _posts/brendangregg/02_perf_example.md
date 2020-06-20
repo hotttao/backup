@@ -1391,7 +1391,7 @@ The perf stat command instruments and summarizes key CPU counters (PMCs). This i
 ```
 
 This includes instructions per cycle (IPC), labled "insns per cycle", or in earlier versions, "IPC". This is a commonly examined metric, either IPC or its invert, CPI. Higher IPC values mean higher instruction throughput, and lower values indicate more stall cycles. I'd generally interpret high IPC values (eg, over 1.0) as good, indicating optimal processing of work. However, I'd want to double check what the instructions are, in case this is due to a spin loop: a high rate of instructions, but a low rate of actual work completed.
-这包括每个周期的指令(IPC)，标签为“每个周期的insns”，或者在早期版本中为“IPC”。这是一个经常被检验的指标，无论是IPC还是它的倒数CPI。更高的IPC值意味着更高的指令吞吐量，更低的值表示更多的停顿周期。一般来说，我认为IPC值越高(例如，超过1.0)就越好，表示工作的最佳处理。但是，需要检查执行指令是什么，以防这是一个旋转循环: 指令率高，但实际完成的工作率低。
+这包括每个周期的指令(IPC)，标签为“每个周期的insns”，或者在早期版本中为“IPC”。这是一个经常被检验的指标，无论是IPC还是它的倒数 CPI 。更高的IPC值意味着更高的指令吞吐量，更低的值表示更多的停顿周期。一般来说，我认为IPC值越高(例如，超过1.0)就越好，表示工作的最佳处理。但是，需要检查执行指令是什么，以防这是一个旋转循环: 指令率高，但实际完成的工作率低。
 
 There are some advanced metrics now included in perf stat: frontend cycles idle, backend cycles idle, and stalled cycles per insn. To really understand these, you'll need some knowledge of CPU microarchitecture.
 现在perf stat中包含了一些高级指标:frontend cycles idle, backend cycles idle, 和 stalled cycles per insn.。要真正理解这些，您需要一些CPU微架构的知识。
@@ -1466,7 +1466,7 @@ perf list 可以像下面这样查看硬件缓存事件
 ```
 
 The percentage printed is a convenient calculation that perf_events has included, based on the counters I specified. If you include the "cycles" and "instructions" counters, it will include an IPC calculation in the output.
-根据我指定的计数器，perf_events包含了打印的百分比，这是一个很方便的计算。如果包含“cycle”和“instructions”计数器，那么它将在输出中包含IPC计算。
+根据我指定的计数器，perf_events包含了打印的百分比，这是一个很方便的计算。如果包含“ cycle ”和“ instructions ”计数器，那么它将在输出中包含IPC计算。
 
 These hardware events that can be measured are often specific to the processor model. Many may not be available from within a virtualized environment.
 这些可以测量的硬件事件通常是特定于处理器模型的。许多可能无法从虚拟化环境中获得。

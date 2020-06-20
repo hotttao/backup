@@ -1,5 +1,5 @@
 ---
-title: 2.2 perf 的原理与使用
+title: 2.2 perf 的原理
 date: 2020-01-04
 categories:
     - 运维
@@ -146,6 +146,11 @@ perf的源代码就是Linux的源代码目录中，因为它在相当程度上�
 
 通常软件包的符号表通过类似 `-dbgsym` 命令符号的调试包提供。libc6-dbgsym和coreutils-dbgsym 可以提供用户级 OS 代码页的一些符号表。实在不行只能自己编译软件，保留符号表。
 
+```bash
+# 安装内核符号表
+yum search debuginfo|grep kernel
+yum install kernel-debuginfo
+```
 
 #### 省略帧指针优化问题
 省略帧指针是编译器默认的优化选项，使得 perf 无法看到完整的堆栈。
@@ -163,6 +168,15 @@ perf的源代码就是Linux的源代码目录中，因为它在相当程度上�
 
 
 内核也有类似省略帧指针的问题。启动 `CONFIG_FRAME_POINTER=y` 内核选项可以避免此问题。
+
+#### 堆栈追踪深度问题
+使用堆栈跟踪要注意的是:
+1. 堆栈跟踪受扫描深度的限制，太深的堆栈可能回溯不过去，这是有可能影响结果的。
+2. 有些我们从源代码看来是函数调用的，其实在汇编一级并不是函数调用
+    - 比如inline函数，宏，都不是函数调用
+    - 另外，gcc在很多平台中，会自动把很短的函数变成inline函数，这也不产生函数调用
+    - 还有一种是，fastcall函数，通过寄存器传递参数，不会产生调用栈，也有可能不产生调用栈
+    - 部分平台使用简化的堆栈回溯机制，在堆栈中看见一个地址像是代码段的地址，就认为是调用栈
 
 ### 2.3 perf 的运行方式
 perf_events有三种使用方式:
@@ -256,252 +270,137 @@ perf report
 |kallsyms        |Searches running kernel for symbols<br>|
 |version         |display the version of perf binary<br>|
 
-## 3. perf 子命令详解
-#### perf list
+### 2.4 perf 一些重要的选项参数
+perf 有一些重要的选项参数包括:
+1. `-g/--child/--cal-graph`
 
-`perf list [--no-desc] [--long-desc] [event_class]`
+下面我们来一一讲解
+#### -g
+perf record 和 perf report 都有 `-g` 选项。perf record 中 `-g` 用于启用堆栈追踪。perf report 中 `-g/--call-graph` 用于指定堆栈的显示方式，这是我们讲解的重点。
 
-- 作用: 列出perf可以支持的所有事件
-- event_class: 事件的分类，包括:
-  - `hw|sw|cache|pmu|sdt|metric|metricgroup`
-  - `tracepoint`: 静态探针
-  - `event_glob`: 事件的通配符
+`-g/--call-graph` 参数格式为 `<print_type,threshold[,print_limit],order,sort_key[,branch],value>`
+- print_type: 
+  - 指定堆栈调用图的显示方式
+  - 可选值包括 (graph|flat|fractal|folded|none)
+  - 默认值为 graph 表示以调用关系图的方式显示堆栈，通常无须更改
+- threshold: 
+  - 一个百分比值，当函数调用所占用的CPU小于这个百分比值的时候，不显示堆栈信息
+  - 默认值为 0.5(表示的是百分之0.5)
+- print_limit: 调用关系图显示的最大行数，可不指定
+- order: 
+  - 调用关系图的显示方式，可选值包括 `(caller|callee)`
+  - caller: 默认值，表示基于调用者的调用图
+  - callee: caller 的反转，基于被调用者的调用图，也可以使用 `-G` 或者 `--children`
+- sort_key: 调用关系图的排序键，可选值包括`(function|address)`，通常无须更改
+- branch: 
+  - include last branch info to call graph (branch)
+  - 可不指定
+- value: 
+  - call graph value (percent|period|count)
+  - 调用关系图中显示什么，CPU占用百分比，CPU周期数，还是调用总次数
+  - 默认为 percent，同行无须更改
+- 默认值为: graph,0.5,caller,function,percent
 
-```bash
-perf list
-
-List of pre-defined events (to be used in -e):
-
-  alignment-faults                                   [Software event]
-  bpf-output                                         [Software event]
-  context-switches OR cs                             [Software event]
-  cpu-clock                                          [Software event]
-  cpu-migrations OR migrations                       [Software event]
-  ..........
-```
-
-perf list给出的事件是厂家上传上去给Linux社区的，但有些厂家会有自己的事件统计，没有上传出去，这需要从厂家的用户手册中获得，这种事件，可以直接用编号表示，比如格式是rXXXX，比如在我们的芯片里面，0x13号表示跨芯片内存访问，你就可以用`-e r0013`来跟踪软件的跨片访问次数
-
-#### perf top
-
-`perf top [-e <EVENT> | --event=EVENT] [<options>]`
-
-- 作用: 可以动态收集和更新统计列表
-- options:
-  - -e:
-    - 指定跟踪的事件，包括 perf list提供的所有事件以及 tracepoint
-    - 可以多次使用，也可以一次指定多个事件，事件使用逗号分隔
-    - 对于厂家为上传的事件可以直接是用编号，eg: `-e r0013` 
-    - 事件可以指定后缀，用于限定跟踪范围
-  - -s:
-    - 指定按什么参数来进行分类 
-    - 默认会按函数进行分类，按照 pid 分类需要指定 -s pid
-    - -s也可以指定多个域（用逗号隔开）
-    - 可选值包括:
-      - pid, comm, dso, symbol, parent, srcline, weight, 
-      - local_weight, abort, in_tx, transaction, overhead, sample, period
-  - -a：显示在所有CPU上的性能统计信息
-  - -p：指定进程PID
-  - -t：指定线程TID
-  - -K：隐藏内核统计信息
-  - -U：隐藏用户空间的统计信息
-  - -S, --symbols: Only consider these symbols
-  - -g, --call-graph: 得到函数的调用关系图
-    - 格式: `<print_type,threshold[,print_limit],order,sort_key[,branch],value>`
-    - print_type:
-      - flat: single column, linear exposure of call chains.
-      - graph: use a graph tree, displaying absolute overhead rates. (default)
-      - fractal: like graph, but displays relative rates. Each branch of the tree is considered as a new profiled object.
-      - folded: call chains are displayed in a line, separated by semicolons
-      - none: disable call chain display.
+这之中最难理解的是 order。我们看下面这个例子
 
 ```bash
-# 1. -e 指定多个事件
-> sudo perf top -e branch-misses,cycles
-
-# 2. 指定后缀，只跟踪用户态发生的分支预测失败
-> sudo perf top -e branch-misses:u,cycles
-> sudo perf top -e '{branch-misses,cycles}:u'
-
-# 3. 指定分类
-> sudo perf top -e 'cycle' -s comm,pid,dso
+# perf report --stdio
+# ========
+# captured on: Mon Jan 26 07:26:40 2014
+# hostname : dev2
+# os release : 3.8.6-ubuntu-12-opt
+# perf version : 3.8.6
+# arch : x86_64
+# nrcpus online : 8
+# nrcpus avail : 8
+# cpudesc : Intel(R) Xeon(R) CPU X5675 @ 3.07GHz
+# cpuid : GenuineIntel,6,44,2
+# total memory : 8182008 kB
+# cmdline : /usr/bin/perf record -F 99 -a -g -- sleep 30 
+# event : name = cpu-clock, type = 1, config = 0x0, config1 = 0x0, config2 = ...
+# HEADER_CPU_TOPOLOGY info available, use -I to display
+# HEADER_NUMA_TOPOLOGY info available, use -I to display
+# pmu mappings: software = 1, breakpoint = 5
+# ========
+#
+# Samples: 22K of event 'cpu-clock'
+# Event count (approx.): 22751
+#
+# Overhead  Command      Shared Object                           Symbol
+# ........  .......  .................  ...............................
+#
+    94.12%       dd  [kernel.kallsyms]  [k] _raw_spin_unlock_irqrestore
+                 |
+                 --- _raw_spin_unlock_irqrestore
+                    |          
+                    |--96.67%-- extract_buf
+                    |          extract_entropy_user
+                    |          urandom_read
+                    |          vfs_read
+                    |          sys_read
+                    |          system_call_fastpath
+                    |          read
+                    |          
+                    |--1.69%-- account
+                    |          |          
+                    |          |--99.72%-- extract_entropy_user
+                    |          |          urandom_read
+                    |          |          vfs_read
+                    |          |          sys_read
+                    |          |          system_call_fastpath
+                    |          |          read
+                    |           --0.28%-- [...]
+                    |          
+                    |--1.60%-- mix_pool_bytes.constprop.17
+[...]
 ```
 
-#### perf stat
+默认情况下 perf report 使用 caller 即显示基于调用者的调用图。
+- 最顶端显示的是最终被调用的子函数。从上往下是调用它的父函数。
+- 其中最热(最频繁)的堆栈跟踪发生频率是 90.99%(extract_buf 部分)，它是Overhead列的百分比和顶部堆栈叶(94.12% x 96.67%)的乘积。
+- 96.67% 表示的是调用 _raw_spin_unlock_irqrestore 函数的相对百分比，即_raw_spin_unlock_irqrestore的调用次数中，extract_buf 占了 96.67%。
+- Overhead 列显示的是这个进程的CPU占用百分比
+- 通过使用-G， -g caller 或者 --children 来反转调用关系图
 
-perf stat:
+说明: 在我的Linux 上 perf 默认是按照绝对百分显示的 CPU 调用，即extract_buf 显示的是90.99%，不是 96.67%。
 
-- 命令格式:
-  - `perf stat [-e <EVENT> | --event=EVENT] [-a] <command>`
-  - `perf stat [-e <EVENT> | --event=EVENT] [-a] — <command> [<options>]`
-  - `perf stat [-e <EVENT> | --event=EVENT] [-a] record [-o file] — <command> [<options>]`
-  - `perf stat report [-i file]`
-- 作用: 可以对程序运行过程中的性能计数器(包括Hardware，software counters)进行统计，分析程序的整体消耗情况
+#### -s
+-s 用于在 perf record 中指定调用关系图的排序字段。可选值包括:
+1. overhead: 默认值，Overhead percentage of sample，抽样占比
+2. overhead_sys: Overhead percentage of sample running in system mode
+3. overhead_us: Overhead percentage of sample running in user mode
+4. comm: command (name) of the task which can be read via /proc/<pid>/comm
+5. pid: command and tid of the task
+7. socket: processor socket number the task ran at the time of sample
+6. ....
+
+#### -F
+-F 用于指定 perf report 中显示的字段，可选值与 -s 类似。
+
+下面是一个跟踪进程创建的例子，使用-n来打印“Samples”列，使用`--sort comm`来定制其余的列。
+```bash
+# perf record -e sched:sched_process_exec -a
+^C[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 0.064 MB perf.data (~2788 samples) ]
+# perf report -n --sort comm --stdio
+[...]
+# Overhead       Samples  Command
+# ........  ............  .......
+#
+    11.11%             1    troff
+    11.11%             1      tbl
+    11.11%             1  preconv
+    11.11%             1    pager
+    11.11%             1    nroff
+    11.11%             1      man
+    11.11%             1   locale
+    11.11%             1   grotty
+    11.11%             1    groff
+```
+
+#### --filter
+在使用 perf record 进行追踪时，可以通过 --filter 选项对堆栈进行过滤，只记录满足条件的堆栈信息。
 
 ```bash
-$perf stat ls
-Performance counter stats for 'ls':
 
-          2.164836      task-clock (msec)         #    0.808 CPUs utilized
-                51      context-switches          #    0.024 M/sec
-                 4      cpu-migrations            #    0.002 M/sec
-               333      page-faults               #    0.154 M/sec
-           5506056                                #    2.543 GHz
-                 0      stalled-cycles-frontend   #    0.00% frontend cycles idle
-                 0      stalled-cycles-backend    #    0.00% backend  cycles idle
-           6100570      instructions              #    1.11  insns per cycle
-           1298744      branches                  #  599.927 M/sec
-             18509      branch-misses             #    1.43% of all branches
-
-       0.002679758 seconds time elapsed
 ```
-
-指标含义:
-
-1. task-clock (msec): cpu处理task所消耗的时间，单位ms，0.808 CPUs utilized的表示cpu使用率为80.8%，该值越高代表程序是CPU bound而非IO bound 类型
-2. instructions：执行的指令条数， insns per cycle: 即IPC，每个cpu周期执行的指令条数，IPC比上面的CPU使用率更能说明CPU的使用情况
-3. stalled-cycles-frontend和stalled-cycles-backend表示CPU停滞统计
-4. branches：这段时间内发生分支预测的次数。现代的CPU都有分支预测方面的优化。
-5. branches-misses：这段时间内分支预测失败的次数，这个值越小越好。
-
-#### perf record/report
-
-perf-record用来启动一次跟踪，而perf-report用来输出跟踪结果。
-
-1. perf record在当前目录产生一个perf.data文件，用来记录过程数据
-2. 如果这个文件已经存在，旧的文件会被改名为perf.data.old
-3. perf.data只包含原始数据，perf report 需要访问本地的符号表，pid和进程的对应关系等信息来生成报告。
-4. 所以perf.data不能直接拷贝，可以通过perf-archive命令把所有这些数据打包，然后复制
-
-```bash
-sudo perf record -e 'cycles' - myapplication arg1 arg2
-sudo perf report
-
-perf record -e probe:schedule -a sleep 1 
-```
-
-**perf record**
-
-- 命令格式:
-  - `perf record [-e <EVENT> | --event=EVENT] [-a] <command>`
-  - `perf record [-e <EVENT> | --event=EVENT] [-a] — <command> [<options>]`
-- 参数:
-  - `-p, --pid <pid>`: 指定跟踪固定的一组进程，即仅仅跟踪发生在特定pid的事件
-  - -a, --all-cpus: 跟踪整个系统的性能，常用选项
-  - `-c, --count <n>`: 累计多少个事件记录一次
-  - -g: 开启堆栈追踪，通常无需使用
-  - -F: 事件采样的频率, 单位HZ, 更高的频率会获得更细的统计，但会带来更多的开销
-  - sleep: 采样的时间
-  - `-g, --call-graph`: 展示调用栈
-    - 格式: `<print_type,threshold[,print_limit],order,sort_key[,branch],value>`
-      - print_type:     call graph printing style (graph|flat|fractal|folded|none)
-      - threshold:      minimum call graph inclusion threshold (`<percent>`)
-      - print_limit:    maximum number of call graph entry (`<number>`)
-      - order:          call graph order (caller|callee)
-      - sort_key:       call graph sort key (function|address)
-      - branch:         include last branch info to call graph (branch)
-      - value:          call graph value (percent|period|count)
-
-
-```bash
-# 跟踪 Python 进程以及整个系统的性能
-# 但不会包括其他用户进程占用的资源
-perf record -e 'cycles' -a python3.6 test.py
-```
-
-**perf report**
-`perf report [-i <file> | --input=file]`
-
-- 使用: 显示的是一个菜单项，回车可以查看折叠的代码，esc 或者 q 可以退出返回上一级
-- 参数:
-  - --pid=: 指定 pid
-  - --tid=: 指定 tid
-  - -S, --symbols=: Only consider these symbols. 
-
-```bash
-# Show perf.data as a text report, with data coalesced and percentages:
-perf report --stdio
-
-# Report, with stacks in folded format: one line per stack (needs 4.4):
-perf report --stdio -n -g folded
-```
-
-#### perf diff
-
-`perf diff [baseline file] [data file1] [[data file2] ... ]`
-
-- 作用: 比较两次运行的区别
-- 场景: 可以用不同参数运行程序，看看两次运行的差别
-
-#### perf script
-
-`perf script [<options>]`
-
-- 作用: 对 perf.data 数据做格式转换
-
-```bash
-# 1. 导出原始分析数据
-> perf record
-> perf script # 导出 perf record 中记录的原始数据
-> perf script | ./stackcollapse-perf.pl | ./flamegraph.pl > perf-kernel.svg
-
-# List all perf.data events, with customized fields (< Linux 4.1):
-perf script -f time,event,trace
-
-# List all perf.data events, with customized fields (>= Linux 4.1):
-perf script -F time,event,trace
-
-# List all perf.data events, with my recommended fields (needs record -a; newer kernels):
-perf script --header -F comm,pid,tid,cpu,time,event,ip,sym,dso 
-
-# List all perf.data events, with my recommended fields (needs record -a; older kernels):
-perf script -f comm,pid,tid,cpu,time,event,ip,sym,dso
-
-# Dump raw contents from perf.data as hex (for debugging):
-perf script -D
-```
-
-#### perf chart
-
-perf timechart输出的是进程运行过程中系统调度的情况，无法对程序的具体代码段进行性能分析，但可以看出总结运行情况：running，idle，I/O等，
-
-```bash
-perf timechart record ./a.out     # 记录数据
-perf timechart                    # 生成 output.svg
-```
-
-### 2.3 堆栈追踪
-
-假设 A 函数调用了函数 B，默认情况下在 perf record 的记录中，A 的运行时间是不包含 B 函数的运行时间的。大多数情况下这么记录是正确的，因为 report 才能够显示出真正耗时的位置。
-
-假设我们想将 B 的耗时记录到 A 中，可以启动堆栈跟踪 -g，也就是每次击中的时候，向上回溯一下调用栈，让调用者的计数也加一。
-
-使用堆栈跟踪要注意的是:
-
-1. 堆栈跟踪受扫描深度的限制，太深的堆栈可能回溯不过去，这是有可能影响结果的。
-2. 有些我们从源代码看来是函数调用的，其实在汇编一级并不是函数调用
-    - 比如inline函数，宏，都不是函数调用
-    - 另外，gcc在很多平台中，会自动把很短的函数变成inline函数，这也不产生函数调用
-    - 还有一种是，fastcall函数，通过寄存器传递参数，不会产生调用栈，也有可能不产生调用栈
-    - 部分平台使用简化的堆栈回溯机制，在堆栈中看见一个地址像是代码段的地址，就认为是调用栈
-
-## 3. perf 火焰图
-
-Brendangregg写了两款对perf采样结果进行可视化分析的开源工具：
-
-1. FlameGraphs即所谓的火焰图，能清晰的展示程序各个函数的性能消耗
-2. HeatMap可以从采样数据中的延迟数据来进行消耗展示
-
-```bash
-# 生成火焰图
-git clone https://github.com/brendangregg/FlameGraph  # or download it from github
-cd FlameGraph
-perf record -F 99 -ag -- sleep 60
-perf script | ./stackcollapse-perf.pl > out.perf-folded
-cat out.perf-folded | ./flamegraph.pl > perf-kernel.svg
-```
-
-## 参考
-
-- [brendangregg-perf](http://www.brendangregg.com/perf.html)
-- [在Linux下做性能分析3：perf](https://zhuanlan.zhihu.com/p/22194920)
