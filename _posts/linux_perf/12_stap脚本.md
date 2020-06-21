@@ -56,6 +56,8 @@ probe event,event1 {statment}
 ### 2.2 Systemtap 事件
 SystemTap事件大致分为两类：同步事件和异步事件。
 
+![probe-event](/images/linux_pf/probe-event.png)
+
 同步事件会在任意进程执行到内核特定位置时触发。
 1. `syscall.system_call`: 
     - 作用: 名为 system_call 的系统调用的调用事件

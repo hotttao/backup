@@ -11,9 +11,13 @@ tags:
 
 
 ## 1. bcc 简介
+BCC 软件包是使用 eBPF 开发的工具包。这些工具是提供的编写 eBPF 工具的参考示例，并且很实用。它们的使用场景如下图所示：
 
-### 1.1 介绍
-https://github.com/iovisor/bcc/blob/master/README.md#tracing
+![bcc_tracing_tools_2016](/images/linux_pf/bcc_tracing_tools_2016.png)
+
+不过需要注意的是很多 eBPF 的新特性，都需要比较新的内核版本（如下图所示）
+
+![bcc_linux](/images/linux_pf/bcc_linux.png)
 
 ### 1.2 安装
 ```bash
@@ -23,10 +27,9 @@ rpm -ql bcc-tools
 
 # bcc 工具位于 /usr/share/bcc/tools/ 目录中
 cd /usr/share/bcc/tools/
-
 ```
 
-## 2. bcc 工具
+## 2. CPU 监测
 
 ## 3. 内存监测
 ### 3.1 cachestat

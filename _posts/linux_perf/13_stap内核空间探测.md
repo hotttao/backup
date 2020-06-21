@@ -7,8 +7,11 @@ tags:
     - Linux性能调优
 ---
 
+本节我们继续来学习 Systemtap 的使用 -- 内核的动态追踪
 
 <!-- more -->
+
+![stap_flow_diagram](/images/linux_pf/stap_flow_diagram.png)
 
 ## 1. 内核变量的获取
 本节我们来看如何获取内核空间中的变量，包括:

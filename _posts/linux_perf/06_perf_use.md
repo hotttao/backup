@@ -16,6 +16,8 @@ tags:
 4. perf 提供的特殊用途的子命令，包括 perf sched，perf mem 等等
 3. perf.data 的处理，这一部分命令用于格式化输出 perf.data 的内容便于生成类似火焰图等更复杂的图表
 
+![perf_events_flow](/images/linux_pf/perf_events_flow.png)
+
 ## 1. perf 命令概览
 作为开始，我们先来回顾一下 perf 命令的一个概览
 
@@ -79,6 +81,138 @@ List of pre-defined events (to be used in -e):
 perf list给出的事件是厂家上传上去给Linux社区的，但有些厂家会有自己的事件统计，没有上传出去，这需要从厂家的用户手册中获得，这种事件称为原始事件，可以直接用编号表示，格式为:rUUEE，其中UU == umask, EE ==事件编号。比如在我们的芯片里面，0x13号表示跨芯片内存访问，你就可以用`-e r0013`来跟踪软件的跨片访问次数。
 
 ### 1.2 perf probe
+perf probe 用来定义一个动态探针，定义的方式有如下几种:
+1. 用户空间: 通过 -x 指定二进制文件的路径，可以为该二进制程序添加库函数的动态探针
+2. 内核:
+  - 通过符号表和寄存器来添加，这种方式不需要内核调试信息(即 kernel-debuginfo)
+  - 通过 C 函数，C 函数中的特定行，并且可以附加函数上下文中的变量，这种方式需要内核调试信息。
+
+#### 命令使用
+```bash
+Usage: perf probe [<options>] 'PROBEDEF' ['PROBEDEF' ...]
+    or: perf probe [<options>] --add 'PROBEDEF' [--add 'PROBEDEF' ...]
+    or: perf probe [<options>] --del '[GROUP:]EVENT' ...
+    or: perf probe --list [GROUP:]EVENT ...
+    or: perf probe [<options>] --line 'LINEDESC'
+    or: perf probe [<options>] --vars 'PROBEPOINT'
+    or: perf probe [<options>] --funcs
+
+    -a, --add <[EVENT=]FUNC[@SRC][+OFF|%return|:RL|;PT]|SRC:AL|SRC;PT [[NAME=]ARG ...]>
+                          probe point definition, where
+                GROUP:  Group name (optional)
+                EVENT:  Event name
+                FUNC:   Function name
+                OFF:    Offset from function entry (in byte)
+                %return:        Put the probe at function return
+                SRC:    Source code path
+                RL:     Relative line number from function entry.
+                AL:     Absolute line number in file.
+                PT:     Lazy expression of line code.
+                ARG:    Probe argument (local variable name or
+                        kprobe-tracer argument format.)
+
+    -D, --definition <[EVENT=]FUNC[@SRC][+OFF|%return|:RL|;PT]|SRC:AL|SRC;PT [[NAME=]ARG ...]>
+                          Show trace event definition of given traceevent for k/uprobe_events.
+    -d, --del <[GROUP:]EVENT>
+                          delete a probe event.
+    -f, --force           forcibly add events with existing name
+    -F, --funcs <[FILTER]>
+                          Show potential probe-able functions.
+    -L, --line <FUNC[:RLN[+NUM|-RLN2]]|SRC:ALN[+NUM|-ALN2]>
+    -V, --vars <FUNC[@SRC][+OFF|%return|:RL|;PT]|SRC:AL|SRC;PT>
+                        Show accessible variables on PROBEDEF
+```
+
+#### 添加动态探针
+```bash
+# 一: 基于 uprobes ，为用户空间库函数添加动态探针
+# 想要查看普通应用的函数名称和参数，那么在应用程序的二进制文件中，同样需要包含调试信息。
+# 为/bin/bash添加readline探针，获取其返回值，并作为 string 类型返回
+$ perf probe -x /bin/bash 'readline'
+$ perf probe -x /bin/bash 'readline%return +0($retval):string'
+Added new event:
+  probe_bash:readline__return (on readline%return in /usr/bin/bash with +0($retval):string)
+
+You can now use it in all perf tools, such as:
+
+        perf record -e probe_bash:readline__return -aR sleep 1
+
+
+# 查询所有的函数
+$ perf probe -x /bin/bash --funcs
+
+# 查询函数的参数
+$ perf probe -x /bin/bash -V readline
+Available variables at readline
+        @<readline+0>
+                char*   prompt
+
+# 二: 基于 kprobes，为内核函数添加动态探针
+# 1. 通过符号表和寄存器添加 malloc 探针
+$ perf probe -x /lib64/libc-2.17.so '--add=malloc'
+$ perf probe --del "malloc"
+$ perf probe -x /lib64/libc-2.17.so '--add=malloc size=%di'
+
+# 2. 通过 C 扩展
+$ yum --enablerepo=base-debuginfo install -y kernel-debuginfo-$(uname -r)
+$ perf probe --add tcp_sendmsg
+Added new event:
+  probe:tcp_sendmsg    (on tcp_sendmsg)
+
+You can now use it in all perf tools, such as:
+        # 自动显示使用方式
+        perf record -e probe:tcp_sendmsg -aR sleep 1  
+
+# 获取 tcp_sendmsg 的返回值
+$ perf probe 'tcp_sendmsg%return $retval'
+
+# 2.1 列出tcp_sendmsg()可用的变量
+$ perf probe -V tcp_sendmsg
+Available variables at tcp_sendmsg
+        @<tcp_sendmsg+0>
+                size_t  size
+                struct kiocb*   iocb
+                struct msghdr*  msg
+                struct sock*    sk
+
+# 2.2 添加带参数的探针
+$ perf probe --add 'tcp_sendmsg size'
+
+# 2.3 列出tcp_sendmsg()可用的行探测:
+$ perf probe -L tcp_sendmsg
+<tcp_sendmsg@/mnt/src/linux-3.14.5/net/ipv4/tcp.c:0>
+      0  int tcp_sendmsg(struct kiocb *iocb, struct sock *sk, struct msghdr *msg,
+                        size_t size)
+      2  {
+                struct iovec *iov;
+                struct tcp_sock *tp = tcp_sk(sk);
+                struct sk_buff *skb;
+      6         int iovlen, flags, err, copied = 0;
+      7         int mss_now = 0, size_goal, copied_syn = 0, offset = 0;
+                bool sg;
+                long timeo;
+[...]
+
+# 2.4 检查在第81行有哪些变量可用
+$ perf probe -V tcp_sendmsg:81
+Available variables at tcp_sendmsg:81
+        @<tcp_sendmsg+537>
+                bool    sg
+                int     copied
+                int     copied_syn
+                int     flags
+                int     mss_now
+                int     offset
+                int     size_goal
+                long int        timeo
+                size_t  seglen
+                struct iovec*   iov
+                struct sock*    sk
+                unsigned char*  from
+
+# 2.5. 跟踪第81行，并使用循环中的seglen变量
+$ perf probe --add 'tcp_sendmsg:81 seglen'
+```
 
 ## 2. perf stat(计数模式)
 perf stat 是 perf 三种使用模式中的第一种模式计数模式。
@@ -211,7 +345,7 @@ Performance counter stats for 'gzip file1':
 
 使用系统调用跟踪程序`strace -c`可以看到类似的报告，但是它可能导致比perf高得多的开销，因为perf在内核中缓冲数据。strace的当前实现使用ptrace(2)附加到目标进程并在系统调用期间停止它，就像调试器一样。这是暴力的，并可能导致严重的开销。
 
-perf strace 子命令提供与 strace 类似的功能，但开销要低得多。
+perf trace 子命令提供与 strace 类似的功能，但开销要低得多。perf trace 还可以进行系统级的系统调用跟踪（即跟踪所有进程），而 strace 只能跟踪特定的进程。
 
 ## 3. 采样事件
 perf record 是perf 的第二种使用方式，采样事件，他包含如下几种模式:
@@ -448,7 +582,7 @@ $ perf script
 #### 跟踪 malloc 函数调用
 ```bash
 # 1. 添加 malloc 探针
-$ perf probe -x /lib/x86_64-linux-gnu/libc-2.15.so --add malloc
+$ perf probe -x /lib64/libc-2.17.so '--add=malloc'
 $ perf record -e probe_libc:malloc -a
 $ perf report -n
 
@@ -464,6 +598,38 @@ malloc()调用非常频繁，因此需要考虑跟踪这样的调用的开销。
 
 ## 5. perf 特殊功能子命令 
 说完了 perf 的三种基础使用方式，我们来看perf 提供特殊功能的子命令。
+
+### 5.1 perf trace
+perf trace 类似于 strace 用于跟踪进程的系统调用，前面我们也提到了，相对于 strace 使用的 ptrace 机制来说，perf trace 基于内核事件，比进程跟踪的性能好很多。perf trace 还可以进行系统级的系统调用跟踪（即跟踪所有进程），而 strace 只能跟踪特定的进程。
+
+```bash
+Usage: perf trace [<options>] [<command>]
+    or: perf trace [<options>] -- <command> [<options>]
+    or: perf trace record [<options>] [<command>]
+    or: perf trace record [<options>] -- <command> [<options>]
+
+    -a, --all-cpus        system-wide collection from all CPUs
+    -C, --cpu <cpu>       list of cpus to monitor
+    -D, --delay <n>       ms to wait before starting measurement after program start
+    -e, --event <event>   event/syscall selector. use 'perf list' to list available events
+    -f, --force           don't complain, do it
+    -F, --pf <all|maj|min>
+                          Trace pagefaults
+    -G, --cgroup <name>   monitor event in cgroup name only
+    -i, --input <file>    Analyze events in file
+    -m, --mmap-pages <pages>
+                          number of mmap data pages
+    -o, --output <file>   output file name
+    -p, --pid <pid>       trace events on existing process id
+    --sched           show blocking scheduler events
+    --syscalls        Trace syscalls
+
+```
+
+下面是 perf trace 的使用示例:
+```bash
+$ perf trace --syscalls ls
+```
 
 ### 5.1 perf top
 

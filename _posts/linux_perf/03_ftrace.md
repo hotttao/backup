@@ -36,7 +36,7 @@ Ftrace 有两大组成部分:
 5. Framework 利用 debugfs 系统在 /debugfs 下建立 tracing 目录，对用户空间输出 trace 信息，并提供了一系列的控制文件
 6. ftrace的目录设置和sysfs类似，都是把目录当作对象，把里面的文件当作这个对象的属性。debugfs/tracing 目录可以理解成一个独立的监控实例 instance，在 tracing 目录或者子目录创建任何目录相当于创建了一个新的 ftrace 实例，ftrace 会为这个 ftrace 实例自动创建 ring buffer 内存缓冲区，并在这个目录下创建 ftrace 实例所需的与 tracing 目录完全相同的文件。  
 
-debugfs在大部分发行版中都mount在/sys/kernel/debug目录下，而ftrace就在这个目录下的tracing目录中。如果系统没有mount这个文件系统，可以手动 mount。
+debugfs在大部分发行版中都mount在**/sys/kernel/debug**目录下，而ftrace就在这个目录下的tracing目录中。如果系统没有mount这个文件系统，可以手动 mount。
 
 ```bash
 
@@ -165,6 +165,9 @@ trace、trace_pipe和snapshot的区别:
 |Event| 跟踪系统事件，比如 timer，系统调用，中断等|
 
 ## 5. ftrace 的实战
+### 5.1 跟踪进程调度
+示例一我们来看看如何跟踪 Python 进程执行过程发生的进程调度:
+
 ```bash
 # 1. 假设我们要跟踪一个 Python 文件执行中的进程调度
 > vim run.py
@@ -187,6 +190,89 @@ exec "$@"
 # 3.启动跟踪并查看结果
 > bash ftrace.sh python ftrace.py && echo 0 > /home/tao/debugs/tracing/tracing_on
 > vim /home/tao/debugs/tracing/trace
+```
+
+### 5.2 跟踪系统调用
+示例2 我们来看看如何跟踪系统调用。以 ls 命令为例，显示 do_sys_open 调用栈。 
+
+```bash
+# 这次使用系统默认挂载的 debugfs
+$ cd /sys/kernel/debug/tracing/
+
+# 1. 设置要显示调用栈的函数
+$ echo do_sys_open > set_graph_function 
+
+# 2. 配置跟踪选项，开启函数调用跟踪，并跟踪调用进程
+$ echo function_graph > current_tracer
+$ echo funcgraph-proc > trace_options
+
+# 3. 开启追踪
+$ echo 1 > tracing_on
+
+# 4. 执行一个 ls 命令后，再关闭跟踪：
+$ ls
+$ echo 0 > tracing_on
+
+# 5.查看追踪结果
+
+$ cat trace
+# tracer: function_graph
+#
+# CPU  TASK/PID         DURATION                  FUNCTION CALLS
+# |     |    |           |   |                     |   |   |   |
+ 0)    ls-12276    |               |  do_sys_open() {
+ 0)    ls-12276    |               |    getname() {
+ 0)    ls-12276    |               |      getname_flags() {
+ 0)    ls-12276    |               |        kmem_cache_alloc() {
+ 0)    ls-12276    |               |          _cond_resched() {
+ 0)    ls-12276    |   0.049 us    |            rcu_all_qs();
+ 0)    ls-12276    |   0.791 us    |          }
+ 0)    ls-12276    |   0.041 us    |          should_failslab();
+ 0)    ls-12276    |   0.040 us    |          prefetch_freepointer();
+ 0)    ls-12276    |   0.039 us    |          memcg_kmem_put_cache();
+ 0)    ls-12276    |   2.895 us    |        }
+ 0)    ls-12276    |               |        __check_object_size() {
+ 0)    ls-12276    |   0.067 us    |          __virt_addr_valid();
+ 0)    ls-12276    |   0.044 us    |          __check_heap_object();
+ 0)    ls-12276    |   0.039 us    |          check_stack_object();
+ 0)    ls-12276    |   1.570 us    |        }
+ 0)    ls-12276    |   5.790 us    |      }
+ 0)    ls-12276    |   6.325 us    |    }
+...
+```
+输出: 第三列是函数执行延迟；最后一列，则是函数调用关系图。
+
+## 6. trace-cmd
+trace-cmd 可以把上面这些步骤给包装起来，通过同一个命令行工具，就可完成上述所有过程。下面是示例2 中跟踪 do_sys_open 的 trace-cmd 版本。
+
+```bash
+# 1. 安装
+$ yum install trace-cmd
+# 2. 启动追踪
+$ trace-cmd record -p function_graph -g do_sys_open -O funcgraph-proc ls
+
+# 3. 查看追踪结果
+$ trace-cmd report
+...
+              ls-12418 [000] 85558.075341: funcgraph_entry:                   |  do_sys_open() {
+              ls-12418 [000] 85558.075363: funcgraph_entry:                   |    getname() {
+              ls-12418 [000] 85558.075364: funcgraph_entry:                   |      getname_flags() {
+              ls-12418 [000] 85558.075364: funcgraph_entry:                   |        kmem_cache_alloc() {
+              ls-12418 [000] 85558.075365: funcgraph_entry:                   |          _cond_resched() {
+              ls-12418 [000] 85558.075365: funcgraph_entry:        0.074 us   |            rcu_all_qs();
+              ls-12418 [000] 85558.075366: funcgraph_exit:         1.143 us   |          }
+              ls-12418 [000] 85558.075366: funcgraph_entry:        0.064 us   |          should_failslab();
+              ls-12418 [000] 85558.075367: funcgraph_entry:        0.075 us   |          prefetch_freepointer();
+              ls-12418 [000] 85558.075368: funcgraph_entry:        0.085 us   |          memcg_kmem_put_cache();
+              ls-12418 [000] 85558.075369: funcgraph_exit:         4.447 us   |        }
+              ls-12418 [000] 85558.075369: funcgraph_entry:                   |        __check_object_size() {
+              ls-12418 [000] 85558.075370: funcgraph_entry:        0.132 us   |          __virt_addr_valid();
+              ls-12418 [000] 85558.075370: funcgraph_entry:        0.093 us   |          __check_heap_object();
+              ls-12418 [000] 85558.075371: funcgraph_entry:        0.059 us   |          check_stack_object();
+              ls-12418 [000] 85558.075372: funcgraph_exit:         2.323 us   |        }
+              ls-12418 [000] 85558.075372: funcgraph_exit:         8.411 us   |      }
+              ls-12418 [000] 85558.075373: funcgraph_exit:         9.195 us   |    }
+...
 ```
 
 ## 参考

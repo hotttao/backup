@@ -7,7 +7,7 @@ tags:
     - Linux性能调优
 ---
 
-
+本节我们来看看如何使用 Systemtap 来追踪 Python 程序的执行。
 <!-- more -->
 
 ## 1. 环境配置
