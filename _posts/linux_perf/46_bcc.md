@@ -1,6 +1,6 @@
 ---
-title: 5.2 bcc
-date: 2020-02-12
+title: 5.6 bcc
+date: 2020-02-15
 categories:
     - 运维
 tags:
@@ -196,3 +196,7 @@ $ opensnoop
 12280  python              6   0 /tmp/9046db9e-fe25-11e8-b13f-0242ac110002/651.txt 
 12280  python              6   0 /tmp/9046db9e-fe25-11e8-b13f-0242ac110002/652.txt 
 ```
+
+### 4.3 biosnoop
+
+### 4.4 biotop

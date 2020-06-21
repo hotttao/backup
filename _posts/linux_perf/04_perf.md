@@ -150,6 +150,9 @@ perf的源代码就是Linux的源代码目录中，因为它在相当程度上�
 # 安装内核符号表
 yum search debuginfo|grep kernel
 yum install kernel-debuginfo
+
+# 安装应用程序符号表，如果其提供了调试的 yum 包
+debuginfo-install bash
 ```
 
 #### 省略帧指针优化问题
