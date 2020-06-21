@@ -60,7 +60,7 @@ InnoDB 里的数据都是用 B+ 树的结构组织的，数据存储在磁盘页
 ![alter_table_lock](/images/mysql/MySQL45讲/alter_table_lock.png)
 注意:  
 - 临时数据存放在 tmp_table 中，这是一个临时表，是在 server 层创建的
-- 新版本中等同于执行命令 `alter table t engine=innodb,ALGORITHM=inplace;`
+- 新版本中等同于执行命令 `alter table t engine=innodb,ALGORITHM=copy;`
 
 新建一个与表 A 结构相同的表 B，然后按照主键 ID 递增的顺序，把数据一行一行地从表 A 里读出来再插入到表 B 中。
 
