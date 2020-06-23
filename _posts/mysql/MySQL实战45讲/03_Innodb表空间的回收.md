@@ -59,7 +59,7 @@ InnoDB 里的数据都是用 B+ 树的结构组织的，数据存储在磁盘页
 
 ![alter_table_lock](/images/mysql/MySQL45讲/alter_table_lock.png)
 注意:  
-- 临时数据存放在 tmp_table 中，这是一个临时表，是在 server 层创建的
+- 临时数据存放在 tmp_table 中，这是一个**临时表，是在 server 层创建的**
 - 新版本中等同于执行命令 `alter table t engine=innodb,ALGORITHM=copy;`
 
 新建一个与表 A 结构相同的表 B，然后按照主键 ID 递增的顺序，把数据一行一行地从表 A 里读出来再插入到表 B 中。
@@ -70,21 +70,24 @@ InnoDB 里的数据都是用 B+ 树的结构组织的，数据存储在磁盘页
 
 ![alter_table_online](/images/mysql/MySQL45讲/alter_table_online.png)
 注意: 
-- 临时数据存放在 tmp_file 中，“tmp_file”里的，这个临时文件是 InnoDB 在内部创建出来的
+- 临时数据存放在 tmp_file 中，“tmp_file”里的，这个**临时文件是 InnoDB 在内部创建出来的**
 - 等同于命令 `alter table t engine=innodb,ALGORITHM=inplace;`
 
 MySQL 5.6 版本开始引入的 Online DDL，对这个操作流程做了优化。重建表的流程如下：
-1. 建立一个临时文件，扫描表 A 主键的所有数据页；
+1. 建立一个**临时文件**，扫描表 A 主键的所有数据页；
 2. 用数据页中表 A 的记录生成 B+ 树，存储到临时文件中；
-3. 生成临时文件的过程中，将所有对 A 的操作记录在一个日志文件（row log）中，对应的是图中 state2 的状态；
+3. 生成临时文件的过程中，将所有对 A 的操作记录在一个**日志文件（row log）**中，对应的是图中 state2 的状态；
 4. 临时文件生成后，将日志文件中的操作应用到临时文件，得到一个逻辑数据上与表 A 相同的数据文件，对应的就是图中 state3 的状态；
 5. 用临时文件替换表 A 的数据文件。
 
 图 4 的流程中，alter 语句在启动的时候需要获取 MDL 写锁，但是这个写锁在真正拷贝数据之前就退化成读锁了。MDL 读锁不会阻塞增删改操作，同时保护自己，禁止其他线程对这个表同时做 DDL。
 
-由于日志文件记录和重放操作这个功能的存在，这个方案在重建表的过程中，允许对表 A 做增删改操作。这也就是 Online DDL 名字的来源。
+由于**日志文件记录和重放操作**这个功能的存在，这个方案在重建表的过程中，允许对表 A 做增删改操作。这也就是 Online DDL 名字的来源。
 
 上述的这些重建方法都会扫描原表数据和构建临时文件。对于很大的表来说，这个操作是很消耗 IO 和 CPU 资源的。因此，如果是线上服务，你要很小心地控制操作时间。如果想要比较安全的操作的话，推荐使用 GitHub 开源的 `gh-ost` 
+
+### 3.3 inplace 和 online
+inplace 和 online 并不是一回事，DDL 过程如果是 Online 的，就一定是 inplace 的；反过来未必，也就是说 inplace 的 DDL，有可能不是 Online 的。截止到 MySQL 8.0，添加全文索引（FULLTEXT index）和空间索引 (SPATIAL index) 就属于这种情况。
 
 ## 4. 三种重建表的语法
 optimize table、analyze table 和 alter table:
