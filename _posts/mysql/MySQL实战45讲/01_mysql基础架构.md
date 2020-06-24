@@ -143,10 +143,21 @@ redo log 的写入拆成了两个步骤：prepare 和 commit，这就是"两阶�
 
 在崩溃恢复场景中，InnoDB 如果判断到一个数据页可能在崩溃恢复的时候丢失了更新，就会将它读到内存，然后让 redo log 更新内存内容。更新完成后，内存页变成脏页，就回到了第一种情况的状态。
 
+#### 数据是从哪落盘
+正常运行中的实例，数据写入后的最终落盘，是从 redo log 更新过来的还是从 buffer pool 更新过来的呢？
+
+redo log 并没有记录数据页的完整数据，所以它并没有能力自己去更新磁盘数据页，也就不存在“数据最终落盘，是由 redo log 更新过去”的情况。
+
+如果是正常运行的实例的话，数据页被修改以后，跟磁盘的数据页不一致，称为脏页。最终数据落盘，就是把内存中的数据页写盘。这个过程，甚至与 redo log 毫无关系。
+
+在崩溃恢复场景中，InnoDB 如果判断到一个数据页可能在崩溃恢复的时候丢失了更新，就会将它读到内存，然后让 redo log 更新内存内容。更新完成后，内存页变成脏页，就回到了第一种情况的状态。
+
 #### redo log 设置多大
 几个 TB 的磁盘的话，直接将 redo log 设置为 4 个文件、每个文件 1GB 吧。
 
 #### redo log buffer
+redo log buffer 是什么？是先修改内存，还是先写 redo log 文件？
+
 在一个事务的更新过程中，日志是要写多次的，比如多次 insert。插入数据的过程中，生成的日志都得先保存起来，但又不能在还没 commit 的时候就直接写到 redo log 文件里。
 
 所以，redo log buffer 就是一块内存，用来先存 redo 日志的。也就是说，在执行第一个 insert 的时候，数据的内存被修改了，redo log buffer 也写入了日志。但是，真正把日志写到 redo log 文件（文件名是 ib_logfile+ 数字），是在执行 commit 语句的时候做的。
@@ -166,7 +177,7 @@ MySQL 是否会更新，取决于MySQL是否读了数据，“读了数据，就
 1. 在这个语句里面，MySQL 读出了 a 的值也做了判断
 2. 因此，Innodb 不会执行修改而是直接返回
 
-面我们的验证结果都是在 binlog_format=statement 格式下进行的。如果是 binlog_format=row 并且 binlog_row_image=FULL 的时候，由于 MySQL 需要在 binlog 里面记录所有的字段，所以在读数据的时候就会把所有数据都读出来了。因此 `update t set a=1 where id=1` 中也会判断出 a=1，而不修改直接返回。
+面我们的验证结果都是在 binlog_format=statement 格式下进行的。如果是 binlog_format=row 并且 binlog_row_image=FULL 的时候，由于 MySQL 需要在 binlog 里面记录所有的字段，所以在读数据的时候就会把所有数据都读出来了。因此 `update t set a=1 where id=1` 中也会判断出 a=1，而不修改直接返回。同理，如果是 binlog_row_image=NOBLOB, 会读出除 blob 外的所有字段，在我们这个例子里，结果还是“返回 (1,2)”。
 
 如果表中有 timestamp 字段而且设置了自动更新的话，那么更新“别的字段”的时候，MySQL 会读入所有涉及的字段，这样通过判断，就会发现不需要修改。
 

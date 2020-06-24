@@ -50,7 +50,7 @@ count，order by 都是怎么执行的
 ### 2. order by
 order by 如何执行取决于如下几个因素:
 1. 是否使用外部排序:
-	- MySQL 会给每个线程分配一块内存用于排序，称为 sort_buffer。
+	- MySQL 会给每个线程分配一块内存用于排序，称为 **sort_buffer**。
 	- 排序可能在内存中完成，也可能需要使用外部排序，这取决于排序所需的内存和参数 sort_buffer_size。
 	- sort_buffer_size，就是 MySQL 为排序开辟的内存（sort_buffer）的大小
 	- 如果要排序的数据量小于 `sort_buffer_size`，排序就在内存中完成。否则就需要磁盘临时文件辅助排序
@@ -97,6 +97,9 @@ SET optimizer_trace='enabled=on';
 /* @a保存Innodb_rows_read的初始值, mairadb 有所区别 */
 select VARIABLE_VALUE into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read';
 
+/* mariadb */
+select VARIABLE_VALUE into @a from  information_schema.session_status where variable_name = 'Innodb_rows_read';
+
 /* 执行语句 */
 select city, name,age from t where city='杭州' order by name limit 1000; 
 
@@ -113,7 +116,7 @@ select @b-@a;
 下面 OPTIMIZER_TRACE 的显示结果(显示的是2.2全字段排序的分析结果)
 
 ![optimizer_trace](/images/mysql/MySQL45讲/optimizer_trace.png)
-1. number_of_tmp_files: 表示排序过程中使用的临时文件数。大于 0 表示使用了临时文件排序
+1. number_of_tmp_files: 表示排序过程中使用的临时文件数。大于 0 表示使用了临时文件排序，外部排序一般使用归并排序算法
 2. examined_rows: 表示参与排序的行数
 3. sort_mode 里面的 packed_additional_fields 的意思是，排序过程对字符串做了“紧凑”处理。即使 name 字段的定义是 varchar(16)，在排序过程中还是要按照实际长度来分配空间的。
 4. 最后一个查询语句 select @b-@a 的返回结果是 4000，表示整个执行过程只扫描了 4000 行。
@@ -159,6 +162,9 @@ SET optimizer_trace='enabled=on';
 
 /* @a保存Innodb_rows_read的初始值, mairadb 有所区别 */
 select VARIABLE_VALUE into @a from  performance_schema.session_status where variable_name = 'Innodb_rows_read';
+
+/* mariadb */
+select VARIABLE_VALUE into @a from  information_schema.session_status where variable_name = 'Innodb_rows_read';
 
 /* 执行语句 */
 select city, name,age from t where city='杭州' order by name limit 1000; 
