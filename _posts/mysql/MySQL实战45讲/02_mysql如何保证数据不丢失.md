@@ -106,7 +106,7 @@ InnoDB 有一个后台线程，每隔 1 秒，就会把 redo log buffer 中的�
 1. binlog_group_commit_sync_delay 参数，表示延迟多少微秒后才调用 fsync;
 2. binlog_group_commit_sync_no_delay_count 参数，表示累积多少次以后才调用 fsync
 
-这两个条件是或的关系，也就是说只要有一个满足条件就会调用 fsync。
+这两个条件是或的关系，也就是说只要有一个满足条件就会调用 fsync。所以，当 binlog_group_commit_sync_delay 设置为 0 的时候，binlog_group_commit_sync_no_delay_count 也无效了。
 
 现在你就能理解了，WAL 机制主要得益于两个方面：
 1. redo log 和 binlog 都是顺序写，磁盘的顺序写比随机写速度要快；
