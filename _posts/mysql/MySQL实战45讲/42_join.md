@@ -36,7 +36,7 @@ create table t1 like t2;insert into t1 (select * from t2 where id<=100)
 select * from t1 straight_join t2 on (t1.a=t2.a);
 ```
 
-![NLJ](/images/mysql/MySQL45讲/NLJ.png)
+![NLJ](/images/mysql/MySQL45讲/NLJ.jpg)
 
 驱动表走全表扫描，而被驱动表是走树搜索。
 
@@ -51,7 +51,7 @@ select * from t1 straight_join t2 on (t1.a=t2.a);
 select * from t1 straight_join t2 on (t1.a=t2.b);
 ```
 
-![BNL](/images/mysql/MySQL45讲/BNL.png)
+![BNL](/images/mysql/MySQL45讲/BNL.jpg)
 
 这个算法的执行过程是这样的:
 1. 把表 t1 的数据读入线程内存 join_buffer 中，由于我们这个语句中写的是 `select *`，因此是把整个表 t1 放入了内存；
@@ -78,11 +78,11 @@ select * from t1 straight_join t2 on (t1.a=t2.b);
 
 ### 2.4 join 使用建议
 1. 如果可以使用 Index Nested-Loop Join 算法，也就是说可以用上被驱动表上的索引，其实是没问题的；
-2. 如果使用 Block Nested-Loop Join 算法，扫描行数就会过多。尤其是在大表上的 join 操作，这样可能要扫描被驱动表很多次，会占用大量的系统资源。所以这种 join 尽量不要用。判断标准就是Extra 字段里面有没有出现“Block Nested Loop”字样。Explain下，没用用index nested-loop 的全要优化。
+2. 如果使用 Block Nested-Loop Join 算法，扫描行数就会过多。尤其是在大表上的 join 操作，这样可能要扫描被驱动表很多次，会占用大量的系统资源。所以这种 join 尽量不要用。判断标准就是Extra 字段里面有没有出现“Block Nested Loop”字样。Explain下，没有用index nested-loop 的全要优化。
 3. 总是应该使用小表做驱动表。
 
 #### 小表的定义
-在决定哪个表做驱动表的时候，应该是两个表按照各自的条件过滤，过滤完成之后，计算参与 join 的各个字段的总数据量，数据量小的那个表，就是“小表”，应该作为驱动表。
+在决定哪个表做驱动表的时候，应该是两个表按照各自的条件过滤，过滤完成之后，计算参与 join 的各个字段的总数据量，数据量小的那个表，就是“小表”，应该作为驱动表。(**NLJ 算法是先过滤，再join**)
 
 ```bash
 # t2 过滤只有 50 行，所以 t2 为小表
@@ -109,7 +109,7 @@ select t1.b,t2.* from  t2  straight_join t1 on (t1.b=t2.b) where t2.id<=100;
 ## 3. MRR
 Multi-Range Read 优化 (MRR)主要目的是尽量使用顺序读盘。原理是这样的，因为大多数的数据都是按照主键递增顺序插入得到的，所以我们可以认为，如果按照主键的递增顺序查询的话，对磁盘的读比较接近顺序读，能够提升读性能。
 
-![MRR](/images/mysql/MySQL45讲/MRR.png)
+![MRR](/images/mysql/MySQL45讲/MRR.jpg)
 
 对于语句 `select * from t1 where a>=1 and a<=100;` a 上有索引，语句的执行过程是这样的: 
 1. 根据索引 a，定位到满足条件的记录，将 id 值放入 read_rnd_buffer 中 ;
@@ -120,7 +120,7 @@ Multi-Range Read 优化 (MRR)主要目的是尽量使用顺序读盘。原理是
 
 如果你想要稳定地使用 MRR 优化的话，需要设置`set optimizer_switch="mrr_cost_based=off"`。（官方文档的说法，是现在的优化器策略，判断消耗的时候，会更倾向于不使用 MRR，把 `mrr_cost_based` 设置为 off，就是固定使用 MRR 了。）
 
-MRR 能够提升性能的核心在于，这条查询语句在索引 a 上做的是一个范围查询（也就是说，这是一个多值查询），可以得到足够多的主键 id
+MRR 能够提升性能的核心在于，这条查询语句在索引 a 上做的是一个范围查询（也就是说，这是一个多值查询），可以得到足够多的主键 id。这样通过排序以后，再去主键索引查数据，才能体现出“顺序性”的优势。
 
 
 ### 4. Batched Key Access(BKA) 
@@ -146,7 +146,9 @@ set optimizer_switch='mrr=on,mrr_cost_based=off,batched_key_access=on';
 select * from t1 join t2 on (t1.b=t2.b) where t2.b>=1 and t2.b<=2000;
 ```
 
-果使用 BNL 算法来 join 的话，这个语句的执行流程是这样的：
+表 t2 中插入了 100 万行数据，但是经过 where 条件过滤后，需要参与 join 的只有 2000 行数据。如果这条语句同时是一个低频的 SQL 语句，那么再为这个语句在表 t2 的字段 b 上创建一个索引就很浪费了。
+
+如果使用 BNL 算法来 join 的话，这个语句的执行流程是这样的：
 1. 把表 t1 的所有字段取出来，存入 join_buffer 中。这个表只有 1000 行，join_buffer_size 默认值是 256k，可以完全存入。
 2. 扫描表 t2，取出每一行数据跟 join_buffer 中的数据进行对比
   - 如果不满足 t1.b=t2.b，则跳过；
@@ -164,7 +166,7 @@ create temporary table temp_t(id int primary key, a int, b int, index(b))engine=
 insert into temp_t select * from t2 where b>=1 and b<=2000;
 select * from t1 join temp_t on (t1.b=temp_t.b);
 ```
-基于临时表的改进方案，对于能够提前过滤出小数据的 join 语句来说，效果还是很好的；
+基于临时表的改进方案，对于能够提前过滤出小数据的 join 语句来说，效果还是很好的。总体来看，不论是在原表上加索引，还是用有索引的临时表，我们的思路都是让 join 语句能够用上被驱动表上的索引，来触发 BKA 算法，提升查询性能。
 
 ### 5.2 扩展 -hash join
 如果 join_buffer 里面维护的不是一个无序数组，而是一个哈希表的话，那么就不是 10 亿次判断，而是 100 万次 hash 查找。这，也正是 MySQL 的优化器和执行器一直被诟病的一个原因：不支持哈希 join。并且，MySQL 官方的 roadmap，也是迟迟没有把这个优化排上议程。
