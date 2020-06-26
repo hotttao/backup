@@ -207,3 +207,6 @@ alter table t add index city_user(city, name);
 ![sort_index](/images/mysql/MySQL45讲/sort_index.jpg)
 
 如果表上有 (city, name, age)，就可以使用覆盖索引，无须进行上述步骤 2 的回表过程，性能上会快很多。当然，这里并不是说要为了每个查询能用上覆盖索引，就要把语句中涉及的字段都建上联合索引，毕竟索引还是有维护代价的。这是一个需要权衡的决定。
+
+## 3. union 和 groupby
+union 和 group by 的执行逻辑参见[临时表](https://hotttao.github.io/2020/03/24/mysql/MySQL%E5%AE%9E%E6%88%9845%E8%AE%B2/43_%E4%B8%B4%E6%97%B6%E8%A1%A8/)
