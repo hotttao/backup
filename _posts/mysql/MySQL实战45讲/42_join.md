@@ -168,6 +168,19 @@ select * from t1 join temp_t on (t1.b=temp_t.b);
 ```
 基于临时表的改进方案，对于能够提前过滤出小数据的 join 语句来说，效果还是很好的。总体来看，不论是在原表上加索引，还是用有索引的临时表，我们的思路都是让 join 语句能够用上被驱动表上的索引，来触发 BKA 算法，提升查询性能。
 
+#### 使用内存临时表
+在这个示例中，更好的方式是使用内存临时表代替 Innodb 临时表，原因有三个：
+1. 相比于 InnoDB 表，使用内存表不需要写磁盘，往表 temp_t 的写数据的速度更快；
+2. 索引 b 使用 hash 索引，查找的速度比 B-Tree 索引快；
+3. 临时表数据只有 2000 行，占用的内存有限。
+
+```bash
+# 将临时表 temp_t 改成内存临时表，并且在字段 b 上创建一个 hash 索引。
+create temporary table temp_t(id int primary key, a int, b int, index (b))engine=memory;
+insert into temp_t select * from t2 where b>=1 and b<=2000;
+select * from t1 join temp_t on (t1.b=temp_t.b);
+```
+
 ### 5.2 扩展 -hash join
 如果 join_buffer 里面维护的不是一个无序数组，而是一个哈希表的话，那么就不是 10 亿次判断，而是 100 万次 hash 查找。这，也正是 MySQL 的优化器和执行器一直被诟病的一个原因：不支持哈希 join。并且，MySQL 官方的 roadmap，也是迟迟没有把这个优化排上议程。
 
@@ -205,3 +218,11 @@ select * from a left join b on(a.f1=b.f1) where (a.f2=b.f2);/*Q2*/
 2. 如果需要 left join 的语义，就不能把被驱动表的字段放在 where 条件里面做等值判断或不等值判断，必须都写在 on 里面。
 3. join 本身表示的就是同时存在并相等，因此join 将判断条件是否全部放在 on 部分就没有区别了
 
+### 6.2 Simple Nested Loop Join 为什么比 BNL 性能低
+上面我们说 BNL 算法和 Simple Nested Loop Join 算法都是要判断 M*N 次（M 和 N 分别是 join 的两个表的行数），但是 Simple Nested Loop Join 算法的每轮判断都要走全表扫描，因此性能上 BNL 算法执行起来会快很多。
+
+疑问是，Simple Nested Loop Join 算法，其实也是把数据读到内存里，然后按照匹配条件进行判断，为什么性能差距会这么大呢？
+
+释这个问题，需要用到 MySQL 中索引结构和 Buffer Pool 的相关知识点：
+1. 在对被驱动表做全表扫描的时候，如果数据没有在 Buffer Pool 中，就需要等待这部分数据从磁盘读入；从磁盘读入数据到内存中，会影响正常业务的 Buffer Pool 命中率，而且这个算法天然会对被驱动表的数据做多次访问，更容易将这些数据页放到 Buffer Pool 的头部；
+2. 即使被驱动表数据都在内存中，每次查找“下一个记录的操作”，都是类似指针操作。而 join_buffer 中是数组，遍历的成本更低。所以说，BNL 算法的性能会更好。

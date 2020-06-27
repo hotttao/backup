@@ -11,6 +11,11 @@ tags:
 insert select 为什么有这么多锁？
 
 <!-- more -->
+本节我们会介绍一些特殊的 insert 语句产生的锁:
+1. insert … select 是很常见的在两个表之间拷贝数据的方法。你需要注意，在可重复读隔离级别下，这个语句会给 select 的表里扫描到的记录和间隙加读锁
+2. 如果 insert 和 select 的对象是同一个表，则有可能会造成循环写入。这种情况下，我们需要引入用户临时表来做优化。
+3. insert 语句如果出现唯一键冲突，会在冲突的唯一值上加共享的 next-key lock(S 锁)。因此，碰到由于唯一键约束导致报错后，要尽快提交或回滚事务，避免加锁时间过长。
+
 
 ## 1. insert … select 语句
 ```bash
@@ -94,6 +99,9 @@ drop table temp_t;
 1. 在 T1 时刻，启动 session A，并执行 insert 语句，此时在索引 c 的 c=5 上加了记录锁。
 2. 在 T2 时刻，session B 要执行相同的 insert 语句，发现了唯一键冲突，加上读锁；同样地，session C 也在索引 c 上，c=5 这一个记录上，加了读锁。
 3. T3 时刻，session A 回滚。这时候，session B 和 session C 都试图继续执行插入操作，都要加上写锁。两个 session 都要等待对方的行锁，所以就出现了死锁
+
+![duplicate_key_lock](/images/mysql/MySQL45讲/duplicate_key_lock.jpg)
+
 
 
 ### 4. insert into … on duplicate key update
