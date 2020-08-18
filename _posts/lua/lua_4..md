@@ -1,6 +1,6 @@
 ---
 title: 4. lua table 的使用
-date: 2020-08-08
+date: 2020-08-09
 categories:
     - Go
 tags:

@@ -1,5 +1,5 @@
 ---
-title: 4. lua 函数
+title: 5. lua 函数
 date: 2020-08-10
 categories:
     - Go
