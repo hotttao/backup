@@ -1,19 +1,52 @@
 ---
-title: 2 变量、数值类型和流控
+title: 2 JavaScript 基本语法
 date: 2020-08-06
 categories:
     - Go
 tags:
-	- JavaScript 入门
-	- 入门指南
+	- JavaScript
 ---
-本节我们来介绍 JavaScript 中的基本概念，包括变量、类型、流控。
+本节我们来介绍 JavaScript 中的基本概念，包括语法、变量，数据类型，操作符，流控以及函数，这些基础概念构成了一门编程语言的骨架。
 <!-- more -->
 
 ![JavaScript](/images/JavaScript/JavaScript.png)
 
+## 1. 语法
 
-## 1. 如何在 HTML 中插入 JavaScript
-在介绍 JavaScript 语法之前，我们先来详细介绍一下如何在 HTML 中插入 JavaScript。JavaScript 的插入与页面不同部分的加载顺序有关。`<script>` 有如下属性:
+```js
 
-`<script src="path" >`
+```
+
+JavaScript 是一门类 C 语言，语法具有如下特性:
+1. 区分大小写
+2. 标识符: 
+	- 标识符，是指变量、函数、属性的名字，或者函数的参数
+	- 与其 Python/Go 不同的是，JavaScript 的标识符可以包含或者以 $ 开头
+	- 官方推荐使用驼峰命名方式
+3. 注释:
+	- 单行注释: `//`
+	- 多行注释: `/* */`
+4. 语句: 
+	- 以分号结尾，可省略，但不建议省略
+	- 代码结尾处没有分号会导致压缩错误
+5. 代码块: `{}`
+
+### 1.1 严格模式
+ES5 引入了严格模式（strict mode）的概念，在严格模式下可以避免 ES3 中一些不明确行为，对于不安全行为也会抛出异常。要在整个脚本中启用严格模式，可以在顶部添加 `"use strict";`。这是一个编译指示，用于告诉支持的JavaScript引擎切换到严格模式。在函数内部的上方包含这条编译指示，也可以指定函数在严格模式下执行：
+
+```js
+function doS(){
+	"use strict";
+	// TODO:
+}
+```
+
+## 2. 变量
+JavaScript 中的变量是松散类型，可以用来保存任意类型的数据，即变量没有类型，值具有类型。每个变量仅仅是一个用于保存值的占位符而已。变量的定义有如下几种方式:
+
+```js
+message = 10; // 无论在何处都会声明一个全局变量，不建议使用
+var message;  
+var a = "hi";
+
+```

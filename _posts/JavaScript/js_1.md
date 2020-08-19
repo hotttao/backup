@@ -4,7 +4,7 @@ date: 2020-08-06
 categories:
     - Go
 tags:
-	- JavaScript 入门
+	- JavaScript
 	- 入门指南
 ---
 
@@ -78,6 +78,9 @@ HTML、CSS 和 JavaScritp 通过如下的方式结合在一起:
 		- DOM: 提供访问和操作网页内容的方法和接口
 		- BOM: 提供与浏览器交互的方法和接口
 	- JavaScript 通过 `<script>` 标签插入到HTML页面中
+
+### 2.1 页面的加载顺序
+
 
 ## 3. 怎么学 JavaScript
 JavaScript 在标准化的过程经历过很多次变化，目前主要以 ES6 为主。我们主要学习 JavaScript 的语言部分，BOM 和 DOM 在现在的诸如 Vue 等高级框架中都有更高级的抽象来解决不同浏览器的差异问题。
