@@ -2,7 +2,7 @@
 title: 1 JavaScript 入门开篇
 date: 2020-08-06
 categories:
-    - Go
+    - 前端
 tags:
 	- JavaScript
 	- 入门指南

@@ -1,52 +1,132 @@
 ---
-title: 2 JavaScript 基本语法
+title: 2 JavaScript 数据类型
 date: 2020-08-06
 categories:
-    - Go
+    - 前端
 tags:
-	- JavaScript
+	- JavaScript 入门
 ---
-本节我们来介绍 JavaScript 中的基本概念，包括语法、变量，数据类型，操作符，流控以及函数，这些基础概念构成了一门编程语言的骨架。
+本节我们来介绍 JavaScript 中的数据类型
 <!-- more -->
 
 ![JavaScript](/images/JavaScript/JavaScript.png)
 
-## 1. 语法
+JavaScript 有 6 种基本类型:
+1. Undefined: 未定义，变量已经声明但未赋值
+2. Null: 
+3. Boolean
+4. Number
+5. String
+6. Object: 对象，本质上是一组无序的键值对
+
+接下来我们会一一讲解这六种类型的使用以及用于变量类型检测的 typeof 操作符。Object 对象与 JavaScript 的原型链密切相关我们之后在作更详细介绍。
+
+## 1. 变量类型检测
+使用 typeof 关键字可以检测给定变量的数据类型(准确来说是变量中存储值的数据类型)。
+
+对一个值使用**typeof操作符**可能返回下列某个字符串：
+1. "undefined": Undefined
+2. "boolean": Boolean
+3. "string": String
+4. "number": Number
+5. "object": **对象或null**
+6. "function": **函数**
+
+注意调用`typeof null`会返回"object"，因为特殊值null被认为是一个空的对象引用。从技术角度讲，函数在ECMAScript中是对象，不是一种数据类型。然而，函数也确实有一些特殊的属性，因此通过typeof操作符来区分函数和其他对象是有必要的。
+
+## 2. Undefined
+在使用var声明变量但未对其加以初始化时，这个变量的值就是undefined。不过值为 undefined 的变量与未声明的变量还是不一样的，对于尚未声明过的变量，只能执行一项操作，即使用typeof操作符检测其数据类型。对未初始化和未声明的变量执行 typeof 操作符都会返回 undefined。所以除非显示初始化，否则无法通过 typeof 判断对象是未声明，还是未初始化。
 
 ```js
+var message 
+alter(message == undefined) // true
 
+// var age
+alter(age) // 产生错误
+
+alter(typeof message) // undefined
+alter(typeof age) // undefined
 ```
 
-JavaScript 是一门类 C 语言，语法具有如下特性:
-1. 区分大小写
-2. 标识符: 
-	- 标识符，是指变量、函数、属性的名字，或者函数的参数
-	- 与其 Python/Go 不同的是，JavaScript 的标识符可以包含或者以 $ 开头
-	- 官方推荐使用驼峰命名方式
-3. 注释:
-	- 单行注释: `//`
-	- 多行注释: `/* */`
-4. 语句: 
-	- 以分号结尾，可省略，但不建议省略
-	- 代码结尾处没有分号会导致压缩错误
-5. 代码块: `{}`
+## 3. Null
+从逻辑角度来看，null值表示一个空对象指针，而这也正是使用typeof操作符检测null值时会返回"object"的原因。如果定义的变量准备在将来用于保存对象，那么最好将该变量初始化为null而不是其他值。实际上，undefined值是派生自null值，`undefined == null` 相等性测试总是返回 true。
 
-### 1.1 严格模式
-ES5 引入了严格模式（strict mode）的概念，在严格模式下可以避免 ES3 中一些不明确行为，对于不安全行为也会抛出异常。要在整个脚本中启用严格模式，可以在顶部添加 `"use strict";`。这是一个编译指示，用于告诉支持的JavaScript引擎切换到严格模式。在函数内部的上方包含这条编译指示，也可以指定函数在严格模式下执行：
 
 ```js
-function doS(){
-	"use strict";
-	// TODO:
-}
+var car=null;
+alter(typeof car) // "object"
+
+alter(undefined == null) // true
 ```
 
-## 2. 变量
-JavaScript 中的变量是松散类型，可以用来保存任意类型的数据，即变量没有类型，值具有类型。每个变量仅仅是一个用于保存值的占位符而已。变量的定义有如下几种方式:
+## 4. Boolean
+JavaScript 中的布尔值是小写的 true 和 false。
 
-```js
-message = 10; // 无论在何处都会声明一个全局变量，不建议使用
-var message;  
-var a = "hi";
+使用 Boolean() 函数可以将任意其他类型转换为布尔类型。下面是转换的规则:
+1. string: 空字符串->false
+2. number: 0/NaN->false
+3. 对象: ->true
+4. null/undefined: ->false
 
-```
+除了显示类型转换，在所有的条件判断中都会发生上述的类型转换。
+
+## 5. Number
+JavaScript 种以下几个特殊的数值:
+1. Number.MIN_VALUE: 表示浮点数的下限，最小值
+2. Number:MAX_VALUE: 表示浮点数的上限，最大值
+3. -+Infinity: 
+	- 表示超出数值范围的值
+	- Number.POSITIVE_INFINITY 表示 +Infinity
+	- Number.NEGATIVE_INFINITY 表示 -Infinity
+	- 使用 isFinite()函数可判断值是否在数值范围内
+4. NaN: 
+	- 非数值，用于表示本来要返回数值的操作为返回数值的情况，例如除 0 操作
+	- NaN 与任何值的操作都返回 NaN
+	- NaN 与任何值不相等，包括自身
+	- isNaN() 函数用于判断值是否为 NaN
+
+JavaScript 中有三个函数可以把非数值转换为数值:
+1. Number(num): 任意类型转换为数值
+2. parseInt(num, base): 将字符串转换为整型
+3. parseFloat(num): 将字符串转换成整数或浮点数
+
+Number() 函数有一套复杂的转换规则，简单总结起来:
+1. true/false -> 1/0
+2. null -> 0
+3. undefined -> NaN
+4. string -> 忽略空格和前缀 0，并按数值进行解析
+
+而 paseInt 和 parseFloat 在解析字符串时，会忽略字符串前面的空格，直至找到第一个非空字符，如果第一个非空字符不是数字或负号就返回 NaN(`parseInt("")` 会返回 NaN)。paseInt/parseFloat 会解析到最后或遇到一个非数字字符。例如 `parseInt(123blue)->123`
+
+## 6. String
+在 JavaScript 中 String 可以使用单引号或双引号表示，并且是不可变类型，其包含如下属性或方法:
+1. length(): 返回字符串的长度
+
+有两种方法可以将其他类型转换为 String:
+1. 值的 toString() 方法:
+	- 除了 null/undefined 其他所有的值都有 toString() 方法，该方法返回值的字符串表示
+	- 对于数值，toString()，还可以指定返回值的进制
+2. String() 函数:
+	- 值有 toString() 方法: 返回 toString() 的返回值
+	- null: 返回 "null"
+	- undefined: 返回 "undefined"
+
+## 6. 对象
+JavaScript 中对象是一组数据和功能的集合，可以通过执行 `new 对象类型()` 创建。创建 Object类型的实例并为其添加属性或方法，就可以创建自定义对象，eg: `var o = new Object()`。
+
+Object 具有如下属性和方法:
+1. Constructor: 保存用于创建当前对象的函数
+2. hasOwnProperty(propertyName): 
+	- 用于检查给定的属性在当前对象实例中是否存在
+	- 注意不是在对象的原型中是否存在
+3. isPrototypeOf(object): 检查传入的对象是否是另一个对象的原型
+4. propertyIsEnumerable(propertyName): 用于检查给定的属性是否能够使用 for-in 语句来枚举
+5. toLocaleString(): 返回对象的字符串表示，该字符串与执行环境的地区对应
+6. toString(): 返回对象的字符串表示
+7. valueOf(): 返回对象的字符串、数值或者布尔值表示，通常与 toString() 返回值相同
+
+由于在ECMAScript中Object是所有对象的基础，因此所有对象都具有这些基本的属性和方法。但是从技术角度讲，ECMA-262中对象的行为不一定适用于JavaScript中的其他对象。浏览器环境中的对象，比如BOM和DOM中的对象，都属于宿主对象，因为它们是由宿主实现提供和定义的。ECMA-262不负责定义宿主对象，因此宿主对象可能会也可能不会继承Object
+
+JavaScript 中的对象存在类似 Python 中运算符重载的功能，对对象作的值类型转换或判断基本都会首先调用对象的valueOf()方法，然后确定该方法返回的值是否可以转换。如果不能，则基于这个返回值再调用toString()方法，再测试返回值。
+
+由于 Object 对象与 JavaScript 原型链密切相关，更详细的内容我们后面介绍 JavaScript 面向对象时再来详述。
