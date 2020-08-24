@@ -70,7 +70,7 @@ HTML、CSS 和 JavaScritp 通过如下的方式结合在一起:
 2. CSS:
 	- 通过 CSS 选择器选择 HTML 中的特定标签为其添加样式(布局，颜色和格式)
 	- CSS 选择器是浏览器提供了声明式查询语言，用于选择页面的特定节点
-	- CSS 通过 `<link>` 标签插入到 HTML 中
+	- CSS 通过 `<link>` 和 `<style>` 标签插入到 HTML 中
 3. JavaScript:
 	- 动态网页通过 JavaScript 实现动态交互部分
 	- 包括语言、文档对象模型(DOM)和浏览器对象模型(BOM)三个部分
@@ -78,8 +78,6 @@ HTML、CSS 和 JavaScritp 通过如下的方式结合在一起:
 		- DOM: 提供访问和操作网页内容的方法和接口
 		- BOM: 提供与浏览器交互的方法和接口
 	- JavaScript 通过 `<script>` 标签插入到HTML页面中
-
-### 2.1 页面的加载顺序
 
 
 ## 3. 怎么学 JavaScript
