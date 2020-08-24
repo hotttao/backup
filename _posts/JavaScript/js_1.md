@@ -79,6 +79,34 @@ HTML、CSS 和 JavaScritp 通过如下的方式结合在一起:
 		- BOM: 提供与浏览器交互的方法和接口
 	- JavaScript 通过 `<script>` 标签插入到HTML页面中
 
+### 2.1 script 标签
+向HTML页面中插入JavaScript的主要方法，就是使用`<script>` 标签，HTML 4.01为<script>定义了下列几个属性:
+1. async：
+  - 可选。表示应该立即下载脚本，但不应妨碍页面中的其他操作，比如下载其他资源或等待加载其他脚本
+  - 只对外部脚本文件有效。
+2. charset：
+  - 可选。表示通过src属性指定的代码的字符集。由于大多数浏览器会忽略它的值，因此这个属性很少有人用
+3. defer：
+  - 可选。表示脚本可以延迟到文档完全被解析和显示之后再执行。
+  - 只对外部脚本文件有效
+4. src：
+  - 可选。表示包含要执行代码的外部文件
+5. type：可选。默认值为text/javascript
+
+有两种使用`<script>`标签的方式：直接在页面中嵌入JavaScript代码和包含外部JavaScript文件。
+
+```js
+<script>
+  funciton sayHi(){
+    alter("hi")
+  }
+</script>
+
+<script src="js/test.js"></script>
+```
+
+### 2.2 script 解析顺序
+无论如何包含代码，只要不存在defer和async属性，浏览器都会按照`<script>` 元素在页面中出现的先后顺序对它们依次进行解析。换句话说，在第一个`<script>`元素包含的代码解析完成后，第二个`<script>`包含的代码才会被解析，然后才是第三个、第四个……。为了避免页面加载过慢，现代Web应用程序一般都把全部JavaScript引用放在<body>元素中页面内容的后面。有关浏览器加载 HTML 的顺序我们后续在详细介绍。
 
 ## 3. 怎么学 JavaScript
 JavaScript 在标准化的过程经历过很多次变化，目前主要以 ES6 为主。我们主要学习 JavaScript 的语言部分，BOM 和 DOM 在现在的诸如 Vue 等高级框架中都有更高级的抽象来解决不同浏览器的差异问题。
