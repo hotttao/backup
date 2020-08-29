@@ -177,3 +177,133 @@ oSay(); // blue
 ```
 
 ## 5. 作用域链与闭包
+### 5.1 执行环境和变量对象
+要搞清楚 JavaScript 变量的作用域，我们首先要明白两个概念: 执行环境和变量对象:
+1. 当某个函数被调用时，会创建一个执行环境（execution context）
+2. 后台的每个执行环境都有一个表示变量的对象——变量对象，所有变量和函数都保存在变量对象中
+3. 全局环境的变量对象始终存在，而像compare()函数这样的局部环境的变量对象，则只在函数执行的过程中存在
+4. 在 Web 浏览器中，全局执行环境被认为是 window 对象，因此所有的全局变量和函数都是作为 window 对象的属性和方法创建的
+5. 当执行流进入一个函数时，函数的环境就被推入一个**环境栈**中，函数执行完毕栈被弹出，环境对象被销毁，保存在其中的变量和函数也随之销毁
+
+### 5.2 作用域链的创建
+作用域链的创建要从函数的创建和调用说起:
+1. 在**创建函数**时会创建一个预先包含全局变量对象的作用域链，这个作用域链被保存在内部的`[[Scope]]`属性中
+2. 当调用函数时，会为函数创建一个执行环境，然后通过复制函数的`[[Scope]]`属性中的对象构建起执行环境的作用域链
+
+```js
+function compare(v1, v2){
+    if (v1 > v2){
+        return -1;
+    } else if (v1 < v2){
+        return 1;
+    }
+    return 0;
+}
+
+var result = compare(2, 3)
+```
+
+对于像上面这样在全局环境中调用的 compare 函数，其执行环境与作用域如下图所示: 
+
+![JavaScript](/images/JavaScript/var_scope.jpg)
+
+compare 函数的本地变量对象被创建，并被推入执行环境作用域链的前端。显然，作用域链本质上是一个指向变量对象的指针列表，它只引用但不实际包含变量对象。
+
+显然每个执行的函数都有自己的执行环境，每个执行环境都关联着自己的作用于连，标识符解析沿着作用域链进行，作用域链的前端始终是当前执行的代码所在环境的变量对象。
+
+使用 var 声明的变量会自动被添加到最接近的环境中，函数内这个最接近的环境就是函数的局部环境，如果没有使用 var 声明，则自动被添加到全局环境。
+
+### 5.3 作用域粒度
+JavaScript 执行环境只有全局和局部(函数)两种，因此 JS 中没有块级作用域。有些语句可以延长作用域链，因为这些语句可以在**作用域链的前端**临时增加一个变量对象，该变量对象会在代码执行后移除，这些语句包括: 
+- **with**: 将指定的对象添加到作用域链的前端 
+- try-catch 语句的 **catch** 块: 创建一个新的变量对象添加到作用域的前端，其中包含的是被抛出的错误对象的声明
+
+```js
+function buildUrl(){
+	var qs= "?debug=true";
+	with(location){
+		var url = href + qs; // href 引用的是 location.href
+	}
+	return url;
+}
+```
+
+ES6 通过 let 关键词引入了块级作用域，我们在后面在详述。
+
+### 5.4 闭包
+一般来讲，当函数执行完毕后，函数执行环境中的变量对象会随着执行环境的销毁而销毁。但是闭包(函数内定义的函数):
+1. 内部函数会将外部函数的变量对象添加到自己的作用域链中，这样内部函数就能访问外部函数中定义的变量
+2. 由于外部函数的变量对象存在引用，也不会随着外部函数执行环境销毁而销毁，直至内部函数执行环境被销毁
+
+```js
+
+function createCompareFunc(propertyName){
+    return function(obj1, obj2){
+        var v1 = obj1[propertyName];
+        var v1 = obj1[propertyName];
+
+        if (v1 > v2){
+        return -1;
+    } else if (v1 < v2){
+        return 1;
+    }
+    return 0;
+    }
+};
+var compare = createCompareFunc("age");
+var result = compare({"age": 10}, {"age": 20});
+```
+
+对于上面的闭包函数，在匿名函数从 createCompareFunc()中被返回后，它的作用域链被初始化为包含 createCompareFunc() 函数的活动对象和全局变量对象。这样，匿名函数就可以访问在createComparisonFunction()中定义的所有变量。compare 函数的作用域链如下图所示:
+
+![JavaScript](/images/JavaScript/closure.jpg)
+
+### 5.5 闭包的 this 对象
+前面我们提到过，函数内部的 this 对象是在运行时基于函数的执行环境绑定的：在全局函数中，this等于window，而当函数被作为某个对象的方法调用时，this等于那个对象。不过，**匿名函数的执行环境具有全局性**，因此其this对象通常指向window。怎么理解这句话呢，我们来看下面这个例子:
+
+```js
+var name = "window";
+
+var obj = {
+    name: "object",
+
+    getName: function(){
+        return this.name;
+    },
+
+    getFunc: function(){
+        return function(){
+            return this.name;
+        };
+    },
+
+    getFuncObj: function(){
+        var that = this;
+        return function(){
+            return that.name;
+        };
+    }
+    
+}
+
+object.getName(); // object
+(object.getName)() // object
+(object.getName = object.getName)(); // window
+object.getFunc()(); // window
+object.getFuncObj()(); // Object
+```
+
+第三行代码先执行了一条赋值语句，然后再调用赋值后的结果。因为这个赋值表达式的值是函数本身，所以this的值不能得到维持，结果就返回了"The Window"。
+
+类比 Python 就是 JavaScript 对于对象方法不会执行对象绑定，所以才会出现 this 值丢失的情况。因此我们说匿名函数的执行环境具有全局性。
+
+## 6. 模拟块级作用域
+由于 ES5 没有块级作用域，所以经常能看到那种立即定义执行的函数，ES6 通过 let 关键字引入了块级作用域，因此这里我们就不再介绍这部分知识了(过期了)。一个立即定义执行的函数就像下面这样:
+
+```js
+(function(){
+    // 块级作用域
+})();
+```
+
+注意最外层的括号不可省略，因为函数声明后不能跟`()`，因此需要将函数声明转换成函数表达式。这种技术经常在全局作用域中被用在函数外部，从而限制向全局作用域中添加过多的变量和函数。
