@@ -137,6 +137,8 @@ for (var propName in window) {
 }
 ```
 
+在使用for-in循环时，返回的是所有能够通过对象访问的、可枚举的（enumerated）属性，其中既包括存在于实例中的属性，也包括存在于原型中的属性。屏蔽了原型中不可枚举属性（即将`[[Enumerable]]`标记为false的属性）的实例属性也会在for-in循环中返回。属性特性我们会在后面面向对象中详细介绍。
+
 ### 2.4 with
 with语句的作用是将代码的作用域设置到一个特定的对象中
 
@@ -183,6 +185,7 @@ delete property; // legal only within a with statement
 #### void
 
 #### in
+in操作符会在通过对象能够访问给定属性时返回true，无论该属性存在于实例中还是原型中。
 
 #### instanceof
 
