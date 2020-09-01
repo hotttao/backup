@@ -289,3 +289,116 @@ variable = boolean_expression ? true_value : false_value;
 var num1=1,num2=2
 var num = (5, 1, 4, 8, 0); // num的值为0
 ```
+
+## 4. 错误处理
+JavaScript 中使用 `try-catch-finally` 和 `throw` 来处理和触发异常，他们的语法如下:
+
+```js
+
+try {
+	// code
+} catch(error){
+	// 错误处理
+} finally {
+	// 无论如何都会执行的代码
+}
+```
+
+### 4.1 try-catch-finally
+1. catch块会接收到一个包含错误信息的对象，错误对象包含如下属性:
+	- message: 保存着错误消息的message属性
+	- name: 保存着错误类型
+	- 其他属性因浏览器而异
+2. 只要代码中包含finally子句，则无论try或catch语句块中包含什么代码——甚至return语句，都不会阻止finally子句的执行
+3. catch或finally有一个即可
+
+所以下面的函数执行返回的是 0 而不是 2，因为 finally 语句无论如何都会执行
+
+```js
+function finallyTest(){
+	try{
+		return 0
+	} catch {
+		return 1
+	} finally {
+		return 2
+	}
+}
+```
+
+### 4.2 错误类型
+ECMA-262定义了下列7种错误类型：
+1. Error:
+	- 基类型，其他错误类型都继承自该类型
+	- 很少直接使用，主要用于自定义异常类型
+2. EvalError
+3. RangeError: 索引或数值超过范围
+4. ReferenceError: 找不到对象
+5. SyntaxError: 语法错误
+6. TypeError: 类型不支持要求的属性或方法
+7. URIError: 使用encodeURI()或decodeURI()，URI格式不正确
+
+可以像下面这样在try-catch语句的catch语句中使用instanceof操作符来判断具体的错误类型
+
+```js
+try {
+	// code
+} catch(error){
+	if (error instanceof ReferenceError){
+
+	}
+}
+```
+
+### 4.3 自定义和抛出异常
+利用原型链还可以通过继承Error来创建自定义错误类型。需要为新创建的错误类型指定name和message属性。
+
+```js
+function CustomError(message){
+	this.name = "CustomError";
+	this.message = message;
+}
+
+CustomError.prototype =  new Error();
+thro new CustomError("custom error");
+```
+
+throw操作符，用于抛出异常:
+1. 抛出错误时，必须要给throw操作符指定一个值，这个值是什么类型，没有要求
+2. 在遇到throw操作符时，代码会立即停止执行。仅当有try-catch语句捕获到被抛出的值时，代码才会继续执行
+
+```js
+// throw 必须指定一个值
+throw 123445
+throw True
+```
+
+抛出自定义异常的另一种方式是使用 assert() 函数，其接受两个参数:
+1. 一个是求值结果应该为true的条件
+2. 另一个是条件为false时要抛出的错误
+
+```js
+assert(condition, err_msg);
+```
+
+### 4.4 错误事件
+事件的具体内容我们会在后面详细介绍，此处只需要知道: 任何没有通过try-catch处理的错误都会触发window对象的error事件。
+
+### 4.5 如何避免错误
+避免发生错误有如下建议:
+1. 类型判断: 在使用变量前进行变量类型检测，基本类型的值应该使用typeof来检测，而对象的值则应该使用instanceof来检测
+2. 对于查询字符串，必须要使用encodeURIComponent()函数进行编码
+
+### 4.6 如何把错误记录到服务器
+可以使用下面的函数把页面错误记录到后台服务器:
+
+```js
+function logError(sev, msg){
+	var img = new Image();
+	img.src = "log.php?sev=" + encodeURIComponent(sev) + "&msg=" + encodeURIComponent(msg);
+}
+```
+
+使用了Image对象来发送请求，这样做非常灵活，主要表现如下几方面
+1. 所有浏览器都支持Image对象，包括那些不支持 XMLHttpRequest 对象的浏览器
+2. 可以避免跨域限制，通常都是一台服务器要负责处理多台服务器的错误，而这种情况下使用XMLHttpRequest是不行的
