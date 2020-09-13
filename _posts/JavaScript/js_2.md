@@ -1,6 +1,6 @@
 ---
 title: 2 JavaScript 变量和类型系统
-date: 2020-08-06
+date: 2020-08-05
 categories:
     - 前端
 tags:

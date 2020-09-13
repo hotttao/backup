@@ -1,6 +1,6 @@
 ---
 title: 1 JavaScript 入门开篇
-date: 2020-08-06
+date: 2020-08-04
 categories:
     - 前端
 tags:
