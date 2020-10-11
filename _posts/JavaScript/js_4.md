@@ -278,3 +278,31 @@ if (p.test(text)){
     console.log(RegExp.leftContext) // aa
 }
 ```
+
+## 4. Math 数学对象
+Math 数学对象提供了常用的数学常量以及一些辅助科学计算的函数。
+
+### 4.1 Math 对象常用属性和方法
+
+|属性/方法|作用|
+|:---|:---|:---|
+|PI|||
+|E|||
+|LN2|||
+|LN0|||
+|LOG2E|||
+|SQRT2|平方根||
+|min(n1,n2....)|||
+|max(n1,n2....)|||
+|ceil(num)|向上取整||
+|floor(num)|向下取整||
+|round(num)|四舍五入||
+|random()|0-1的随机数||
+||||
+
+```js
+// 1. 求数组最大最小值
+var num = [1,3,4,10,3]
+Math.min.apply(null, num)
+Math.max.apply(null, num)
+```
