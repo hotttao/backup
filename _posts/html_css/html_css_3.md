@@ -1,5 +1,5 @@
 ---
-title: 3 CSS 布局
+title: 3 CSS 布局-基础
 date: 2020-09-03
 categories:
     - 前端
@@ -7,7 +7,7 @@ tags:
 	- HTML&CSS
 ---
 
-CSS 布局是学习 HTML&CSS 的第一个难点，今天我们来搞定他。
+CSS 布局是学习 HTML&CSS 的第一个难点，我们分两节来搞定他。今天我们先来讲讲传统的布局方法 position 和 float。
 <!-- more -->
 
 
@@ -53,6 +53,8 @@ HTML 元素是块元素还是行内元素并不是绝对的。每一个 HTML 元
 3. float: 浮动
 4. 表格布局:
 5. 多列布局
+
+本节我们主要来介绍前两种传统的布局方式 position 和 float。
 
 ## 2. display 属性值
 display 属性值决定了元素的展现形态，可以设置元素的内部和外部显示类型:
