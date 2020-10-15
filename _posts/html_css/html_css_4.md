@@ -246,3 +246,10 @@ column-count，column-width 从两个方面设置多列布局的列数，二者�
 
 ### 2.3 列与内容折断
 多列布局的内容被拆成碎块，即内容不再同一列内。为每一个列项添加 break-inside: avoid 可以保证内容不会被折断。
+
+
+## 学习资源
+1. [MDN-弹性盒子](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Flexbox)
+1. [MDN-多列布局](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Multiple-column_Layout)
+2. [B站油管最火CSS布局视频](https://www.bilibili.com/video/BV1X7411m7SH?from=search&seid=6929047692861071784): 看完 MDN 在看
+3. [B站小甲鱼](https://www.bilibili.com/video/BV1QW411N762?p=52): 没有一点 HTML 和 CSS 基础的可以先看这个视频

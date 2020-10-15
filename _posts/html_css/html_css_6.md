@@ -169,3 +169,11 @@ h1 {
 5. user-scalable：如果设为no的话阻止缩放。
 
 你应该避免使用minimum-scale、maximum-scale，尤其是将user-scalable设为no。用户应该有权力尽可能大或小地进行缩放，阻止这种做法会引起访问性问题。
+
+
+## 学习资源
+1. [MDN-响应式布局](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Responsive_Design)
+1. [MDN-媒体查询](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Media_queries)
+1. [MDN-响应式图像](https://developer.mozilla.org/en-US/docs/Learn/HTML/Multimedia_and_embedding/Responsive_images)
+2. [B站油管最火CSS布局视频](https://www.bilibili.com/video/BV1X7411m7SH?from=search&seid=6929047692861071784): 看完 MDN 在看
+3. [B站小甲鱼](https://www.bilibili.com/video/BV1QW411N762?p=52): 没有一点 HTML 和 CSS 基础的可以先看这个视频

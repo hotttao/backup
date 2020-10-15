@@ -238,7 +238,8 @@ box-sizing 取值包括:
 #### 不同列的行高不一样
 最后一个问题是我们布局的多列高度不同，我们可以通过给所有的列固定height 来解决这个问题，但是它使设计呆板，因此我们需要更加高级的布局技术。
 
-# 1. 学习资源
-1. [MDN-CSS布局](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Introduction): 非常的详细清晰
+## 学习资源
+1. [MDN-CSS定位](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/%E5%AE%9A%E4%BD%8D): 非常的详细清晰
+1. [MDN-浮动](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Floats): 非常的详细清晰
 2. [B站油管最火CSS布局视频](https://www.bilibili.com/video/BV1X7411m7SH?from=search&seid=6929047692861071784): 看完 MDN 在看
 3. [B站小甲鱼](https://www.bilibili.com/video/BV1QW411N762?p=52): 没有一点 HTML 和 CSS 基础的可以先看这个视频

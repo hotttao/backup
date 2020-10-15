@@ -231,3 +231,9 @@ grid-template-areas属性的使用规则如下：
 3. 所有名字只能出现在一个连续的区域，不能在不同的位置出现
 4. 一个连续的区域必须是一个矩形
 5. 使用.符号，让一个格子留空
+
+
+## 学习资源
+1. [MDN-网格](https://developer.mozilla.org/zh-CN/docs/Learn/CSS/CSS_layout/Grids)
+2. [B站油管最火CSS布局视频](https://www.bilibili.com/video/BV1X7411m7SH?from=search&seid=6929047692861071784): 看完 MDN 在看
+3. [B站小甲鱼](https://www.bilibili.com/video/BV1QW411N762?p=52): 没有一点 HTML 和 CSS 基础的可以先看这个视频
