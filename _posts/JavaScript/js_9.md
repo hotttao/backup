@@ -195,7 +195,7 @@ Element类型用于表现XML或HTML元素，提供了对元素标签名、子节
 |attributes|NamedNodeMap 特性节点 Attr 的集合(不推荐使用)|
 |style|设置 CSS 样式的对象|
 |onclick|等等时间处理程序|
-|childNodes| 返回一个类数组的 NodeList 对象包含了节点包含的所有直接子节点|
+|remove()|直接删除节点自身|
 
 #### attributes
 attributes属性返回的 NamedNodeMap 是如下 {"attr": Attr 节点} 的集合 
