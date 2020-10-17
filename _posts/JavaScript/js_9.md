@@ -371,3 +371,54 @@ div.style.removeProperty("border");
 2. 如果不需要伪元素信息，第二个参数可以是null
 
 getComputedStyle()方法返回一个CSSStyleDeclaration对象（与style属性的类型相同），其中包含当前元素的所有计算的样式。所有计算的样式都是只读的；不能修改计算后样式对象中的CSS属性。
+
+## 8. 元素大小
+元素大小相关的 DOM 操作用于解决以下问题:
+1. 获取元素的偏移量和大小
+2. 获取元素的客户区大小
+3. 获取元素的滚动大小
+
+### 8.1 offsetParent
+HTMLElement.offsetParent 指向与当前元素最近的经过定位的父级元素，分为如下四种情况:
+1. 元素本身有 fixed 定位，offsetParent 为 null
+3. 元素本身无 fixed 定位，父元素存在定位，offsetParent 是以最近的经过定位的父元素
+4. 元素无定位，父元素也无定位，offsetParent 为 body
+4. body 元素的 offsetParent 为 null 
+
+### 8.2 偏移量和大小
+通过下列4个属性可以取得元素的偏移量:
+1. offsetHeight：元素在垂直方向上占用的空间大小，以像素计。包括元素的高度、（可见的）水平滚动条的高度、上边框高度和下边框高度
+2. offsetWidth：元素在水平方向上占用的空间大小，以像素计。包括元素的宽度、（可见的）垂直滚动条的宽度、左边框宽度和右边框宽度
+3. offsetLeft：元素的左外边框至包含元素(offsetParent)的左内边框之间的像素距离
+4. offsetTop：元素的上外边框至包含元素(offsetParent)的上内边框之间的像素距离
+
+![偏移量](/images/JavaScript/offset.jpg)
+
+与 HTMLElement.style.width HTMLElement.style.heigth 相比:
+1. 通过 style 获取的 width，height 只能获取 html 的行内属性，不能获取样式表内属性
+2. 通过 style 获取的 width，height 都是带 px 单位的字符串值，而 offsetHeight, offsetWidth 是表示长宽的数值
+3. offsetHeight, offsetWidth 都是只读的不能用于修改样式
+
+## 8.3 客户区大小
+元素的客户区大小（client dimension），指的是元素内容及其内边距所占据的空间大小，其包括如下四个属性:
+1. clientWidth属性是元素内容区宽度加上左右内边距宽度
+2. clientHeight属性是元素内容区高度加上上下内边距高度
+3. clientLeft属性是元素左边框的宽度
+4. clientTop属性是元素上边框的高度
+
+![客户区大小](/images/JavaScript/client.jpg)
+
+与 offset 相关的属性类型 client 的四个属性同样也是只读的。如果给元素设置 "display:none" client 四个属性值将都为 0;
+
+### 8.4 滚动大小
+滚动大小（scroll dimension），指的是包含滚动内容的元素的大小，其包含如下四个属性
+1. scrollHeight：在没有滚动条的情况下，元素内容的总高度
+2. scrollWidth：在没有滚动条的情况下，元素内容的总宽度
+3. scrollLeft：被隐藏在内容区域左侧的像素数(左方被卷起的宽度)。通过设置这个属性可以改变元素的滚动位置
+4. scrollTop：被隐藏在内容区域上方的像素数(卷起的高度)。通过设置这个属性可以改变元素的滚动位置。
+
+![滚动大小](/images/JavaScript/scroll.jpg)
+
+scrollTop，scrollLeft 是可读写的，scrollHeight，scrollWidth 只是只读的。
+
+此外 window 对象有一个 `scrollTo(left, top)` 方法，可以直接设置页面滚动到什么位置，参数left，top 分表表示距离视口左上角顶点，往右，往下多少。

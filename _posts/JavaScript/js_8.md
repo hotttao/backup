@@ -31,8 +31,8 @@ BOM提供了很多对象，用于访问浏览器的功能，这些功能与任�
 |alter(message)|警告对话框，通常使用alert()生成的“警告”||
 |comfirm(message)|确认对话框，向用户确认消息，返回 true/false||
 |prompt(message, default)|提示对话框，返回用户输入的文本或者 null||
-|setTimeout(func, time)|超时调用||
-|setInterval(func, span)|间歇调用||
+|setTimeout(func, time)|定时器，超时调用||
+|setInterval(func, span)|定时器，间歇调用||
 
 
 ```js
@@ -67,6 +67,8 @@ function increaNum2(){
 }
 setTimeout(increaNum2, 1000)
 ```
+
+注意对于可能会被重复启动的定时器(比如通过页面按钮启动的定时器，应该先清除定时器，再重新开启定时器)
 
 ## 2. location 对象
 location 提供了与当前加载的文档相关的信息。location 是一个特殊对象，window.location和document.location引用的是 同一个 location 对象。
