@@ -372,6 +372,17 @@ div.style.removeProperty("border");
 
 getComputedStyle()方法返回一个CSSStyleDeclaration对象（与style属性的类型相同），其中包含当前元素的所有计算的样式。所有计算的样式都是只读的；不能修改计算后样式对象中的CSS属性。
 
+```js
+// ie 部分浏览器不支持 getComputedStyle() 可以使用下面的代码进行兼容
+function getStyle(element, attr){
+    if (element.currentStyle){
+        return element.currentStyle[attr]
+    }else {
+        return getComputedStyle(element, null)[attr]
+    }
+}
+```
+
 ## 8. 元素大小
 元素大小相关的 DOM 操作用于解决以下问题:
 1. 获取元素的偏移量和大小
