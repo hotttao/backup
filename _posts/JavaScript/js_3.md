@@ -301,6 +301,7 @@ try {
 	// 错误处理
 } finally {
 	// 无论如何都会执行的代码
+	return value; // finally 的返回值将覆盖 try 与 catch 中的返回值
 }
 ```
 
