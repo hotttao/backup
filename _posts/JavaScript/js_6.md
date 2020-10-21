@@ -119,8 +119,9 @@ var factorial = (function f(num){
 1. arguments
 2. this
 3. caller
-4. length: 表示函数希望接收的命名参数的个数
+4. length: 表示函数希望接收的形参个数
 5. prototype: 函数对象的原型，不仅函数有，所有引用类型都存在
+6. name: 当前函数的名称，对于匿名函数就是函数赋值的变量名称，对于命名好函数就是命名函数的名称
 
 ### 3.1 this
 arguments 我们已经说过了，而 this 引用的是函数执行的环境对象。this 的是在函数被调用时决定的。原因也很简单，环境对象也是函数调用时创建的。
@@ -150,6 +151,8 @@ prototype 原型，与JavaScript 原型链和面向对象编程相关，我们�
 
 apply()方法接收两个参数：
 1. 一个是在其中运行函数的作用域
+    - 在非严格模式下，如果这个值是 null 或者 undefined 将会被转换成全局的 window 对象
+    - 在严格模式下，null 或者 undefined 不会转换成 window 对象，函数内的 this 此时就是 null 或 undefined
 2. 另一个是参数数组，可以是Array的实例，也可以是arguments对象
 
 call()方法与apply()方法的作用相同，它们的区别仅在于接收参数的方式不同。对于call()方法而言
@@ -170,10 +173,30 @@ sayColor(); // red
 sayColor.apply(window); // red
 sayColor.apply(o); // blue 
 // sayColor 函数不需要与任何对象发生耦合
+
+// apply 与 call 方法的应用
+// 1.求数组最大值
+var arr = [1, 2, 4]
+Math.max.apply(null, marr)
+
+// 2. 将类数组转换为真正的数组
+function add(){
+    // 这里的 arguments 是作为作用域对象传入的，不是参数，所以前面不用传 null
+    // slice 方法修改就是作用域对象，作用域对象必须是类数组，即包含数值索引和 length 方法
+    var arr = Array.prototype.slice.apply(arguments);
+}
+// 3. 数组追加
+Array.prototype.push.apply(arr, [1,4,10])
+
+// 4. 使用 log 替代 console.log
+function log(){
+    console.log.apply(console, arguments);
+}
+log(arr);
 ```
 
 ### 4.1 bind
-ECMAScript 5还定义了一个方法：bind()。这个方法会创建一个函数的实例，其this值会被绑定到传给bind()函数的值。
+ECMAScript 5还定义了一个方法：bind()。这个方法会创建一个函数的实例，其this值会被绑定到传给bind()函数的值。bind 通常用来实现函数式编程中的函数柯里化技术
 
 ```js
 window.color = "red"
@@ -185,6 +208,14 @@ function sayColor(){
 
 var oSay = sayColor.bind(o); //  oSay()函数的this值等于o
 oSay(); // blue
+
+// 函数柯里化
+function getConfig(color, size, other){
+    console.log(color, size, other);
+}
+var defaultConfig = getConfig.bind(null, "red", 100);
+defaultConfig("tt");
+defaultConfig("dd");
 ```
 
 ## 5. 作用域链与闭包
