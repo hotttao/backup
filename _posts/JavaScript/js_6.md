@@ -187,6 +187,7 @@ caller 属性中保存着调用当前函数的函数的引用，如果是在全�
 prototype 原型，与JavaScript 原型链和面向对象编程相关，我们在后面介绍 JavaScript 面向对象编程时在详细介绍。在ECMAScript 5中，prototype属性是不可枚举的，因此使用for-in无法发现。
 
 ## 4. 函数方法
+### 4.1 apply 和 call
 每个函数都包含两个非继承而来的方法：apply()和call()。这两个方法的用途都是在特定的作用域中调用函数，实际上等于设置函数体内this对象的值。
 
 apply()方法接收两个参数：
@@ -235,7 +236,7 @@ function log(){
 log(arr);
 ```
 
-### 4.1 bind
+### 4.2 bind
 ECMAScript 5还定义了一个方法：bind()。这个方法会创建一个函数的实例，其this值会被绑定到传给bind()函数的值。bind 通常用来实现函数式编程中的函数柯里化技术
 
 ```js
@@ -256,6 +257,21 @@ function getConfig(color, size, other){
 var defaultConfig = getConfig.bind(null, "red", 100);
 defaultConfig("tt");
 defaultConfig("dd");
+```
+
+### 4.3 其他场景下的 this 绑定
+除了函数的 call，apply，bind 的方法外，下面这些函数也提供了绑定 this 的方法:
+1. 数组的 forEach，filter，some，every 方法，都接收两个参数：要在每一项上运行的函数和（可选的）运行该函数的作用域对象。
+
+```js
+var a = 1;
+var obj = {
+    "a": 2
+}
+var arr = [1, 2, 3]
+arr.forEach(function(el,index){
+                console.log(el,index,this);
+            },obj);
 ```
 
 ## 5. 作用域链与闭包
@@ -418,4 +434,28 @@ var report = function(){
         return img
     }
 }();
+```
+
+## 8. this 的指向问题
+JavaScript 中 this 的指向是一个比较容易迷惑的行为，在此我么罗列一下有哪些值得我们注意的场景。函数内部的 this 对象是在运行时基于函数的执行环境绑定的，总的来说有两个基本原则:
+1. this默认指向了window，所以嵌套函数，立即执行的函数，闭包内部 this 都指向 window
+2. 谁调用，绑定谁
+3. 对象方法不会执行对象绑定，所以任何的赋值操作都会导致 this 绑定丢失，包括函数别名，参数传递
+
+```js
+// 1. this默认指向了window
+
+// 2. 谁调用，绑定谁
+// 定时器，函数的最终调用方是 window，所以 this 指向 window 对象
+setTimeout(obj.foo,1000); 
+
+// 3. 对象方法不会执行对象绑定，下面的对象绑定都会丢失
+// 函数别名
+var bar = obj.foo(); 
+// 作为参数传递，也发生了赋值操作
+bar(obj.foo);
+// 间接调用
+(p.foo = obj.foo)(); // 相当于对函数立即执行，内部的this默认指向了window
+(false || obj.foo)();
+(1,obj.foo)();
 ```
