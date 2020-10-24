@@ -175,7 +175,10 @@ var p3 = new Person(); // 等价于 p3 = new Person
 2. 将构造函数的作用域赋给新对象（因此this就指向了这个新对象）；
 3. 执行构造函数中的代码（为这个新对象添加属性）；
 4. 返回新对象
-5. 返回的对象都有一个constructor（构造函数）属性，该属性指向构造函数
+5. 返回的对象都有如下属性用来连接实例化的新对象和构造函数:
+    - __proto__属性(原型对象)，指向构造函数的 prototype 属性对象
+    - constructor（构造函数）属性，指向构造函数(注: 这个对象是通过原型对象继承而来，是原型对象唯一的私有属性)
+    
 
 创建自定义的构造函数意味着将来可以将它的实例标识为一种特定的类型，这正是构造函数模式胜过工厂模式的地方。为什么我们接下来将原型的时候会详细说明。
 
@@ -230,6 +233,13 @@ Object.getOwnPropertyNames(p1) // 获取所有实例属性，无论是否可枚�
 ```
 
 注: ECMAScript 5的Object.getOwnPropertyDescriptor()方法只能用于实例属性，要取得原型属性的描述符，必须直接在原型对象上调用Object.getOwnPropertyDescriptor()方法。
+
+#### 完整的原型链
+如果将上面的原型链继续扩展至 Object.prototype，一个完整的原型链如下图所示:
+
+![JavaScript 原型链](/images/JavaScript/JavaScript原型链.jpg)
+
+个人觉得，要理解原型链一个重要的地方是，这里的 Foo.prototype 跟 Foo 函数是独立，是两个完全不同的对象，只不过彼此通过 prototype 属性相关联，prototype 属性就像其他属性一样是一个可随意可复制的属性。它们唯一需要保证的关系是 prototype 属性值需要有一个 constructor 属性指向构造函数 Foo。
 
 #### 原型模式的简化
 更常见的做法是用一个包含所有属性和方法的对象字面量来重写整个原型对象，
@@ -442,8 +452,6 @@ ECMAScript 5通过新增Object.create()方法规范化了原型式继承。这�
 1. 一个用作新对象原型的对象
 2. （可选的）一个为新对象定义额外属性的对象，与Object.defineProperties()方法的第二个参数格式相同：每个属性都是通过自己的描述符定义的
 
-在传入一个参数的情况下，Object.create()与object()方法的行为相同。
-
 ```js
 var person = {
     name: "abc",
@@ -461,6 +469,8 @@ var pp = Object.create(person, {
 所谓寄生组合式继承，即通过借用构造函数来继承属性，通过原型链的混成形式来继承方法。其背后的基本思路是：不必为了指定子类型的原型而调用超类型的构造函数，我们所需要的无非就是超类型原型的一个副本而已。
 
 ```js
+
+// 方法一使用超类原型的副本
 function inheritPrototype(sub, super){
     // 第一步是创建超类型原型的一个副本。
     var prototype = Object(super.prototype);
@@ -468,6 +478,12 @@ function inheritPrototype(sub, super){
     sub.prototype = prototype;
 }
 
+// 方法二使用  Object.create() 代理父类实例化，这样化，原型链中就多了一个对象，这种方式使用更多
+function inheritCreate(sub, super){
+    var prototype = Object.create(super.prototype);
+    prototype.constructor = sub;
+    sub.prototype = prototype;
+}
 
 function Super(name){
     this.color = [];
@@ -476,10 +492,53 @@ function Super(name){
 
 function Sub(name, age){
     // 
-    Super.call(this, name)   // 二次调用
+    Super.call(this, name)   // 一次调用
     this.age = age
 }
 inheritPrototype(Sub, Super);
+// inheritCreate(Sub, Super);
 ```
 
 开发人员普遍认为寄生组合式继承是引用类型最理想的继承范式。
+
+### 4.5 多重继承
+JavaScript 中默认不支持多重继承，多重继承可以借用 Object.assign 方法，将其他父类的方法拷贝到原型上来实现。但是这种方法在拷贝之后，修改父类是无法影响子类的。
+
+```js
+function Animal(name) {
+        this.name = name;
+    }
+
+    Animal.prototype.getName = function() {
+        return this.name;
+    }
+
+    function Other(age) {
+        this.age = age;
+    }
+
+    Other.prototype.sayAge = function() {
+        return this.age
+    }
+
+    function Dog(name, age) {
+        Animal.call(this, name);
+        Other.call(this, age); // 1. 继承属性
+    }
+
+    // 2. 继承方法
+    Object.assign(Dog.prototype, Animal.prototype)
+    Object.assign(Dog.prototype, Other.prototype)
+
+    var d = new Dog("阿黄", 10)
+```
+
+## 5. Object 对象上的重要方法
+Object 对象本身有很多方法，提供了类似自省的功能，常见的包括:
+1. Object.keys()
+2. Object.getOwnPropertyNames()
+3. Object.getPrototypeOf()
+4. Object.setPrototypeOf()
+5. Object.create()
+
+下面我们来一一介绍这些方法的使用。
