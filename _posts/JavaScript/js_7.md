@@ -26,6 +26,7 @@ ECMAScript 为属性定义了多个特征，这些特征表征了属性可以如
     - 能否修改属性的特性
     - 或者能否把属性修改为访问器属性
     - 这个特性默认值为true
+    - 当设置为 false 时，只允许将 Writable 从 true 改成 false，除此之外对其他四个属性的任意修改都会失败
 2. `[[Enumerable]]`：
     - 表示能否通过for-in循环返回属性
     - 这个特性默认值为true
@@ -37,6 +38,7 @@ ECMAScript 为属性定义了多个特征，这些特征表征了属性可以如
     - 读取属性值的时候，从这个位置读
     - 写入属性值的时候，把新值保存在这个位置
     - 这个特性的默认值为undefined
+    - 注意当 Writable=false Configurable=true 时，Value 值可以再次通过 defineProperty 进行修改，但是直接的属性赋值是不行的
 
 像下面这样，直接在对象上定义的属性，他们的`[[Configurable]]`、`[[Enumerable]]`和`[[Writable]]`特性都被设置为true，而`[[Value]]`特性被设置为指定的值
 
@@ -62,6 +64,9 @@ object.defineProperty(person, "name", {
     value: "abc"
 })
 ```
+#### 特性的判断
+Object 的原型对象还提供了如下实例方法用来对属性特性进行判断:
+1. obj.propertyIsEnumerable(property): 用于判断，对象的属性是否可枚举。这个方法只能判断实例对象本身的属性，对于继承而来的属性都会返回 false
 
 ### 1.2 访问器属性
 访问器属性不包含数据值；它们包含一对儿getter和setter函数(都不是必须的):
@@ -109,7 +114,8 @@ Object.defineProperty(book, "year",{
 1. Object.definedProperties: 一次增加多个属性
 2. Object.getOwnerPropertyDescriptor: 
     - 获取给定属性的描述符
-    - 可以针对任何对象——包括DOM和BOM对象，使用Object.getOwnProperty-Descriptor()方法
+    - 不能用于继承而来的属性
+    - 可以针对任何对象——包括DOM和BOM对象，使用Object.getOwnPropertyDescriptor()方法
 
 ```js
 var book = {};
@@ -134,7 +140,40 @@ Object.defineProperties(book, {
 var desc = Object.getOwnerPropertyDescriptor(book, "_year");
 alter(desc.value)
 
+// 简便写法
+var book = {
+    // 访问器的简便写法
+    get year(){
+
+    }
+    set year(value){
+
+    }
+}
 ```
+
+### 1.4 属性特性注意事项
+使用 defineProperty 总是为实例添加自身的私有属性，其将覆盖继承而来的同名属性。
+
+```js
+var obj = Object.defineProperty({}, "p", {
+            value: 10,
+            writable: false
+        })
+
+obj2 = Object.create(obj);
+console.log(obj2.p); // 10
+obj2.p = 20;
+console.log(obj2.p); // 10, 原型上的不可修改属性，实例也不可修改
+
+// 使用 defineProperty 为实例添加属性，这样就可以覆盖继承的属性，从而可修改
+Object.defineProperty(obj2, "p", {
+    value: 20,
+    writable: true
+})
+console.log(obj2.p); // 20
+```
+
 
 ## 2. 对象创建
 ### 2.1 工厂模式
@@ -534,11 +573,72 @@ function Animal(name) {
 ```
 
 ## 5. Object 对象上的重要方法
-Object 对象本身有很多方法，提供了类似自省的功能，常见的包括:
-1. Object.keys()
-2. Object.getOwnPropertyNames()
-3. Object.getPrototypeOf()
-4. Object.setPrototypeOf()
-5. Object.create()
+Object 对象本身有很多方法，常见的包括:
+1. Object 本身的方法:
+    - Object.keys()
+    - Object.getOwnPropertyNames()
+    - Object.getPrototypeOf()
+    - Object.setPrototypeOf()
+    - Object.create()
+2. 定义在 Object.prototype 上的实例方法(obj 表示任意实例对象):
+    - Object.prototype.valueOf()
+    - Object.prototype.toString()
+    - Object.prototype.toLocalString()
+    - Object.prototype.isPrototypeOf()
+    - Object.prototype.hasOwnProperty()
+    - Object.prototype.propertyIsEnumerable()
 
 下面我们来一一介绍这些方法的使用。
+
+#### 5.1 本身的方法
+#### 属性枚举
+keys 和 getOwnPropertyNames 都用于获取对象自身上所有的属性名(不包括继承而来的属性)，区别在于:
+1. Object.keys(obj): 只能获取可枚举属性
+2. Object.getOwnPropertyNames(obj): 可同时获取可枚举和不可枚举属性
+3. for-in 循环能遍历对象的所有可枚举属性，包括自身以及继承而来的
+
+```js
+Object.keys(p1.prototype)
+Object.keys(p1) // 取得对象上所有可枚举的实例属性，注意实例是相对而言的
+Object.getOwnPropertyNames(p1) // 获取所有实例属性，无论是否可枚举
+```
+
+#### 原型对象操作
+1. Object.getPrototypeOf(obj): 用于获取对象的原型对象
+2. Object.setPrototypeOf(obj, proto_obj): 将 proto_obj 设置为  obj 的原型对象 
+
+```js
+Person.prototype.isPrototype(p1) // 判断实例的[[Prototype]] 是否指向该原型
+Object.getPrototypeOf(p1) == Person.prototype // 获取实例的原型
+p1.hasOwnPrototype("name") // 如果给定属性存在于对象实例中时返回 true
+```
+
+#### 属性描述符
+Object 提供了下列方法用于操作属性描述符:
+1. Object.getOwnPropertyDescription(obj, property): 
+    - 获取对象 obj 属性 property 的描述符
+    - 只能用于获取自身的属性，无法获取继承而来的属性
+2. Object.defineProperty(obj, property, descriptor):
+    - 为属性定义属性描述符
+3. Object.definedProperties(obj, pro_descriptor):
+    - 一次为多个属性定义属性描述符
+
+#### 对象创建
+Object.create(proto_obj):
+- 作用: 创建一个新的对象，并将 proto_obj 设置为其原型对象
+
+### 5.2 实例方法
+#### 对象类型转换
+下面这些方法与对象类型自动转换有关，前面我们在介绍 JavaScript 自动类型转换时介绍过这些方法的使用:
+- obj.valueOf(): 返回对象的值形式
+- obj.toString(): 返回对象的字符串形式
+- obj.toLocalString(): 返回对象与地区相关的字符串
+
+为特定对象自定义上面这些方法，可以实现类似算术运算的方法重载。
+
+
+#### 原型存在与属性判断
+下面这些方法的返回都是布尔值，用于对属性的特性或者原型的归属进行判断:
+- obj.isPrototypeOf(base_obj): 判断 obj 是不是 base_obj 对象的原型对象
+- obj.hasOwnProperty(property): 判断 obj 本身是否包含属性 property，继承而来的属性不算
+- obj.propertyIsEnumerable(property): 判断 obj 的属性 property 是否可枚举，这个方法只能判断实例对象本身的属性，对于继承而来的属性都会返回 false
