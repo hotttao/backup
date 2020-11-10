@@ -9,30 +9,40 @@
 
 <body>
     <div id="app">
-        <!-- 2. 通过管道符使用过滤器，price 和 $ 将传给过滤器函数-->
-        <h3>{{price | formatPrice("$")}}</h3>
-        <h3>{{msg | reverse("$")}}</h3>
-
+        <App></App>
     </div>
     <script src="./vue.js"></script>
     <script>
-        // 3. 创建全局过滤器，可以在所有 Vue 组件中使用
-        Vue.filter("reverse", value => {
-            return value.split('').reverse().join("");
-        });
+        // 1. 创建全局组件
+        // 第一个参数是组件名，第二是组件的配置，与局部组件的配置完全相同
+        Vue.component("Vheader", {
+            template: `
+            <div>
+                <h3>我是一个全局的导航组件</h3>
+            </div>
+            `
+        })
+
+        // 这是一个局部组件
+        const App = {
+            // 2. 直接使用全局组件，无须挂载
+            template: `
+            <div>
+                <Vheader></Vheader>
+            </div>
+            `
+        }
+
+        // Vue 实例
         new Vue({
             el: "#app",
             data: {
-                msg: "hello",
-                price: 10
-            },
-            // 1. 定义局部过滤器
-            filters: {
 
-                formatPrice: function(price, f) {
-                    return f + price;
-                }
-            }
+            },
+            // 2. 挂载子组件
+            components: {
+                App
+            },
         })
     </script>
 </body>

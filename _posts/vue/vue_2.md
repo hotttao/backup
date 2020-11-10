@@ -1,6 +1,6 @@
 ---
-title: 1 Vue 入门
-date: 2020-10-01
+title: 2 Vue 入门
+date: 2020-10-02
 categories:
     - 前端
 tags:
