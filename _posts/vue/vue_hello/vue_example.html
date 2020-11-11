@@ -13,24 +13,28 @@
     </div>
     <script src="./vue.js"></script>
     <script>
-        // 1. 创建全局组件
-        // 第一个参数是组件名，第二是组件的配置，与局部组件的配置完全相同
         Vue.component("Vheader", {
             template: `
             <div>
-                <h3>我是一个全局的导航组件</h3>
+                <h3>{{pMsg}}</h3>
             </div>
-            `
+            `,
+            props: ['pMsg']
         })
 
-        // 这是一个局部组件
         const App = {
-            // 2. 直接使用全局组件，无须挂载
+            // 3. 在父组件中绑定自定义属性
+            // pMsg 是绑定的自定义属性，同时也是子组件接收值的变量名
             template: `
             <div>
-                <Vheader></Vheader>
+                <Vheader :pMsg='msg'></Vheader>
             </div>
-            `
+            `,
+            data() {
+                return {
+                    'msg': "我是父组件传过来的值"
+                }
+            }
         }
 
         // Vue 实例
