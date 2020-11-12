@@ -15,6 +15,7 @@ Vue 组件之间有如下四种通信方式:
 - 子传父: 通过子组件事件
 - 平行组件: 通过中央事件总线
 - 其他方式: provide 和 inject 以及组件之间的引用关系
+- refs: 通过引用直接访问
 
 ## 1. 父组件向子组件传值
 父组件向子组件传值是通过"子组件标签的自定义属性"完成的:
@@ -312,3 +313,73 @@ Vue 组件之间有如下四种通信方式:
 每一个组件实例都有如下属性，可以获取其在组件树中的父组件和子组件:
 1. this.$parent: 获取组件的父组件
 2. this.$children: 获取组件的直接子组件
+
+## 6. refs 
+refs 通过为组件或者标签定义一个唯一 id 引用，以达到可以直接访问的目的。通过 refs 访问一个标签的步骤分为:
+1. 为标签定义 ref 属性，并赋予唯一 id
+2. 通过组件实例 vue.$refs.id 直接获取对应元素(id 为对应的 ref 属性值)
+    - 给标签添加 ref 获取的就是真实的 dom
+    - 给组件添加 ref 获取的就是组件的实例
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+    <div id="app">
+        <App></App>
+    </div>
+    <script src="./vue.js"></script>
+    <script>
+        Vue.component("Vheader", {
+            template: `
+            <div>
+                <h3>子组件</h3>
+            </div>
+            `
+        })
+
+        const App = {
+            // 1. 为标签添加 ref 属性，赋予其一个唯一 id
+            // 给标签添加 ref 获取的就是真实的 dom
+            // 给组件添加 ref 获取的就是组件的实例
+            template: `
+            <div>
+                <Vheader ref="header"></Vheader>
+                <button ref="btn">按钮</button>
+            </div>
+            `,
+            data() {
+                return {
+                    'msg': "我是父组件传过来的值"
+                }
+            },
+
+            // 2. 通过 vue 实例的 $refs 属性可以直接访问添加了 ref 属性的标签
+            mounted() {
+                console.log(this.$refs.btn)
+            },
+        }
+
+        // Vue 实例
+        new Vue({
+            el: "#app",
+            data: {
+
+            },
+            // 2. 挂载子组件
+            components: {
+                App
+            },
+        })
+    </script>
+</body>
+
+</html>
+```

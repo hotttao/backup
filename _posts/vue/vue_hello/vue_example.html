@@ -16,25 +16,31 @@
         Vue.component("Vheader", {
             template: `
             <div>
-                <h3>{{pMsg}}</h3>
+                <h3>子组件</h3>
             </div>
-            `,
-            props: ['pMsg']
+            `
         })
 
         const App = {
-            // 3. 在父组件中绑定自定义属性
-            // pMsg 是绑定的自定义属性，同时也是子组件接收值的变量名
+            // 1. 为标签添加 ref 属性，赋予其一个唯一 id
+            // 给标签添加 ref 获取的就是真实的 dom
+            // 给组件添加 ref 获取的就是组件的实例
             template: `
             <div>
-                <Vheader :pMsg='msg'></Vheader>
+                <Vheader ref="header"></Vheader>
+                <button ref="btn">按钮</button>
             </div>
             `,
             data() {
                 return {
                     'msg': "我是父组件传过来的值"
                 }
-            }
+            },
+
+            // 2. 通过 vue 实例的 $refs 属性可以直接访问添加了 ref 属性的标签
+            mounted() {
+                console.log(this.$refs.btn)
+            },
         }
 
         // Vue 实例
