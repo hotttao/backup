@@ -24,3 +24,35 @@ tags:
 3. 最后结合 Go 如何实现设计模式，并与 JavaScript 进行对比
 
 希望经过这个系列，大家可以详细掌握设计模式，并对 JavaScript 和 Go 有一个更深入的理解。接下来我们会详细介绍如何使用 JavaScript 和 Go 语言实现常见的 23 中设计模式，但是设计模式与面向对象所包含的定义，设计思想不在讲述的范围，这些内容是需要反复阅读上面的学习资料，思考体会。
+
+### 2. 内容概述
+常用的 23 中设计模式主要分为:
+1. 创建型模式
+	- 简单工厂模式（Simple Factory）
+	- 工厂方法模式（Factory Method）
+	- 抽象工厂模式（Abstract Factory）
+	- 创建者模式（Builder）
+	- 原型模式（Prototype）
+	- 单例模式（Singleton）
+2. 结构型模式
+	- 外观模式（Facade）
+	- 适配器模式（Adapter）
+	- 代理模式（Proxy）
+	- 组合模式（Composite）
+	- 享元模式（Flyweight）
+	- 装饰模式（Decorator）
+	- 桥模式（Bridge）
+3. 行为型模式
+	- 中介者模式（Mediator）
+	- 观察者模式（Observer）
+	- 命令模式（Command）
+	- 迭代器模式（Iterator）
+	- 模板方法模式（Template Method）
+	- 策略模式（Strategy）
+	- 状态模式（State）
+	- 备忘录模式（Memento）
+	- 解释器模式（Interpreter）
+	- 职责链模式（Chain of Responsibility）
+	- 访问者模式（Visitor）
+
+我们大致上会按照上面的次序依次讲解各个设计模式的实现。

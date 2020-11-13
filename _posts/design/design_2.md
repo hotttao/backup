@@ -1,6 +1,6 @@
 ---
 title: 2 JavaScript 的面向对象
-date: 2020-10-01
+date: 2020-10-02
 categories:
     - 前端
 tags:
