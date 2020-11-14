@@ -58,3 +58,15 @@ export default {
 ```
 vue serve
 ```
+### 3.1 快速原型开发的步骤
+
+```bash
+# 1. 初始化项目
+npm init
+
+# 2. 创建单文件组件
+touch App.vue
+
+# 3. 运行 
+vue serve
+```
