@@ -9,38 +9,42 @@
 
 <body>
     <div id="app">
-        <App></App>
+        <!-- <button @click="handlerMoTai">显示模态组件</button>
+        <button @click="handlerTishi">显示提示组件</button>
+        <Modal ref='mo'></Modal>
+        <ToolTip ref='ti'></ToolTip> -->
     </div>
     <script src="./vue.js"></script>
     <script>
-        Vue.component("Vheader", {
-            template: `
-            <div>
-                <h3>子组件</h3>
-            </div>
-            `
-        })
-
-        const App = {
-            // 1. 为标签添加 ref 属性，赋予其一个唯一 id
-            // 给标签添加 ref 获取的就是真实的 dom
-            // 给组件添加 ref 获取的就是组件的实例
-            template: `
-            <div>
-                <Vheader ref="header"></Vheader>
-                <button ref="btn">按钮</button>
-            </div>
-            `,
+        const toggleShow = {
             data() {
                 return {
-                    'msg': "我是父组件传过来的值"
+                    isShow: false
                 }
             },
+            methods: {
+                toggleShow() {
+                    this.isShow = !this.isShow
+                }
+            }
+        }
 
-            // 2. 通过 vue 实例的 $refs 属性可以直接访问添加了 ref 属性的标签
-            mounted() {
-                console.log(this.$refs.btn)
-            },
+        const Modal = {
+            template: `
+                <div v-if='isShow'><h3>模态框组件</h3></div>
+            `,
+            // 局部的mixin
+            mixins: [toggleShow]
+
+        }
+
+        const ToolTip = {
+            template: `
+            <div v-if='isShow'>
+                <h2>提示框组件</h2>
+            </div>
+         `,
+            mixins: [toggleShow]
         }
 
         // Vue 实例
@@ -49,9 +53,25 @@
             data: {
 
             },
-            // 2. 挂载子组件
             components: {
-                App
+                ToolTip,
+                Modal
+            },
+            template: `
+                <div>
+                    <button @click='handleModel'>模态框</button>
+                    <button @click='handleToolTip'>提示框</button>
+                    <Modal ref='modal'></Modal>
+                    <ToolTip ref='toolTip'></ToolTip>
+                </div>
+            `,
+            methods: {
+                handleModel(){
+                    this.$modal.toggleShow()
+                },
+                handleToolTip(){
+                    this.$toolTip.toggleShow()
+                }
             },
         })
     </script>
