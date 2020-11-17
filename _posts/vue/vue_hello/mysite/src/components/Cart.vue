@@ -33,7 +33,32 @@
 <script>
     export default {
        name: "cart",
-       props: ["cartList"],
+       props: [],
+       data() {
+           return {
+                cartList: JSON.parse(localStorage.getItem('cartList')) || []
+           }
+       },
+       watch: {
+           cartList: {
+               handler(n){
+                   this.setLocalData(n)
+               },
+               deep: true
+           }
+       },
+       created () {
+           this.$bus.$on("addCart", good=>{
+               let ret = this.cartList.find(item=> item.id ==  good.id);
+            //    console.log(ret);
+               if (ret){
+                   ret.count ++;
+               } else{
+                   this.cartList.push(good);
+               }
+               
+           });
+       },
        computed: {
            money(){
                return this.cartList.reduce((sum, pwd)=>{
@@ -46,6 +71,9 @@
            }
        },
        methods: {
+           setLocalData(data){
+               localStorage.setItem("cartList", JSON.stringify(data));
+           },
            removeCart(i){
                if (window.confirm("确定要删除么？")){
                     this.cartList.splice(i, 1);

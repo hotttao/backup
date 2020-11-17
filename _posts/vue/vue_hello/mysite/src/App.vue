@@ -1,14 +1,15 @@
 <template>
   <div id="app">
     <h3>购物车</h3>
-    <ul v-for="item in cartList" :key="item.id">
+    <ul v-for="(item, index) in cartList" :key="item.id">
       <li>
         <h4>{{item.name}}</h4>
         <p>{{item.price}}</p>
-        <button>添加购物车</button>
+        <button @click='addCart(index)'>添加购物车</button>
       </li>
     </ul>
-    <Cart :cartList="cartList"></Cart>
+    <!-- <Cart :cartList="cartList"></Cart> -->
+    <Cart></Cart>
   </div>
 </template>
 
@@ -33,7 +34,13 @@ export default {
   },
   components: {
     Cart
-  }
+  },
+  methods: {
+    addCart(i) {
+      let good = this.cartList[i];
+      this.$bus.$emit("addCart", good);
+    }
+  },
 }
 </script>
 
