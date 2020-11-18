@@ -1,14 +1,16 @@
 <template>
   <div id="app">
-    <h3>购物车</h3>
+    <router-link to="/">首页</router-link> | 
+    <router-link to="/about">关于</router-link>
+    <router-view></router-view>
+    <!-- <h3>购物车</h3>
     <ul v-for="(item, index) in cartList" :key="item.id">
       <li>
         <h4>{{item.name}}</h4>
         <p>{{item.price}}</p>
         <button @click='addCart(index)'>添加购物车</button>
       </li>
-    </ul>
-    <!-- <Cart :cartList="cartList"></Cart> -->
+    </ul> -->
     <Cart></Cart>
   </div>
 </template>
