@@ -3,7 +3,7 @@
         <m-header></m-header>
         <router-view></router-view>
 
-        <s-header></s-header>
+        <s-header></s-header> 
     </div>
 </template>
 
