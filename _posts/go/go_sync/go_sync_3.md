@@ -54,6 +54,11 @@ Mutex 的实现经过了一个由简单到考虑公平，性能，复杂度复�
 
 ![Mutex实现原理](/images/go/sync/mutex_principle.jpg)
 
+接下来我们会一一介绍 Mutex 各个版本的实现，我觉得下面几点对理解 Mutex 的实现会有所帮助:
+1. 调用 Mutext.Lock 和 Mutex.Unlock 是独立的 Goroutine，他们内部会维护一些变量来记录当前的 Goroutine 的状态，比如是被唤醒的，或者已处于饥饿状态
+2. Mutex 中的字段类似于共享内存，每个 Goroutine 都会根据自身的状态更新 Mutex 的值，因此对 Mutex 的修改都需要借助原子操作，来避免数据竞争
+3. 阻塞在信号量上的 Goroutine 是一个先进先出队列，位于队列头部的 Goroutine 一定是暂停时间最长的 Goroutine 
+
 ## 3. 初版 Mutex 
 初版 Mutex 实现如下:
 
@@ -486,3 +491,36 @@ func (m *Mutex) unlockSlow(new int32) {
 	}
 }
 ```
+
+## 7. Mutex 采坑记录
+使用 Mutex 常见的错误场景有 4 类，分别是 
+1. Lock/Unlock 不是成对出现
+2. Copy 已使用的 Mutex
+3. 重入
+4. 死锁
+手误和重入导致的死锁，是最常见的使用 Mutex 的 Bug。
+
+### 7.1 Lock/Unlock 不是成对出现
+Lock/Unlock 不是成对出现Lock/Unlock 没有成对出现，就意味着会出现死锁，或者是因为 Unlock 一个未加锁的 Mutex 而导致 panic。证 Lock/Unlock 成对出现，尽可能采用 defer mutex.Unlock 的方式，把它们成对、紧凑地写在一起。
+
+### 7.2 Copy 已使用的 Mutex
+Package sync 的同步原语在使用后是不能复制的。原因在于，Mutex 是一个有状态的对象，它的 state 字段记录这个锁的状态。如果你要复制一个已经加锁的 Mutex 给一个新的变量，那么新的刚初始化的变量居然被加锁了，这显然不符合你的期望，因为你期望的是一个零值的 Mutex。关键是在并发环境下，你根本不知道要复制的 Mutex 状态是什么，因为要复制的 Mutex 是由其它 goroutine 并发访问的，状态可能总是在变化。
+
+Go 在运行时，有死锁的检查机制（checkdead()  方法），它能够发现死锁的 goroutine。但是显然我们不想运行的时候才发现这个因为复制 Mutex 导致的死锁问题。我们可以使用 vet 工具: `go vet counter.go`，把检查写在 Makefile 文件中，在持续集成的时候跑一跑，这样可以及时发现问题，及时修复。
+
+#### vet 检查原理
+vet 检查是通过[copylock](https://github.com/golang/tools/blob/master/go/analysis/passes/copylock/copylock.go)分析器静态分析实现的。这个分析器会分析函数调用、range 遍历、复制、声明、函数返回值等位置，有没有锁的值 copy 的情景，以此来判断有没有问题。可以说，只要是实现了 Locker 接口，就会被分析。
+
+### 7.3 重入
+Mutex 不是可重入的锁，因为 Mutex 的实现中没有记录哪个 goroutine 拥有这把锁。理论上，任何 goroutine 都可以随意地 Unlock 这把锁，所以没办法计算重入条件。所以，一旦误用 Mutex 的重入，就会导致报错。下一节我们将介绍如何基于 Mutex 实现一个可重入锁。
+
+### 7.4 死锁
+要产生死锁必须具备以下几个条件：
+1. 互斥： 至少一个资源是被排他性独享的，其他线程必须处于等待状态，直到资源被释放
+2. 持有和等待：goroutine 持有一个资源，并且还在请求其它 goroutine 持有的资源
+3. 不可剥夺：资源只能由持有它的 goroutine 来释放
+4. 环路等待：一般来说，存在一组等待进程，P={P1，P2，…，PN}，P1 等待 P2 持有的资源，P2 等待 P3 持有的资源，依此类推，最后是 PN 等待 P1 持有的资源，这就形成了一个环路等待的死结
+
+Go 死锁探测工具只能探测整个程序是否因为死锁而冻结了，不能检测出一组 goroutine 死锁导致的某一块业务冻结的情况。你还可以通过 Go 运行时自带的死锁检测工具，或者是第三方的工具（比如go-deadlock、go-tools）进行检查，这样可以尽早发现一些死锁的问题。不过，有些时候，死锁在某些特定情况下才会被触发，所以，如果你的测试或者短时间的运行没问题，不代表程序一定不会有死锁问题。
+
+如果发现线上可能出现了死锁，我们可以通过 Go pprof 工具进行分析，它提供了一个 block profiler 监控阻塞的 goroutine。除此之外，我们还可以查看全部的 goroutine 的堆栈信息，通过它，你可以查看阻塞的 groutine 究竟阻塞在哪一行哪一个对象上了。
