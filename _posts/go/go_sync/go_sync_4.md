@@ -1,6 +1,6 @@
 ---
 title: 4 Mutex 扩展
-date: 2019-02-03
+date: 2019-02-04
 categories:
     - Go
 tags:
@@ -13,6 +13,9 @@ tags:
 ## 1. Mutex 的扩展
 上一节我们介绍了 Mutex 的实现原理，这一节我们来看看如何基于标准库的 Mutex 来扩展 Mutex 提供的并发原语，包括:
 1. 实现一个可重入锁
+2. TryLock
+3. 获取等待者的数量
+4. 实现一个线程安全的队列
 
 ## 2. 可重入锁
 实现可重入锁的关键是要锁能记住当前哪个 goroutine 持有锁，这里有两个方案:
@@ -130,4 +133,125 @@ func (m *TokenRecursiveMutex) Unlock(token int64) {
     m.Mutex.Unlock()
 }
 
+```
+
+## 3. TryLock
+我们可以为 Mutex 添加一个 TryLock 请求锁的方法:
+1. 如果 goroutine 获取锁成功，则持有锁，并返回 true
+2. 如果这把锁已经被其他 goroutine 所持有，或者是正在准备交给某个被唤醒的 goroutine，那么 TryLock 直接返回 false，不会阻塞在方法调用上
+
+具体实现如下:
+
+```go
+
+// 复制Mutex定义的常量
+const (
+    mutexLocked = 1 << iota // 加锁标识位置
+    mutexWoken              // 唤醒标识位置
+    mutexStarving           // 锁饥饿标识位置
+    mutexWaiterShift = iota // 标识waiter的起始bit位置
+)
+
+// 扩展一个Mutex结构
+type Mutex struct {
+    sync.Mutex
+}
+
+// 尝试获取锁
+func (m *Mutex) TryLock() bool {
+    // 如果能成功抢到锁
+    if atomic.CompareAndSwapInt32((*int32)(unsafe.Pointer(&m.Mutex)), 0, mutexLocked) {
+        return true
+    }
+
+    // 如果处于唤醒、加锁或者饥饿状态，这次请求就不参与竞争了，返回false
+    old := atomic.LoadInt32((*int32)(unsafe.Pointer(&m.Mutex)))
+    if old&(mutexLocked|mutexStarving|mutexWoken) != 0 {
+        return false
+    }
+
+    // 尝试在竞争的状态下请求锁
+    new := old | mutexLocked
+    return atomic.CompareAndSwapInt32((*int32)(unsafe.Pointer(&m.Mutex)), old, new)
+}
+```
+
+## 4. 获取等待者的数量
+Mutex 结构中的 state 字段有很多个含义，通过 state 字段，你可以知道锁是否已经被某个 goroutine 持有、当前是否处于饥饿状态、是否有等待的 goroutine 被唤醒、等待者的数量等信息。但是要想获取这些信息，我们需要将他们从 state 字段中一一解析出来，代码如下:
+
+```go
+
+const (
+    mutexLocked = 1 << iota // mutex is locked
+    mutexWoken
+    mutexStarving
+    mutexWaiterShift = iota
+)
+
+type Mutex struct {
+    sync.Mutex
+}
+
+func (m *Mutex) Count() int {
+    // 获取state字段的值
+    
+    v := atomic.LoadInt32((*int32)(unsafe.Pointer(&m.Mutex)))
+    isLock = v & mutexLocked
+    v = v >> mutexWaiterShift //得到等待者的数值
+    v = v + isLock //再加上锁持有者的数量，0或者1
+    return int(v)
+}
+
+
+// 锁是否被持有
+func (m *Mutex) IsLocked() bool {
+    state := atomic.LoadInt32((*int32)(unsafe.Pointer(&m.Mutex)))
+    return state&mutexLocked == mutexLocked
+}
+
+// 是否有等待者被唤醒
+func (m *Mutex) IsWoken() bool {
+    state := atomic.LoadInt32((*int32)(unsafe.Pointer(&m.Mutex)))
+    return state&mutexWoken == mutexWoken
+}
+
+// 锁是否处于饥饿状态
+func (m *Mutex) IsStarving() bool {
+    state := atomic.LoadInt32((*int32)(unsafe.Pointer(&m.Mutex)))
+    return state&mutexStarving == mutexStarving
+}
+```
+需要注意的是在获取 state 字段的时候，并没有通过 Lock 获取这把锁，所以获取的这个 state 的值是一个瞬态的值。
+
+## 5. 实现一个线程安全的队列
+```go
+
+type SliceQueue struct {
+    data []interface{}
+    mu   sync.Mutex
+}
+
+func NewSliceQueue(n int) (q *SliceQueue) {
+    return &SliceQueue{data: make([]interface{}, 0, n)}
+}
+
+// Enqueue 把值放在队尾
+func (q *SliceQueue) Enqueue(v interface{}) {
+    q.mu.Lock()
+    q.data = append(q.data, v)
+    q.mu.Unlock()
+}
+
+// Dequeue 移去队头并返回
+func (q *SliceQueue) Dequeue() interface{} {
+    q.mu.Lock()
+    if len(q.data) == 0 {
+        q.mu.Unlock()
+        return nil
+    }
+    v := q.data[0]
+    q.data = q.data[1:]
+    q.mu.Unlock()
+    return v
+}
 ```
