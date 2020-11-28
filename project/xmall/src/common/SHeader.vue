@@ -50,6 +50,9 @@
     }
     .logo{
         grid-area: logo;
+        
+    }
+    .logo a{
         background: url(/static/images/global-logo-red@2x.png) no-repeat 50%;
         background-size: cover;
         display: block;
