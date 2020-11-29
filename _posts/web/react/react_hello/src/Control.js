@@ -54,7 +54,8 @@ export class UnCotrol extends Component{
     }
     handleInput(e){
         let v1 = e.target.value
-        // 1. 通过 this.refs.a 我们可以获取 ref="a" 标识的组件 
+        // 2. 我们可以通过事件获取表单输入的值
+        // 3. 通过 this.refs.a 我们可以获取 ref="a" 标识的组件，这种方式我们也可以获取表单输入的值 
         let v2 = this.refs.a.value
         console.log(v1, v2)
         this.setState({
@@ -65,6 +66,7 @@ export class UnCotrol extends Component{
         return (
             <div>
                 <p>输入: {this.state.val}</p>
+                {/* 1. input 输入框并没有绑定组件状态 */}
                 <input type="text" onChange={(e)=>{this.handleInput(e)}} ref="a"/>
             </div>
         )
