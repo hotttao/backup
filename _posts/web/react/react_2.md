@@ -22,6 +22,10 @@ create-react-app react_hello
 # 启动项目
 cd react_hello
 yarn start
+
+# 安装 ant-design
+cnpm i antd -S
+yarn add antd
 ```
 
 ### 1.1 项目创建
