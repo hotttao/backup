@@ -56,8 +56,17 @@ tags:
     - :focus: 当元素获取焦点时，所谓获取焦点指的是能获取键盘输入的字符时
 2. 说明: 
     - :hover 必须位于:link 和 :visited 后面，:active 必须位于 :hover 后面，记忆方法 LOVE & HATE
-    - 这些伪类选择器主要用于 a 标签，也可以用于其他标签
+    - :hover 伪类选择器可以用于所有标签上
+    - 其他伪类选择器只能用于 a 标签上
 
+```css
+div:hover{
+    background-color: green;
+}
+div:hover span{
+    color: white;
+}
+```
 
 ### 3.2 UI 伪类选择器
 UI 伪类选择器用于选择具有特定状态的表单元素:
