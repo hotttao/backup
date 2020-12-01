@@ -3,38 +3,49 @@ package main
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
+	"unsafe"
 )
 
-func main() {
-	var cc counter
-	for i := 1; i < 10; i++ {
-		go func() {
-			for {
-				time.Sleep(time.Millisecond)
-				fmt.Println(cc.total())
-			}
-		}()
-	}
-	for {
-		cc.incr()
-		time.Sleep(time.Millisecond)
-	}
-}
-
-type counter struct {
+type MyMutex struct {
 	sync.RWMutex
-	count uint64
 }
 
-func (c *counter) incr() {
-	c.Lock()
-	c.count++
-	c.Unlock()
+func (m *MyMutex) ReaderCount() int32 {
+	read := atomic.LoadInt32((*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&m.RWMutex)) +
+		unsafe.Sizeof(sync.Mutex{}) + unsafe.Sizeof(uint32(0)))))
+	return read
 }
 
-func (c *counter) total() uint64 {
-	c.Lock()
-	defer c.Unlock()
-	return c.count
+func Read(m *MyMutex, i int) {
+	defer m.RUnlock()
+	m.RLock()
+	fmt.Println("Reader:", i)
+	time.Sleep(time.Millisecond)
+	fmt.Println("Reader:", i, "over")
+
+}
+
+func Writer(m *MyMutex, j int) {
+	defer m.Unlock()
+	fmt.Println("Writer:", j)
+	time.Sleep(time.Second * 2)
+	fmt.Println("get reader")
+	fmt.Println(m.ReaderCount())
+	m.Lock()
+	fmt.Println("get reader over")
+
+}
+
+func main() {
+	my := MyMutex{}
+	for {
+		for i := 1; i < 10; i++ {
+			i := i
+			go Read(&my, i)
+		}
+		go Writer(&my, 1)
+		time.Sleep(time.Microsecond)
+	}
 }
