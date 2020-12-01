@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .top_bar{
+            overflow:visible;
+            border: 1px solid red;
+        }
+        .top_bar .a {
+            height: 100px;
+            width: 100px;
+            float: left;
+            border: 1px solid green;
+        }
+
+        .top_bar .a {
+            height: 100px;
+            width: 100px;
+            float: right;
+            border: 1px solid purple;
+        }
+
+        /* .top_bar .clear{
+            clear: both;
+        } */
+
+        /* .clearfix::after{
+            content: "";
+            display: block;
+            clear: both;
+        } */
+
+        .second {
+            height: 20px;
+            border: 1px solid aqua;
+        }
+    </style>
+</head>
+<body>
+    <div class="top_bar clearfix">
+        <div class="a">浮动1</div>
+        <div class="b">浮动2</div>
+        <!-- <div class="clear"></div> -->
+    </div>
+    <div class="second"></div>
+</body>
+</html>
