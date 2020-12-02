@@ -5,46 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+        }
         .top_bar{
-            overflow:visible;
-            border: 1px solid red;
-        }
-        .top_bar .a {
-            height: 100px;
-            width: 100px;
-            float: left;
-            border: 1px solid green;
+            height: 60px;
+            background-color: aquamarine;
         }
 
-        .top_bar .a {
-            height: 100px;
-            width: 100px;
-            float: right;
-            border: 1px solid purple;
+        .top_bar .nav_container {
+            max-width: 1200px;
+            height: 100%;
+            margin: 0 auto;
+            background-color: brown;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .nav_logo{
+            flex: 0 50px;
+            background-color: seagreen;
         }
 
-        /* .top_bar .clear{
-            clear: both;
-        } */
-
-        /* .clearfix::after{
-            content: "";
-            display: block;
-            clear: both;
-        } */
-
-        .second {
-            height: 20px;
-            border: 1px solid aqua;
+        .nav_list ul{
+            list-style: none;
         }
+
+        .nav_list ul li {
+            display: inline-block;
+            min-width: 50px;
+        }
+
+        .nav_search{
+
+        }
+        
     </style>
 </head>
 <body>
-    <div class="top_bar clearfix">
-        <div class="a">浮动1</div>
-        <div class="b">浮动2</div>
-        <!-- <div class="clear"></div> -->
+    <div class="top_bar">
+        <div class="nav_container">
+            <div class="nav_logo">logo</div>
+            <div class="nav_list">
+                <ul>
+                    <li>小米商城</li>
+                    <li>首页</li>
+                    <li>全部</li>
+                    <li>手机</li>
+                    <li>家电</li>
+                    <li>新闻</li>
+                    <li>好用</li>
+                    <li>精选</li>
+                    <li>测试</li>
+                    <li>我爱我家</li>
+                </ul>
+            </div>
+            <div class="nav_search">
+                <input type="text" placeholder="请输入搜索商品">
+            </div>
+        </div>
+        
     </div>
-    <div class="second"></div>
 </body>
 </html>
