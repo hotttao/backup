@@ -197,3 +197,99 @@ table {
 ```
 
 ## 6. BFC
+
+## 7. 浮动和定位对行内元素的影响
+1. 将一个行内元素设置成 float 相当于把这个元素设置成了一个块元素
+2. 绝对定位和固定定位，与 float 一样也可以将这个元素设置成了一个块元素
+3. 总结: 脱离标准文档流的 float、绝对定位、固定定位都会将行内元素设置成一个块元素  
+
+对 div 等块级元素设置 float 会收缩效果。
+
+## 8. 定位与 z-index
+给元素设置定位会出现压盖现象，z-index 可以设置相互压盖元素显示的优先级。
+
+z-index 有如下几个特性:
+1. 只能用于设置了定位的元素上
+2. 是一个整数，越大显示优先级越高
+3. 如果父辈元素也设置了 z-index，则元素显示的优先级由其父辈的 z-index 决定
+
+## 9 背景与边框属性
+### 9.1 背景属性
+背景包括如下属性
+1. 背景色: `background-color: red`
+2. 背景图片: `background-img: url("/images/image.jpg")`
+3. 背景图片的平铺方式: 
+    - `background-repeat: no-repeat`
+    - 表示背景图片是否重复以填充整个元素
+    - no-repeat 表示不复制，repeat-x 横向平铺 repeaet-y 纵向平铺 
+4. 背景图片定位: 
+    - `background-position: 0 0`
+    - 定位有三种方式:
+        - `50px 100px`: x 轴方向(水平方向)右移 50px，垂直方向下移 100px
+        - `top/center/bottom left/center/right`: 关键字定位，分别表示上下、左右额位置
+        - `0% 50%`: 水平方向右移 0%, 垂直方向下移 50%
+5. 缩放背景图片的尺寸: `background-size: 24px 596px` 对应为宽度和高度
+5. 综合属性: `backgroud: url("") no-repeat center top`
+
+ ### 9.2 CSS Sprite 雪碧图
+CSS Sprite 是一个将多个小图标合并到一张图上，并利用 CSS 背景定位来显示需要显示的部分的技术。
+
+CSS Sprite 适用于:
+1. 静态图片，不随用户信息变化而变化
+2. 小图片，2-3kb
+3. 加载量比较大
+4. 一些大图片不建议使用雪碧图
+
+目的是减少 HTTP 请求的数量，加快网页响应速度，跟合并 JS 文件和 CSS 文件是一个道理。
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        div {
+            width: 24px;
+            height: 24px;
+            display: inline-block;
+            border: 1px solid palegreen;
+            /* 图片大小: 48px * 1184px  */
+            background: url("/_posts/html_css/taobao_sprite.png") no-repeat 0 0 ;
+            background-size: 24px 597px;
+        }
+
+        .sprit2 {
+            background-position: 0 -44px;
+        }
+
+        .sprit3 {
+            background-position: 0 -88px;
+        }
+    </style>
+</head>
+<body>
+    <div class="sprit"></div>
+    <div class="sprit2"></div>
+    <div class="sprit3"></div>
+</body>
+</html>
+```
+
+### 9.3 边框属性
+边框包括如下属性:
+1. 边框的圆角: 
+    - `border-radius: 3px 10px 30px 2px`
+    - `border-radius: 50%`: 将正方形设置为圆
+    - `border-top-left: 15px 15px`
+2. 边框阴影: `box-shadow: 0px 0px 5px red inset`
+    - 水平偏移方向
+    - 垂直偏移方向
+    - 模糊程度
+    - 颜色
+    - 外设还是内设，默认为外设，inset 表示内设
