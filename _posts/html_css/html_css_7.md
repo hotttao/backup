@@ -293,3 +293,243 @@ CSS Sprite 适用于:
     - 模糊程度
     - 颜色
     - 外设还是内设，默认为外设，inset 表示内设
+
+## 10. CSS 类命名规范
+### 10.1 相对网页外层重要部分CSS样式命名
+1. 外套 wrap ------------------用于最外层 
+2. 头部 header ----------------用于头部 
+3. 主要内容 main ------------用于主体内容（中部） 
+4. 左侧 main-left -------------左侧布局 
+5. 右侧 main-right -----------右侧布局 
+6. 导航条 nav -----------------网页菜单导航条 
+7. 内容 content ---------------用于网页中部主体        
+8. 底部 footer -----------------用于底部
+
+
+### 10.2 DIV+CSS命名参考表
+
+|CSS样式命名|说明|
+|:---|:---|
+||#wrapper|        页面外围控制整体布局宽度|
+|#container或#content|     容器,用于最外层|
+|#layout| 布局|
+|#head, #header|  页头部分|
+|#foot, #footer|  页脚部分|
+|#nav|    主导航|
+|#subnav| 二级导航|
+|#menu|   菜单|
+|#submenu|        子菜单|
+|#sideBar|        侧栏|
+|#sidebar_a, #sidebar_b|  左边栏或右边栏|
+|#main|   页面主体|
+|#tag|    标签|
+|#msg| #message|   提示信息|
+|#tips|   小技巧|
+|#vote|   投票|
+|#friendlink|     友情连接|
+|#title|  标题|
+|#summary|        摘要|
+|#loginbar|       登录条|
+|#searchInput|    搜索输入框|
+|#hot|    热门热点|
+|#search| 搜索|
+|#search_output|  搜索输出和搜索结果相似|
+|#searchBar|      搜索条|
+|#search_results| 搜索结果|
+|#copyright|      版权信息|
+|#branding|       商标|
+|#logo|   网站LOGO标志|
+|#siteinfo|       网站信息|
+|#siteinfoLegal|  法律声明|
+|#siteinfoCredits|        信誉|
+|#joinus| 加入我们|
+|#partner|        合作伙伴|
+|#service|        服务|
+|#regsiter|       注册|
+|arr/arrow|       箭头|
+|#guild|  指南|
+|#sitemap|        网站地图|
+|#list|   列表|
+|#homepage|       首页|
+|#subpage|        二级页面子页面|
+|#tool, #toolbar| 工具条|
+|#drop|   下拉|
+|#dorpmenu|       下拉菜单|
+|#status| 状态|
+|#scroll| 滚动|
+|.tab|    标签页|
+|.left| .right| .center|    居左、中、右|
+|.news|   新闻|
+|.download|       下载|
+|.banner| 广告条(顶部广告条)|
+
+
+## 11. 居中
+### 11.1 行内元素居中
+
+行内元素居中分为:
+1. 水平居中: text-align
+2. 垂直居中:
+    - 方法一: 设置 line-height 与 height 同高
+    - 方法二: 将容器设置为 table-cell 并设置 vertical-align
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        /* 方法一: text-align, line-height */
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: aquamarine;
+            text-align: center;
+            line-height: 200px;
+        }
+
+        /* 方法二: text-align, table-cell */
+        .box2 {
+            width: 200px;
+            height: 200px;
+            background-color: aquamarine;
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <span>JMM</span>
+    </div>
+
+    <div class="box2">
+        <span>JMM</span>
+    </div>
+</body>
+</html>
+```
+
+### 11.2 块元素居中
+块元素居中有三种方法：
+1. position + margin
+2. table-cell
+3. position: 纯定位的方式
+
+#### position + margin
+```html
+<style>
+    /* 方法一: position + margin */
+    /* 父元素: position: relative */
+    .box {
+        width: 200px;
+        height: 200px;
+        background-color: orange;
+        position: relative; 
+    }
+
+    
+    .child {
+        width: 100px;
+        height: 100px;
+        background-color: aquamarine;
+        /* 子元素: 设置 position + margin + top/left/right/buttom */
+        position: absolute;
+        margin: auto;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+    }
+</style>
+
+<body>
+    <div class="box">
+        <div class="child"></div>
+    </div>
+</body>
+```
+
+#### table-cell
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: orange;
+            /* 方法二: 父元素设置 table-cell */
+            display: table-cell;
+            vertical-align: middle;
+            text-align: center;
+        }
+
+        
+        .child {
+            width: 100px;
+            height: 100px;
+            background-color: aquamarine;
+            /* 方法二: 子元素设置 inline-block */
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="child"></div>
+    </div>
+</body>
+</html>
+```
+
+#### 纯位移计算
+
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        .box {
+            width: 200px;
+            height: 200px;
+            background-color: orange;
+            /* 方法三: 父元素 */
+            position: relative;;
+        }
+        
+        .child {
+            width: 88px;
+            height: 88px;
+            background-color: aquamarine;
+            /* 方法三:  纯定位方式，位移父子宽高差值的一半*/
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            margin-left: -44px;
+            margin-top: -44px;
+        }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="child"></div>
+    </div>
+
+    <div class="box2">
+        <span>JMM</span>
+    </div>
+</body>
+</html>
+```
