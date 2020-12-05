@@ -228,7 +228,9 @@ z-index 有如下几个特性:
         - `50px 100px`: x 轴方向(水平方向)右移 50px，垂直方向下移 100px
         - `top/center/bottom left/center/right`: 关键字定位，分别表示上下、左右额位置
         - `0% 50%`: 水平方向右移 0%, 垂直方向下移 50%
-5. 缩放背景图片的尺寸: `background-size: 24px 596px` 对应为宽度和高度
+5. 缩放背景图片的尺寸: 
+    - `background-size: 24px 596px` 对应为宽度和高度
+    - `background-size: cover`: 根据容器的百分比进行伸缩
 5. 综合属性: `backgroud: url("") no-repeat center top`
 
  ### 9.2 CSS Sprite 雪碧图
