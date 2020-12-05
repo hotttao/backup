@@ -48,8 +48,3 @@ import './App.css'
 # 5. App.css 中导入样式
 @import '~antd/dist/antd.css';
 ```
-
-## 2. 聪明组件VS傻⽠组件
-基本原则:
-1. 聪明组件(容器组件)负责数据获取
-2. 傻⽠组件(展示组件)负责根据props显示信息内容
