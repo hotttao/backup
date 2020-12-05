@@ -36,6 +36,7 @@ class Comment extends Component{
 export default class App extends Component {
     constructor(props){
         super(props)
+        // 必须在初始化时声明 state 对象和相应属性，才能在后续的 setState 方法使用和更改
         this.state = {
             count: 0
         }
