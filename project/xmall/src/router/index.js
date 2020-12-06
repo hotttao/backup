@@ -5,6 +5,7 @@ import Index from '@/views/Index.vue';
 import Login from '@/views/Login';
 import Goods from '@/views/Goods';
 import Thanks from '@/views/Thanks';
+import FormMe from "@/components/FormMe"
 
 Vue.use(VueRouter)
 
@@ -32,6 +33,10 @@ const routes = [
   {
     path: '/login',
     component: Login
+  },
+  {
+    path: '/form',
+    component: FormMe
   }
 ]
 
