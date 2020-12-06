@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@ant-design/icons": "^4.3.0",
     "@babel/plugin-proposal-decorators": "^7.12.1",
     "@craco/craco": "^5.8.0",
     "@testing-library/jest-dom": "^5.11.6",
@@ -38,5 +39,8 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "@babel/plugin-proposal-decorators": "^7.12.1"
   }
 }

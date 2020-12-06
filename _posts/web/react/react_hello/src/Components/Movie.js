@@ -24,9 +24,9 @@ export class MovieA extends Component {
             <MovieList movieList={this.props.data}></MovieList>
         )
     }
-}
+} 
 
-@fetchMovie("B")
+@fetchMovie("B") 
 export class MovieB extends Component {
     render() {
         return (
