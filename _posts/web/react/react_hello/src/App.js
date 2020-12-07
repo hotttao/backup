@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {MovieA, MovieB} from './Components/Movie'
+// import {MovieA, MovieB} from './Components/Movie'
 import {Button} from "antd"
 import './App.css'
 
