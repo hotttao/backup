@@ -6,5 +6,111 @@ categories:
 tags:
 	- Vue
 ---
-使用 redux 与 mobx-react 共享数据
+react-router
 <!-- more -->
+
+## 1. react-router
+
+react-router 是 react 中实现路由创建单页面的路由组件。
+
+```bash
+cnpm i react-router-dom -S
+```
+
+### 1.1 react-router 基本使用
+```js
+import React, { Component } from 'react'
+import {BrowserRouter, HashRouter, Link, Route, Switch} from 'react-router-dom'
+import Home from './pages/Home'
+import Course from './pages/Course'
+import User from './pages/User'
+import NotFound from './pages/NotFound'
+
+
+export default class App extends Component {
+    render() {
+        return (
+            // 1. 要想使用路由，html 必须位于 HashRouter 或者 BrowserRouter 组件内
+            // HashRouter 显示的 url 带有 /#/ 
+            // BrowserRouter 显示的时干净的 url
+            <HashRouter>
+                <ul>
+                    {/* 2. Link 用于设置路由 */}
+                    <li><Link to="/">首页</Link></li>
+                    <li><Link to="/course">课程</Link></li>
+                    <li><Link to="/user">用户</Link></li>
+                </ul>
+                {/* 5. 默认情况下，Route 匹配后会继续往下执行，进行匹配 */}
+                {/* Switch 表示匹配成功一个路由后，就不再继续匹配 */}
+                <Switch>
+                    {/* 3. Router 用于路由配置 */}
+                    {/* exact 加上之后表示精准匹配，就不会总是显示第一个路由 */}
+                    <Route exact path="/" component={Home}></Route>
+                    <Route path="/course" component={Course}></Route>
+                    <Route path="/user" component={User}></Route>
+                    {/* 4. 不设置 path 用于配置 404 路由 */}
+                    <Route component={NotFound}></Route>
+                </Switch>
+                
+                {/* <Button type='primary'>登录</Button>  */}
+            </HashRouter>            
+        )
+    }
+}
+
+
+```
+
+### 1.2 实现二级路由
+react-router 实现二级路由与一级路由类似，直接在需要配置二级路由的组件中编写路由代码即可:
+
+```js
+import React, { Component } from 'react'
+import {Link, Route} from 'react-router-dom'
+import CourseDetail from './CourseDetail'
+import CourseIndex from './CourseIndex'
+
+export default class Course extends Component {
+    render() {
+        console.log(this.props)
+        return (
+            <div>
+                {/* 1. 实现二级路由 */}
+                <ul>
+                    {/* 2. 使用 Link 表示路由 */}
+                    {/* 3. Link 中包含了三个属性 location, match, history 三个属性 */}
+                    {/* match 中包含了当前的路由信息，和 url 参数 */}
+                    <li><Link to={`${this.props.match.url}/python`}>Python</Link></li>
+                    <li><Link to="/course/goland">GoLang</Link></li>
+                    <li><Link to="/course/javascript">Javascript</Link></li>
+                </ul>
+                {/* 4. 配置路由 */}
+                {/* 与 vue 类似，同样可以设置路由参数，复用组件 */}
+                <Route path="/course/:courseName" component={CourseDetail}></Route>
+                {/* 5. 表示进入到 /course 二级根页面显示的信息 */}
+                <Route exact path={this.props.match.path} component={CourseIndex}></Route>
+            </div>
+        )
+    }
+}
+
+```
+
+### 1.3 获取路由参数
+通过组件内 this.props.match 我们可以获取路由中的参数信息
+
+```js
+import React, { Component } from 'react'
+
+export default class CourseDetail extends Component {
+    render() {
+        const {match} = this.props
+        return (
+            <div>
+                当前课程为: {match.params.courseName}
+            </div>
+        )
+    }
+}
+
+```
