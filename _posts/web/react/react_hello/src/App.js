@@ -6,6 +6,8 @@ import './App.css'
 import ContextUse from "./Components/ContextUse"
 import ContextUseDec from "./Components/ContextUseDec"
 import MForm from "./Components/MForm"
+import MobxTest from "./Redux/MobxTest"
+import {appState} from "./Store/mobx"
 
 export default class App extends Component {
     render() {
@@ -17,6 +19,8 @@ export default class App extends Component {
               <ContextUse></ContextUse>
               <ContextUseDec></ContextUseDec>
               <MForm></MForm>
+
+              <MobxTest appState={appState}></MobxTest>
             </div>
 
             
