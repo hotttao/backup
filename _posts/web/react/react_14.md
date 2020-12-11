@@ -20,7 +20,7 @@ cnpm i react-router-dom -S
 ### 1.1 react-router 基本使用
 ```js
 import React, { Component } from 'react'
-import {BrowserRouter, HashRouter, Link, Route, Switch} from 'react-router-dom'
+import {BrowserRouter, HashRouter, Link, Route, Switch, Redirect} from 'react-router-dom'
 import Home from './pages/Home'
 import Course from './pages/Course'
 import User from './pages/User'
@@ -48,6 +48,8 @@ export default class App extends Component {
                     <Route exact path="/" component={Home}></Route>
                     <Route path="/course" component={Course}></Route>
                     <Route path="/user" component={User}></Route>
+                    {/* 5. 重定向 */}
+                    <Redirect to="/home"></Redirect>
                     {/* 4. 不设置 path 用于配置 404 路由 */}
                     <Route component={NotFound}></Route>
                 </Switch>
@@ -108,6 +110,43 @@ export default class CourseDetail extends Component {
         return (
             <div>
                 当前课程为: {match.params.courseName}
+            </div>
+        )
+    }
+}
+
+```
+
+### 1.4 命名路由
+React 组件的 this.props.history 为我们提供了页面跳转的功能:
+
+```js
+import React, { Component } from 'react'
+import {Button} from 'antd'
+
+
+export default class CourseDetail extends Component {
+    goHome = () => {
+        // 3. 带参数进行页面跳转
+        // 目标页面的组件通过 this.props.location.state 可以访问到传入的参数
+        this.props.history.push({
+            pathname: '/',
+            state: {
+                for: 'bar'
+            }
+        })
+    }
+    render() {
+        const {match} = this.props
+        // console.log(this.props)
+        return (
+            <div>
+                当前课程为: {match.params.courseName}
+                {/* 1. 返回上一页 */}
+                <Button onClick={()=>this.props.history.goBack()}>返回上一页</Button>
+                {/* 2. 命名导航，跳转到特定页面 */}
+                <Button onClick={()=>this.props.history.push('/')}>跳转首页</Button>
+                <Button onClick={this.goHome}>跳转首页带参数</Button>
             </div>
         )
     }

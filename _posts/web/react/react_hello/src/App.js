@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {BrowserRouter, HashRouter, Link, Route, Switch} from 'react-router-dom'
+import {BrowserRouter, HashRouter, Link, Route, Switch, Redirect} from 'react-router-dom'
 import {Button} from "antd"
 import './App.css'
 import Home from './pages/Home'
@@ -26,9 +26,11 @@ export default class App extends Component {
                 <Switch>
                     {/* 3. Router 用于路由配置 */}
                     {/* exact 加上之后表示精准匹配，就不会总是显示第一个路由 */}
-                    <Route exact path="/" component={Home}></Route>
+                    <Route exact path="/home" component={Home}></Route>
                     <Route path="/course" component={Course}></Route>
                     <Route path="/user" component={User}></Route>
+                    {/* 5. 重定向 */}
+                    <Redirect to="/home"></Redirect>
                     {/* 4. 不设置 path 用于配置 404 路由 */}
                     <Route component={NotFound}></Route>
                 </Switch>
