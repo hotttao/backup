@@ -39,6 +39,13 @@ export default class App extends Component {
                     <li><Link to="/">首页</Link></li>
                     <li><Link to="/course">课程</Link></li>
                     <li><Link to="/user">用户</Link></li>
+                    {/* state 用于 react 内传递参数，可以通过 this.props.location.state 访问 state 中的参数 */}
+                    {/* seach 用于设置 url 的查询参数，
+                        解析时使用 const params= new URLSearchParams(this.props.location.search) 
+                        params.get("id") 就可以获取对应的值*/}
+                    <li><Link to={pathname: "/user", state:{}, search: "?id=1"}>用户</Link></li>
+                    {/* <Prompt when={true} message={location=>{`确定跳转至 ${location.pathname}`}}></Prompt> */}
+                    
                 </ul>
                 {/* 5. 默认情况下，Route 匹配后会继续往下执行，进行匹配 */}
                 {/* Switch 表示匹配成功一个路由后，就不再继续匹配 */}
@@ -60,8 +67,9 @@ export default class App extends Component {
     }
 }
 
-
 ```
+
+
 
 ### 1.2 实现二级路由
 react-router 实现二级路由与一级路由类似，直接在需要配置二级路由的组件中编写路由代码即可:

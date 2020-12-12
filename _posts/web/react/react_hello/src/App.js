@@ -1,11 +1,15 @@
 import React, { Component } from 'react'
-import {BrowserRouter, HashRouter, Link, Route, Switch, Redirect} from 'react-router-dom'
+import {BrowserRouter, HashRouter, Link, Route, Switch, Redirect, Prompt} from 'react-router-dom'
 import {Button} from "antd"
 import './App.css'
 import Home from './pages/Home'
 import Course from './pages/Course'
 import User from './pages/User'
 import NotFound from './pages/NotFound'
+import About from './pages/About'
+import Login from './pages/Login'
+import RequireLogin, {PrivateRoute} from  './hoc/RequireLogin'
+import Admin from './pages/Admin'
 
 
 export default class App extends Component {
@@ -20,6 +24,8 @@ export default class App extends Component {
                     <li><Link to="/">首页</Link></li>
                     <li><Link to="/course">课程</Link></li>
                     <li><Link to="/user">用户</Link></li>
+                    <li><Link to="/about">关于</Link></li>
+                    <li><Link to="/admin">后台管理</Link></li>
                 </ul>
                 {/* 5. 默认情况下，Route 匹配后会继续往下执行，进行匹配 */}
                 {/* Switch 表示匹配成功一个路由后，就不再继续匹配 */}
@@ -29,6 +35,9 @@ export default class App extends Component {
                     <Route exact path="/home" component={Home}></Route>
                     <Route path="/course" component={Course}></Route>
                     <Route path="/user" component={User}></Route>
+                    <Route path="/admin" component={Admin}></Route>
+                    <RequireLogin path="/about" component={About}></RequireLogin>
+                    <Route path="/login" component={Login}></Route>
                     {/* 5. 重定向 */}
                     <Redirect to="/home"></Redirect>
                     {/* 4. 不设置 path 用于配置 404 路由 */}
