@@ -81,6 +81,7 @@ td:not([align]),
 th:not([align]) {
   text-align: left;
 }
+
 #root{
   width: 100%;
   height: 100%;

@@ -52,3 +52,16 @@ module.exports = {
   ],
 };
 ```
+
+## 2. 数据准备以及后端服务启动
+项目后台使用 nodejs，并使用 mongodb 数据库。因此需要安装 mongodb。
+
+```bash
+# 1. 启动mongo
+mongod
+
+# 2. 启动后台服务
+node serve.js
+# 也可以使用  nodemon 来启动服务实时监听后台代码的变化
+nodemon server.js
+```
