@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import {BrowserRouter, Switch, Route} from 'react-router-dom'
+import {BrowserRouter, Switch, Route, Redirect} from 'react-router-dom'
 
 import Login from './pages/Login'
 import Admin from './pages/Admin'
@@ -13,7 +13,7 @@ export default class App extends Component {
         <BrowserRouter>
           <Switch>
             <Route path='/login' component={Login}></Route>
-            <Route path='/admin' component={Admin}></Route>
+            <Route path='/' component={Admin}></Route>
           </Switch>
         </BrowserRouter>        
     )
