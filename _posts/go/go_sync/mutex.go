@@ -9,21 +9,24 @@ func main() {
 	var ch1 = make(chan int, 10)
 	var ch2 = make(chan int, 10)
 
-	var cases = createCase(ch1, ch2)
+	// 创建SelectCase
+	var cases = createCases(ch1, ch2)
+
+	// 执行10次select
 	for i := 0; i < 10; i++ {
 		chosen, recv, ok := reflect.Select(cases)
-		if recv.IsValid() {
+		if recv.IsValid() { // recv case
 			fmt.Println("recv:", cases[chosen].Dir, recv, ok)
-		} else {
+		} else { // send case
 			fmt.Println("send:", cases[chosen].Dir, ok)
 		}
 	}
-
 }
 
-func createCase(chs ...chan int) []reflect.SelectCase {
+func createCases(chs ...chan int) []reflect.SelectCase {
 	var cases []reflect.SelectCase
 
+	// 创建recv case
 	for _, ch := range chs {
 		cases = append(cases, reflect.SelectCase{
 			Dir:  reflect.SelectRecv,
@@ -31,7 +34,8 @@ func createCase(chs ...chan int) []reflect.SelectCase {
 		})
 	}
 
-	for i, ch := range cases {
+	// 创建send case
+	for i, ch := range chs {
 		v := reflect.ValueOf(i)
 		cases = append(cases, reflect.SelectCase{
 			Dir:  reflect.SelectSend,
@@ -39,5 +43,6 @@ func createCase(chs ...chan int) []reflect.SelectCase {
 			Send: v,
 		})
 	}
+
 	return cases
 }
