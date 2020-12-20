@@ -20,6 +20,8 @@ create-react-app react_admin
 # 3. 安装所需的包
 cnpm i -S antd axios babel-plugin-import customize-cra draft-js draftjs-to-html echarts echarts-for-react html-to-draftjs jsonp less less-loader  react-draft-wysiwyg react-redux redux store wangeditor
 
+cnpm install --save react-draft-wysiwyg draft-js draftjs-to-html html-to-draftjs  
+
 cnpm i -S @craco/craco craco-less @babel/plugin-proposal-decorators
 
 # 3. 修改 package.json 项目启动方式
