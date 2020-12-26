@@ -412,3 +412,56 @@ JavaScript 中值分为基础类型和引用类型，对于引用类型要想监
 
 </html>
 ```
+
+## 3. 对象变更检测注意事项
+由于 JS 的机制，Vue 是不能检测对象属性的添加和删除。因此像下面这个示例，点击按钮给 this.user 添加 age 属性后，页面也无法显示。如果想动态的添加响应式的属性需要通过 vue.$set 方法 `vue.$set(object, key, value)`。如多想一次添加多个属性，可通过`this.user = Object.assign({}, this.user, {'attr': ''})` 创建一个新的对象赋值给 this.user 实现。
+
+```js
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        {{user.name}},{{user.age}}, {{user.ageSet}}
+        <button @click="addAge">添加年龄</button>
+        <button @click="addAgeSet">通过 vue.$set 添加属性</button>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <script>
+        new Vue({
+            el: "#app",
+            data() {
+                return {
+                    user: {
+                        "name": "tsong"
+                    },
+                }
+            },
+            methods: {
+                // 1. 按钮点击后，user.age 是无法显示的
+                addAge(){
+                    this.user.age=10
+                },
+                // 2. 添加响应式属性，需要通过 $set 方法
+                addAgeSet(){
+                    this.$set(this.user, 'ageSet', 10)
+                },
+                // 3. 添加多个响应式属性，因为是创建了新的对象，Vue 响应式可以检测到对象的创建
+                addMulti(){
+                    this.user = Object.assign({}, this.user, {
+                        name: "AAA",
+                        phone: "XXXXX"
+                    })
+                }
+            },
+            
+        })
+    </script>
+</body>
+</html>
+```

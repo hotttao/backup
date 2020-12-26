@@ -7,62 +7,40 @@
 </head>
 <body>
     <div id="app">
-        {{msg}}
-        <button ref="btn" @click="updateMsg">按钮</button>
-        <!-- 1. 父组件向子组件传入了 msg 属性 -->
-        <my-header ref="header" :msg="msg"></my-header>
+        {{user.name}},{{user.age}}, {{user.ageSet}}
+        <button @click="addAge">添加年龄</button>
+        <button @click="addAgeSet">通过 vue.$set 添加属性</button>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
 
     <script>
-        const MyHeader = {
-            template: `
-                <div>
-                    
-                </div>
-            `,
-            props: ['msg'],
-            methods: {
-                // 2. 子组件中我们想获取，父组件传入的 msg 属性
-                show(){
-                    console.log(this.msg)
-                }
-            },
-        }
-
         new Vue({
             el: "#app",
             data() {
                 return {
-                    msg: "v1",
+                    user: {
+                        "name": "tsong"
+                    },
                 }
-            },
-            components:{
-                MyHeader: MyHeader
             },
             methods: {
-                // 5. 只要是更新 vue 属性并立刻调用子组件的方法，子组件都无法立刻获取最新的值
-                updateMsg(){
-                    this.msg = "V3"
-                    this.$refs.header.show()
+                // 1. 按钮点击后，user.age 是无法显示的
+                addAge(){
+                    this.user.age=10
+                },
+                // 2. 添加响应式属性，需要通过 $set 方法
+                addAgeSet(){
+                    this.$set(this.user, 'ageSet', 10)
+                },
+                // 3. 添加多个响应式属性，因为是创建了新的对象，Vue 响应式可以检测到对象的创建
+                addMulti(){
+                    this.user = Object.assign({}, this.user, {
+                        name: "AAA",
+                        phone: "XXXXX"
+                    })
                 }
             },
-            created() {
-                // 3. 模拟异步加载，我们从后端获取 msg 值后立马通过 ref 调用子组件中的方法
-                // 4. 此时我们是无法立刻在子组件中获取更新后的 msg 值的
-                setTimeout(() => {
-                    this.msg = "v2"
-                    this.$refs.header.show()
-                }, 1000);
-                // 5. 解决方法是，使用 nextTick 在下一个事件循环中取调用子组件方法
-                setTimeout(() => {
-                    this.msg = "v2"
-                    this.$nextTick(function(){
-                        this.$refs.header.show()
-                    })
-                    
-                }, 1000);
-            },
+            
         })
     </script>
 </body>
