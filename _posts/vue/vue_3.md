@@ -645,85 +645,64 @@ refs 通过为组件或者标签定义一个唯一 id 引用，以达到可以�
 ```html
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
-
 <body>
-
     <div id="app">
-        <App></App>
+        {{msg}}，{{todo.title}}
+        <my-header :todo="todo">
+            <!-- 3. 通过 v-slot:name 使用具名插槽 -->
+            <template v-slot:header>
+                <h1>Here might be a page title</h1>
+            </template>
+            <!-- 4. 通过 v-slot:name="data" 使用具名作用域插槽 -->4. 
+            <template v-slot:todo-name="data">
+                <h3>aaaa</h3>
+                {{data.todoTitle}}
+            </template>
+            <!-- 5. 使用匿名插槽 -->
+            <template v-slot:default>
+                <p>A paragraph for the main content.</p>
+                <p>And another one.</p>
+              </template>
+        </my-header>
     </div>
-    <script src="./vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
     <script>
-        const todoList = {
-            // 1. 通过为"匿名/具名插"槽绑定自定义属性，可以对外传输值
-            // item 变量值，可以在组件外部通过 itemValue 访问到
+        const MyHeader = {
+            // 1. 通过 slot name 属性定义具名插槽，name 好像不能是驼峰格式命名
+            // 2. 通过 slot 绑定属性定义作用域插槽
             template: `
-                <ul>
-                    <li v-for="item in todo">
-                        <slot :itemValue="item"></slot>
-                        {{item.title}}
-                    </li>
-                </ul>
+                <div>
+                    <h2>插槽示例</h2>
+                    {{todo}}
+                    <slot name="todo-name" :todoTitle="todo.title"></slot>
+                    <slot name="header"></slot>
+                    <slot></slot>
+                </div>
             `,
-            props: ["todo"]
-
-        }
-
-        const App = {
-            data() {
-                return {
-                    todoList: [{
-                        title: '大哥你好么',
-                        isComplate: true,
-                        id: 1
-                    }, {
-                        title: '小弟我还行',
-                        isComplate: false,
-                        id: 2
-                    }, {
-                        title: '你在干什么',
-                        isComplate: false,
-                        id: 3
-                    }, {
-                        title: '抽烟喝酒烫头',
-                        isComplate: true,
-                        id: 4
-                    }]
-                }
-            },
-            // 2. v-slot/slot-scop 作用域插槽，可以接受插槽输出的值
-            // 3. 通过 template 往插槽内插入值
-            // data.itemValue 就是作用域插槽中返回的值
-            template: `
-            <div>           
-                <todoList :todo="todoList">
-                    <template v-slot="data">
-                        <input type="checkbox" v-model="data.itemValue.isComplate"></input>
-                    </template>
-                </todoList>
-            </div>
-            `,
-            components: {
-                todoList
-            }
+            props: ['todo']
         }
 
         new Vue({
             el: "#app",
-            data: {
-
+            data() {
+                return {
+                    msg: "Hello Vue",
+                    todo: {
+                        "title": "Vue 插槽"
+                    }
+                }
             },
-            components: {
-                App
-            },
+            components:{
+                MyHeader: MyHeader
+            }
         })
     </script>
 </body>
-
 </html>
 ```

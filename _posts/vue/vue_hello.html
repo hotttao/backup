@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app">
+        {{msg}}
+        <button ref="btn" @click="updateMsg">按钮</button>
+        <!-- 1. 父组件向子组件传入了 msg 属性 -->
+        <my-header ref="header" :msg="msg"></my-header>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+
+    <script>
+        const MyHeader = {
+            template: `
+                <div>
+                    
+                </div>
+            `,
+            props: ['msg'],
+            methods: {
+                // 2. 子组件中我们想获取，父组件传入的 msg 属性
+                show(){
+                    console.log(this.msg)
+                }
+            },
+        }
+
+        new Vue({
+            el: "#app",
+            data() {
+                return {
+                    msg: "v1",
+                }
+            },
+            components:{
+                MyHeader: MyHeader
+            },
+            methods: {
+                // 5. 只要是更新 vue 属性并立刻调用子组件的方法，子组件都无法立刻获取最新的值
+                updateMsg(){
+                    this.msg = "V3"
+                    this.$refs.header.show()
+                }
+            },
+            created() {
+                // 3. 模拟异步加载，我们从后端获取 msg 值后立马通过 ref 调用子组件中的方法
+                // 4. 此时我们是无法立刻在子组件中获取更新后的 msg 值的
+                setTimeout(() => {
+                    this.msg = "v2"
+                    this.$refs.header.show()
+                }, 1000);
+                // 5. 解决方法是，使用 nextTick 在下一个事件循环中取调用子组件方法
+                setTimeout(() => {
+                    this.msg = "v2"
+                    this.$nextTick(function(){
+                        this.$refs.header.show()
+                    })
+                    
+                }, 1000);
+            },
+        })
+    </script>
+</body>
+</html>
