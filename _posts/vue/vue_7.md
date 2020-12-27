@@ -32,6 +32,6 @@ cnpm i babel-plugin-component -D
   ]
 }
 
-# 3. 方式二: 使用 vue add element 直接使用
+# 3. 方式二: 使用 vue add element 在交互页面选择按需导入
 vue add element
 ```
