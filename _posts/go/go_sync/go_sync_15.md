@@ -1,6 +1,6 @@
 ---
-title: 16 Golang 内存模型
-date: 2019-02-16
+title: 15 Golang 内存模型
+date: 2019-02-15
 categories:
     - Go
 tags:

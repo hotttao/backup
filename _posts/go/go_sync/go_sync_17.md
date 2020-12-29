@@ -1,6 +1,6 @@
 ---
-title: 18 SingleFlight 请求合并
-date: 2019-02-18
+title: 17 SingleFlight 请求合并
+date: 2019-02-17
 categories:
     - Go
 tags:

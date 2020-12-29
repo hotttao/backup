@@ -1,5 +1,5 @@
 ---
-title: 19 CyclicBarrier 循环栅栏
+title: 18 CyclicBarrier 循环栅栏
 date: 2019-02-18
 categories:
     - Go
