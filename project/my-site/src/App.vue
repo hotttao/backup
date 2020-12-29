@@ -1,5 +1,10 @@
 <template>
   <div id="app">
+    <router-link to="/">Home</router-link>|
+    <router-link to="/about">About</router-link>
+    <router-view></router-view>
+    <router-view name="main"></router-view>
+    <router-view name="sider"></router-view>
     <ElForm></ElForm>
     {{ ruleForm }}
     <!-- MyForm  绑定表单数据和校验规则 -->
