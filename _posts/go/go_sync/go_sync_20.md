@@ -21,6 +21,14 @@ yum install etcd
 etcd -listen-client-urls=http://192.168.108.55:2379 --advertise-client-urls=http://192.168.108.55:2379
 ```
 
+### 2.1 etcd go 模块安装
+
+```bash
+# 1. 安装 gRPC
+go get -u google.golang.org/grpc
+go get github.com/grpc-ecosystem/go-grpc-middleware
+```
+
 ## 3. Leader 选举
 Leader 选举常常用在主从架构的系统中。主从架构中的服务节点分为主（Leader、Master）和从（Follower、Slave）两种角色，实际节点包括 1 主 n 从，一共是 n+1 个节点。主节点常常执行写操作，从节点常常执行读操作，如果读写都在主节点，从节点只是提供一个备份功能的话，那么，主从架构就会退化成主备模式架构。
 
