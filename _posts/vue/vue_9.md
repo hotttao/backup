@@ -30,7 +30,9 @@ vue add router
 
 要想使用路由组件需要如下几个步骤:
 1. 在 router/index.js 中实例化路由组件实例
-2. 在 main.js 中将路由组件实例挂载到根 Vue 实例中
+2. 在 main.js 中将路由组件实例挂载到根 Vue 实例中，此时我们在每一个 vue 组件中获取如下两个对象:
+    - $router: 路由对象，提供了编程式导航的功能
+    - $route: 路由信息对象，提供了获取路由参数的功能
 3. 在 App.vue 中使用 `<router-link>` 和  `<router-view>` 显示视图
 
 router/index.js 中路由匹配的优先级按照定义从上往下，优先级越来越低
@@ -43,7 +45,7 @@ import VueRouter from "vue-router"
 import About from '@/views/About.vue';
 import Home  from '@/views/Home.vue'
 
-
+// 挂载 VueRouter 的组件，这样才能使用后面的 <router-link> 和 <router-view>
 Vue.use(VueRouter)
 
 const router = new VueRouter({
@@ -103,7 +105,7 @@ new Vue({
       <router-link to="/">Home</router-link> |
       <router-link to="/about">About</router-link>
     </div>
-    <!-- 相当于路由组件的出口 -->
+    <!-- 相当于路由组件的出口, router-link 匹配的路由组件就会被渲染到此处 -->
     <router-view/>
   </div>
 </template>
@@ -182,7 +184,7 @@ const router = new VueRouter({
 ```
 
 #### 传递动态路由的参数
-可以像下面这样想路由组件传递参数，来复用路由组件
+可以像下面这样向路由组件传递参数，来复用路由组件
 
 ```html
 <template>
@@ -215,7 +217,7 @@ const router = new VueRouter({
             // params 接收路由中定义的参数
             console.log(this.$route.params.id);
             // pathMatch 接收 url 中模糊匹配的部分
-            console.log(this.$route.pathMatch);
+            console.log(this.$route.params.pathMatch);
             // query 接收路由查询参数
             console.log(this.$route.query);
         },
@@ -229,11 +231,12 @@ const router = new VueRouter({
                 // 请求数据接口
             }
         },
-        // 方法二: 路由当行守卫
+        // 方法二: 路由导航守卫
         beforeRouteUpdate(to, from, next){
             console.log("路由导航守卫")
             console.log(to.params.id);
             console.log(from.params.id);
+            // 一定要调用 next，不然会阻塞整个路由，后续页面展示的逻辑无法继续进行
             next();
         }
     }
@@ -241,7 +244,7 @@ const router = new VueRouter({
 </script>
 ```
 
-通过动态路由我们就可以达到复用组件的目的，但是需要注意的是复用组件时，此时组件就不会重新加载了，意味着 vue 声明周期中的一些构造函数就不会重新调用。为了在组件切换时执行一些必须执行到的逻辑，比如请求后台接口，我们可以使用如下两个方法:
+通过动态路由我们就可以达到复用组件的目的，但是需要注意的是复用组件时，此时组件就不会重新加载了，比如 /user/1 切换到 /user/2 时，vue 声明周期中的一些构造函数就不会重新调用。为了在组件切换时执行一些必须执行到的逻辑，比如请求后台接口，我们可以使用如下两个方法:
 1. watch 监听 $route 的变化
 2. 使用路由当行守卫 beforeRouteUpdate 方法，所谓导航守卫就是路由声明周期提供的钩子函数，后面我们详细介绍。
 
@@ -297,6 +300,7 @@ const router = new VueRouter({
                 // 0 刷新 
                 // 1 前进
                 // -1 表示后退
+                // -n 表示后退 n 如果没有 n 条历史记录则会失败不跳转
                 this.$router.go(-1);
             },
             goHome() {
@@ -360,7 +364,7 @@ const router = new VueRouter({
 })
 ```
 
-User.vue中定义路由出口
+User.vue中定义子路由出口
 
 ```html
 <template>
@@ -373,6 +377,10 @@ User.vue中定义路由出口
     </div>
 </template>
 ```
+
+嵌套路由和动态路由的区别在于:
+1. 动态路由用于复用组件，其展示的页面都是一样
+2. 嵌套路由展示的是不同样式和结构的页面
 
 ## 3. 命名视图
 在前面的内容中，我们通过:
@@ -417,6 +425,10 @@ const router = new VueRouter({
 </template>
 ```
 每一个 `router-view` 标签类似一个 div 标签，可以为为其设置 class 样式，定义布局。
+
+对于命名路由的匹配逻辑是这样的:
+1. `<router-view/>` 作为路由出口，会显示匹配到的路由组件，匹配到 /user 就展示 User 组件，匹配到 /home 就展示 Home 组件
+2. `<router-view name="main"></router-view>` 的命名路由会在匹配到的路由上，找对应名称的组件，比如匹配到 /user 时，就去 /user 下的 components 中找对应名称的组件，如果有就展示，没有就跳过
 
 ## 3. 导航守卫
 所谓导航表示路由正在发生变化，守卫就是路由变化声明周期的别称。
