@@ -456,9 +456,39 @@ const router = new VueRouter({
 2. 组件内守卫:
     - beforeRouteEnter(to,from,next4): 守卫执行前调用，此时组件实例还未被创建，此时不能获取组件实例 this，用处不大
     - beforeRouteUpdate(to,from,next4): 路由发生变化，组件被复用后调用，可以访问组件实例 this
-    - berforROuteLeave(to,from,next4): 导航离开组件时调用，可以访问组件实例 this 
+    - berforRouteLeave(to,from,next4): 导航离开组件时调用，可以访问组件实例 this 
 
-### 3.2 berforROuteLeave
+```js
+const Foo = {
+  template: `...`,
+  beforeRouteEnter (to, from, next) {
+    // 在渲染该组件的对应路由被 confirm 前调用
+    // 不！能！获取组件实例 `this`
+    // 因为当守卫执行前，组件实例还没被创建
+  },
+  beforeRouteEnter (to, from, next) {
+    next(vm => {
+        // beforeRouteEnter 守卫 不能 访问 this，因为守卫在导航确认前被调用，因此即将登场的新组件还没被创建。
+        // 不过，你可以通过传一个回调给 next来访问组件实例。在导航被确认的时候执行回调，并且把组件实例作为回调方法的参数。
+        // 通过 `vm` 访问组件实例
+    })
+  },
+  beforeRouteUpdate (to, from, next) {
+    // 在当前路由改变，但是该组件被复用时调用
+    // 举例来说，对于一个带有动态参数的路径 /foo/:id，在 /foo/1 和 /foo/2 之间跳转的时候，
+    // 由于会渲染同样的 Foo 组件，因此组件实例会被复用。而这个钩子就会在这个情况下被调用。
+    // 可以访问组件实例 `this`
+  },
+  beforeRouteLeave (to, from, next) {
+    // 导航离开该组件的对应路由时调用
+    // 可以访问组件实例 `this`
+  }
+}
+
+
+```
+
+### 3.2 berforRouteLeave
 berforROuteLeave 主要用在用户离开页面的提示，提示用户是否保存当前页面的编辑。
 
 ```html
@@ -474,6 +504,7 @@ berforROuteLeave 主要用在用户离开页面的提示，提示用户是否保
             if (this.content){
                 if (confirm("当前页面未保存是否离开")){
                     console.log(to)
+                    // false 表示停留在当前页面，不跳转
                     next(false)
                 }
             }else{
@@ -604,3 +635,107 @@ router.beforeEach((to, from, next)=>{
 </style>
 
 ```
+
+### 3.4 何时与后端进行数据交互
+有时候，进入某个路由后，需要从服务器获取数据。我们可以通过两种方式来实现：
+1. 导航完成之后获取：先完成导航，然后在接下来的组件生命周期钩子中(created,mounted等方法)获取数据。在数据获取期间显示“加载中”之类的指示。
+2. 导航完成之前获取：导航完成前，在路由进入的守卫中获取数据，在数据获取成功后执行导航。
+
+#### 导航完成后获取数据
+导航完成后获取数据，我们会马上导航和渲染组件，然后在组件的 created 钩子中获取数据。这让我们有机会在数据获取期间展示一个 loading 状态，还可以在不同视图间展示不同的 loading 状态。假设我们有一个 Post 组件，需要基于 $route.params.id 获取文章数据：
+
+```js
+<template>
+  <div class="post">
+    // 加载中
+    <div v-if="loading" class="loading">
+      Loading...
+    </div>
+
+    <div v-if="error" class="error">
+      {{ error }}
+    </div>
+
+    <div v-if="post" class="content">
+      <h2>{{ post.title }}</h2>
+      <p>{{ post.body }}</p>
+    </div>
+  </div>
+</template>
+
+export default {
+  data () {
+    return {
+      loading: false,
+      post: null,
+      error: null
+    }
+  },
+  created () {
+    // 组件创建完后获取数据，
+    // 此时 data 已经被 observed 了
+    this.fetchData()
+  },
+  // 监听路由的变化，重要
+  watch: {
+    // 如果路由有变化，会再次执行该方法
+    '$route': 'fetchData'
+  },
+  methods: {
+    fetchData () {
+      this.error = this.post = null
+      this.loading = true
+      // replace getPost with your data fetching util / API wrapper
+      getPost(this.$route.params.id, (err, post) => {
+        this.loading = false
+        if (err) {
+          this.error = err.toString()
+        } else {
+          this.post = post
+        }
+      })
+    }
+  }
+}
+```
+
+需要特别注意的是，使用 VueRouter 下，路由组件总是会被重用，我们需要同时在 created 方法以及 watch $route 中获取数据。 就像上面示例中的一样。
+
+#### 在导航完成前获取数据
+我们在导航转入新的路由前获取数据。我们可以在接下来的组件的 beforeRouteEnter 守卫中获取数据，当数据获取成功后只调用 next 方法。
+
+```js
+export default {
+  data () {
+    return {
+      post: null,
+      error: null
+    }
+  },
+  beforeRouteEnter (to, from, next) {
+    getPost(to.params.id, (err, post) => {
+      next(vm => vm.setData(err, post))
+    })
+  },
+  // 路由改变前，组件就已经渲染完了
+  // 逻辑稍稍不同
+  beforeRouteUpdate (to, from, next) {
+    this.post = null
+    getPost(to.params.id, (err, post) => {
+      this.setData(err, post)
+      next()
+    })
+  },
+  methods: {
+    setData (err, post) {
+      if (err) {
+        this.error = err.toString()
+      } else {
+        this.post = post
+      }
+    }
+  }
+}
+```
+
+在为后面的视图获取数据时，用户会停留在当前的界面，因此建议在数据获取期间，显示一些进度条或者别的指示。如果数据获取失败，同样有必要展示一些全局的错误提醒。

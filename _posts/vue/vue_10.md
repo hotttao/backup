@@ -136,6 +136,17 @@ export default {
 </script>
 ```
 
+## 2.1 添加插件
+Vuex 自带一个日志插件用于一般的调试:
+
+```js
+import createLogger from 'vuex/dist/logger'
+
+const store = new Vuex.Store({
+  plugins: [createLogger()]
+})
+```
+
 ## 3. Vuex 的辅助函数
 从上面的示例中我们可以看到，为了去修改 Vuex 中的函数，我们可能会需要编写多个重复调用的函数。为了方便 Vuex 共享数据的操作， Vuex 提供了一些辅助函数:
 1. mapState
@@ -182,6 +193,95 @@ Vuex 通过 models 可以进行模块化，并定义命名空间，便于大型�
 1. 在 `src/store` 下创建目录 modules，并新建 cart.js, product.js 分别表示购物车和产品列表的数据
 2. 在 Vuex 实例的 modules 属性中注册 cart.js product.js 共享模块
 3. 使用辅助函数或者直接操作 vuex 实例时要加上命名空间
+
+
+如果希望你的模块具有更高的封装度和复用性，你可以通过添加 namespaced: true 的方式使其成为带命名空间的模块。当模块被注册后，它的所有 getter、action 及 mutation 都会自动根据模块注册的路径调整命名。比如:
+
+```js
+const store = new Vuex.Store({
+  modules: {
+    account: {
+      namespaced: true,
+
+      // 模块内容（module assets）
+      state: () => ({ ... }), // 模块内的状态已经是嵌套的了，使用 `namespaced` 属性不会对其产生影响
+      getters: {
+        isAdmin () { ... } // -> getters['account/isAdmin']
+      },
+      actions: {
+        login () { ... } // -> dispatch('account/login')
+      },
+      mutations: {
+        login () { ... } // -> commit('account/login')
+      },
+
+      // 嵌套模块
+      modules: {
+        // 继承父模块的命名空间
+        myPage: {
+          state: () => ({ ... }),
+          getters: {
+            profile () { ... } // -> getters['account/profile']
+          }
+        },
+
+        // 进一步嵌套命名空间
+        posts: {
+          namespaced: true,
+
+          state: () => ({ ... }),
+          getters: {
+            popular () { ... } // -> getters['account/posts/popular']
+          }
+        }
+      }
+    }
+  }
+})
+```
+
+### 4.1 在带命名空间的模块内访问全局内容
+
+如果你希望使用全局 state 和 getter，rootState 和 rootGetters 会作为第三和第四参数传入 getter，也会通过 context 对象的属性传入 action。
+
+若需要在全局命名空间内分发 action 或提交 mutation，将 { root: true } 作为第三参数传给 dispatch 或 commit 即可。
+
+```js
+modules: {
+  foo: {
+    namespaced: true,
+
+    getters: {
+      // 在这个模块的 getter 中，`getters` 被局部化了
+      // 你可以使用 getter 的第四个参数来调用 `rootGetters`
+      someGetter (state, getters, rootState, rootGetters) {
+        getters.someOtherGetter // -> 'foo/someOtherGetter'
+        rootGetters.someOtherGetter // -> 'someOtherGetter'
+      },
+      someOtherGetter: state => { ... }
+    },
+
+    actions: {
+      // 在这个模块中， dispatch 和 commit 也被局部化了
+      // 他们可以接受 `root` 属性以访问根 dispatch 或 commit
+      someAction ({ dispatch, commit, getters, rootGetters }) {
+        getters.someGetter // -> 'foo/someGetter'
+        rootGetters.someGetter // -> 'someGetter'
+
+        dispatch('someOtherAction') // -> 'foo/someOtherAction'
+        dispatch('someOtherAction', null, { root: true }) // -> 'someOtherAction'
+
+        commit('someMutation') // -> 'foo/someMutation'
+        commit('someMutation', null, { root: true }) // -> 'someMutation'
+      },
+      someOtherAction (ctx, payload) { ... }
+    }
+  }
+}
+```
+### 4.2 使用示例
+
+下面是使用 vuex 模块构建购物车的一个完整案例:
 
 ```js
 // cart.js
