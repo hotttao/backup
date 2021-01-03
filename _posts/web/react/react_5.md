@@ -26,6 +26,10 @@ cnpm i antd -S
 yarn add @craco/craco
 cnpm i @craco/craco -S
 
+# 装饰器的插件
+yarn add @babel/plugin-proposal-decorators
+yarn add craco-less
+
 # 2. 修改 package.json 里的 scripts 属性
 "scripts": {
 -   "start": "react-scripts start",
@@ -39,6 +43,28 @@ cnpm i @craco/craco -S
 # 3. 在项目根目录创建一个 craco.config.js 用于修改默认配置
 module.exports = {
   // ...
+};
+
+# 如果要支持装饰器语法，需要将 craco.config.js 配置为
+const CracoLessPlugin = require('craco-less');
+
+module.exports = {
+  babel: {   //用来支持装饰器
+	   plugins: [["@babel/plugin-proposal-decorators", { legacy: true }]]
+  },
+  plugins: [
+    {
+      plugin: CracoLessPlugin,
+      options: {
+        lessLoaderOptions: {
+          lessOptions: {
+            modifyVars: { '@primary-color': '#1DA57A' },
+            javascriptEnabled: true,
+          },
+        },
+      },
+    },
+  ]
 };
 
 # 4. App.js 中部分导入
