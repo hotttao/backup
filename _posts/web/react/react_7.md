@@ -1,50 +1,200 @@
 ---
-title: 7 antd 使用
-date: 2020-11-03
+title: 7 高阶组件
+date: 2020-11-07
 categories:
     - 前端
 tags:
-	- Vue
+	- React
 ---
-antd
+高阶组件应用
 <!-- more -->
 
-## 1. antd 概述
-antd 类似于 Vue 中的 vue-element-ui，是一个样式和表单组件的库
+## 1. 高阶组件(HOC)
+所谓高阶组件是一个函数，其接收一个或多个组件，返回一个新的组件。感觉上就是一个函数装饰器
 
-### 1. 安装
+```js
+import React, { Component } from 'react'
 
-```bash
-cnpm i antd -S
-```
-
-### 2. 导入
-与 vue-element-ui 类似，全局导入 antd 会对服务器造成较大的压力，推荐使用局部导入的方式[文档](https://ant.design/docs/react/use-with-create-react-app-cn):
-
-```bash
-# 1. 安装 craco
-yarn add @craco/craco
-cnpm i @craco/craco -S
-
-# 2. 修改 package.json 里的 scripts 属性
-"scripts": {
--   "start": "react-scripts start",
--   "build": "react-scripts build",
--   "test": "react-scripts test",
-+   "start": "craco start",
-+   "build": "craco build",
-+   "test": "craco test",
+// 一：返回函数式的高阶组件
+function funcHighOrderComp(Comp){
+    console.log("新的组件")
+    return (props)=>{
+        console.log("调用新组件")
+        const attach = {'title': "react", "price": 1688}
+        return (
+            <div>
+                {/* 注意 React 中组件名必须大写 */}
+                <Comp {...props} {...attach}></Comp>
+            </div>
+        )
+    }
 }
 
-# 3. 在项目根目录创建一个 craco.config.js 用于修改默认配置
-module.exports = {
-  // ...
-};
+// 二：返回类的高阶组件，组件内部就可以定义类组件的声明周期函数
+const funcHigh = (Comp)=>{
+    return class extends Component{
+        componentDidMount(){
+            console.log("发起 Ajax 请求")
+        }
+        render(){
+            const attach = {'title': "react", "price": 1688}
+            return (
+                <div>
+                    {/* 注意 React 中组件名必须大写 */}
+                    <Comp {...this.props} {...attach}></Comp>
+                </div>
+            )
+        }
+    }
+}
 
-# 4. App.js 中部分导入
-import {Button} from "antd"
-import './App.css'
 
-# 5. App.css 中导入样式
-@import '~antd/dist/antd.css';
+class BaseCom extends Component {
+    render() {
+        console.log("-----------")
+        return (
+            <div>
+                <p>当前价格: {this.props.price}</p>
+            </div>
+        )
+    }
+}
+
+export default funcHigh(BaseCom)
 ```
+
+### 1.1 使用装饰器实现高阶组件
+
+ES7 提供了装饰器语法，是的我们的高阶组件实现更加容易，在使用装饰器前，我们需要先安装两个包来做兼容:
+
+```bash
+# 1. 安装兼容插件
+# cnpm install --save-dev babel-plugin-transformdecorators-legacy @babel/plugin-proposal-decorators
+cnpm i craco-less -S
+cnpm i  @babel/plugin-proposal-decorators -S
+
+# 2. 修改 craco.config.js
+
+const CracoLessPlugin = require('craco-less');
+
+module.exports = {
+  babel: {   //用来支持装饰器
+	   plugins: [["@babel/plugin-proposal-decorators", { legacy: true }]]
+  },
+  plugins: [
+    {
+      plugin: CracoLessPlugin,
+      options: {
+        lessLoaderOptions: {
+          lessOptions: {
+            modifyVars: { '@primary-color': '#1DA57A' },
+            javascriptEnabled: true,
+          },
+        },
+      },
+    },
+  ],
+};
+```
+
+### 1.2 装饰器语法
+ES7 的装饰器语法与 Python 装饰器完全一样，上面示例中的高阶组件可以写成:
+
+```js
+const funcHigh = (Comp)=>{
+    return class extends Component{
+        componentDidMount(){
+            console.log("发起 Ajax 请求")
+        }
+        render(){
+            const attach = {'title': "react", "price": 1688}
+            return (
+                <div>
+                    {/* 注意 React 中组件名必须大写 */}
+                    <Comp {...this.props} {...attach}></Comp>
+                </div>
+            )
+        }
+    }
+}
+
+// 可以使用装饰器
+
+@funcHigh
+class BaseCom extends Component {
+    render() {
+        console.log("-----------")
+        return (
+            <div>
+                <p>当前价格: {this.props.price}</p>
+            </div>
+        )
+    }
+}
+
+export default BaseCom
+```
+
+## 2. 高阶组件的应用
+### 2.1 页面复用
+页面复用经常需要使用带参数的装饰器
+
+```js
+import React, { Component } from 'react'
+
+// 1. 闯将带参数的装饰器
+export const fetchMovie = (fetch) => (Comp) =>{
+    return class extends Component{
+        constructor(props){
+            super(props)
+            this.state = {
+                movies: []
+            }
+        }
+
+        componentDidMount(){
+            if (fetch === "A") {
+                this.setState({
+                    movies: [
+                        {
+                            'id': 1,
+                            'movie': "夏洛特烦恼",
+                            'category': "A"
+                        }
+                    ]
+                })
+            } else if (fetch === "B") {
+                this.setState({
+                    movies: [
+                        {
+                            'id': 1,
+                            'movie': "黄飞红",
+                            'category': "B"
+                        }
+                    ]
+                })
+            }
+        }
+
+        render(){
+            return (
+                <div>
+                    <Comp {...this.props} data={this.state.movies}></Comp>
+                </div>
+            )
+        }
+    }
+}
+
+// 2. 使用参数的装饰器
+@fetchMovie("A")
+export class MovieA extends Component {
+    render() {
+        return (
+            <MovieList movieList={this.props.data}></MovieList>
+        )
+    }
+}
+```
+
+### 2.2 权限控制

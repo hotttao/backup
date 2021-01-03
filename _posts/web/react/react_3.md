@@ -4,7 +4,7 @@ date: 2020-11-03
 categories:
     - 前端
 tags:
-	- Vue
+	- React
 ---
 React 组件化开发
 <!-- more -->
@@ -24,9 +24,10 @@ function Welcome(props){
 ReactDOM.render(<Welcome name="tsong"/>, document.queryBySelect("#root))
 ```
 
-函数式组件有两个使用要点:
+函数式组件有三个使用要点:
 1. 函数声明的组件,必须返回⼀个JSX元素
-2. 可以通过属性给组件传递值,函数通过props参数属接收
+2. 可以通过属性给组件传递值,函数通过 props 参数属接收
+3. 函数名必须要大写
 
 ### 1.2 类声明组件
 
@@ -54,50 +55,80 @@ ReactDOM.render(<App name="你好"/>, document.querySelector("#root"))
 ### 1.3 两种方式对比
 真实项⽬中,都只使⽤class定义组件。class定义的组件中有this,状态、⽣命周期；function声明都没有。
 
-## 2. 组合组件
-在 react 中使用组件时:
-1. 诸如 css，图片都可以导入到 react 的 js 文件中
-2. 
+## 2. 组件间通信
+前面我们已经演示了如何由父组件向子组件传值: 通过组件属性，并通过 props 接收的方式。接下来我们来看看在 react 如何实现子向父传值。
 
 ```js
 import React, { Component } from 'react'
-import './App.css'            // 1. 导入 css 文件，应用样式
-import Logo from './logo.svg' // 2. 导入图片，并使用变量接收
 
-class MyButton extends Component {
-    render() {
-        return (
-            <div>
-                <button>{this.props.name}</button>
-                <img src={Logo} alt=""/>
-            </div>
-        )
-    }
-}
-
-
-
-export default class App extends React.Component{
-    constructor(props){
-        super(props)
-        this.user = {
-            name: '设置',
-        }
+class Comment extends Component{
+    // 4. 子组件同样存在 this 指向问题，需要使用箭头函数定义
+    handleClick = ()=>{
+        console.log("子组件button")
+        // 5. 调用传入的父组件的方法，向父组件传值
+        this.props.add("子组件传递过来的值")
     }
     render(){
         return (
+            // 3. 子组件中定义 onClick 事件
             <div>
-                // 解构传值，与直接设置属性值类似
-                <MyButton {...this.user}></MyButton>
-                <MyButton name="删除"></MyButton>
+                <p>计数: {this.props.state.count}</p>
+                <button onClick={this.handleClick}>+1</button>
             </div>
         )
     }
 }
+
+export default class App extends Component {
+    constructor(props){
+        super(props)
+        // 必须在初始化时声明 state 对象和相应属性，才能在后续的 setState 方法使用和更改
+        this.state = {
+            count: 0
+        }
+    }
+    add(val){
+        console.log(this)
+        this.state.count += 1
+        console.log(this.state.count) // 直接修改值是无法生效的
+        // this.setState({
+            // count: this.state.count + 1
+        // })
+
+    }
+
+    add1 = (val) =>{
+        console.log(this)
+        this.state.count += 1
+        console.log(this.state.count) // 直接修改值是无法生效的
+        // this.setState({
+            // count: this.state.count + 1
+        // })
+
+    }
+    render() {
+        return (
+            // 1. 父组件通过组件属性向子组件传递 add 函数
+            // 2. 为了保证 add 函数内部的 this 指向，有两种处理方式:
+            //    - 在绑定 add 属性时，使用箭头函数
+            //    - 将 Parent 的 add 方法直接定义为箭头函数，eg: add1
+            <div>
+                <Comment state={this.state} add={()=>this.add()}></Comment>
+                <Comment state={this.state} add={this.add1}></Comment>
+            </div>
+        )
+    }
+}
+
 ```
 
+react 子向父组件传值的要点是:
+1. 父组件首先需要向子组件传入接收值的方法
+2. 子组件中通过表单或其他方式更改值后，通过调用父组件传入的方法，向父组件传值
+
+
 ## 3. 组件状态
-react 中每个组件都会维护自身的状态 state 即组件中维护的数据，要想修改组件中的数据，并让 react 重新渲染，我们必须使用 react 提供的特殊方法 this.setState。下面是使用示例:
+react 中每个组件都会维护自身的状态 state ，即组件中维护的数据，要想修改组件中的数据，并让 react 重新渲染，我们必须使用 react 提供的特殊方法 this.setState。下面是使用示例:
 
 ```js
 export default class App extends React.Component{
@@ -118,12 +149,17 @@ export default class App extends React.Component{
         })
         console.log(this.state.count); // 6. 因为异步更新，此时是拿不到新值的
     }
+    addE=(e)=> { 
+        console.log(this)
+        console.log(e)
+    }
     render(){
         return (
             // 2. 修改 add 函数的 this 指向
             <div>
                 <p>计数: {this.state.count}</p>
                 <button onClick={(e)=>this.add(e)}>+1</button>
+                <button onClick={this.addE}>+1</button>
             </div>
         )
     }
@@ -131,8 +167,8 @@ export default class App extends React.Component{
 ```
 
 在上面的示例中有如下几点需要注意:
-1. 在修改 react 组件时，必须使用 this.setState
-2. button onClick 事件触发的函数 this 指向的是标签元素，为了在 add 中访问到 react 的属性值，我们必须修改 add 函数的 this 指向。推荐使用示例中添加额外箭头函数的方式，这样可以保留事件触发时的 event 对象
+1. React 中组件的状态(数据)，分为传入的数据 props 和自身定义的是数据 state，props 的数据是不能修改的，而修改 state 数据必须使用 this.setState
+2. button onClick 事件触发的函数 this 指向的是标签元素，为了在 add 中访问到 react 的属性值，我们必须修改 add 函数的 this 指向。推荐使用示例中添加额外箭头函数的方式，这样可以保留事件触发时的 event 对象，或者直接将 add 方法定义为箭头函数并接收事件对象效果是完全一样的
 3. 在 this.setState 中更新属性值的操作是一个异步操作
 
 ### 3.1 setState 
@@ -155,5 +191,7 @@ export default class App extends React.Component{
         }),()=>{
             console.log(this.state.count)
         })
+        // 注意: 此处只能拿到更新前的值
+        console.log(this.state.count)
     }
 ```

@@ -1,112 +1,69 @@
 ---
-title: 13 redux 与 mobx 使用
+title: 13 react 项目实战 
 date: 2020-11-13
 categories:
     - 前端
 tags:
-	- Vue
+	- React
 ---
-使用 redux 与 mobx-react 共享数据
+react 项目实战
 <!-- more -->
 
-## 1. mobx 简介
-mobx 是react 中另一款实现状态共享的组件。推荐在中小项目中使用。在 mobx 和 react 的组合中:
-1. React是⼀个消费者，将应⽤状态state渲染成组件树对其渲染
-2. Mobx是⼀个提供者，⽤于存储和更新状态state
+## 1. 项目初始化
+```bash
+# 1. 安装 create-react-app
+cnpm i -g create-react-app
+
+# 2. 创建项目
+create-react-app react_admin
+
+# 3. 安装所需的包
+cnpm i -S antd axios babel-plugin-import customize-cra draft-js draftjs-to-html echarts echarts-for-react html-to-draftjs jsonp less less-loader  react-draft-wysiwyg react-redux redux store wangeditor
+
+cnpm install --save react-draft-wysiwyg draft-js draftjs-to-html html-to-draftjs  
+
+cnpm i -S @craco/craco craco-less @babel/plugin-proposal-decorators
+
+# 3. 修改 package.json 项目启动方式
+"scripts": {
+    "start": "craco start",
+    "build": "craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject"
+  },
+
+# 4. 根目录创建 craco.config.js 文件
+const CracoLessPlugin = require('craco-less');
+
+module.exports = {
+  babel: {   //用来支持装饰器
+	   plugins: [["@babel/plugin-proposal-decorators", { legacy: true }]]
+  },
+  plugins: [
+    {
+      plugin: CracoLessPlugin,
+      options: {
+        lessLoaderOptions: {
+          lessOptions: {
+            modifyVars: { '@primary-color': '#1DA57A' },
+            javascriptEnabled: true,
+          },
+        },
+      },
+    },
+  ],
+};
+```
+
+## 2. 数据准备以及后端服务启动
+项目后台使用 nodejs，并使用 mongodb 数据库。因此需要安装 mongodb。
 
 ```bash
-cnpm i mobx mobx-react -S
+# 1. 启动mongo
+mongod
+
+# 2. 启动后台服务
+node serve.js
+# 也可以使用  nodemon 来启动服务实时监听后台代码的变化
+nodemon server.js
 ```
-
-### 1.1 mobx 使用
-mobx 的使用分为如下几个步骤:
-1. 创建 mobx 状态对象，并为状态对象创建操作状态的方法
-2. 将mobx 状态对象通过组件属性注入组件
-3. 在组件中通过 props 属性引用状态对象，并使用
-
-```js
-// 1. src/Store/mobx.js 创建 mobx 状态对象
-import {observable, action} from "mobx"
-
-
-// 创建观察者
-export const appState = observable({
-    num: 0
-})
-
-// action
-appState.add = action(()=>{
-    appState.num++
-})
-
-
-appState.down = action(()=>{
-    appState.num--
-})
-
-// 2. 通过组件属性注入 appState
-import React, { Component } from 'react'
-
-export default class App extends Component {
-    render() {
-        return (
-            <div>
-              <MobxTest appState={appState}></MobxTest>
-            </div>
-
-            
-        )
-    }
-}
-
-// 3. 在组件中使用状态对象
-import React, { Component } from 'react'
-// import {appState} from '../Store/mobx'
-import {observer} from "mobx-react"
-import {Button} from "antd"
-
-class MobxTest extends Component {
-    render() {
-        return (
-            <div>
-                <h2>MuboxTest</h2>
-                <p>{this.props.appState.num}</p>
-                <Button onClick={()=>{this.props.appState.add()}}>+1</Button>
-            </div>
-        )
-    }
-}
-
-export default observer(MobxTest)
-```
-
-### 1.2 appState 的装饰器写法
-appState 还有另一种装饰器写法，如下:
-
-```js
-class NumState{
-    @observable num = 0;
-    @action
-    add(){
-        this.num ++
-    }
-
-    @action
-    down(){
-        this.num --
-    }
-}
-
-export default new NumState()
-```
-
-
-## 2. 对⽐ redux 和Mobx
-1. 学习难度 redux > mobx
-2. ⼯作量 redux > mobx
-3. 内存开销 redux > mobx
-4. 状态管理的集中性 redux > mobx
-5. 样板代码的必要性 redux > mobx
-
-结论：使⽤Mobx⼊⻔简单，构建应⽤迅速，但是当项⽬⾜够⼤的时候，还是redux,爱不释⼿，那还是开启严格模式，再加上⼀套
-状态管理的规范，代码的复用性非常的高

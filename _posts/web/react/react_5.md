@@ -1,94 +1,54 @@
 ---
-title: 5 React 生命周期
-date: 2020-11-03
+title: 5 组件使用
+date: 2020-11-05
 categories:
     - 前端
 tags:
 	- Vue
 ---
-React 生命周期
+React 表单: 受控组件和非受控组件
 <!-- more -->
 
-## 1. React 生命周期的钩子函数
+## 1. antd 概述
+antd 类似于 Vue 中的 vue-element-ui，是一个样式和表单组件的库
 
-```js
-import React, { Component } from 'react'
-class SubCount extends Component {
-  componentWillReceiveProps(newProps){
-    console.log('子组件将要接收新属性',newProps);
-    
-  }
-  render() {
-    return (
-      <div>
-        
-      </div>
-    );
-  }
-}
+### 1. 安装
 
-export default class LifyCycle extends Component {
-  static defaultProps = {
-    //1.加载默认的属性
-    name: '小马哥',
-    age: 18
-  }
-  constructor(props) {
-    super(props);
-    console.log('1.初始化 加载默认的状态');
-    this.state = {
-      count: 0
-    }
-  }
-  componentWillMount() {
-    console.log('2.父组件将要被挂载');
-
-  }
-  componentDidMount() {
-    // 当前的这个方法中，发起ajax请求，获取数据 数据驱动视图
-    console.log('4.父组件挂载完成');
-
-  }
-  shouldComponentUpdate(nextProps, nextState) {
-    // 性能的优化点 重要
-    console.log('5.组件是否要更新');
-    if (nextState.count % 2 === 0) {
-      return true;
-    } else {
-      return false;
-    }
-
-  }
-  componentWillUpdate(){
-    console.log('7.组件将要更新');
-    
-  }
-  componentDidUpdate() {
-    console.log('8.组件已经更新完成');
-
-  }
-  componentWillUnmount() {
-    console.log('组件卸载完成');
-    
-  }
-  handleClick = () => {
-    this.setState((preveState, preveProps) => ({
-      count: preveState.count + 1
-    }), () => {
-      console.log(this.state.count);
-    })
-  }
-  render() {
-    console.log('3.父组件(render)了');
-
-    return (
-      <div>
-        <h2>当前的值:{this.state.count}</h2>
-        <button onClick={this.handleClick}>+1</button>
-        <SubCount count={this.state.count}></SubCount>
-      </div>
-    )
-  }
-}
-
+```bash
+cnpm i antd -S
 ```
+
+### 2. 导入
+与 vue-element-ui 类似，全局导入 antd 会对服务器造成较大的压力，推荐使用局部导入的方式[文档](https://ant.design/docs/react/use-with-create-react-app-cn):
+
+```bash
+# 1. 安装 craco
+yarn add @craco/craco
+cnpm i @craco/craco -S
+
+# 2. 修改 package.json 里的 scripts 属性
+"scripts": {
+-   "start": "react-scripts start",
+-   "build": "react-scripts build",
+-   "test": "react-scripts test",
++   "start": "craco start",
++   "build": "craco build",
++   "test": "craco test",
+}
+
+# 3. 在项目根目录创建一个 craco.config.js 用于修改默认配置
+module.exports = {
+  // ...
+};
+
+# 4. App.js 中部分导入
+import {Button} from "antd"
+import './App.css'
+
+# 5. App.css 中导入样式
+@import '~antd/dist/antd.css';
+```
+
+
+## 1. umi简介
+[umi](https://umijs.org/zh-CN/docs) 

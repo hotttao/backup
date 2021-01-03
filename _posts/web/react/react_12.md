@@ -1,248 +1,222 @@
 ---
-title: 12 redux 与 react-redux 使用
+title: 12 react 导航守卫
 date: 2020-11-12
 categories:
     - 前端
 tags:
-	- Vue
+	- React
 ---
-使用 redux 与 react-redux 共享数据
+react 导航守卫
 <!-- more -->
 
-## 1. redux
-### 1.1 redux 使用
-使用 redux 需要如下几个步骤:
-1. 创建 store，store 在初始化的时候，接收修改数据的 Action
-2. store 注册和监听 react 组件
-3. 使用 store，通过 store.dispatch/store.getState 修改和获取 store 中的值
+## 1. react 导航守卫
+react 中没有提供特定的导航守卫的钩子函数，导航守卫通过高阶组件，包装 Route 组件来实现。要实现一个拦截验证登录的功能，需要以下几个步骤:
+1. 使用 react-redux 来共享登录状态
+2. 定义高阶组件，来包装 Route 验证登录状态
 
+### 1.1 共享登录状态
+#### 共享登录装填
 ```js
-// src/store.js 创建 store
-import {createStore} from "redux"
+// store/auth.js
+const authInfo = {
+    isLogin: false,
+    userInfo: {
 
-// 1. 创建 Reducers
+    }
+}
 
-function counter(state = 0, action){
-    // action.type 是 Action dispatch 触发的动作类型
-     switch (action.type) {
-        case "+":
-             return state + 1
-             break;
-        case "-":
-            return state - 1
+export function auth(state=authInfo, action){
+    switch (action.type) {
+        case 'login':
+            return {isLogin: true}
         default:
-            return state
-     }
-}
-
-
-// 2. 创建 store
-const store = createStore(counter)
-
-export default store
-```
-
-```js
-// src/index.js 注册监听 React 组件
-function render(){
-    ReactDOM.render(<ReduxTest />, document.querySelector("#root"))
-}
-
-
-render()
-
-// 1. 注册和订阅 react 组件
-store.subscribe(render)
-```
-
-```js
-// react 中使用 store
-import React, { Component } from 'react'
-import store from "../store"
-import {Button} from "antd"
-
-
-export default class ReduxTest extends Component {
-    add = ()=>{
-        // 2. 触发 store 的 Action
-        store.dispatch({
-            type: '+'
-        })
-    }
-    down = ()=>{
-        store.dispatch({
-            type: '-'
-        })
-    }
-    render() {
-        console.log(store)
-        return (
-            <div>
-                <h2>Redux 使用</h2>
-                {/* 1. 从 store 中获取值 */}
-                <h3>state: {store.getState()}</h3>
-                <Button onClick={this.add}>+1</Button>
-                <Button onClick={this.down}>-1</Button>
-            </div>
-        )
+            return state;
     }
 }
 
-```
-
-### 1.2 redux 的缺点
-每次state更新，都会重新render，⼤型应⽤中会造成不必要的重复渲染。如何更优雅的使⽤redux呢，我们需要 react-redux
-
-
-## 2. react-redux
-使用 react-redux 分为如下几个步骤:
-1. 创建 store，代码同上
-1. 通过 Provider 将 store 导入到特定组件
-2. 通过 connect 高阶组件，将读取和修改 store 操作，装饰到组件中
-
-```js
-// src/index.js 通过 Provider 将 store 导入到特定组件
-function render(){
-    ReactDOM.render((
-        // 1. 通过 Provider 将 store 导入到特定组件
-        <Provider store={store}>
-            <ReduxTest></ReduxTest>
-        </Provider>
-    ), document.querySelector("#root"))
-}
-
-
-render()
-
-// 2. 不需要再注册和订阅 react 组件
-// store.subscribe(render)
-```
-
-```js
-// 组件中通过 connect 高阶组件，将读取和修改 store 操作，装饰到组件中
-import React, { Component } from 'react'
-import store from "../store"
-import {Button} from "antd"
-import {connect} from 'react-redux'
-
-// 1. 读取 store 
-const mapState = state => {
+export const mapAuthState = state => {
     return {
-        num: state
+        auth: state.auth
     }
 }
 
-// 2. 修改 store
-const mapDispatch = dispatch => {
+const Login = (dispatch)=>{
+        setTimeout(()=>{
+            dispatch({type: 'login'})
+        }, 1000)
+}
+
+export const mapAuthDisPatch = dispatch => {
     return {
-        add(){
-            dispatch({type: '+'})
-        },
-        down(){
-            dispatch({type: '-'})
+        login: ()=>{
+            dispatch(Login)
         }
     }
 }
-
-class ReduxTest extends Component {
-    render() {
-        console.log(store)
-        return (
-            <div>
-                <h2>Redux 使用</h2>
-                {/* 3. 子组件通过 props 读取注入的 mapState 和 mapDispatch 方法 */}
-                <h3>state: {this.props.num}</h3>
-                <Button onClick={this.props.add}>+1</Button>
-                <Button onClick={this.props.down}>-1</Button>
-            </div>
-        )
-    }
-}
-
-export default connect(mapState, mapDispatch)(ReduxTest)
 ```
 
-## 3. redux 中间件
-利⽤redux中间件机制可以在实际action响应前执⾏其它额外的业务逻辑。
-
-通常我们没有必要⾃⼰写中间件，介绍两款⽐较成熟的中间件
-1. redux-logger:处理⽇志记录的中间件
-2. Redux-thunk:处理异步action
-
+#### 创建 store 对象
 ```js
-cnpm i redux-thunk redux-logger -S
-```
-
-### 3.1 装载 redux 中间件
-redux 中间使用前需要装载:
-
-```js
-// src/store.js 中装载插件
-import {createStore, applyMiddleware} from "redux"
-import logger from "redux-logger"
+// store/index.js
+import logger from 'redux-logger'
 import thunk from 'redux-thunk'
 
-function counter(state = 0, action){
-    // action.type 是 Action dispatch 触发的动作类型
-     switch (action.type) {
-        case "+":
-             return state + 1
-             break;
-        case "-":
-            return state - 1
-        default:
-            return state
-     }
-}
+import {createStore, combineReducers, applyMiddleware} from "redux"
+import {auth} from './auth'
+import {counter} from './counter'
 
 
-// 1. 使用 applyMiddleware 装载中间件
-const store = createStore(counter, applyMiddleware(logger, thunk))
+const store = createStore(combineReducers({
+    auth,
+    counter
+}), applyMiddleware(logger, thunk))
 
 export default store
 ```
 
-### 3.2 使用 redux-thunk 进行异步操作
-redux 中 Action 默认接收一个对象，表示执行的下一个任务，这个执行的过程必须是同步的。，如果在执行之前需要一些异步操作，需要借助 redux-thunk 中间，此时 Action 接收一个函数。
+## 2. 挂载 store
 
 ```js
-const asyncAdd = (dispatch)=>{
-        setTimeout(() => {
-            dispatch({type: '+'})
-        }, 1000);
-    }
+// index.js
+import ReactDOM from "react-dom"
+import App from "./App"
+import store from  './store'
+import {Provider} from 'react-redux'
 
-// 2. 修改 store
-const mapDispatch = dispatch => {
-    return {
-        add(){
-            dispatch({type: '+'})
-        },
-        down(){
-            dispatch({type: '-'})
-        },
-        asyncAdd:()=>{
-            dispatch(asyncAdd)
+ReactDOM.render((
+    <Provider store={store}>
+        <App name="你好"/>
+    </Provider>
+), document.querySelector("#root"))
+```
+
+## 3. 定义验证登录的高阶组件
+```js
+// hoc/RequireLogin.js
+import React, { Component } from 'react'
+import {Redirect, Route} from  'react-router-dom'
+import {mapAuthState} from '../store/auth'
+import {connect} from 'react-redux'
+import AuthUtil from "../utils/auth"
+
+export function PrivateRoute({component: Comp, ...reset}){
+    return (
+        <Route {...reset} component={props=>{
+            // return <UsedComp {...props}></UsedComp>
+            if (AuthUtil.isAuth){
+                return <Comp {...props}></Comp>
+            }else{
+                return <Redirect to={{pathname: '/login', state: props.location}}></Redirect>
+            }
+        }}></Route>
+    )
+}
+
+class RequireLogin extends Component {
+    render() {
+        const Comp = this.props.component
+        return (
+            <Route {...this.props} component={props=>{
+                // return <UsedComp {...props}></UsedComp>
+                if (this.props.auth.isLogin){
+                    return <Comp {...props}></Comp>
+                }else{
+                    return <Redirect to={{pathname: '/login', state: {from: props.location}}}></Redirect>
+                }
+            }}></Route>
+        )
+    }
+}
+
+export default connect(mapAuthState)(RequireLogin)
+```
+
+## 4. 使用验证登录的高阶组件
+```js
+// App.js
+import React, { Component } from 'react'
+import {BrowserRouter, HashRouter, Link, Route, Switch, Redirect} from 'react-router-dom'
+import {Button} from "antd"
+import './App.css'
+import Home from './pages/Home'
+import Course from './pages/Course'
+import User from './pages/User'
+import NotFound from './pages/NotFound'
+import About from './pages/About'
+import Login from './pages/Login'
+import RequireLogin, {PrivateRoute} from  './hoc/RequireLogin'
+
+
+export default class App extends Component {
+    render() {
+        return (
+            // 1. 要想使用路由，html 必须位于 HashRouter 或者 BrowserRouter 组件内
+            // HashRouter 显示的 url 带有 /#/ 
+            // BrowserRouter 显示的时干净的 url
+            <HashRouter>
+                <ul>
+                    {/* 2. Link 用于设置路由 */}
+                    <li><Link to="/">首页</Link></li>
+                    <li><Link to="/course">课程</Link></li>
+                    <li><Link to="/user">用户</Link></li>
+                    <li><Link to="/about">关于</Link></li>
+                </ul>
+                {/* 5. 默认情况下，Route 匹配后会继续往下执行，进行匹配 */}
+                {/* Switch 表示匹配成功一个路由后，就不再继续匹配 */}
+                <Switch>
+                    {/* 3. Router 用于路由配置 */}
+                    {/* exact 加上之后表示精准匹配，就不会总是显示第一个路由 */}
+                    <Route exact path="/home" component={Home}></Route>
+                    <Route path="/course" component={Course}></Route>
+                    <Route path="/user" component={User}></Route>
+                    {/* 6. 验证登录 */}
+                    <RequireLogin path="/about" component={About}></RequireLogin>
+                    <Route path="/login" component={Login}></Route>
+                    {/* 5. 重定向 */}
+                    <Redirect to="/home"></Redirect>
+                    {/* 4. 不设置 path 用于配置 404 路由 */}
+                    <Route component={NotFound}></Route>
+                </Switch>
+                
+                {/* <Button type='primary'>登录</Button>  */}
+            </HashRouter>            
+        )
+    }
+}
+
+
+```
+
+## 5. 登录页面
+```js
+import React, { Component } from 'react'
+import {connect} from 'react-redux'
+import {Button} from 'antd'
+import { Redirect } from 'react-router-dom'
+import {mapAuthState, mapAuthDisPatch} from  '../store/auth'
+
+class Login extends Component {
+    handleLogin = ()=>{
+        this.props.login()
+    }
+    render() {
+        let {isLogin} = this.props.auth
+        console.log(this.props)
+        console.log(this.props.location)
+        let path = this.props.location.state.from.pathname
+        
+        if (isLogin){
+            return <Redirect to={path}></Redirect>
+        } else {
+            return (
+                <div>
+                    <p>请先登录</p>
+                    <Button onClick={this.handleLogin}>登录</Button>
+                </div>
+            )
         }
     }
 }
 
-```
-
-## 4. redux 状态模块化
-当 redux 中管理的共享状态越来越多时，我们需要对其模块化。redux 提供了 combineReducers 函数用于对模块进行整合。
-
-```js
-// src/store.js Reducer 整合
-const store = createStore(combineReducers({
-    counter 
-}), applyMiddleware(logger, thunk))
-
-// 状态访问
-const mapState = state => {
-    return {
-        // 相应的对状态进行访问时，也要带上响应的键。
-        num: state.counter
-    }
-}
+export default connect(mapAuthState, mapAuthDisPatch)(Login)
 ```
