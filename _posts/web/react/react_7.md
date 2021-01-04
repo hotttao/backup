@@ -93,9 +93,8 @@ module.exports = {
         },
       },
     },
-  ],
-};
-```
+  ]
+};```
 
 ### 1.2 装饰器语法
 ES7 的装饰器语法与 Python 装饰器完全一样，上面示例中的高阶组件可以写成:
@@ -198,3 +197,68 @@ export class MovieA extends Component {
 ```
 
 ### 2.2 权限控制
+
+```js
+import React, { Component } from 'react'
+
+// 1. 带参数的高阶组件
+const withAuth = role => Comp => { 
+    
+    return class extends Component {
+        constructor(props) { 
+            super(props)
+            this.state = {
+                'isAuth': false
+            }
+        }
+        // 2. 访问后台数据，并验证用户是否具有相应的权限
+        componentDidMount() { 
+            const user = "VIP"
+            this.setState({
+                'isAuth': user === role
+            })
+        }
+        render() {
+            // 3. 根据是否有权限决定是否显示页面
+            if (this.state.isAuth) {
+                return (
+                    <Comp {...this.props}></Comp>
+                )
+            } else { 
+                return (
+                    <div>
+                        没有权限访问
+                    </div>
+                )
+            }
+            
+        }
+    }
+    
+}
+
+// 4. 给组件附加权限验证
+@withAuth("VIP")
+class PageA extends Component {
+    render() {
+        return (
+            <div>
+                Page A 页面
+            </div>
+        )
+    }
+}
+
+@withAuth("Admin")
+class PageB extends Component {
+    render() {
+        return (
+            <div>
+                Page B 页面
+            </div>
+        )
+    }
+}
+
+export { PageB, PageA};
+```

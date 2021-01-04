@@ -196,7 +196,7 @@ const Comment = React.memo(({id, author, content})=>{
 })
 ```
 
-## 3. 组件组合而非继承
+## 3. 组件组合而非继承(重要)
 React 有非常强大的组合模式，推荐使用组件组合而非继承的方式实现组件的重用。下面示例的重点就是展示如何将 Button 和 Dialog 组件组合使用。
 
 ```js
