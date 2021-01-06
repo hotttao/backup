@@ -23,9 +23,12 @@ import {Button} from "antd"
 // 1. 创建 Context
 const ThemeContext = React.createContext()
 
+
+// 三层组件
 class ThemeBtn extends Component {
 
     // 2. 将子组件使用的 Context 设置为当前组件的静态属性，即声明使用到的上下文对象
+    // 必须是静态属性，且属性名为 contextType
     static contextType = ThemeContext
 
     constructor(props){
@@ -37,19 +40,22 @@ class ThemeBtn extends Component {
     render() {
         return (
             <div>
+                {/*4. 使用 context ，context 就是父组件通过 Context.Provider 传递过来的值 */}
                 <Button type={this.context.type}>{this.context.name}</Button>
             </div>
         )
     }
 }
 
-
+// 二层组件
 function ToolBar(props){
+    
     return (
         <ThemeBtn></ThemeBtn>        
     )
 }
 
+// 顶层父组件
 export default class ContextUse extends Component {
     constructor(props){
         super(props)

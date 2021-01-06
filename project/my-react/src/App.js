@@ -1,6 +1,7 @@
 import Message from './component/P2C';
 import Hoc from './component/Hoc';
 import { PageA, PageB} from './component/WithVip';
+import { HorizontalLoginForm } from './component/AntdTest';
 import { Button } from 'antd'
 import './App.css'
 
@@ -12,6 +13,8 @@ function App() {
       <Hoc></Hoc>
       <PageA></PageA>
       <PageB></PageB>
+
+      <HorizontalLoginForm></HorizontalLoginForm>
     </div>
   );
 }
