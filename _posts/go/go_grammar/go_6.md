@@ -84,6 +84,57 @@ Point{1, 2}.ScaleBy(2) // compile error: can't take address of Point literal
 ### 2.5 类型的方法集合
 如上所述，正因为我们总是可以通过对一个地址解引用(\*)来获取变量，但是却不一定能获取一个对象的地址(临时对象)，所以一个自定义数据类型的方法集合中仅会包含它的所有值方法，而该类型的指针类型的方法集合却囊括了前者的所有方法，包括所有值方法和所有指针方法。
 
+```go
+//1. pkg 包内定义 animal 和 Dog
+
+package pkg
+
+type animal struct {
+	Name string
+}
+
+type Dog struct {
+	animal
+	Weight int
+}
+
+func NewDog() Dog {
+	return Dog{animal{"aaa"}, 100}
+}
+func (g Dog) GetName() string {
+	return g.Name
+}
+
+func (g *Dog) GetWeight() int {
+	return g.Weight
+}
+
+// 2 mian 包内使用
+package main
+
+import (
+	"fmt"
+	"mygo/pkg"
+)
+
+func main() {
+	g := pkg.NewDog()
+	fmt.Printf("%T, %#v\n", g, g)
+	fmt.Println(g.Weight)                    // 注意: 此处我们可以直接访问 g.Weight
+	fmt.Println(g.Name)
+	fmt.Printf("%T\n", (*pkg.Dog).GetName)   //  func(*pkg.Dog) string 
+	fmt.Printf("%T\n", (*pkg.Dog).GetWeight) // func(*pkg.Dog) int
+	fmt.Printf("%T\n", pkg.Dog.GetName)      // func(pkg.Dog) string
+	// fmt.Printf("%T\n", pkg.Dog.GetWeight)
+
+}
+```
+
+在上面的示例中:
+1. 通过结构体直接访问方法，我们将获取一个方法值，值方法是一个函数，其接受的参数与调用的方式有关，以结构体调用，返回的函数需要接受结构体，以结构体指针调用，返回的函数需要接受结构体的指针
+2. 所有的值方法可以通过结构体，也可以通过结构体的指针进行访问，所有的指针方法只能通过结构体指针进行访问
+3. 这里也反应出一个自定义数据类型的方法集合中仅会包含它的所有值方法，而该类型的指针类型的方法集合却囊括了前者的所有方法，包括所有值方法和所有指针方法。
+
 ## 3. 结构体嵌入
 ### 3.1 结构体嵌入与类的继承
 在结构体一节中，我们就已经提到了，结构体中通过匿名字段嵌入的不仅仅是结构体的成员还是其方法。以下面嵌入了 `Point` 的 `ColoredPoint` 为例，我们可以把ColoredPoint类型当作接收器来调用Point里的方法，即使ColoredPoint里没有声明这些方法。

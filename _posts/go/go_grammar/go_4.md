@@ -430,7 +430,55 @@ w = Wheel{
 2. 因为匿名成员也有一个隐式的名字，因此不能同时包含两个类型相同的匿名成员，这会导致名字冲突
 3. 因为成员的名字是由其类型隐式地决定的，所有匿名成员也有可见性的规则约束
 
-比如将上面改成小写字母开头的point和circle），此时在包内依旧可以使用 `w.X = 8`；但是在包外部，因为circle和point没有导出不能访问它们的成员，因此简短的匿名成员访问语法也是禁止的。
+~~比如将上面改成小写字母开头的point和circle），此时在包内依旧可以使用 `w.X = 8`；但是在包外部，因为circle和point没有导出不能访问它们的成员，因此简短的匿名成员访问语法也是禁止的。~~
+
+匿名结构的可见性只与属性和方法的获取的表达式有关，比如将上面改成小写字母开头的point和circle），在包外部不能通过 `w.point.X` 访问成员 X，但是可以通过 `w.X` 直接访问成员 X。下面是另一个例子:
+
+```go
+//1. pkg 包内定义 animal 和 Dog
+
+package pkg
+
+type animal struct {
+	Name string
+}
+
+type Dog struct {
+	animal
+	Weight int
+}
+
+func NewDog() Dog {
+	return Dog{animal{"aaa"}, 100}
+}
+func (g Dog) GetName() string {
+	return g.Name
+}
+
+func (g *Dog) GetWeight() int {
+	return g.Weight
+}
+
+// 2 mian 包内使用
+package main
+
+import (
+	"fmt"
+	"mygo/pkg"
+)
+
+func main() {
+	g := pkg.NewDog()
+	fmt.Printf("%T, %#v\n", g, g)
+	fmt.Println(g.Weight)  // 注意: 此处我们可以直接访问 g.Weight
+	fmt.Println(g.Name)
+	fmt.Printf("%T\n", (*pkg.Dog).GetName)   //  func(*pkg.Dog) string 
+	fmt.Printf("%T\n", (*pkg.Dog).GetWeight) // func(*pkg.Dog) int
+	fmt.Printf("%T\n", pkg.Dog.GetName)      // func(pkg.Dog) string
+	// fmt.Printf("%T\n", pkg.Dog.GetWeight)
+
+}
+```
 
 最后匿名成员并不要求是结构体类型；其实任何命名的类型都可以作为结构体的匿名成员。但是为什么要嵌入一个没有任何子成员类型的匿名成员类型呢？答案是匿名类型的方法集。
 
