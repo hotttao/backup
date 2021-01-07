@@ -17,6 +17,14 @@ react-router 是 react 中实现路由创建单页面的路由组件。
 cnpm i react-router-dom -S
 ```
 
+react-router-dom 提供了如下几个对象:
+1. 要想使用路由，html 必须位于 HashRouter 或者 BrowserRouter 组件内
+    - HashRouter 显示的 url 带有 /#/
+    - BrowserRouter 显示的时干净的 url
+2. Link: 相当于 a 标签表示一个页面
+3. Route: 路由配置
+4. Switch: 表示匹配成功一个路由后，就不再继续匹配，默认情况下，Route 匹配后会继续往下执行，进行匹配
+
 ### 1.1 react-router 基本使用
 ```js
 import React, { Component } from 'react'
@@ -50,7 +58,7 @@ export default class App extends Component {
                 {/* 5. 默认情况下，Route 匹配后会继续往下执行，进行匹配 */}
                 {/* Switch 表示匹配成功一个路由后，就不再继续匹配 */}
                 <Switch>
-                    {/* 3. Router 用于路由配置 */}
+                    {/* 3. Router 用于路由配置 */}  
                     {/* exact 加上之后表示精准匹配，就不会总是显示第一个路由 */}
                     <Route exact path="/" component={Home}></Route>
                     <Route path="/course" component={Course}></Route>
@@ -69,6 +77,19 @@ export default class App extends Component {
 
 ```
 
+Route 会为 component 指定的路由组件添加三个属性 location, match, history
+1. location: 本地信息对象
+    - pathname:
+    - search: 
+    - hash:
+    - state: 通过 history.push({state: ""}) 传递的参数
+2. match: 匹配的路由信息对象，含了当前的路由信息，和 url 参数
+    - params: url 参数
+    - path: 匹配的路由
+    - url: 当前页面的 url
+3. history: 页面跳转
+    - goBack(): 返回上一页
+    - push(): 跳转到特定页面
 
 
 ### 1.2 实现二级路由
@@ -87,8 +108,7 @@ export default class Course extends Component {
             <div>
                 {/* 1. 实现二级路由 */}
                 <ul>
-                    {/* 2. 使用 Link 表示路由 */}
-                    {/* 3. Link 中包含了三个属性 location, match, history 三个属性 */}
+                    {/* 2. Route 会为 component 指定的路由组件添加三个属性 location, match, history  */}
                     {/* match 中包含了当前的路由信息，和 url 参数 */}
                     <li><Link to={`${this.props.match.url}/python`}>Python</Link></li>
                     <li><Link to="/course/goland">GoLang</Link></li>
@@ -106,7 +126,6 @@ export default class Course extends Component {
 
 ```
 
-### 1.3 获取路由参数
 通过组件内 this.props.match 我们可以获取路由中的参数信息
 
 ```js
@@ -125,7 +144,7 @@ export default class CourseDetail extends Component {
 
 ```
 
-### 1.4 命名路由
+### 1.3 页面跳转
 React 组件的 this.props.history 为我们提供了页面跳转的功能:
 
 ```js

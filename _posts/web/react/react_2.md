@@ -139,3 +139,18 @@ export default class App extends React.Component{
     }
 }
 ```
+
+## 3. 项目结构
+每个框架的使用都有其最佳实践，目的是将将项目划分为特定的多个模块，使我们的开发更加高效。React 项目典型的组织方式如下:
+
+```bash
+my-react # 项目陆慕
+    public # 静态文件
+    src    # 源码目录
+        store # redux 数据共享的目录
+            index.js  # 创建 redux store
+            cart.js   # 购物车共享的 redux Reducer 和映射的方法
+            login.js  # 登录共享的 redux Reducer 和映射的方法
+            .....
+        pages # react-router 的路由组件
+```
