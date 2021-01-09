@@ -24,8 +24,8 @@ redux 是 react 中做状态共享的库，作用于前面我们讲的 vuex 类�
 每次state更新，都会重新render整个项目，⼤型应⽤中会造成不必要的重复渲染。如何更优雅的使⽤redux呢，我们需要 react-redux。
 
 ```bash
-cnpm -i redux -S
-cnpm -i react-redux -S
+cnpm i redux -S
+cnpm i react-redux -S
 ```
 
 ### 1.1 redux 使用
@@ -375,9 +375,183 @@ export default new NumState()
 
 
 ## 6. redux-saga
-redux-saga 是⼀个⽤于管理应⽤程序 Side Effect（副作⽤，例如异步获取数据，访问浏览器缓存等）的 library，redux-saga 使⽤了 ES6 的 Generator 功能，让异步的流程更易于读取，写⼊和测试。通过这样的⽅式，这些异步的流程看起来就像是标准同步的Javascript 代码。
-不同于 redux thunk，你不会再遇到回调地狱了，你可以很容易地测试异步流程并保持你的 action 是⼲净的。
+redux-chunk 中管理异步操作的方式是使用回调函数，在复杂场景中很容易陷入到回调地狱中，而 redux-saga 使用 ES6 协程解决了这个问题。redux-sage 与 redux-thunk 使用的方式类似，都是作为 redux 插件的方式被使用，唯一的区别就是处理异步操作的方式。
+
+redux-saga 使用的是 ES6 原始的 Promis 和 yield 语法，并且与 redux-chunk 一样，状态的初始化，同步异步操作没有封装在一起，感觉使用起来并不是非常方便。推荐使用 Dva 进行数据管理，接口更加简洁。
 
 ```bash
 npm i redux-saga -S
+```
+
+完整使用 redux 和 redux-saga 的步骤如下:
+1. 使用 redux-saga 封装异步操作，定义 redux-saga 的 action
+1. 创建 操作共享数据的 reducer，reducer 中的异步操作将使用 redux-saga 定义的action
+2. 创建 redux store 和 redux-saga 中间件，关联 store、中间件和 reducer
+4. 不要忘记通过 Provider 将 store 导入 react 
+3. 组件中使用 connect 将 redux 共享的数据和操作映射至待使用的组件中
+
+
+#### 定义 redux-saga 的 action
+
+redux-saga/effects 暴露了三个接口:
+1. call: 执行异步操作
+2. put: 相当于 dispatch 触发 reducer 中的同步操作
+3. takeEvery: 注册 redux-saga 的 action
+
+```js
+// src/store/userSaga.js
+import { call, put, takeEvery } from 'redux-saga/effects'
+
+const api = {
+    login: async () => { 
+        return new Promise((resolve, reject) => { 
+            setTimeout(() => { 
+                resolve({id:1, name: "小马哥"})
+            }, 1000)
+        })
+    }
+}
+
+// 1. 创建的 Work Sage
+function* login(action) { 
+    try {
+        const result = yield call(api.login)
+        console.log(result)
+        // 1. dispatch 触发 reducer 里面的同步操作
+        yield put({'type': 'login', result})
+    } catch (error) {
+        yield put({'tyoe': 'loginErr', message: error.message})
+    }
+    
+}
+
+// 2. 将 login 与 Saga 关联起来，类似监听
+function* loginSaga() { 
+    // login_saga 相当于 saga 的 action
+    yield takeEvery("login_request", login)
+}
+
+export default loginSaga
+```
+
+#### 创建 reducer
+
+```js
+// src/store/userReducer.js
+
+
+const initState = {
+    isLogin: false,
+    userInfo: {
+
+    }
+    
+}
+
+export const mapUserState = (state) => { 
+    return {
+        user: state.user
+    }
+}
+
+export const mapUserOp = (dispatch) => ({ 
+    login: () => { 
+        // login_request 就是 redux-saga 定义的 action
+        dispatch({type: "login_request"})
+    }
+})
+
+function user(state = initState, action) { 
+    switch (action.type) {
+        case 'login':
+            return {userInfo: action.result, isLogin: true}
+            break;
+        default:
+            return state
+    }
+}
+
+export default user
+```
+
+#### 创建 store 关联中间件和 reducer
+
+```js
+// src/store/index.js
+
+import { createStore, applyMiddleware, combineReducers } from 'redux'
+import user from "./userReducer"
+import logger from 'redux-logger'
+import createSagaMiddleware from 'redux-saga'
+import userSaga from './userSaga'
+
+// 1. 创建 saga 中间件
+const sageMid = createSagaMiddleware()
+
+// 2. 创建 store
+const store = createStore(combineReducers({
+    user
+}), applyMiddleware(logger, sageMid))
+
+// 3. 运行 saga 中间件
+sageMid.run(userSaga)
+
+export default store
+
+```
+
+#### 导入 store
+
+```js
+// project/index.js
+import React from 'react';
+import ReactDOM from 'react-dom';
+import './index.css';
+import App from './App';
+import reportWebVitals from './reportWebVitals';
+import store from './store'
+import { Provider } from 'react-redux'
+
+ReactDOM.render(
+  <React.StrictMode>
+    <Provider store={ store }>
+      <App />
+    </Provider>    
+  </React.StrictMode>,
+  document.getElementById('root')
+);
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
+
+```
+
+#### 使用 connect 导入共享数据
+
+```js
+// src/components/Login.js
+import React, { Component } from 'react'
+import { connect } from 'react-redux'
+import { mapUserOp, mapUserState } from  "../store/userReducer"
+
+@connect(mapUserState, mapUserOp)
+class Login extends Component {
+    login = () => { 
+        this.props.login()
+    }
+    render() {
+        console.log(this.props)
+        console.log(this.props.user.userInfo)
+        return (
+            <div>
+                <h3>用户是否登录: {this.props.user.isLogin}</h3>
+                <button onClick={ this.login}>登录</button>
+            </div>
+        )
+    }
+}
+
+export default Login
 ```

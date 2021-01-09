@@ -65,6 +65,8 @@ export default class App extends Component {
                     <Route path="/user" component={User}></Route>
                     {/* 5. 重定向 */}
                     <Redirect to="/home"></Redirect>
+                    {/* to 也可以是一个对象，其中 state 将传递给组件的 this.props.location.state */}
+                    <Redirect to={pathname: "/home", state: {from: "/about"}}></Redirect>
                     {/* 4. 不设置 path 用于配置 404 路由 */}
                     <Route component={NotFound}></Route>
                 </Switch>
@@ -79,9 +81,9 @@ export default class App extends Component {
 
 Route 会为 component 指定的路由组件添加三个属性 location, match, history
 1. location: 本地信息对象
-    - pathname:
-    - search: 
-    - hash:
+    - pathname: 当前页面的 url
+    - search: url 中的查询参数，通过`new UrlSearchParams 解析`
+    - hash: 
     - state: 通过 history.push({state: ""}) 传递的参数
 2. match: 匹配的路由信息对象，含了当前的路由信息，和 url 参数
     - params: url 参数
@@ -175,6 +177,106 @@ export default class CourseDetail extends Component {
                 <Button onClick={()=>this.props.history.push('/')}>跳转首页</Button>
                 <Button onClick={this.goHome}>跳转首页带参数</Button>
             </div>
+        )
+    }
+}
+
+```
+
+### 1.3 编辑页面的未保存跳转提醒
+在编辑页面，用户可能意外的点击其他链接，导致当前编辑的内容丢失，正常情况下，如果页面有未保存的内容，用户在离开时我们需要给予提示。这个提示也是通过路由实现的。使用的是 react-route-dom 的 Prompt 组件。
+
+```js
+import React, { Component } from 'react'
+import { Switch, Link, BrowserRouter, Route, Prompt} from 'react-router-dom'
+
+class Editor extends Component {
+    constructor(props) { 
+        super(props)
+        this.state = {
+            "isEditor": 0
+        }
+        this.editorMap = {
+            0: "未修改",
+            1: "修改进行中",
+            2: "已经保存"
+        }
+    }
+    handleChange = (e) => {
+        this.setState({
+            isEditor: 1
+        })
+
+    }
+    handleSubmit = e => { 
+        e.preventDefault();
+        e.target.reset()
+        this.setState({
+            isEditor: 0
+        })
+        
+    }
+    render() {
+        return (
+            <div>
+                <form onSubmit={this.handleSubmit}>
+                    {/* 1. Prompt 组件在 when 属性为 true 时，在跳转前就会用弹窗提示用户是否需要跳转 */}
+                    {/* message 就是提示信息，其是一个接受 location 对象的函数 */}
+                    <Prompt
+                        when={this.state.isEditor > 0}
+                        message={ location=>`当前页面编辑未保存，确定要跳转至${location.pathname}么？`} >    
+                    </Prompt>
+                    <h3>编辑状态: {this.editorMap[this.state.isEditor]}</h3>
+                    <input type="text" onChange={this.handleChange} />
+                    <button>提交</button>
+                </form>
+                
+            </div>
+        )
+    }
+}
+
+
+class EditorA extends Component {
+    render() {
+        return (
+            <div>
+                A页
+            </div>
+        )
+    }
+}
+
+class EditorB extends Component {
+    render() {
+        return (
+            <div>
+                B页
+            </div>
+        )
+    }
+}
+
+
+export default class BlockBack extends Component {
+    render() {
+        return (
+            <BrowserRouter>
+                <div>
+                    <ul>
+                        <li><Link to="/editor">编辑</Link></li>
+                        <li><Link to="/editor/a">编辑A</Link></li>
+                        <li><Link to="/editor/b">编辑B</Link></li>
+                    </ul>
+                </div>
+                <Switch>
+                    <Route exact path="/editor" component={ Editor}></Route>
+                    <Route path="/editor/a" component={ EditorA}></Route>
+                    <Route path="/editor/b" component={ EditorB}></Route>
+                </Switch>
+            </BrowserRouter>
+            
+            
         )
     }
 }

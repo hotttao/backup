@@ -74,7 +74,3 @@ import './App.css'
 # 5. App.css 中导入样式
 @import '~antd/dist/antd.css';
 ```
-
-
-## 1. umi简介
-[umi](https://umijs.org/zh-CN/docs) 

@@ -99,6 +99,7 @@ import {mapAuthState} from '../store/auth'
 import {connect} from 'react-redux'
 import AuthUtil from "../utils/auth"
 
+// 函数式的高阶组件，因为装饰器无法装饰函数，所以此处无法使用
 export function PrivateRoute({component: Comp, ...reset}){
     return (
         <Route {...reset} component={props=>{

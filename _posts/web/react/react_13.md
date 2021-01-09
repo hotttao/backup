@@ -1,5 +1,5 @@
 ---
-title: 13 react 项目实战 
+title: 13 UmiJS 
 date: 2020-11-13
 categories:
     - 前端
@@ -9,61 +9,79 @@ tags:
 react 项目实战
 <!-- more -->
 
-## 1. 项目初始化
+## 1. umi简介
+[umi](https://umijs.org/zh-CN/docs) 是阿里开源的一款 react 开发框架，集成了众多的 react 组件，与dva 一起用于开发大型项目。下面是 umi 的架构图:
+
+![UmJS 架构图](/images/JavaScript/umijs.jpg)
+
+### 1.1 UmiJS 安装
+
 ```bash
-# 1. 安装 create-react-app
-cnpm i -g create-react-app
+# 1. 使用 yarn 并更改为阿里源
+npm install -g yarn
+yarn config set registry https://registry.npm.taobao.org -g
+yarn config set sass_binary_site http://cdn.npm.taobao.org/dist/node-sass -g
 
-# 2. 创建项目
-create-react-app react_admin
+# 查询源
+yarn config get registry
 
-# 3. 安装所需的包
-cnpm i -S antd axios babel-plugin-import customize-cra draft-js draftjs-to-html echarts echarts-for-react html-to-draftjs jsonp less less-loader  react-draft-wysiwyg react-redux redux store wangeditor
+# 2. 安装 UmiJS
+# 创建项目
+mkdir myapp && cd myapp
 
-cnpm install --save react-draft-wysiwyg draft-js draftjs-to-html html-to-draftjs  
+# 通过官方工具创建项目
+yarn create @umijs/umi-app
 
-cnpm i -S @craco/craco craco-less @babel/plugin-proposal-decorators
+# 安装依赖
+yarn
 
-# 3. 修改 package.json 项目启动方式
-"scripts": {
-    "start": "craco start",
-    "build": "craco build",
-    "test": "craco test",
-    "eject": "react-scripts eject"
-  },
+# 启动项目
+yarn start
 
-# 4. 根目录创建 craco.config.js 文件
-const CracoLessPlugin = require('craco-less');
+# 3. 部署发布
+# 构建产物默认生成到 ./dist 下，然后通过 tree 命令查看，
+yarn build
+tree ./dist
 
-module.exports = {
-  babel: {   //用来支持装饰器
-	   plugins: [["@babel/plugin-proposal-decorators", { legacy: true }]]
-  },
-  plugins: [
-    {
-      plugin: CracoLessPlugin,
-      options: {
-        lessLoaderOptions: {
-          lessOptions: {
-            modifyVars: { '@primary-color': '#1DA57A' },
-            javascriptEnabled: true,
-          },
-        },
-      },
-    },
-  ],
-};
+# 本地验证
+# 发布之前，可以通过 serve 做本地验证，
+yarn global add serve
+serve ./dist
+
+# 4. 页面生成
+umi generate <type> <name> [options]
+# 生成一个最简洁的页面 home
+umi g page home
 ```
 
-## 2. 数据准备以及后端服务启动
-项目后台使用 nodejs，并使用 mongodb 数据库。因此需要安装 mongodb。
+### 1.2 umi 命令行工具
+1. umi build: 编译构建 web 产物
+2. umi dev: 启动本地开发服务器进行项目的开发调试
+3. umi generate: 
+    - 内置的生成器功能，内置的类型有 page ，用于生成最简页面。支持别名调用 umi g
+    - `umi generate <type> <name> [options]`
+    - `umi g page home`
+4. umi plugin: 
+    - 快速查看当前项目使用到的所有的 umi 插件
+    - `umi plugin <type> [options]`，当前支持的 type 是 list，可选参数 key
+    - `umi plugin list`
+5. umi -v: 查看 umi 版本
+
+### 1.2 项目结构
+一个基础的 Umi 项目大致是这样的:
 
 ```bash
-# 1. 启动mongo
-mongod
-
-# 2. 启动后台服务
-node serve.js
-# 也可以使用  nodemon 来启动服务实时监听后台代码的变化
-nodemon server.js
+├── package.json
+├── .umirc.ts
+├── .env
+├── dist
+├── mock
+├── public
+└── src
+    ├── .umi
+    ├── layouts/index.tsx
+    ├── pages
+        ├── index.less
+        └── index.tsx
+    └── app.ts
 ```
