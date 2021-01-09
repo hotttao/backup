@@ -64,7 +64,7 @@ function greatUser(user){
 // 这种在 JS 中包含标签的用法称为 JSX，ele 是一个对象
 // JSX = JavaScript + XML 表示一个虚拟 DOM -- 一种语法糖
 // JSX 可以在任意地方使用
-// 类似 Vue 里面 {{}} 的插值语法，在 JSX中可以使用 {} 进行插值 
+// 类似 Vue 里面 {{  }} 的插值语法，在 JSX中可以使用 {} 进行插值 
 // 注意不能直接使用 {greatuser(user)}，因为 {} 插值语法只能在 JSX 中使用，{} 插值需要一个标签承接
 const ele = <div>{greatUser(user)}</div>
 
