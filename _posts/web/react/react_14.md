@@ -35,6 +35,114 @@ cnpm install dva —save
 
 ## 2. react 中使用 dva
 在 react 引入 dva 需要以 dva 的方式来构建项目，总的来说需要以下几步:
+1. 创建 model 
+2. 以 dva 方式注册 model，然后启动项目
+3. 通过 connect 将 model 共享的数据和方法注册到组件中
+
+### 2.1 model 创建
+
+src/model/user.js
+
+```js
+// 异步请求的接口，将被 call 方法调用
+function login(name) { 
+    return () => {
+        return new Promise((resolve) => {
+            return setTimeout(() => {
+                resolve({ id: 1, name })
+            }, 1000)
+        })
+    }
+}
+
+export default {
+    namespace: 'user', // 1. dva model 的命名空间，用于区分其他 model
+    state: {           // 2. 共享的数据
+        isLogin: false,
+        userInfo: {
+
+        }
+    },
+    reducers: {       // 3. reducer 同步方法
+        // 直接修改 state 中的数据
+        initLogin(state, action) { 
+            // state 是当前的状态，action 是组件触发的动作，包括传入的载荷
+            return {'userInfo': action.userInfo}
+        }
+
+    },
+    effects: {        // 4. effects 异步方法
+        *login(action, { call, put }) { 
+            console.log(action)
+            const ret = yield call(login(action.name))
+            // 5. put 将操作提交至 reducer 进行同步修改
+            yield put({
+                type: 'initLogin',
+                userInfo: ret
+            })
+        }
+
+    }
+}
+```
+
+### 2.2 dva 注册model 并启动项目
+/src/index.js
+
+```js
+import React from 'react';
+import './index.css';
+import App from './App';
+import user from './models/user'
+
+import dva from 'dva'
+const app = dva();
+
+// 1. 注册 model，多个 model 需要使用多次 
+app.model(user);
+
+// 2. 注册路由
+app.router(() => <App />);
+app.start('#root');
+```
+
+### 2.3 connect 使用共享数据
+src/compoents/LoginDva.js
+
+```js
+import React, { Component } from 'react'
+import { connect } from 'dva'
+
+@connect(
+    // 2. state 用于共享数据
+    state => ({
+    // 1. user 就是 dva model 的命名空间名称，返回的就是 model state 的数据
+        user: state.user
+    }),
+    // 3. 映射数据修改的方法
+    {
+        login: (name) => ({
+            type: 'user/login', // 2. action 需要带命名空间
+            name
+        })
+    }
+)
+class LoginDva extends Component {
+    render() {
+        console.log('---------------')
+        console.log(this.props)
+        console.log(this.props.user.userInfo)
+        return (
+            <div>
+                <h3>用户是否登录: {this.props.user.userInfo.name}</h3>
+                <button onClick={() => { this.props.login("tsong") }}>登录</button>
+            </div>
+        )
+    }
+}
+
+export default LoginDva
+```
 
 ## 3. UmiJS 中使用 dva
 UmiJS 已经自动集成了 dva 使用起来非常方便，只需要定义 model 直接 connect 注入即可使用。

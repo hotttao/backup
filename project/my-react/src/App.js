@@ -24,11 +24,11 @@ function App() {
       <br />
       <hr />
       
-      <Login></Login>
+      {/* <Login></Login> */}
       <br />
       <hr />
       
-      {/* <LoginDva></LoginDva> */}
+      <LoginDva></LoginDva>
     </div>
   );
 }
