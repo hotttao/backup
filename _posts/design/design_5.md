@@ -6,5 +6,6 @@ categories:
 tags:
 	- 设计模式
 ---
-创建这模式二: 单例模式（Singleton）
+创建型模式二: 单例模式（Singleton）
 <!-- more -->
+
