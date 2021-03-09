@@ -191,6 +191,7 @@ Linux 通过 TLB（Translation Lookaside Buffer）来管理虚拟内存到物理
 ### 5.3 进程状态
 ![process_status](/images/linux_pf/process_status.png)
 进程状态有如下几种
+
 |状态|含义|
 |:---|:---|
 |D   | 不可中断睡眠，表示进程正在跟硬件交互，并且交互过程不允许被其他进程或中断打断<br>目的是为了保护进程数据和硬件的一致性|
