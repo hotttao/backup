@@ -45,6 +45,8 @@ ISR与HW和LEO也有紧密的关系:
 
 由此可见，Kafka 的复制机制既不是完全的同步复制，也不是单纯的异步复制。而是类似于半同步，即在 ISR 集合执行同步复制，OSR 集合执行异步复制。Kafka使用这种ISR的方式有效地权衡了数据可靠性和性能之间的关系。
 
+冷门知识: LW是Low Watermark的缩写，俗称“低水位”，代表AR集合中最小的logStartOffset值。副本的拉取请求（FetchRequest，它有可能触发新建日志分段而旧的被清理，进而导致logStartOffset的增加）和删除消息请求（DeleteRecordRequest）都有可能促使LW的增长
+
 ## 2. Kafka 安装配置
 
 ## 3. 生产与消费
