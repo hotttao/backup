@@ -4,7 +4,7 @@ date: 2020-08-05
 categories:
     - 前端
 tags:
-	- JavaScript 入门
+	- JavaScript
 ---
 本节我们来介绍 JavaScript 中的数据类型
 <!-- more -->
