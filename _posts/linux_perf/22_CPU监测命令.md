@@ -62,7 +62,7 @@ tags:
 
 ### 2.2 vmstat
 ```bash
-> vmstat
+> vmstat -w
 procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
  r  b   swpd   free   buff  cache   si   so    bi    bo   in   cs us sy id wa st  
  2  0      0 1077816   2116 620312    0    0    65    43   34   53  0  0 99  0  0
@@ -79,7 +79,11 @@ procs -----------memory---------- ---swap-- -----io---- -system-- ------cpu-----
   - -S: -Sm 以MB 为单位显示结果
   - -a: 输出非活动和活动页缓存的明细
   - -s: 以列表显示内存统计信息
+  - -w: 以整齐格式显示
 - 输出:
+  - system:
+    - in: **硬中断次数**
+    - cs: **上下文切换次数**
   - procs:
     - r: 可运行线程数，所有等待加上正在运行的线程数，不包括处于不可中断睡眠状态的线程
     - b: 等待IO的进程数量
@@ -112,6 +116,10 @@ Linux 3.10.0-1062.el7.x86_64 (localhost.localdomain)    2020年04月01日  _x86_
 平均时间:  CPU    %usr   %nice    %sys %iowait    %irq   %soft  %steal  %guest  %gnice   %idle
 平均时间:  all    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
 平均时间:    0    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00    0.00  100.00
+
+> mpstat -P ON -I SUM
+00时22分51秒 CPU  intr/s
+00时22分51秒 all  1009.18
 ```
 
 `mpstat [t [n]]`
@@ -121,7 +129,7 @@ Linux 3.10.0-1062.el7.x86_64 (localhost.localdomain)    2020年04月01日  _x86_
     - ON: 表示在线的 CPU
     - ALL: 表示所有 CPU
   - `I {SUM | CPU | ALL}`: 报告中断统计信息
-    - 使用SUM关键字，mpstat命令报告每个处理器的中断总数
+    - 使用SUM关键字，mpstat命令报告每个处理器的**软中断总数**
     - 使用CPU关键字，显示CPU或CPU每秒接收的每个中断的数量
     - ALL关键字等效于指定上面的所有关键字，因此显示所有中断统计信息。
   - `-A`: 等效于 `mpstat -I ALL -u -P ALL`
