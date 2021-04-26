@@ -4,7 +4,7 @@ date: 2021-01-01
 categories:
     - Go
 tags:
-	- 设计模式
+	- Go设计模式
 	- 入门指南
 ---
 
