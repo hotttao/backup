@@ -17,6 +17,7 @@ tags:
 1. [王铮老师在极客时间的专栏-设计模式之美](https://time.geekbang.org/column/intro/250): 以 Java 为基础，非常详细的讲解了设计模式和编程设计思想的方方面面
 2. [JavaScript设计模式与开发实践](https://book.douban.com/subject/26382780/): JavaScript 如何实现常见的设计模式
 3. [B站面向加薪学习的 Go 设计模式](https://www.bilibili.com/video/BV1GD4y1D7D3): 用 Go 实现了常见的设计模式
+4. 4. [深入设计模式](https://refactoringguru.cn/design-patterns)：这是一本包含了各种语言23种常见设计模式实现的一本书，很值得参考
 
 我也看过[设计模式](https://book.douban.com/subject/1052241/)，当初完全没接触过设计模式，看这本书完全是懵逼的，看完了也就忘记了。个人建议如下的学习路线:
 1. 首先是先跟着王铮老师的专栏，系统的学习设计模式以及其中包含的各种设计原则和编程思想

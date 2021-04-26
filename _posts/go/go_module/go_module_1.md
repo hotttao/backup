@@ -21,3 +21,4 @@ series: go 语言入门
 1. [go标准库的中文网](https://studygolang.com/pkgdoc)
 2. [pkg.go](https://pkg.go.dev/)
 3. [Go Doc](https://godoc.org/)
+3. [Go语言标准库翻译](https://books.studygolang.com/The-Golang-Standard-Library-by-Example/)
