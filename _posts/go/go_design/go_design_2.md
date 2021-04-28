@@ -1,6 +1,6 @@
 ---
 title: 2. Go面向接口编程和错误处理
-date: 2019-01-13
+date: 2021-01-02
 categories:
     - Go
 tags:
