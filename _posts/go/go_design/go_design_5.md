@@ -1,6 +1,6 @@
 ---
 title: 5. Go 代码生成和泛型
-date: 2021-01-04
+date: 2021-01-05
 categories:
     - Go
 tags:
