@@ -74,6 +74,7 @@ type Mutex struct {
 }
 
 // 保证成功在val上增加delta的值
+// xadd 方法通过循环执行 CAS 操作直到成功，保证对 key 加 1 的操作成功完成。
 func xadd(val *int32, delta int32) (new int32) {
 	for {
 		v := *val
@@ -96,6 +97,7 @@ func (m *Mutex) Unlock() {
 	if xadd(&m.key, -1) == 0 { // 将标识减去1，如果等于0，则没有其它等待者
 		return
 	}
+	// 如果还有等待此锁的其它 goroutine，那么，它会调用 semrelease 方法
 	semrelease(&m.sema) // 唤醒其它阻塞的goroutine
 }    
 ```
@@ -111,9 +113,9 @@ Mutex 结构体包含两个字段：
 
 ### 3.1 如何释放锁
 
-初版Mutex 的整体设计非常简洁，但是 Unlock 方法可以被任意的 goroutine 调用释放锁，即使是没持有这个互斥锁的 goroutine，也可以进行这个操作。这是因为，Mutex 本身并没有包含持有这把锁的 goroutine 的信息，所以，Unlock 也不会对此进行检查。Mutex 的这个设计一直保持至今。
+初版Mutex 的整体设计非常简洁，但是 Unlock 方法可以被任意的 goroutine 调用释放锁，即使是没持有这个互斥锁的 goroutine，也可以进行这个操作。这是因为，**Mutex 本身并没有包含持有这把锁的 goroutine 的信息**，所以，**Unlock 也不会对此进行检查**。Mutex 的这个设计一直保持至今。
 
-所以，我们在使用 Mutex 的时候，必须要保证 goroutine 尽可能不去释放自己未持有的锁，一定要遵循“谁申请，谁释放”的原则。从 1.14 版本起，Go 对 defer 做了优化，采用更有效的内联方式，取代之前的生成 defer 对象到 defer chain 中，defer 对耗时的影响微乎其微，基本上都可以将锁的释放放在 defer 中，像下面这样:
+所以，我们在使用 Mutex 的时候，必须要保证 goroutine 尽可能不去释放自己未持有的锁，一定要遵循“**谁申请，谁释放**”的原则。从 1.14 版本起，Go 对 defer 做了优化，采用更有效的内联方式，取代之前的生成 defer 对象到 defer chain 中，defer 对耗时的影响微乎其微，基本上都可以将锁的释放放在 defer 中，像下面这样:
 
 ```go
 func (f *Foo) Bar() {
@@ -135,7 +137,7 @@ func (f *Foo) Bar() {
 但是，如果临界区只是方法中的一部分，为了尽快释放锁，还是应该第一时间调用 Unlock，而不是一直等到方法返回时才释放。
 
 ### 3.3 缺陷
-初版的 Mutex 实现有一个问题：请求锁的 goroutine 会排队等待获取互斥锁。虽然这貌似很公平，但是从性能上来看，却不是最优的。因为如果我们能够把锁交给正在占用 CPU 时间片的 goroutine 的话，那就不需要做上下文的切换，在高并发的情况下，可能会有更好的性能。
+初版的 Mutex 实现有一个问题：**请求锁的 goroutine 会排队等待获取互斥锁**。虽然这貌似很公平，但是从性能上来看，却不是最优的。因为**如果我们能够把锁交给正在占用 CPU 时间片的 goroutine 的话，那就不需要做上下文的切换**，在高并发的情况下，可能会有更好的性能。
 
 ## 4. 给新人机会
 ### 4.1 state 字段
@@ -176,6 +178,8 @@ func (m *Mutex) Lock() {
 	}
 	// 2. for 循环是不断尝试获取锁，如果获取不到，就通过 runtime.Semacquire(&m.sema) 休眠，
 	//    休眠醒来之后 awoke 置为 true，尝试争抢锁。
+
+	// 个人理解: 调用 Mutex.Lock() 是每个 goroutine，这个 awoke 是 goroutine 的局部变量
 	awoke := false
 	for {
 		old := m.state
