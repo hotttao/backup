@@ -378,6 +378,8 @@ const (
 	- `if old&(mutexLocked|mutexStarving) != 0 {new += 1 << mutexWaiterShift}`
 	- `if old&(mutexLocked|mutexStarving) == 0 {break}`
 3. 保持等待最久的 goroutine 始终处于信号量队列的队首: `runtime_SemacquireMutex(&m.sema, queueLifo, 1)`
+4. 最后处于饥饿模式下，runtime_Semrelease 总是唤醒队首的 goroutine，此 goroutine 因为处于饥饿模式，将直接抢锁成功
+
 ```go
 func (m *Mutex) Lock() {
 	// Fast path: 幸运之路，一下就获取到了锁
@@ -489,6 +491,7 @@ func (m *Mutex) unlockSlow(new int32) {
 			}
 			new = (old - 1<<mutexWaiterShift) | mutexWoken
 			if atomic.CompareAndSwapInt32(&m.state, old, new) {
+				// false 时，好像也总是唤醒队首 waiter 
 				runtime_Semrelease(&m.sema, false, 1)
 				return
 			}
