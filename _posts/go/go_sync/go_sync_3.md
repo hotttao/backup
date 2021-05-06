@@ -225,10 +225,12 @@ func (m *Mutex) Unlock() {
 	if (new+mutexLocked)&mutexLocked == 0 { //本来就没有加锁
 		panic("sync: unlock of unlocked mutex")
 	}
-
+	// 个人理解: m.state 去掉锁标识后，其他 goroutine 就已经可以尝试获取锁和释放锁了
 	old := new
 	for {
-		if old>>mutexWaiterShift == 0 || old&(mutexLocked|mutexWoken) != 0 { // 没有等待者，或者有唤醒的waiter，或者锁原来已加锁
+		// 没有等待者，或者有唤醒的waiter，或者锁原来已加锁
+		// 第一次进入循环时，old 的 mutexLocked 位肯定是 0
+		if old>>mutexWaiterShift == 0 || old&(mutexLocked|mutexWoken) != 0 { 
 			return
 		}
 		new = (old - 1<<mutexWaiterShift) | mutexWoken // 新状态，准备唤醒goroutine，并设置唤醒标志
@@ -294,6 +296,8 @@ func (m *Mutex) Lock() {
 			new = old + 1<<mutexWaiterShift
 		}
 		if awoke { // 唤醒状态
+			// new&mutexWoken == 0 成立只可能发生在，未发生自旋，但是 old&mutexLocked == 1 的情况
+			// 但是此时肯定发生了自旋
 			if new&mutexWoken == 0 {
 				panic("sync: inconsistent mutex state")
 			}
@@ -433,7 +437,7 @@ func (m *Mutex) lockSlow() {
 			if waitStartTime == 0 {
 				waitStartTime = runtime_nanotime()
 			}
-			// 阻塞等待
+			// 阻塞等待，queueLifo == True 表示非首次，加入到队首
 			runtime_SemacquireMutex(&m.sema, queueLifo, 1)
 			// 唤醒之后检查锁是否应该处于饥饿状态
 			starving = starving || runtime_nanotime()-waitStartTime > starvationThresholdNs
@@ -491,6 +495,7 @@ func (m *Mutex) unlockSlow(new int32) {
 			old = m.state
 		}
 	} else {
+		// 如果 Mutex 处于饥饿状态，第 直接唤醒等待队列中的 waiter
 		runtime_Semrelease(&m.sema, true, 1)
 	}
 }
