@@ -11,3 +11,9 @@ tags:
 <!-- more -->
 
 ## 1. Python 的包管理工具
+Python 里面有多种 distutils、setuptools、distribute 等等。这些工具主要解决下面这些问题:
+1. 版本管理
+2. 依赖管理
+3. 安装管理
+4. ......
+
