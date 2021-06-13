@@ -128,11 +128,12 @@ class Middleware(Application):
     def __call__(self, req):
         """
         实现了 WSGI 接口，目的是在调用 self.application 处理请求的前后，调用
-        自定义的 self.process_request 和 self.process_response 方法
+        自定义的 self.process_request 和 self.process_response 方法。
         """
         response = self.process_request(req) 
         if response:
             return response
+        # 调用被包装的 application 对象
         response = req.get_response(self.application)
         return self.process_response(response)
 ```
@@ -291,10 +292,10 @@ paste.deploy 的配置文件是形如下面的一个 ini 风格配置文件。
 
 待补充.....
 
-所以像这样使用 paste.deploy 我们就可以得到一个带有中间件功能的 Application 实例。相比到这大家也就明白了中间件跟 Application 之间的关系。
+所以像这样使用 paste.deploy 我们就可以得到一个带有中间件功能的 Application 实例。相信到这大家也就明白了中间件跟 Application 之间的关系。
 
 ### 2.2 加载 Application 的 Loader 类
-Nova 为 paste.deploy 解析加载 Application 提供了提供了一个加载器类 Loader，位于 `nova.api.wsgi`，其源码如下。其核心就是通过 oslo.config 提供的配置文件以及变量查找机制，找到 paste.deploy 配置文件的位置，然后通过传入的 name 查找到对应的 Application 执行初始化并返回。oslo.config 的作用不了解的同学，可以查看前面的章节。
+Nova 为 paste.deploy 解析加载 Application 提供了一个加载器类 Loader，位于 `nova.api.wsgi`，其源码如下。其核心就是通过 oslo.config 提供的配置文件以及变量查找机制，找到 paste.deploy 配置文件的位置，然后通过传入的 name 查找到对应的 Application 执行初始化并返回。oslo.config 的作用不了解的同学，可以查看前面的章节。
 
 ```python
 class Loader(object):
@@ -333,7 +334,7 @@ class Loader(object):
 
 CONF.wsgi.api_paste_config 默认值为 api-paste.ini，对应的配置文件预定义在 nova/etc 目录下，nova 包被安装时会默认拷贝到 etc/nova/api-paste.ini，这个目录默认就在 oslo.conf 的搜索条件内。
 
-## 4. 路由和请求处理函数
+### 2.3 Nova API 服务加载的示例
 想必到这，你再去看 api-paste.ini 配置文件，自然就能看懂 Nova 都创建了哪些 API 服务，以及他们初始化的位置，我们就以其中的 osapi_compute api 服务为例，看看他是如何进行路由管理的。
 
 ```ini
@@ -454,17 +455,4 @@ class APIRouterV21(base_wsgi.Router):
 
 APIRouterV21 只是定义了url 与请求处理函数之间的路由关系，因此要想搞明白路由管理，我们还是要回到 nova.api.wsgi.Router 上。
 
-### 4.1 路由的实现
-
-### 4.2 请求处理函数内部分发逻辑
-Nova API 服务的请求处理函数其实相当复杂，原因在于它承担了部分路由功能 -- 分发了一个可用 RESETful 资源上可执行的动作。
-
-如果你自己阅读过源码就会发现，Nova 的代码中有多个 wsgi.py(注这里的nova/ 指的是 nova/nova/):
-1. nova/wsgi.py
-2. nova/api/wsgi.py
-3. nova/api/openstack/wsgi.py
-
-接着厘清 Resource 与 Controller 之间的关系，我们也一同看看这些文件之间的联系，如图 4.4 所示:
-
-![4.4 wsgi 之间的关联关系](/images/openstack/wsgi_relaitons.png)
-
+写到这内容已经很多了，API 服务的路由管理，我们放到下一节继续介绍。
