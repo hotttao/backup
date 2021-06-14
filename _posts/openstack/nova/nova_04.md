@@ -1,5 +1,5 @@
 ---
-title: 4. API 接口服务(一)
+title: 4. API 接口服务(一)Web 框架
 date: 2021-03-05
 categories:
     - 运维
@@ -9,6 +9,7 @@ tags:
 
 搞 Openstack 开发的大多数应该都或多或少都熟悉 Python 的 Web 开发。我准备花三节来讲讲 Nova 里面 API 接口服务，分别是:
 1. Nova API 服务的 Web 框架
+2. Nova API 服务的路由管理
 2. Nova 的 API 服务的并发管理
 3. Nova 里的一个请求的处理流程
 

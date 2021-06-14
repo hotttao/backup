@@ -1,5 +1,5 @@
 ---
-title: 5. API 接口服务(二)
+title: 5. API 接口服务(二)路由管理
 date: 2021-03-05
 categories:
     - 运维
@@ -11,9 +11,8 @@ tags:
 
 <!-- more -->
 
-
 ## 1. 路由的实现
-Nova API 服务的请求处理函数其实相当复杂，原因在于它承担了部分路由功能 -- 分发了一个可用 RESETful 资源上可执行的动作。如果你自己阅读过源码就会发现，Nova 的代码中有多个 wsgi.py(注这里的nova/ 指的是 nova/nova/):
+上一节我们说到路由管理，我们要回到 nova.api.wsgi.Router 上。Nova API 服务的请求处理函数其实相当复杂，原因在于它承担了部分路由功能 -- 分发了一个可用 RESETful 资源上可执行的动作。如果你自己阅读过源码就会发现，Nova 的代码中有多个 wsgi.py(注这里的nova/ 指的是 nova/nova/):
 1. nova/wsgi.py: 并发管理
 2. nova/api/wsgi.py: web 应用的接口定义
 3. nova/api/openstack/wsgi.py: web 应用的接口实现
