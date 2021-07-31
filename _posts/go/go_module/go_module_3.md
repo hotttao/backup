@@ -5,7 +5,6 @@ categories:
     - Go
 tags:
 	- go标准库及第三方库
-	- 入门指南
 series: go 语言入门
 ---
 
