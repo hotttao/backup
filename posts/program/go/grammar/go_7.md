@@ -1,16 +1,26 @@
 ---
-title: 7 go 接口
-date: 2019-01-07
-categories:
-    - Go
-tags:
-    - go语言入门
+weight: 1
+title: "go 接口"
+date: 2021-01-07T22:00:00+08:00
+lastmod: 2021-01-07T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 接口的定义、使用以及类型断言"
+featuredImage: /images/go/grammar/go_func.jpg
+
+tags: ["go 语法"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 Go 的泛型编程
-<!-- more -->
 
-![Hello World](/images/go/grammar/go_func.jpg)
+<!-- more -->
 
 ## 1. 接口概述
 接口是 Go 语言提供的泛型的核心概念。所谓泛型就是允许程序员在强类型程序设计语言中编写代码时使用一些以后才指定的类型，目的是增加函数的通用性。当然我们没必要去纠结概念，最重要的是搞明白，Go 如何通过接口来提高程序的灵活性。

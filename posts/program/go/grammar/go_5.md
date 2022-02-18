@@ -1,16 +1,26 @@
 ---
-title: 5 go 函数
-date: 2019-01-05
-categories:
-    - Go
-tags:
-    - go语言入门
+weight: 1
+title: "go 函数"
+date: 2021-01-05T22:00:00+08:00
+lastmod: 2021-01-05T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 函数的使用"
+featuredImage: /images/go/grammar/go_func.jpg
+
+tags: ["go 语法"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 函数，代码封装的基本单元
-<!-- more -->
 
-![Hello World](/images/go/grammar/go_func.jpg)
+<!-- more -->
 
 ### 1. 函数
 函数通常使用起来并不复杂，定义或声明函数后，直接使用即可。但是为了函数更加易用，编程语言会为函数添加很多特性。在 Python 和 Go 中，函数都是一等"公民"，即函数可以用在任何变量可以使用的地方，并且具有类型。因此接下来我们按照下面的顺序来讲解 Go 函数的相关内容:

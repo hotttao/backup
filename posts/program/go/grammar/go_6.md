@@ -1,16 +1,26 @@
 ---
-title: 6 go 方法
-date: 2019-01-06
-categories:
-    - Go
-tags:
-    - go语言入门
+weight: 1
+title: "go 的结构体和方法"
+date: 2021-01-06T22:00:00+08:00
+lastmod: 2021-01-06T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "使用 struct 实现对象组合和类型嵌套"
+featuredImage: /images/go/grammar/go_func.jpg
+
+tags: ["go 语法"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 Go 的对象组合技术
-<!-- more -->
 
-![Hello World](/images/go/grammar/go_func.jpg)
+<!-- more -->
 
 ## 1. 内容概要
 方法是面向对象编程(OOP)中的概念。有关 OOP 的定义我也说不清楚。但是与概念相比，更重要的是OOP的两个关键点:**封装和组合**。我们的目的是看看 Go 语言如何通过**结构体嵌入**等技术实现这两个关键点。

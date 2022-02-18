@@ -1,16 +1,26 @@
 ---
-title: 8 go 并发编程一
-date: 2019-01-08
-categories:
-    - Go
-tags:
-    - go语言入门
+weight: 1
+title: "go 并发编程"
+date: 2021-01-08T22:00:00+08:00
+lastmod: 2021-01-08T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "goroutines 和 channel"
+featuredImage: /images/go/grammar/go_func.jpg
+
+tags: ["go 语法"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 Go 并发编程原语，Goroutines和Channels
-<!-- more -->
 
-![Hello World](/images/go/grammar/go_func.jpg)
+<!-- more -->
 
 
 ## 1. GO 并发编程简介

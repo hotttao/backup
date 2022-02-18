@@ -1,19 +1,26 @@
 ---
-title: 1 go 入门开篇
-date: 2019-01-01
-categories:
-    - Go
-tags:
-	- go语言入门
-	- 入门指南
-series: go 语言入门
+weight: 1
+title: "go 入门开篇"
+date: 2021-01-01T22:00:00+08:00
+lastmod: 2021-01-01T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "这个系列我们开始学习 go 语言的第一部分-语法"
+featuredImage: /images/go/grammar/go_brand.jpg
+
+tags: ["go 语法"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 如果编程的世界是海贼王里的"大航海时代", go 语言可能就是"草帽海贼团"
 
 <!-- more -->
-
-![linkedlist](/images/go/grammar/go_brand.jpg)
 
 
 ## 1. 要去学 Go 了
@@ -85,10 +92,6 @@ go build命令编译命令行参数指定的每个包。如果
 #### src
 使用命令 go get可以下载一个单一的包或者用 ...下载整个子目录里面的每个包。`go get` 会自动下载所依赖的每个包
 
-####
-
-####
-
 ### 4.3 GOROOT
 环境变量GOROOT用来指定Go的安装目录，还有它自带的标准库包的位置。GOROOT的目录结构和GOPATH类似，因此存放fmt包的源代码对应目录应该为`$GOROOT/src/fmt`。用户一般不需要设置GOROOT，默认情况下Go语言安装工具会将其设置为安装的目录路径。
 
@@ -155,11 +158,7 @@ Use "go help <command>" for more information about a command.
 
 ### 4.3 Go 环境变量
 
-
-
 GOPATH对应的工作区目录有三个子目录。
-
-
 
 与 Python 不同的是，Go 的包不是通过镜像的方式，而是直接从远程版本控制系统(eg: githup)直接下载的，因此当我们使用标准的 `go get` 下载Go包时，可能会由于不可描述的原因失败。因此我们必须手动解决一些包的安装问题。
 

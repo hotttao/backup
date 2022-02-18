@@ -1,17 +1,27 @@
 ---
-title: 3 go 基础数据类型
-date: 2019-01-03
-categories:
-    - Go
-tags:
-    - go语言入门
+weight: 1
+title: "go 基础数据类型"
+date: 2021-01-03T22:00:00+08:00
+lastmod: 2021-01-03T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 的基础数据类型"
+featuredImage: /images/go/grammar/go_type.jpg
+
+tags: ["go 语法"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
-
 Go 的类型系统
-![Hello World](/images/go/grammar/go_type.jpg)
 
 <!-- more -->
+
 ## 1. Go 中的数据类型
 Go语言将数据类型分为四类：基础类型、复合类型、引用类型和接口类型。基础类型，包括：数字、字符串和布尔型。复合数据类型包括数组和结构体(通过组合简单类型，来表达更加复杂的数据结构)。引用类型包括指针、切片、字典、函数、通道，虽然数据种类很多，但它们都是对程序中一个变量或状态的间接引用。函数和通道并不属于我们通常所说的数据类型，我们放在后面相关章节来介绍。
 
