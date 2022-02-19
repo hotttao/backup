@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "使用 struct 实现对象组合和类型嵌套"
-featuredImage: /images/go/grammar/go_func.jpg
+featuredImage: 
 
 tags: ["go 语法"]
 categories: ["Go"]

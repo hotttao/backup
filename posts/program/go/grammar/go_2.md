@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "go 变量与流程控制语法"
-featuredImage: /images/go/grammar/hello_world.jpg
+featuredImage: 
 
 tags: ["go 语法"]
 categories: ["Go"]

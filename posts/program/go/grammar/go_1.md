@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "这个系列我们开始学习 go 语言的第一部分-语法"
-featuredImage: /images/go/grammar/go_brand.jpg
+featuredImage: 
 
 tags: ["go 语法"]
 categories: ["Go"]

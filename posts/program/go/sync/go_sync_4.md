@@ -1,10 +1,21 @@
 ---
-title: 4 Mutex 扩展
-date: 2019-02-04
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "Mutex 扩展"
+date: 2021-05-03T22:00:00+08:00
+lastmod: 2021-05-03T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go Mutex 扩展，实现可重入锁，获取等待锁的协程数"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 如何基于 Mutex 实现一个可重入锁
@@ -140,7 +151,7 @@ func (m *TokenRecursiveMutex) Unlock(token int64) {
 1. 如果 goroutine 获取锁成功，则持有锁，并返回 true
 2. 如果这把锁已经被其他 goroutine 所持有，或者是正在准备交给某个被唤醒的 goroutine，那么 TryLock 直接返回 false，不会阻塞在方法调用上
 
-具体实现如下:
+TryLock 在不是必需要获取锁去更新共享资源时非常有用，它可以提升程序的并发度。具体实现如下:
 
 ```go
 
@@ -261,3 +272,7 @@ func (q *SliceQueue) Dequeue() interface{} {
     return v
 }
 ```
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

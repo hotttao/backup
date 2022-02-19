@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "go 接口的定义、使用以及类型断言"
-featuredImage: /images/go/grammar/go_func.jpg
+featuredImage: 
 
 tags: ["go 语法"]
 categories: ["Go"]

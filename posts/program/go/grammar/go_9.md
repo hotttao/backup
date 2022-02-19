@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "go 语言的自省"
-featuredImage: /images/go/grammar/go_func.jpg
+featuredImage: 
 
 tags: ["go 语法"]
 categories: ["Go"]

@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "go 提供的复合数据类型"
-featuredImage: /images/go/grammar/go_type.jpg
+featuredImage: 
 
 tags: ["go 语法"]
 categories: ["Go"]
