@@ -210,8 +210,9 @@ sync.Map 的实现有几个优化点，我们先列出来:
 3. 动态调整。miss 次数多了之后，将 dirty 数据提升为 read，避免总是从 dirty 中加锁读取。
 4. double-checking。加锁之后先还要再检查 read 字段，确定真的不存在才操作 dirty 字段。延迟删除。删除一个键值只是打标记，只有在提升 dirty 字段为 read 字段的时候才清理删除的数据。
 
-
-
-
 ## 3. map 的扩展
 还有一些扩展其它功能的 map 实现，比如带有过期功能的[timedmap](https://github.com/zekroTJA/timedmap)、使用红黑树实现的 key 有序的[treemap](https://godoc.org/github.com/emirpasic/gods/maps/treemap)等。
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

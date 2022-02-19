@@ -148,3 +148,7 @@ func (c *Cond) Broadcast() {
 2. 另一个是没有检查条件是否满足程序就继续执行了
 
 我们一定要记住，waiter goroutine 被唤醒不等于等待条件被满足，只是有 goroutine 把它唤醒了而已，等待条件有可能已经满足了，也有可能不满足，我们需要进一步检查。你也可以理解为，等待者被唤醒，只是得到了一次检查的机会而已。
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

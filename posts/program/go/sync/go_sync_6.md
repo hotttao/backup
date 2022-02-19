@@ -261,3 +261,7 @@ func (*noCopy) Unlock() {}
 3. 不传递负数给 Add 方法，只通过 Done 来给计数值减 1
 4. 不做多余的 Done 方法调用，保证 Add 的计数值和 Done 方法调用的数量是一样的
 5. 不遗漏 Done 方法的调用，否则会导致 Wait hang 住无法返回
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

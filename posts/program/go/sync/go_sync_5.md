@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "RWMutex"
-date: 2021-05-03T22:00:00+08:00
-lastmod: 2021-05-03T22:00:00+08:00
+date: 2021-05-04T22:00:00+08:00
+lastmod: 2021-05-04T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -216,3 +216,6 @@ RWMutex有三个采坑点:
 readerCount := atomic.LoadInt32((*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&m)) + unsafe.Sizeof(sync.Mutex{}) + 2*unsafe.Sizeof(uint32(0)))))
 ```
 
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

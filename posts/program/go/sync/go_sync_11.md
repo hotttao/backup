@@ -234,3 +234,7 @@ func slowOperationWithTimeout(ctx context.Context) (Result, error) {
 
 
 ## 4. Context 的扩展
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

@@ -272,3 +272,7 @@ func (s *semaphore) Unlock() {
 除了 Channel，[marusama/semaphore](https://github.com/marusama/semaphore)也实现了一个可以动态更改资源容量的信号量，也是一个非常有特色的实现。如果你的资源数量并不是固定的，而是动态变化的，可以考虑使用这个库。
 
 ## 5. 信号量
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

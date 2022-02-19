@@ -392,3 +392,7 @@ func main() {
 ```
 
 使用 etcd STM 的时候，我们只需要定义一个 apply 方法(上面的 exchange函数)，然后通过 concurrency.NewSTM(cli, exchange)，就可以完成转账事务的执行了。总结一下，当你利用 etcd 做存储时，是可以利用 STM 实现事务操作的，一个事务可以包含多个账号的数据更改操作，事务能够保证这些更改要么全成功，要么全失败。
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

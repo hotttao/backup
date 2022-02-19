@@ -433,3 +433,6 @@ goroutine 是一个很轻量级的“纤程”，一个 goroutine 初始的栈�
 
 类似的 Worker Pool 的实现非常多，比如还有[panjf2000/ants](https://github.com/panjf2000/ants)、[Jeffail/tunny](https://github.com/Jeffail/tunny) 、[benmanns/goworker](https://github.com/benmanns/goworker)、[go-playground/pool](https://github.com/go-playground/pool)、[Sherifabdlnaby/gpool](https://github.com/Sherifabdlnaby/gpool)等第三方库。[pond](https://github.com/alitto/pond)也是一个非常不错的 Worker Pool，关注度目前不是很高，但是功能非常齐全。
 
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

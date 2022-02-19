@@ -230,3 +230,7 @@ func (h2o *H2O) oxygen(releaseOxygen func()) {
 ```
 
 使用 WaitGroup 非常复杂，而且，重用和 Done 方法的调用有并发的问题，程序可能 panic，远远没有使用循环栅栏更加简单直接。
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)

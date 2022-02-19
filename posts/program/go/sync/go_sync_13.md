@@ -464,3 +464,7 @@ Channel 并不是处理并发问题的“银弹”，有时候使用并发原语
 4. 简单等待所有任务的完成用 WaitGroup
 5. 需要和 Select 语句结合，使用 Channel；
 6. 需要和超时配合时，使用 Channel 和 Context。
+
+## 参考
+本文内容摘录自:
+1. [极客专栏-鸟叔的 Go 并发编程实战](https://time.geekbang.org/column/intro/100061801?tab=catalog)
