@@ -1,11 +1,23 @@
 ---
-title: 5 RWMutex
-date: 2019-02-05
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "RWMutex"
+date: 2021-05-03T22:00:00+08:00
+lastmod: 2021-05-03T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 读写锁 RWMutex"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
+
 读写锁 RWMutex
 <!-- more -->
 
@@ -66,6 +78,8 @@ func (c *Counter) Count() uint64 {
 ```
 
 在实际使用 RWMutex 的时候，如果我们在 struct 中使用 RWMutex 保护某个字段，一般会把它和这个字段放在一起，用来指示两个字段是一组字段。除此之外，我们还可以采用匿名字段的方式嵌入 struct，这样，在使用这个 struct 时，我们就可以直接调用 Lock/Unlock、RLock/RUnlock 方法了。
+
+同样的，RWMutex 的零值是未加锁的状态，使用时不必显式地初始化。
 
 ## 2. RWMutex 实现
 RWMutex 一般都是基于互斥锁、条件变量（condition variables）或者信号量（semaphores）等并发原语来实现。Go 标准库中的 RWMutex 是基于 Mutex 实现的。
@@ -130,9 +144,11 @@ func (rw *RWMutex) rUnlockSlow(r int32) {
 ```
 在上面的实现，要注意 readerCount 可能为负数，这是因为 readerCount 这个字段有双重含义：
 1. 没有 writer 竞争或持有锁时，readerCount 和我们正常理解的 reader 的计数是一样的；
-2. 有 writer 竞争锁或者持有锁时，那么，readerCount 不仅仅承担着 reader 的计数功能，还能够标识当前是否有 writer 竞争或持有锁
+2. **有 writer 竞争锁或者持有锁**时，那么，readerCount 不仅仅承担着 reader 的计数功能，还能够标识当前是否有 writer 竞争或持有锁
 
 当 writer 请求锁的时候，是无法改变既有的 reader 持有锁的现实的，也不会强制这些 reader 释放锁，它的优先权只是限定后来的 reader 不要和它抢。
+
+所以，rUnlockSlow 将持有锁的 reader 计数减少 1 的时候，会检查既有的 reader 是不是都已经释放了锁，如果都释放了锁，就会唤醒 writer，让 writer 持有锁。
 
 ### 2.3 Lock
 为了避免 writer 之间的竞争，RWMutex 就会使用一个 Mutex 来保证 writer 的互斥。一旦一个 writer 获得了内部的互斥锁，就会反转 readerCount 字段，把它从原来的正整数 readerCount(>=0) 修改为负数（readerCount-rwmutexMaxReaders），让这个字段保持两个含义（既保存了 reader 的数量，又表示当前有 writer）。
@@ -150,10 +166,15 @@ func (rw *RWMutex) Lock() {
     // 如果当前有reader持有锁，那么需要等待
     // 并把当前 readerCount 赋值给 readerWait 字段
     if r != 0 && atomic.AddInt32(&rw.readerWait, r) != 0 {
+        // 这里应该加一个 readerWait == 0 的判断，毕竟在 mutex 的实现中都有这种异常的判断
         runtime_SemacquireMutex(&rw.writerSem, false, 0)
     }
 }
 ```
+
+在 RWMutex Lock 方法实现中:
+1. `rw.w.Lock()`: 保证了同时只有一个 writer 在竞争锁，并可能修改 RWMutex 的状态字段
+2. 一旦有 writer 获取了这个锁，就会反转 readerCount 字段，表示当前已经有 writer 在竞争锁了
 
 ### 2.4 Unlock
 
@@ -170,8 +191,10 @@ func (rw *RWMutex) Unlock() {
     rw.w.Unlock()
 }
 ```
+在 RWMutex Unlock 方法实现中:
+1. 是先释放读锁，后释放写锁，我的理解调过来也是可以，但是调过来会导致读饥饿。
 
-在 Lock 方法中，是先获取内部互斥锁，才会修改的其他字段；而在 Unlock 方法中，是先修改的其他字段，才会释放内部互斥锁，这样才能保证字段的修改也受到互斥锁的保护。
+最后，在 Lock 方法中，是先获取内部互斥锁，才会修改的其他字段；而在 Unlock 方法中，是先修改的其他字段，才会释放内部互斥锁，这样才能保证字段的修改也受到互斥锁的保护。
 
 ## 3. RWMutex 采坑点
 RWMutex有三个采坑点:
@@ -186,4 +209,10 @@ RWMutex有三个采坑点:
 
 **使用读写锁最需要注意的一点就是尽量避免重入，重入带来的死锁非常隐蔽，而且难以诊断。**
 
-另外我们也可以扩展 RWMutex，不过实现方法和互斥锁 Mutex 差不多，在技术上是一样的，都是通过 unsafe 来实现。
+另外我们也可以扩展 RWMutex，不过实现方法和互斥锁 Mutex 差不多，在技术上是一样的，都是通过 unsafe 来实现。大体的技巧如下:
+
+```go
+// 获取 readerCount
+readerCount := atomic.LoadInt32((*int32)(unsafe.Pointer(uintptr(unsafe.Pointer(&m)) + unsafe.Sizeof(sync.Mutex{}) + 2*unsafe.Sizeof(uint32(0)))))
+```
+
