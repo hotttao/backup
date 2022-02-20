@@ -1,11 +1,23 @@
 ---
-title: 9 线程安全的 map
-date: 2019-02-09
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "线程安全的 map"
+date: 2021-05-08T22:00:00+08:00
+lastmod: 2021-05-08T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "线程安全的 map"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
+
 线程安全的 map
 <!-- more -->
 
@@ -20,7 +32,6 @@ map[K]V
 ```
 
 其中，key 类型的 K 必须是可比较的（comparable），在 Go 语言中，bool、整数、浮点数、复数、字符串、指针、Channel、接口都是可比较的，包含可比较元素的 struct 和数组，这俩也是可比较的，而 slice、map、函数值都是不可比较的。通常情况下，我们会选择内建的基本类型，比如整数、字符串做 key 的类型，因为这样最方便。
-
 
 这里有一点需要注意，如果使用 struct 类型做 key 其实是有坑的，因为如果 struct 的某个字段值修改了，查询 map 时无法获取它 add 进去的值，如下面的例子。如果要使用 struct 作为 key，我们要保证 struct 对象在逻辑上是不可变的，这样才会保证 map 的逻辑没有问题。
 
@@ -89,7 +100,7 @@ Go 内建的 map 对象不是线程（goroutine）安全的，并发读写的时
 2. 分片加锁：降低加锁的粒度，具有更高的并发性
 3. sync.Map: 适用于特殊场景
 
-如何选择线程安全的 map，建议通过性能测试来决定。
+如何选择线程安全的 map，建议通过性能测试来决定。sync.Map 甚至其他并发 map 的实现存在的原因是在某些特殊场景下，**通过特殊的优化来降低锁的粒度，从而调高并发度**。
 
 ### 2.1 加读写锁的 map
 ```go
@@ -143,9 +154,9 @@ func (m *RWMap) Each(f func(k, v int) bool) { // 遍历map
 ```
 
 ## 2.2 分片加锁
-虽然使用读写锁可以提供线程安全的 map，但是在大量并发读写的情况下，锁的竞争会非常激烈。在并发编程中，我们的一条原则就是尽量减少锁的使用。即尽量减少锁的粒度和锁的持有时间。你可以优化业务处理的代码，以此来减少锁的持有时间，比如将串行的操作变成并行的子任务执行。这是业务相关的优化，在线程安全 map 的实现上，重点是**如何减少锁的粒度**
+虽然使用读写锁可以提供线程安全的 map，但是在大量并发读写的情况下，锁的竞争会非常激烈。在并发编程中，我们的一条原则就是尽量减少锁的使用。即**尽量减少锁的粒度和锁的持有时间**。你可以优化业务处理的代码，以此来减少锁的持有时间，比如将串行的操作变成并行的子任务执行。这是业务相关的优化，在线程安全 map 的实现上，重点是**如何减少锁的粒度**
 
-减少锁的粒度常用的方法就是分片（Shard），将一把锁分成几把锁，每个锁控制一个分片。Go 比较知名的分片并发 map 的实现是[orcaman/concurrent-map](https://github.com/orcaman/concurrent-map)。其中 GetShard 是一个关键的方法，能够根据 key 计算出分片索引。
+**减少锁的粒度常用的方法就是分片（Shard），将一把锁分成几把锁，每个锁控制一个分片**。Go 比较知名的分片并发 map 的实现是[orcaman/concurrent-map](https://github.com/orcaman/concurrent-map)。其中 GetShard 是一个关键的方法，能够根据 key 计算出分片索引。
 
 ```go
 var SHARD_COUNT = 32
@@ -208,7 +219,42 @@ sync.Map 的实现有几个优化点，我们先列出来:
 1. 空间换时间。通过冗余的两个数据结构（只读的 read 字段、可写的 dirty），来减少加锁对性能的影响。对只读字段（read）的操作不需要加锁。
 2. 优先从 read 字段读取、更新、删除，因为对 read 字段的读取不需要锁。
 3. 动态调整。miss 次数多了之后，将 dirty 数据提升为 read，避免总是从 dirty 中加锁读取。
-4. double-checking。加锁之后先还要再检查 read 字段，确定真的不存在才操作 dirty 字段。延迟删除。删除一个键值只是打标记，只有在提升 dirty 字段为 read 字段的时候才清理删除的数据。
+4. double-checking。加锁之后先还要再检查 read 字段，确定真的不存在才操作 dirty 字段。
+5. 延迟删除。删除一个键值只是打标记，只有在提升 dirty 字段为 read 字段的时候才清理删除的数据。
+
+下面我们就来看看 sync.Map 的设计与实现
+
+#### sync.Map 数据结构
+```go
+
+type Map struct {
+    mu Mutex
+    // 基本上你可以把它看成一个安全的只读的map
+    // 它包含的元素其实也是通过原子操作更新的，但是已删除的entry就需要加锁操作了
+    read atomic.Value // readOnly
+
+    // 包含需要加锁才能访问的元素
+    // 包括所有在read字段中但未被expunged（删除）的元素以及新加的元素
+    dirty map[interface{}]*entry
+
+    // 记录从read中读取miss的次数，一旦miss数和dirty长度一样了，就会把dirty提升为read，并把dirty置空
+    misses int
+}
+
+type readOnly struct {
+    m       map[interface{}]*entry
+    amended bool // 当dirty中包含read没有的数据时为true，比如新增一条数据
+}
+
+// expunged是用来标识此项已经删掉的指针
+// 当map中的一个项目被删除了，只是把它的值标记为expunged，以后才有机会真正删除此项
+var expunged = unsafe.Pointer(new(interface{}))
+
+// entry代表一个值
+type entry struct {
+    p unsafe.Pointer // *interface{}
+}
+```
 
 ## 3. map 的扩展
 还有一些扩展其它功能的 map 实现，比如带有过期功能的[timedmap](https://github.com/zekroTJA/timedmap)、使用红黑树实现的 key 有序的[treemap](https://godoc.org/github.com/emirpasic/gods/maps/treemap)等。
