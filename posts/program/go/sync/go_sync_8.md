@@ -1,11 +1,23 @@
 ---
-title: 8 Once 有且仅有
-date: 2019-02-06
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "Once 实现单例"
+date: 2021-05-07T22:00:00+08:00
+lastmod: 2021-05-07T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go Once 实现单例"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
+
 Once 有且仅有一次执行
 <!-- more -->
 
@@ -142,6 +154,8 @@ once.Do(func(){
   }
 ```
 
+当你使用 Once 的时候，你也可以尝试采用这种结构，将值和 Once 封装成一个新的数据结构，提供只初始化一次的值。
+
 ## 2. Once 实现
 
 很多人觉得 Once 只需要使用一个 flag 标记是否初始化即可，最多使用 atomic 原子操作这个 flag 比如下面这个实现:
@@ -160,11 +174,11 @@ func (o *Once) Do(f func()) {
 }
 ```
 
-但是，这个实现有一个很大的问题，就是如果参数 f 执行很慢的话，后续调用 Do 方法的 goroutine 虽然看到 done 已经设置为执行过了，但是获取某些初始化资源的时候可能会得到空的资源，因为 f 还没有执行完。
+但是，这个实现有一个很大的问题，就是**如果参数 f 执行很慢的话，后续调用 Do 方法的 goroutine 虽然看到 done 已经设置为执行过了，但是获取某些初始化资源的时候可能会得到空的资源，因为 f 还没有执行完**。
 
 所以一个正确的 Once 实现同事需要互斥锁和  flag 的双重检测机制:
 1. 互斥锁的机制保证只有一个 goroutine 进行初始化，并在 f() 未执行完成时，其他 goroutine 等待
-2. flag 用于 f() 执行之后快速成功，以及保证 只有一次初始化
+2. flag 用于 f() 执行之后快速成功，以及保证只有一次初始化
 
 ```go
 type Once struct {
@@ -191,6 +205,8 @@ func (o *Once) doSlow(f func()) {
     }
 }
 ```
+
+所谓的双检查就是，即便进入 doSlow 后获取到锁，也要判断初始化是否已经完成。
 
 ## 3.Once 采坑点
 使用 Once 有两个常见错误:
@@ -229,7 +245,11 @@ func main() {
 }
 ```
 
-Ian Lance Taylor 介绍的 Reset 方法没有错误，但是你在使用的时候千万别再初始化函数中 Reset 这个 Once，否则势必会导致 Unlock 一个未加锁的 Mutex 的错误。
+Ian Lance Taylor 介绍的 Reset 方法没有错误，但是你在使用的时候千万**别再初始化函数中 Reset 这个 Once，否则势必会导致 Unlock 一个未加锁的 Mutex 的错误**。这里再多补充一下这个 panic 的触发逻辑:
+1. Once doSlow 实现中有 `o.m.Lock; defer o.m.Unlock()`
+2. 如果调用 Do(Reset()) 就会导致这样的调用顺序: 初始 o.m.Lock() -> Reset 设置新的 o.m -> 调用新的 o.m.Unlock()，释放未加锁的锁，导致 panic。 
+
+使用 Once 真的不容易犯错，想犯错都很困难，因为很少有人会傻傻地在初始化函数 f 中递归调用 f，这种死锁的现象几乎不会发生。另外如果函数初始化不成功，我们一般会 panic，或者在使用的时候做检查，会及早发现这个问题，在初始化函数中加强代码。
 
 ## 4. Once 的扩展
 ### 4.1 可多次初始化的 Once
@@ -310,6 +330,24 @@ func main() {
     })
 
     fmt.Println(flag.Done()) //true
+}
+```
+
+注: 相信有人跟我一样看到 `atomic.LoadUint32((*uint32)(unsafe.Pointer(&o.Once))) == 1` 时怀疑人生路，这个怎么能判断 Once是否执行过了呢。这是因为你看的是鸟哥扩展的 Once 实现，done 字段在后:
+
+```go
+type Once struct {
+    m    sync.Mutex
+    done uint32
+}
+```
+
+go Once 源码里面，done 字段是在前的:
+
+```go
+type Once struct { 
+    done uint32 
+    m Mutex
 }
 ```
 

@@ -1,18 +1,34 @@
 ---
-title: 7 Cond 条件变量
-date: 2019-02-06
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "Cond 条件变量"
+date: 2021-05-06T22:00:00+08:00
+lastmod: 2021-05-06T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go Cond 条件变量"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
+
 Cond 条件变量
 <!-- more -->
 
 ## 1. Cond 概述
-Go 标准库提供 Cond 原语的目的是，为等待 / 通知场景下的并发问题提供支持。Cond 通常应用于等待某个条件的一组 goroutine，等条件变为 true 的时候，其中一个 goroutine 或者所有的 goroutine 都会被唤醒执行。顾名思义，Cond 是和某个条件相关:
-1.  条件没有满足时，所有等待这个条件的 goroutine 都被阻塞
+Go 标准库提供 Cond 原语的目的是，为**等待 / 通知**场景下的并发问题提供支持。Cond 通常应用于等待某个条件的一组 goroutine，等条件变为 true 的时候，其中一个 goroutine 或者所有的 goroutine 都会被唤醒执行。顾名思义，Cond 是和某个条件相关:
+1. 条件没有满足时，所有等待这个条件的 goroutine 都被阻塞
 2. 条件满足时，等待的 goroutine 可以继续进行执行
+
+顾名思义，Cond 是和某个条件相关，而使用 Cond 的是两组协程:
+1. 第一组 goroutine 共同协作完成条件
+2. 第二组 goroutine 等待直至条件完成
 
 Cond 在实际项目中被使用的机会比较少，原因总结起来有两个:
 1. 因为一旦遇到需要使用 Cond 的场景，我们更多地会使用 Channel 的方式去实现，因为 channel 才是更地道的 Go 语言的写法
@@ -148,6 +164,9 @@ func (c *Cond) Broadcast() {
 2. 另一个是没有检查条件是否满足程序就继续执行了
 
 我们一定要记住，waiter goroutine 被唤醒不等于等待条件被满足，只是有 goroutine 把它唤醒了而已，等待条件有可能已经满足了，也有可能不满足，我们需要进一步检查。你也可以理解为，等待者被唤醒，只是得到了一次检查的机会而已。
+
+## 4. Cond 使用上的理解
+Cond 在使用 Wait() 方法前需要调用 Lock() 这一点，在使用上的确很容易让人迷惑，我个人的理解是这样的。Cond 的核心是对条件的判断，改变条件相当于写，是需要加锁的，那同时**判断条件是否满足是读，同样也需要加锁**。调用 Wait 方法前，肯定已经判断了条件不满足，此时必定是加锁了。所以在 Wait 方法内，先释放锁，唤醒后在加锁，是读条件必须加锁这个场景要求的。Wait 释放锁再加锁是果，而不是因，我们要牢记的是**在读写条件的时候都必须加锁**。于此同时也正是因为 Cond 的条件是在实现之外维护的，所以 Cond 支持条件比 Channel 和 WaitGroup 更加灵活。
 
 ## 参考
 本文内容摘录自:
