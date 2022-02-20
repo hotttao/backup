@@ -1,11 +1,23 @@
 ---
-title: 6 WaitGroup
-date: 2019-02-06
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "WaitGroup"
+date: 2021-05-05T22:00:00+08:00
+lastmod: 2021-05-05T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go WaitGroup 任务编排"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
+
 WaitGroup 任务编排
 <!-- more -->
 
@@ -185,6 +197,7 @@ func (wg *WaitGroup) Wait() {
 3. 前一个 Wait 还没结束就重用 WaitGroup
     - WaitGroup 是可以重用的。只要 WaitGroup 的计数值恢复到零值的状态，那么它就可以被看作是新创建的 WaitGroup，被重复使用。
     - 但是，如果我们在 WaitGroup 的计数值还没有恢复到零值的时候就重用，就会导致程序 panic
+    - 这个并发的 Data Race 在于: **Add() 方法在将计数器归零时，需要唤醒所有被 Wait 住的协程，在这个过程中间是不能有并发的 Add 和 Wait 方法调用的**
 
 ### 2.4 错误示例
 在这个例子中，我们原本设想的是，等四个 goroutine 都执行完毕后输出 Done 的信息，但是它的错误之处在于，将 WaitGroup.Add 方法的调用放在了子 gorotuine 中。等主 goorutine 调用 Wait 的时候，因为四个任务 goroutine 一开始都休眠，所以可能 WaitGroup 的 Add 方法还没有被调用，WaitGroup 的计数还是 0，所以它并没有等待四个子 goroutine 执行完毕才继续执行，而是立刻执行了下一步。
@@ -236,7 +249,130 @@ func main() {
 
 总结一下：WaitGroup 虽然可以重用，但是是有一个前提的，那就是必须等到上一轮的 Wait 完成之后，才能重用 WaitGroup 执行下一轮的 Add/Wait，如果你在 Wait 还没执行完的时候就调用下一轮 Add 方法，就有可能出现 panic。
 
-### 2.4 noCopy 辅助 vet 检查
+### 2.4 WaitGroup 的 Race Check
+WaitGroup 的异常检查，我看几遍，都没能彻底理解 WaitGroup 重用导致 panic 的根本原因。其实 WaitGroup 代码很少，直接看代码可能更容易帮助理解 panic 发生确切时机。
+
+#### Add 的 Race Check
+
+```go
+// Copyright 2011 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+package sync
+
+import (
+	"internal/race"
+	"sync/atomic"
+	"unsafe"
+)
+
+func (wg *WaitGroup) Add(delta int) {
+	statep, semap := wg.state()
+	if race.Enabled {
+		_ = *statep // trigger nil deref early
+		if delta < 0 {
+			// Synchronize decrements with Wait.
+			race.ReleaseMerge(unsafe.Pointer(wg))
+		}
+		race.Disable()
+		defer race.Enable()
+	}
+	state := atomic.AddUint64(statep, uint64(delta)<<32)
+	v := int32(state >> 32)
+	w := uint32(state)
+	if race.Enabled && delta > 0 && v == int32(delta) {
+		// The first increment must be synchronized with Wait.
+		// Need to model this as a read, because there can be
+		// several concurrent wg.counter transitions from 0.
+		race.Read(unsafe.Pointer(semap))
+	}
+	if v < 0 {
+		panic("sync: negative WaitGroup counter")
+	}
+	if w != 0 && delta > 0 && v == int32(delta) {
+		panic("sync: WaitGroup misuse: Add called concurrently with Wait")
+	}
+	if v > 0 || w == 0 {
+		return
+	}
+	// This goroutine has set counter to 0 when waiters > 0.
+	// Now there can't be concurrent mutations of state:
+	// - Adds must not happen concurrently with Wait,
+	// - Wait does not increment waiters if it sees counter == 0.
+	// Still do a cheap sanity check to detect WaitGroup misuse.
+	if *statep != state {
+		panic("sync: WaitGroup misuse: Add called concurrently with Wait")
+	}
+	// Reset waiters count to 0.
+	*statep = 0
+	for ; w != 0; w-- {
+		runtime_Semrelease(semap, false, 0)
+	}
+}
+```
+
+从代码可以看到 Add 是触发 panic 有三个地方:
+1. `v < 0`: 即计数器设置为负值
+2. `w != 0 && delta > 0 && v == int32(delta)`:
+    - waiter 数不为 0, 此时添加了 Add，并且 **state 字段记录的计数器等于此次 Add 的值**，说明上一次 Wait() 还没有结束就 Add 了新值。这是并发修改的场景一
+3. `*statep != state`:
+    - 执行到此处，经过前面的判断条件过滤，此处 **v 只能等于 0，此时需要做的只有唤醒所有 Wait 住的协程，不能有并发的 Add() 和 Wait() 方法调用**，这是并发修改的场景二。
+    - 同时正如注释里面所说的这是一个"连接的检查"，如果并发是发生在 这个检查和下面触发 Wait 住的协程之间是不会异常的，但是程序已经出现了意料之外的结果。
+
+#### Wait 的 Race Check
+```go
+// Done decrements the WaitGroup counter by one.
+func (wg *WaitGroup) Done() {
+	wg.Add(-1)
+}
+
+// Wait blocks until the WaitGroup counter is zero.
+func (wg *WaitGroup) Wait() {
+	statep, semap := wg.state()
+	if race.Enabled {
+		_ = *statep // trigger nil deref early
+		race.Disable()
+	}
+	for {
+		state := atomic.LoadUint64(statep)
+		v := int32(state >> 32)
+		w := uint32(state)
+		if v == 0 {
+			// Counter is 0, no need to wait.
+			if race.Enabled {
+				race.Enable()
+				race.Acquire(unsafe.Pointer(wg))
+			}
+			return
+		}
+		// Increment waiters count.
+		if atomic.CompareAndSwapUint64(statep, state, state+1) {
+			if race.Enabled && w == 0 {
+				// Wait must be synchronized with the first Add.
+				// Need to model this is as a write to race with the read in Add.
+				// As a consequence, can do the write only for the first waiter,
+				// otherwise concurrent Waits will race with each other.
+				race.Write(unsafe.Pointer(semap))
+			}
+			runtime_Semacquire(semap)
+			if *statep != 0 {
+				panic("sync: WaitGroup is reused before previous Wait has returned")
+			}
+			if race.Enabled {
+				race.Enable()
+				race.Acquire(unsafe.Pointer(wg))
+			}
+			return
+		}
+	}
+}
+
+```
+从代码可以看到 Wait() 触发的异常只有一个地方: `*statep != 0`:
+- 因为在 Add 唤醒阻塞的 Wait 协程前，已经将 `*statep = 0`，而如果此时 `*statep != 0` 说明在 Add() 触发被 Wait 住协程之后，有其他 Add() 和 Wait() 方法调用，是并发修改的场景。
+
+### 2.5 noCopy 辅助 vet 检查
 noCopy 就是指示 vet 工具在做检查的时候，这个数据结构不能做值复制使用。更严谨地说，是不能在第一次使用之后复制使用 ( must not be copied after first use)。noCopy 是一个通用的计数技术，其他并发原语中也会用到。
 
 我们在前面学习 Mutex 的时候用到了 vet 工具。vet 会对实现 Locker 接口的数据类型做静态检查，一旦代码中有复制使用这种数据类型的情况，就会发出警告。WaitGroup 同步原语不就是 Add、Done 和 Wait 方法吗？vet 能检查出来吗？其实是可以的。通过给 WaitGroup 添加一个 noCopy 字段，我们就可以为 WaitGroup 实现 Locker 接口，这样 vet 工具就可以做复制检查了。而且因为 noCopy 字段是未输出类型，所以 WaitGroup 不会暴露 Lock/Unlock 方法。
@@ -254,7 +390,7 @@ func (*noCopy) Unlock() {}
 如果你想要自己定义的数据结构不被复制使用，或者说，不能通过 vet 工具检查出复制使用的报警，就可以通过嵌入 noCopy 这个数据类型来实现。
 
 
-### 2.5 总结
+### 2.6 总结
 关于如何避免错误使用 WaitGroup 的情况，我们只需要尽量保证下面 5 点就可以了：
 1. 不重用 WaitGroup。新建一个 WaitGroup 不会带来多大的资源开销，重用反而更容易出错
 2. 保证所有的 Add 方法调用都在 Wait 之前

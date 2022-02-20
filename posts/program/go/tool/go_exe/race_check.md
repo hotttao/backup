@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Go 提供的并发冲突以及死循环检测"
 featuredImage: 
 
-tags: ["go 并发"]
+tags: ["go 工具集"]
 categories: ["Go"]
 
 lightgallery: true
@@ -119,7 +119,7 @@ type WaitGroup struct {
     state1 [3]uint32
 }
 
-
+ 
 // 得到state的地址和信号量的地址
 func (wg *WaitGroup) state() (statep *uint64, semap *uint32) {
     if uintptr(unsafe.Pointer(&wg.state1))%8 == 0 {
