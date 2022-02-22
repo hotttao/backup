@@ -172,20 +172,18 @@ sync.RWMutex // Read Write mutex, guards access to internal map.
 
 // 创建并发map
 func New() ConcurrentMap {
-m := make(ConcurrentMap, SHARD_COUNT)
-for i := 0; i < SHARD_COUNT; i++ {
-    m[i] = &ConcurrentMapShared{items: make(map[string]interface{})}
+    m := make(ConcurrentMap, SHARD_COUNT)
+    for i := 0; i < SHARD_COUNT; i++ {
+        m[i] = &ConcurrentMapShared{items: make(map[string]interface{})}
 }
-return m
+    return m
 }
 
 
 // 根据key计算分片索引
 func (m ConcurrentMap) GetShard(key string) *ConcurrentMapShared {
-return m[uint(fnv32(key))%uint(SHARD_COUNT)]
+    return m[uint(fnv32(key))%uint(SHARD_COUNT)]
 }
-
-
 
 func (m ConcurrentMap) Set(key string, value interface{}) {
     // 根据key计算出对应的分片
@@ -222,6 +220,16 @@ sync.Map 的实现有几个优化点，我们先列出来:
 4. double-checking。加锁之后先还要再检查 read 字段，确定真的不存在才操作 dirty 字段。
 5. 延迟删除。删除一个键值只是打标记，只有在提升 dirty 字段为 read 字段的时候才清理删除的数据。
 
+#### 个人理解
+锁的性能优化，核心就如下几个点:
+1. 降低加锁的粒度
+2. 通过 lock-free(核心就是原子操作)，降低加锁的频率和次数
+3. 合并需要锁的操作，本质上也是降低加锁的次数
+
+对应到 sync.Map 就是:
+1. 通过分离 read 和 dirty，read 字段上面的读取操作大多数都是原子操作降低了加锁的频率
+2. 延迟删除，合并需要锁的操作
+
 下面我们就来看看 sync.Map 的设计与实现
 
 #### sync.Map 数据结构
@@ -254,10 +262,200 @@ var expunged = unsafe.Pointer(new(interface{}))
 type entry struct {
     p unsafe.Pointer // *interface{}
 }
+
+func (e *entry) load() (value interface{}, ok bool) {
+	p := atomic.LoadPointer(&e.p)
+	if p == nil || p == expunged {
+		return nil, false
+	}
+	return *(*interface{})(p), true
+}
 ```
 
+通过 [go doc](https://pkg.go.dev/sync) 可以轻松看到 sync.Map 具有如下方法:
+
+```go
+type Map
+    func (m *Map) Delete(key interface{})
+    func (m *Map) Load(key interface{}) (value interface{}, ok bool)
+    func (m *Map) LoadAndDelete(key interface{}) (value interface{}, loaded bool)
+    func (m *Map) LoadOrStore(key, value interface{}) (actual interface{}, loaded bool)
+    func (m *Map) Range(f func(key, value interface{}) bool)
+    func (m *Map) Store(key, value interface{})
+```
+
+Store、Load 和 Delete 这三个核心函数的操作都是先从 read 字段中处理的，因为读取 read 字段的时候不用加锁。
+
+#### Store 方法
+```go
+
+func (m *Map) Store(key, value interface{}) {
+    read, _ := m.read.Load().(readOnly)
+    // 如果read字段包含这个项，说明是更新，cas更新项目的值即可
+    if e, ok := read.m[key]; ok && e.tryStore(&value) {
+        return
+    }
+
+    // read中不存在，或者cas更新失败，就需要加锁访问dirty了
+    m.mu.Lock()
+    read, _ = m.read.Load().(readOnly)
+    if e, ok := read.m[key]; ok { // 双检查，看看read是否已经存在了
+        if e.unexpungeLocked() {
+            // 此项目先前已经被删除了，通过将它的值设置为nil，标记为unexpunged
+            // e.unexpungeLocked 执行后，read 和 dirty 中 e.p 的指向就不一样了，
+            // read 中 e.p 已经被置为 nil，所以这里需要设置 dirty
+            m.dirty[key] = e 
+        }
+        e.storeLocked(&value) // 更新
+    } else if e, ok := m.dirty[key]; ok { // 如果dirty中有此项
+        e.storeLocked(&value) // 直接更新
+    } else { // 否则就是一个新的key
+        if !read.amended { //如果dirty为nil
+            // 需要创建dirty对象，并且标记read的amended为true,
+            // 说明有元素它不包含而dirty包含
+            m.dirtyLocked()
+            m.read.Store(readOnly{m: read.m, amended: true})
+        }
+        m.dirty[key] = newEntry(value) //将新值增加到dirty对象中
+    }
+    m.mu.Unlock()
+}
+
+// 新加的元素需要放入到 dirty 中，如果 dirty 为 nil，那么需要从 read 字段中复制出来一个 dirty 对象：
+func (m *Map) dirtyLocked() {
+	if m.dirty != nil {
+		return
+	}
+
+	read, _ := m.read.Load().(readOnly)
+	m.dirty = make(map[interface{}]*entry, len(read.m))
+	for k, e := range read.m {
+		if !e.tryExpungeLocked() {
+			m.dirty[k] = e
+		}
+	}
+}
+// unexpungeLocked ensures that the entry is not marked as expunged.
+//
+// If the entry was previously expunged, it must be added to the dirty map
+// before m.mu is unlocked.
+func (e *entry) unexpungeLocked() (wasExpunged bool) {
+	return atomic.CompareAndSwapPointer(&e.p, expunged, nil)
+}
+
+// The entry must be known not to be expunged.
+func (e *entry) storeLocked(i *interface{}) {
+	atomic.StorePointer(&e.p, unsafe.Pointer(i))
+}
+
+func (e *entry) tryStore(i *interface{}) bool {
+	for {
+		p := atomic.LoadPointer(&e.p)
+		if p == expunged {
+			return false
+		}
+		if atomic.CompareAndSwapPointer(&e.p, p, unsafe.Pointer(i)) {
+			return true
+		}
+	}
+}
+```
+在 Store 方法的实现中:
+1. 如果 dirty 字段非 nil 的话，map 的 read 字段和 dirty 字段会包含相同的非 expunged 的项，所以如果通过 read 字段更改了这个项的值，从 dirty 字段中也会读取到这个项的新值，因为本来它们指向的就是同一个地址。
+2. sync.Map 可能是更新也可能是保存，只有在更新的是已存在的未被删除的元素，不会用到锁。其他的，需要更新（重用）删除的对象、更新还未提升的 dirty 中的对象，或者新增加元素的时候就会使用到了锁。从这一点来看，sync.Map 适合那些只会增长的缓存系统，可以进行更新，但是不要删除，并且不要频繁地增加新元素。
+
+#### Load 方法
+```go
+
+func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
+    // 首先从read处理
+    read, _ := m.read.Load().(readOnly)
+    e, ok := read.m[key]
+    if !ok && read.amended { // 如果不存在并且dirty不为nil(有新的元素)
+        m.mu.Lock()
+        // 双检查，看看read中现在是否存在此key
+        read, _ = m.read.Load().(readOnly)
+        e, ok = read.m[key]
+        if !ok && read.amended {//依然不存在，并且dirty不为nil
+            e, ok = m.dirty[key]// 从dirty中读取
+            // 不管dirty中存不存在，miss数都加1
+            m.missLocked()
+        }
+        m.mu.Unlock()
+    }
+    if !ok {
+        return nil, false
+    }
+    return e.load() //返回读取的对象，e既可能是从read中获得的，也可能是从dirty中获得的
+}
+
+
+func (m *Map) missLocked() {
+    m.misses++ // misses计数加一
+    if m.misses < len(m.dirty) { // 如果没达到阈值(dirty字段的长度),返回
+        return
+    }
+    m.read.Store(readOnly{m: m.dirty}) //把dirty字段的内存提升为read字段
+    m.dirty = nil // 清空dirty
+    m.misses = 0  // misses数重置为0
+}
+```
+
+在 Load 方法的实现中:
+1. 只有在读取已经存在的键时，才有可能不加锁
+2. missLocked 增加 miss 的时候，如果 miss 数等于 dirty 长度，会将 dirty 提升为 read，并将 dirty 置空。
+
+#### Delete 方法
+```go
+
+func (m *Map) LoadAndDelete(key interface{}) (value interface{}, loaded bool) {
+    read, _ := m.read.Load().(readOnly)
+    e, ok := read.m[key]
+    if !ok && read.amended {
+        m.mu.Lock()
+        // 双检查
+        read, _ = m.read.Load().(readOnly)
+        e, ok = read.m[key]
+        if !ok && read.amended {
+            e, ok = m.dirty[key]
+            // 这一行长坤在1.15中实现的时候忘记加上了，导致在特殊的场景下有些key总是没有被回收
+            delete(m.dirty, key)
+            // miss数加1
+            m.missLocked()
+        }
+        m.mu.Unlock()
+    }
+    if ok {
+        return e.delete()
+    }
+    return nil, false
+}
+
+func (m *Map) Delete(key interface{}) {
+    m.LoadAndDelete(key)
+}
+func (e *entry) delete() (value interface{}, ok bool) {
+    for {
+        p := atomic.LoadPointer(&e.p)
+        if p == nil || p == expunged {
+            return nil, false
+        }
+        if atomic.CompareAndSwapPointer(&e.p, p, nil) {
+            return *(*interface{})(p), true
+        }
+    }
+}
+```
+在 LoadDelete 方法的实现中:
+1. 如果项目存在就删除（将它的值标记为 nil）
+
+#### 其他方法
+最后，sync.map 还有一些 LoadAndDelete、LoadOrStore、Range 等辅助方法，但是没有 Len 这样查询 sync.Map 的包含项目数量的方法，并且官方也不准备提供。如果你想得到 sync.Map 的项目数量的话，你可能不得不通过 Range 逐个计数。
+
 ## 3. map 的扩展
-还有一些扩展其它功能的 map 实现，比如带有过期功能的[timedmap](https://github.com/zekroTJA/timedmap)、使用红黑树实现的 key 有序的[treemap](https://godoc.org/github.com/emirpasic/gods/maps/treemap)等。
+还有一些扩展其它功能的 map 实现，比如
+1. 带有过期功能的[timedmap](https://github.com/zekroTJA/timedmap)
+2. 使用红黑树实现的 key 有序的[treemap](https://godoc.org/github.com/emirpasic/gods/maps/treemap)等。
 
 ## 参考
 本文内容摘录自:
