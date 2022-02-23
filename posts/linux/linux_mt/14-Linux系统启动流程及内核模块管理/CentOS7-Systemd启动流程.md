@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 13.3 Centos7 Systemd 启动流程
-date: 2018-02-21
-categories:
-    - 运维
+date: '2018-02-21T22:10:00+08:00'
+lastmod: '2018-02-21T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 13.3 Centos7 Systemd 启动流程
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 Centos7 Systemd 启动流程

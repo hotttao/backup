@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 24.6 防火墙标记和LVS持久链接
-date: 2018-10-06
-categories:
-    - 运维
+date: '2018-10-06T22:10:00+08:00'
+lastmod: '2018-10-06T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 24.6 防火墙标记和LVS持久链接
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 防火墙标记和LVS持久链接

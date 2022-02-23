@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 21.3 iptables扩展匹配
-date: 2018-03-31
-categories:
-    - 运维
+date: '2018-03-31T22:10:00+08:00'
+lastmod: '2018-03-31T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 21.3 iptables扩展匹配
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 iptables扩展匹配

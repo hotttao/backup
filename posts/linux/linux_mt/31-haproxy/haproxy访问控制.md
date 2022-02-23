@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 28.3 haproxy 访问控制
-date: 2018-10-24
-categories:
-    - 运维
+date: '2018-10-24T22:10:00+08:00'
+lastmod: '2018-10-24T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 28.3 haproxy 访问控制
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 haproxy 访问控制

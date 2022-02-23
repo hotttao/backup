@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 14.2 Centos安装过程
-date: 2018-02-26
-categories:
-    - 运维
+date: '2018-02-26T22:10:00+08:00'
+lastmod: '2018-02-26T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 14.2 Centos安装过程
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 Centos安装过程

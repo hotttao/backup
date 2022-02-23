@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 18.3 LAMP安装
-date: 2018-03-21
-categories:
-    - 运维
+date: '2018-03-21T22:10:00+08:00'
+lastmod: '2018-03-21T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 18.3 LAMP安装
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 LAMP安装

@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 23.2 nginx基础入门
-date: 2018-09-22
-categories:
-    - 运维
+date: '2018-09-22T22:10:00+08:00'
+lastmod: '2018-09-22T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 23.2 nginx基础入门
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 nginx基础入门

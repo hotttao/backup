@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 19.1 mysql 数据库基础
-date: 2018-03-24
-categories:
-    - 运维
+date: '2018-03-24T22:10:00+08:00'
+lastmod: '2018-03-24T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 19.1 mysql 数据库基础
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 mysql 数据库基础

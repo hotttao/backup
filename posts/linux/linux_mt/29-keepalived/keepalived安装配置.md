@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 26.2 keepalived 安装和配置
-date: 2018-10-14
-categories:
-    - 运维
+date: '2018-10-14T22:10:00+08:00'
+lastmod: '2018-10-14T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 26.2 keepalived 安装和配置
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 keepalived 安装和配置

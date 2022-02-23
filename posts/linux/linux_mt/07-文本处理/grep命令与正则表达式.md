@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 7.3 grep命令与正则表达式
-date: 2018-01-21
-categories:
-    - 运维
+date: '2018-01-21T22:10:00+08:00'
+lastmod: '2018-01-21T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 7.3 grep命令与正则表达式
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 grep命令与正则表达式

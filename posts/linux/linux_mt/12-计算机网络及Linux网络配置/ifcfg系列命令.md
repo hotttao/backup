@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 11.3 网络属性配置之 ifcfg 系列命令
-date: 2018-02-09
-categories:
-    - 运维
+date: '2018-02-09T22:10:00+08:00'
+lastmod: '2018-02-09T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 11.3 网络属性配置之 ifcfg 系列命令
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 网络属性配置之 ifcfg 系列命令

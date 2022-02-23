@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 29.2 PXE 系统自动化部署
-date: 2018-11-02
-categories:
-    - 运维
+date: '2018-11-02T22:10:00+08:00'
+lastmod: '2018-11-02T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 29.2 PXE 系统自动化部署
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 PXE 系统自动化部署

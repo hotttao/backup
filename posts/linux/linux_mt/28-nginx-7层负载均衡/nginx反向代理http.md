@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 25.1 nginx反向代理http
-date: 2018-10-08
-categories:
-    - 运维
+date: '2018-10-08T22:10:00+08:00'
+lastmod: '2018-10-08T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 25.1 nginx反向代理http
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 nginx反向代理http

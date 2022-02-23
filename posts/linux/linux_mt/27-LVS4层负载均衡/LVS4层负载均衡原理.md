@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 24.2 LVS 4层负载均衡原理
-date: 2018-10-02
-categories:
-    - 运维
+date: '2018-10-02T22:10:00+08:00'
+lastmod: '2018-10-02T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 24.2 LVS 4层负载均衡原理
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 LVS 4层负载均衡原理

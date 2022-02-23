@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 24.7 LVS 高可用
-date: 2018-10-07
-categories:
-    - 运维
+date: '2018-10-07T22:10:00+08:00'
+lastmod: '2018-10-07T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 24.7 LVS 高可用
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 LVS 高可用

@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 23.3 nginx main 配置段
-date: 2018-09-23
-categories:
-    - 运维
+date: '2018-09-23T22:10:00+08:00'
+lastmod: '2018-09-23T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 23.3 nginx main 配置段
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 nginx main 配置段

@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 9.2 任务计划和周期性任务
-date: 2018-02-02
-categories:
-    - 运维
+date: '2018-02-02T22:10:00+08:00'
+lastmod: '2018-02-02T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 9.2 任务计划和周期性任务
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 任务计划和周期性任务

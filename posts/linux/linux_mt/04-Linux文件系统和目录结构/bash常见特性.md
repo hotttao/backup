@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 4.2 bash常见特性
-date: 2018-01-04
-categories:
-    - 运维
+date: '2018-01-04T22:10:00+08:00'
+lastmod: '2018-01-04T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 4.2 bash常见特性
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 bash常见特性

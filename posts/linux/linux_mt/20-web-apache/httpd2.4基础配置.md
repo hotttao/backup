@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 17.6 httpd2.4 基础配置
-date: 2018-03-16
-categories:
-    - 运维
+date: '2018-03-16T22:10:00+08:00'
+lastmod: '2018-03-16T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 17.6 httpd2.4 基础配置
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 httpd2.4 基础配置

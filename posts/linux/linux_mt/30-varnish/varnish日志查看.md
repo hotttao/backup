@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 27.6 varnish 日志查看
-date: 2018-10-21
-categories:
-    - 运维
+date: '2018-10-21T22:10:00+08:00'
+lastmod: '2018-10-21T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 27.6 varnish 日志查看
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 varnish 日志查看

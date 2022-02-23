@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 10.2 软件包管理rpm命令使用
-date: 2018-02-04
-categories:
-    - 运维
+date: '2018-02-04T22:10:00+08:00'
+lastmod: '2018-02-04T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 10.2 软件包管理rpm命令使用
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 软件包管理rpm命令使用

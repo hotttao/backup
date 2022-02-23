@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 24.5 LVS DR模型实战
-date: 2018-10-05
-categories:
-    - 运维
+date: '2018-10-05T22:10:00+08:00'
+lastmod: '2018-10-05T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 24.5 LVS DR模型实战
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 LVS DR模型实战

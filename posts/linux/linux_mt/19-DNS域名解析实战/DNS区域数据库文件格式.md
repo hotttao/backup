@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 16.2 DNS区域数据库文件格式
-date: 2018-03-08
-categories:
-    - 运维
+date: '2018-03-08T22:10:00+08:00'
+lastmod: '2018-03-08T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 16.2 DNS区域数据库文件格式
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 DNS区域数据库文件格式

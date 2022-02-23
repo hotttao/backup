@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 17.4 apache httpd 简介
-date: 2018-03-14
-categories:
-    - 运维
+date: '2018-03-14T22:10:00+08:00'
+lastmod: '2018-03-14T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 17.4 apache httpd 简介
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 apache httpd 简介

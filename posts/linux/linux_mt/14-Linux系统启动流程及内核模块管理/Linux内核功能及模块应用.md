@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 13.6 Linux内核功能及模块应用
-date: 2018-02-24
-categories:
-    - 运维
+date: '2018-02-24T22:10:00+08:00'
+lastmod: '2018-02-24T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 13.6 Linux内核功能及模块应用
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 Linux内核功能及模块应用

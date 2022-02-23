@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 19.4 MariaDB 权限管理
-date: 2018-03-27
-categories:
-    - 运维
+date: '2018-03-27T22:10:00+08:00'
+lastmod: '2018-03-27T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 19.4 MariaDB 权限管理
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 MariaDB 权限管理

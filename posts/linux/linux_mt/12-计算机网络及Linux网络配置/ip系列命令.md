@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 11.4 网络属性配置之 ip 系列命令
-date: 2018-02-10
-categories:
-    - 运维
+date: '2018-02-10T22:10:00+08:00'
+lastmod: '2018-02-10T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 11.4 网络属性配置之 ip 系列命令
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 网络属性配置之 ip 系列命令

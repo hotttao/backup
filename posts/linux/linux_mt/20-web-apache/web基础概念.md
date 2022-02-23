@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 17.1 web服务基础概念
-date: 2018-03-11
-categories:
-    - 运维
+date: '2018-03-11T22:10:00+08:00'
+lastmod: '2018-03-11T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 17.1 web服务基础概念
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 web服务基础概念

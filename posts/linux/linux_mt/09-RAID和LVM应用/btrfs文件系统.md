@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 8.5 btrfs文件系统管理与应用
-date: 2018-01-31
-categories:
-    - 运维
+date: '2018-01-31T22:10:00+08:00'
+lastmod: '2018-01-31T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 8.5 btrfs文件系统管理与应用
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 btrfs文件系统管理与应用

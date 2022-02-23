@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 24.3 LVS 调度算法和 ipvsadmin
-date: 2018-10-03
-categories:
-    - 运维
+date: '2018-10-03T22:10:00+08:00'
+lastmod: '2018-10-03T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 24.3 LVS 调度算法和 ipvsadmin
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 LVS 调度算法和 ipvsadmin 命令使用

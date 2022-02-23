@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 23.5 nginx_http配置段(功能模块)
-date: 2018-09-25
-categories:
-    - 运维
+date: '2018-09-25T22:10:00+08:00'
+lastmod: '2018-09-25T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 23.5 nginx_http配置段(功能模块)
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 nginx_http配置段(核心模块)

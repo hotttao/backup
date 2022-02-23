@@ -1,10 +1,20 @@
 ---
+weight: 1
 title: 6.1 shell 脚本简介
-date: 2018-01-10
-categories:
-    - 运维
+date: '2018-01-10T22:10:00+08:00'
+lastmod: '2018-01-10T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 6.1 shell 脚本简介
+featuredImage: null
 tags:
-    - 马哥 Linux
+- 马哥 Linux
+categories:
+- Linux
+lightgallery: true
+toc:
+  auto: false
 ---
 
 shell 脚本简介
