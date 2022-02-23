@@ -1,16 +1,23 @@
 ---
-title: 3 Viper
-date: 2020-12-08
-categories:
-    - Go
-tags:
-	- go标准库及第三方库
-series: go 语言入门
+weight: 1
+title: "配置管理神 Viper"
+date: 2021-06-21T22:00:00+08:00
+lastmod: 2021-06-21T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 项目的配置管理"
+featuredImage: 
+
+tags: ["go 库"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
-配置管理神 Viper
-
-<!-- more -->
 
 ## 1. Viper 简介
 Viper 是适用于Go应用程序的完整配置解决方案。可以处理所有类型的配置需求和格式。作为配置管理器，Viper 按照如下的从高到低的优先级加载配置:

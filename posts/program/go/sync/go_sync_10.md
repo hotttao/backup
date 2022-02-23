@@ -1,23 +1,31 @@
 ---
-title: 10 Pool
-date: 2019-02-10
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go Pool"
+date: 2021-05-09T22:00:00+08:00
+lastmod: 2021-05-09T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 对象池化"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-Pool
-<!-- more -->
+
 
 ## 1. Pool 概述
 Go 是一个自动垃圾回收的编程语言，采用[三色并发标记算法](https://blog.golang.org/ismmkeynote)标记对象并回收。但是，如果你想使用 Go 开发一个高性能的应用程序的话，就必须考虑垃圾回收给性能带来的影响。对象池化， 可以有效地减少新对象的创建次数，是性能优化的重要方式。
 
-Go 标准库中提供了一个通用的 Pool 数据结构，也就是 sync.Pool，我们使用它可以创建池化的对象。sync.Pool 有一个缺陷，就是它池化的对象可能会被垃圾回收掉，这对于数据库长连接等场景是不合适的。因此接下来我们将介绍:
+Go 标准库中提供了一个通用的 Pool 数据结构，也就是 sync.Pool，我们使用它可以创建池化的对象。但是 sync.Pool 有一个缺陷，就是它池化的对象可能会被垃圾回收掉，这对于数据库长连接等场景是不合适的。因此接下来我们将介绍:
 1. sync.Pool 的使用、实现和采坑点
 2. 其他 Pool 包括 TCP 连接池、数据库连接池
 3. Worker Pool: goroutine pool，使用有限的 goroutine 资源去处理大量的业务数据
-
-如果你发现程序中有一种 GC 耗时特别高，有大量的相同类型的临时对象，不断地被创建销毁，这时，你就可以考虑看看，是不是可以通过池化的手段重用这些对象。
 
 ### 1.1 sync.Pool 使用
 sync.Pool 用来保存一组可独立访问的**临时**对象，临时两个字表明"它池化的对象会在未来的某个时候被毫无预兆地移除掉"。如果没有别的对象引用这个被移除的对象的话，这个被移除的对象就会被垃圾回收掉。
@@ -31,7 +39,7 @@ sync.Pool 只提供了三个对外方法:
     - 类型为`func() interface{}`
     - 当 Get 方法从池中获取元素，没有更多空闲元素可返回时，就会调用 New 方法来创建新的元素。
     - 如果你没有设置 New 字段，没有更多的空闲元素可返回时，Get 方法将返回 nil，表明当前没有可用的元素
-	- New 是可变的字段，这意味着可以在程序运行的时候改变创建元素的方法，但是没必要这么做
+	  - New 是可变的字段，这意味着可以在程序运行的时候改变创建元素的方法，但是没必要这么做
 2.  Get 方法:
 	- 调用这个方法，就会从 Pool取走一个元素(从 Pool 中移除)，并返回给调用者
 	- 除了正常实例化的元素，Get 方法的返回值还可能会是一个 nil（Pool.New 字段没有设置，又没有空闲元素可以返回），使用时需要判断
@@ -81,6 +89,12 @@ func PutBuffer(* bytes.Buffer){
 }
 ```
 
+### 1.2 适用场景
+对象池化适用于以下几个场景:
+1. 如果你发现程序中有一种 GC 耗时特别高，有大量的相同类型的临时对象，不断地被创建销毁，这时就可以考虑是不是可以通过池化的手段重用这些对象
+2. 在分布式系统或者微服务框架中，可能会有大量的并发 Client 请求，如果 Client 的耗时占比很大，你也可以考虑池化 Client，以便重用
+3. 如果你发现系统中的 goroutine 数量非常多，程序的内存资源占用比较大，而且整体系统的耗时和 GC 也比较高，这时就可以考虑是否能够通过 Worker Pool 解决大量 goroutine 的问题，从而降低这些指标
+
 ## 2. Pool 实现
 Go 1.13 之前的 sync.Pool 的实现有 2 大问题：
 1. 每次 GC 都会回收创建的对象: 如果缓存元素数量太多，就会导致 STW 耗时变长；缓存元素都被回收后，会导致 Get 命中率下降，Get 方法不得不新创建很多对象。
@@ -95,10 +109,39 @@ Pool 实现中:
 2. victim 就像一个垃圾分拣站，里面的东西可能会被当做垃圾丢弃了，但是里面有用的东西也可能被捡回来重新使用
 3. victim 中的元素如果被 Get 取走，他就会被重用；没有被 Get 取走，那么就会被移除掉，因为没有别人引用它的话，就会被垃圾回收掉
 
+Pool 的数据结构相对于其他同步原语是比较复杂的，其中:
+1. local 字段包含一个 poolLocalInternal 字段:
+  - poolLocalInternal 提供 CPU 缓存对齐，从而避免 false sharing
+  - poolLocalInternal 包含两个字段：private 和 shared
+2. private: 
+  - 代表一个缓存的元素，而且只能由相应的一个 P 存取
+  - 因为一个 P 同时只能执行一个 goroutine，所以不会有并发的问题
+3. shared: 
+  - 可以由任意的 P 访问，但是只有本地的 P 才能 pushHead/popHead，其它 P 可以 popTail
+  - 相当于只有一个本地的 P 作为生产者（Producer），多个 P 作为消费者（Consumer）
+  - 它是使用一个 local-free 的 queue 列表实现的，即 poolDequeue
+3. poolChain: 实现的是一个链表
+4. poolChainElt: 是 poolChain 链表中的每个 Item
+5. poolDequeue: 是一个双向队列保存了缓存的池化对象
+
+我们先从 pool 的垃圾回收看起，这能反映出上面所说 victim 与 local 之间的关系。
+
 ### 2.1 Pool 的垃圾回收
 下面的代码是垃圾回收时 sync.Pool 的处理逻辑：
 
 ```go
+var (
+	allPoolsMu Mutex
+
+	// allPools is the set of pools that have non-empty primary
+	// caches. Protected by either 1) allPoolsMu and pinning or 2)
+	// STW.
+	allPools []*Pool
+
+	// oldPools is the set of pools that may have non-empty victim
+	// caches. Protected by STW.
+	oldPools []*Pool
+)
 
 func poolCleanup() {
     // 丢弃当前victim, STW所以不用加锁
@@ -119,16 +162,10 @@ func poolCleanup() {
 }
 ```
 
-### 2.2 local
-local 字段包含一个 poolLocalInternal 字段，并提供 CPU 缓存对齐，从而避免 false sharing。而 poolLocalInternal 也包含两个字段：private 和 shared。
-1. private，代表一个缓存的元素，而且只能由相应的一个 P 存取。因为一个 P 同时只能执行一个 goroutine，所以不会有并发的问题。
-2. shared，可以由任意的 P 访问，但是只有本地的 P 才能 pushHead/popHead，其它 P 可以 popTail，相当于只有一个本地的 P 作为生产者（Producer），多个 P 作为消费者（Consumer），它是使用一个 local-free 的 queue 列表实现的。
-
-### 2.3 Get 方法
+### 2.2 Get 方法
 ```go
-
 func (p *Pool) Get() interface{} {
-    // 把当前goroutine固定在当前的P上
+    // 把当前goroutine固定在当前的P上，l 就是 local 对象
     l, pid := p.pin()
     x := l.private // 1. 优先从local的private字段取，快速
     l.private = nil
@@ -216,10 +253,10 @@ Put 的逻辑相对简单，优先设置本地 private，如果 private 字段�
 ## 3. Pool 采坑点
 使用 Once 有两个常见错误:分别是内存泄漏和内存浪费。
 
-#### 3.1 内存泄漏
+### 3.1 内存泄漏
 文章开始，我们用 sync.Pool 实现了一个 buffer pool，这个实现可能存在内存泄漏。取出来的 bytes.Buffer 在使用的时候，我们可以往这个元素中增加大量的 byte 数据，这会导致底层的 byte slice 的容量可能会变得很大。这个时候，即使 Reset 再放回到池子中，这些 byte slice 的容量不会改变，所占的空间依然很大。而且，因为 Pool 回收的机制，这些大的 Buffer 可能不被回收(被重复使用，但只使用了很小一部分)，而是会一直占用很大的空间，这属于内存泄漏的问题。
 
-在使用 sync.Pool 回收 buffer 的时候，一定要检查回收的对象的大小。如果 buffer 太大，就不要回收了，否则就太浪费了。
+**在使用 sync.Pool 回收 buffer 的时候，一定要检查回收的对象的大小**。**如果 buffer 太大，就不要回收了**，否则就太浪费了。
 
 ### 3.2 内存浪费
 除了内存泄漏以外，还有一种浪费的情况，就是池子中的 buffer 都比较大，但在实际使用的时候，很多时候只需要一个小的 buffer，这也是一种浪费现象。
@@ -260,7 +297,7 @@ type Pool
 bpool 最大的特色就是能够保持池子中元素的数量，一旦 Put 的数量多于它的阈值，就会自动丢弃，而 sync.Pool 是一个没有限制的池子，只要 Put 就会收进去。bpool 是基于 Channel 实现的，不像 sync.Pool 为了提高性能而做了很多优化，所以，在性能上比不过 sync.Pool。
 
 ## 5. 连接池
-Pool 的另一个很常用的一个场景就是保持 TCP 的连接。我们很少会使用 sync.Pool 去池化连接对象，原因就在于，sync.Pool 会无通知地在某个时候就把连接移除垃圾回收掉了，而我们的场景是需要长久保持这个连接，所以，我们一般会使用其它方法来池化连接，包括:
+Pool 的另一个很常用的一个场景就是保持 TCP 的连接。我们很少会使用 sync.Pool 去池化连接对象，原因就在于，**sync.Pool 会无通知地在某个时候就把连接移除垃圾回收掉了，而我们的场景是需要长久保持这个连接**，所以，我们一般会使用其它方法来池化连接，包括:
 1. 标准库中的 http client 池
 2. TCP 连接池
 3. 数据库连接池
@@ -269,7 +306,6 @@ Pool 的另一个很常用的一个场景就是保持 TCP 的连接。我们很�
 
 ### 5.1 标准库中的 http client 池
 标准库的 http.Client 是一个 http client 的库，可以用它来访问 web 服务器。http.Client 实现连接池的代码是在 Transport 类型中，它使用 idleConn 保存持久化的可重用的长连接：
-
 
 ![http.Client](/images/go/sync/http_client.png)
 
@@ -349,24 +385,31 @@ type channelPool struct {
 标准库 sql.DB 还提供了一个通用的数据库的连接池，通过 MaxOpenConns 和 MaxIdleConns 控制最大的连接数和最大的 idle 的连接数。默认的 MaxIdleConns 是 2，这个数对于数据库相关的应用来说太小了，我们一般都会调整它。
 
 ```go
+type DB struct {
+	// Atomic access only. At top of struct to prevent mis-alignment
+	// on 32-bit platforms. Of type time.Duration.
+	waitDuration int64 // Total time waited for new connections.
+
+	connector driver.Connector
+	// numClosed is an atomic counter which represents a total number of
+	// closed connections. Stmt.openStmt checks it before cleaning closed
+	// connections in Stmt.css.
+	numClosed uint64
+
+	mu           sync.Mutex // protects following fields
+	freeConn     []*driverConn
+	connRequests map[uint64]chan connRequest
+	nextRequest  uint64 // Next key to use in connRequests.
+	.....
+	stop func() // stop cancels the connection opener.
+}
+
 type DB
     func Open(driverName, dataSourceName string) (*DB, error)
     func OpenDB(c driver.Connector) *DB
-    func (db *DB) Begin() (*Tx, error)
-    func (db *DB) BeginTx(ctx context.Context, opts *TxOptions) (*Tx, error)
     func (db *DB) Close() error
     func (db *DB) Conn(ctx context.Context) (*Conn, error)
     func (db *DB) Driver() driver.Driver
-    func (db *DB) Exec(query string, args ...interface{}) (Result, error)
-    func (db *DB) ExecContext(ctx context.Context, query string, args ...interface{}) (Result, error)
-    func (db *DB) Ping() error
-    func (db *DB) PingContext(ctx context.Context) error
-    func (db *DB) Prepare(query string) (*Stmt, error)
-    func (db *DB) PrepareContext(ctx context.Context, query string) (*Stmt, error)
-    func (db *DB) Query(query string, args ...interface{}) (*Rows, error)
-    func (db *DB) QueryContext(ctx context.Context, query string, args ...interface{}) (*Rows, error)
-    func (db *DB) QueryRow(query string, args ...interface{}) *Row
-    func (db *DB) QueryRowContext(ctx context.Context, query string, args ...interface{}) *Row
     func (db *DB) SetConnMaxIdleTime(d time.Duration)
     func (db *DB) SetConnMaxLifetime(d time.Duration)
     func (db *DB) SetMaxIdleConns(n int)
@@ -382,7 +425,7 @@ DB 的 [freeConn](https://github.com/golang/go/blob/4fc3896e7933e31822caa50e024d
 Brad Fitzpatrick 是知名缓存库 Memcached 的原作者，[gomemcache](https://github.com/bradfitz/gomemcache)是他使用 Go 开发的 Memchaced 的客户端，其中也用了连接池。
 
 
-gomemcache Client 有一个 freeconn 的字段，用来保存空闲的连接。当一个请求使用完之后，它会调用 putFreeConn 放回到池子中，请求的时候，调用 getFreeConn 优先查询 freeConn 中是否有可用的连接。它采用 Mutex+Slice 实现 Pool：
+gomemcache Client 有一个 freeconn 的字段，用来保存空闲的连接。当一个请求使用完之后，它会调用 putFreeConn 放回到池子中，请求的时候，调用 getFreeConn 优先查询 freeConn 中是否有可用的连接。它**采用 Mutex+Slice 实现 Pool**：
 
 ```go
 
@@ -424,7 +467,7 @@ goroutine 是一个很轻量级的“纤程”，一个 goroutine 初始的栈�
 
 所以，大量的 goroutine 还是很耗资源的。同时，大量的 goroutine 对于调度和垃圾回收的耗时还是会有影响的，因此，goroutine 并不是越多越好。特别是在网络请求处理中，我们需要一个 Worker pool，即 goroutine 的池。由这一组 Worker 去处理连接，比如 [fasthttp](https://github.com/valyala/fasthttp/blob/9f11af296864153ee45341d3f2fe0f5178fd6210/workerpool.go#L16) 中的Worker Pool。
 
-大部分的 Worker Pool 都是通过 Channel 来缓存任务的，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。
+**大部分的 Worker Pool 都是通过 Channel 来缓存任务的**，因为 Channel 能够比较方便地实现并发的保护，有的是多个 Worker 共享同一个任务 Channel，有些是每个 Worker 都有一个独立的 Channel。
 
 下面三款比较常用的 Worker Pool 库:
 1. [gammazero/workerpool](https://godoc.org/github.com/gammazero/workerpool)：gammazero/workerpool 可以无限制地提交任务，提供了更便利的 Submit 和 SubmitWait 方法提交任务，还可以提供当前的 worker 数和任务数以及关闭 Pool 的功能。
