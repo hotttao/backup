@@ -1,13 +1,23 @@
 ---
-title: 11 Context
-date: 2019-02-11
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go Context"
+date: 2021-05-10T22:00:00+08:00
+lastmod: 2021-05-10T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 的上下文管理器"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-Context 上下文管理器
-<!-- more -->
+
 
 ## 1. Context 概述
 所谓上下文指的是在 API 之间或者方法调用之间，所传递的除了业务参数之外的额外信息，比如服务追踪。Go 标准库中的 Context 不仅仅传递上下文信息还提供了超时（Timeout）和取消（Cancel）的机制。
@@ -98,15 +108,15 @@ func TODO() Context {
 }
 ```
 ### 2.3 使用约定
-在使用 Context 的时候，有一些约定俗成的规则:
-1. 一般函数使用 Context 的时候，会把这个参数放在第一个参数的位置。
+**在使用 Context 的时候，有一些约定俗成的规则**:
+1. 一般函数使用 Context 的时候，会把这个参数**放在第一个参数的位置**。
 2. 从来不把 nil 当做 Context 类型的参数值，可以使用 context.Background() 创建一个空的上下文对象，也不要使用 nil。
-3. Context 只用来临时做函数之间的上下文透传，不能持久化 Context 或者把 Context 长久保存。把 Context 持久化到数据库、本地文件或者全局变量、缓存中都是错误的用法。
-4. key 的类型不应该是字符串类型或者其它内建类型，否则容易在包之间使用 Context 时候产生冲突。使用 WithValue 时，key 的类型应该是自己定义的类型。
-5. 常常使用 struct{}作为底层类型定义 key 的类型。对于 exported key 的静态类型，常常是接口或者指针。这样可以尽量减少内存分配。
+3. Context 只用来临时做函数之间的上下文透传，**不能持久化 Context** 或者把 Context 长久保存。把 Context 持久化到数据库、本地文件或者全局变量、缓存中都是错误的用法。
+4. key 的类型不应该是字符串类型或者其它内建类型，否则容易在包之间使用 Context 时候产生冲突。**使用 WithValue 时，key 的类型应该是自己定义的类型**。
+5. 常常使用 struct{}作为底层类型定义 key 的类型。对于 exported key 的静态类型，常常是**接口或者指针。这样可以尽量减少内存分配**。
 6. 如果你能保证别人使用你的 Context 时不会和你定义的 key 冲突，那么 key 的类型就比较随意，因为你自己保证了不同包的 key 不会冲突，否则建议你尽量采用保守的 unexported 的类型。
 
-Context 包中有几种创建特殊用途 Context 的方法：WithValue、WithCancel、WithTimeout 和 WithDeadline，包括它们的功能以及实现方式。
+Context 包中有几种创建特殊用途 Context 的方法：**WithValue、WithCancel、WithTimeout 和 WithDeadline**，包括它们的功能以及实现方式。
 
 ### 2.4 WithValue
 WithValue 基于 parent Context 生成一个新的 Context，保存了一个 key-value 键值对。它常常用来传递上下文。WithValue 方法其实是创建了一个类型为 valueCtx 的 Context，它的类型定义如下：
@@ -164,6 +174,33 @@ cancel 是向下传递的，如果一个 WithCancel 生成的 Context 被 cancel
 ```go
 
 var Canceled = errors.New("context canceled")
+```
+
+下面是 cancelCtx 的使用示例:
+
+```go
+func main() {
+    ctx, cancel := context.WithCancel(context.Background())
+
+    go func() {
+        defer func() {
+            fmt.Println("goroutine exit")
+        }()
+
+        for {
+            select {
+            case <-ctx.Done():
+                return
+            default:
+                time.Sleep(time.Second)
+            }
+        }
+    }()
+
+    time.Sleep(time.Second)
+    cancel()
+    time.Sleep(2 * time.Second)
+}
 ```
 
 ### 2.6 WithTimeout/WithDeadline
@@ -230,10 +267,229 @@ func slowOperationWithTimeout(ctx context.Context) (Result, error) {
 
 所以，有时候，Context 并不会减少对服务器的请求负担。如果在 Context 被 cancel 的时候，你能关闭和服务器的连接，中断和数据库服务器的通讯、停止对本地文件的读写，那么，这样的超时处理，同时能减少对服务调用的压力，但是这依赖于你对超时的底层处理机制。
 
-## 3. Context 采坑点
+## 3. Context 的实现
+前面的内容，鸟叔基本已经把 Context 讲的非常清楚。但如果是第一次看这个内容可能还是比较蒙。所以接下来我们就看看源码，看看 Context 的设计与实现。
 
+### 3.1 ctx 的几种类型
+Background、WithValue、WithCancel、WithTimeout 对应了如下几种 ctx struct。
 
-## 4. Context 的扩展
+```go
+type emptyCtx int
+
+type cancelCtx struct {
+	Context
+
+	mu       sync.Mutex            // protects following fields
+	done     chan struct{}         // created lazily, closed by first cancel call
+	children map[canceler]struct{} // set to nil by the first cancel call
+	err      error                 // set to non-nil by the first cancel call
+}
+
+type timerCtx struct {
+	cancelCtx
+	timer *time.Timer // Under cancelCtx.mu.
+
+	deadline time.Time
+}
+
+type valueCtx struct {
+	Context
+	key, val interface{}
+}
+
+func WithValue(parent Context, key, val interface{}) Context {
+	if parent == nil {
+		panic("cannot create context from nil parent")
+	}
+	if key == nil {
+		panic("nil key")
+	}
+	if !reflectlite.TypeOf(key).Comparable() {
+		panic("key is not comparable")
+	}
+	return &valueCtx{parent, key, val}
+}
+
+func WithCancel(parent Context) (ctx Context, cancel CancelFunc) {
+    c := newCancelCtx(parent)
+    propagateCancel(parent, &c)// 把c朝上传播
+    return &c, func() { c.cancel(true, Canceled) }
+}
+
+// newCancelCtx returns an initialized cancelCtx.
+func newCancelCtx(parent Context) cancelCtx {
+    return cancelCtx{Context: parent}
+}
+```
+除了 empty Ctx，cancleCtx，valueCtx 都有 Context 成员，其指向了当前 Context 的 parent Context，构成了一个 Context 的链表((timerCtx 可以看成 cancelCtx 的扩展)。valueCtx.Value() 在进行值查找以及 cancelCtx 在创建时都会沿着 Context 向上查找。我们依次来看看这两个过程。
+
+### 3.2 valueCtx.Value()
+```go
+func (c *valueCtx) Value(key interface{}) interface{} {
+	if c.key == key {
+		return c.val
+	}
+    // 除了 emptyCtx 所有类型的 Value() 方法都会调用 c.Context.Value 向上查找，所以会递归向上查找
+	return c.Context.Value(key)
+}
+
+```
+
+### 3.3 propagateCancel
+```go
+var cancelCtxKey int
+
+func (c *cancelCtx) Value(key interface{}) interface{} {
+	if key == &cancelCtxKey {
+		return c
+	}
+	return c.Context.Value(key)
+}
+
+func (c *cancelCtx) Done() <-chan struct{} {
+	c.mu.Lock()
+	if c.done == nil {
+		c.done = make(chan struct{})
+	}
+	d := c.done
+	c.mu.Unlock()
+	return d
+}
+
+func propagateCancel(parent Context, child canceler) {
+    // 1. 
+    // emptyCtx.Done 返回 nil
+    // valueCtx 的 Done 调用的是 parent.Done() 如果 调用链上一直是 valueCtx 就会一直递归向上调用
+    // cancleCtx 和 timerCtx Done() 返回的是 非 nil
+    // 综上所述，propagateCancel 方法会顺着 parent 路径往上找，直到找到一个 cancelCtx 并返回它的 done，或者为 nil
+	done := parent.Done()
+	if done == nil {
+		return // parent is never canceled
+	}
+
+	select {
+    // parent 已经被 cancle 了，直接 cancle
+	case <-done:
+		// parent is already canceled
+		child.cancel(false, parent.Err())
+		return
+	default:
+	}
+    // 2. 沿着 Context 链，向上查找第一个 cancelCtx
+	if p, ok := parentCancelCtx(parent); ok {
+		p.mu.Lock()
+		if p.err != nil {
+			// parent has already been canceled
+			child.cancel(false, p.err)
+		} else {
+            // 4.
+            // 如果不为空，就把自己加入到这个 cancelCtx 的 child
+			if p.children == nil {
+				p.children = make(map[canceler]struct{})
+			}
+			p.children[child] = struct{}{}
+		}
+		p.mu.Unlock()
+	} else {
+        // 5.
+		// 如果为空，会新起一个 goroutine，由它来监听 parent 的 Done 是否已关闭
+		atomic.AddInt32(&goroutines, +1)
+		go func() {
+			select {
+			case <-parent.Done():
+				child.cancel(false, parent.Err())
+			case <-child.Done():
+			}
+		}()
+	}
+}
+
+// parentCancelCtx returns the underlying *cancelCtx for parent.
+// It does this by looking up parent.Value(&cancelCtxKey) to find
+// the innermost enclosing *cancelCtx and then checking whether
+// parent.Done() matches that *cancelCtx. (If not, the *cancelCtx
+// has been wrapped in a custom implementation providing a
+// different done channel, in which case we should not bypass it.)
+func parentCancelCtx(parent Context) (*cancelCtx, bool) {
+	done := parent.Done()
+	if done == closedchan || done == nil {
+		return nil, false
+	}
+    // 3. 
+    // 查找的方法很简单，cancelCtx.Value() 方法里面会判断 key== &cancelCtxKey
+    // 因为只有 cancelCtx 会这么判断，所以判断成功肯定是 cancelCtx
+    // 除了 emptyCtx 所有类型的 Value() 方法都会调用 c.Context.Value 向上查找，所以会递归向上查找
+	p, ok := parent.Value(&cancelCtxKey).(*cancelCtx)
+	if !ok {
+		return nil, false
+	}
+    // 判断到此处 p 已经是一个 cancelCtx 了
+	p.mu.Lock()
+    // 7. context 的 value 和 done 方法都会沿着 Context 链向上查找，所以 p.done 应该等于 done
+    // 如果不相等，说明 cancleCtx 的 done 对应的 channel 值被更改过
+	ok = p.done == done
+	p.mu.Unlock()
+	if !ok {
+		return nil, false
+	}
+	return p, true
+}
+```
+
+### 3.4 cancelCtx.cancel
+```go
+// cancel closes c.done, cancels each of c's children, and, if
+// removeFromParent is true, removes c from its parent's children.
+func (c *cancelCtx) cancel(removeFromParent bool, err error) {
+	if err == nil {
+		panic("context: internal error: missing cancel error")
+	}
+	c.mu.Lock()
+	if c.err != nil {
+		c.mu.Unlock()
+		return // already canceled
+	}
+	c.err = err
+	if c.done == nil {
+		c.done = closedchan
+	} else {
+		close(c.done)
+	}
+
+    // 递归 cancel 子 cancelCtx
+	for child := range c.children {
+		// NOTE: acquiring the child's lock while holding parent's lock.
+		child.cancel(false, err)
+	}
+	c.children = nil
+	c.mu.Unlock()
+
+	if removeFromParent {
+        // 把当前 Context 从父 cancelCtx 的 childrens 中删除
+		removeChild(c.Context, c)
+	}
+}
+
+// removeChild removes a context from its parent.
+func removeChild(parent Context, child canceler) {
+	p, ok := parentCancelCtx(parent)
+	if !ok {
+		return
+	}
+	p.mu.Lock()
+	if p.children != nil {
+		delete(p.children, child)
+	}
+	p.mu.Unlock()
+}
+```
+
+### 3.5 个人总结
+Context 的实现并不复杂，我们需要注入以下几个核心的点:
+1. Context 的 Done 方法，由于结构体嵌入会形成递归调用关系，特别是 valueCtx 会一直向上调用 parent.Done 方法直至 parent 不是 valueCtx
+2. Context 的 Value 方法中，会递归调用 parent.Value 方法，形成沿着 Context 链的向上递归调用
+
+如果你理解了这几个点，看懂 Context 的代码就比较容易了。
 
 ## 参考
 本文内容摘录自:
