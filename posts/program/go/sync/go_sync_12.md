@@ -1,13 +1,23 @@
 ---
-title: 12 Atomic 原子操作
-date: 2019-02-12
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "Atomic 原子操作"
+date: 2021-05-11T22:00:00+08:00
+lastmod: 2021-05-11T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 的原子操作"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-Atomic 原子操作
-<!-- more -->
+
 
 ## 1. Atomic 概述
 ### 1.1 原子操作
