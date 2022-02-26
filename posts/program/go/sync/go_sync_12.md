@@ -11,21 +11,24 @@ Atomic 原子操作
 
 ## 1. Atomic 概述
 ### 1.1 原子操作
-Package sync/atomic 实现了同步算法底层的"原子的内存操作"原语。之所以叫原子操作，是因为一个原子在执行的时候，其它线程不会看到执行一半的操作结果。在其它线程看来，原子操作要么执行完了，要么还没有执行，就像一个最小的粒子 - 原子一样，不可分割。
+Package sync/atomic 实现了同步算法底层的**原子的内存操作**原语。之所以叫原子操作，是因为一个原子在执行的时候，其它线程不会看到执行一半的操作结果。在其它线程看来，原子操作要么执行完了，要么还没有执行，就像一个最小的粒子 - 原子一样，不可分割。
 
 CPU 提供了基础的原子操作，不过，不同架构的系统的原子操作是不一样的:
 1. 对于单处理器单核系统:
     - 如果一个操作是由一个 CPU 指令来实现的，那么它就是原子操作
     - 如果操作是基于多条指令来实现的，那么，执行的过程中可能会被中断，并执行上下文切换，这样的话，原子性的保证就会被打破
 2. 在多处理器多核系统中:
-    - 由于 cache 的存在，单个核上的单个指令进行原子操作的时候，你要确保其它处理器或者核不访问此原子操作的地址，或者是确保其它处理器或者核总是访问原子操作之后的最新的值
+    - 由于 cache 的存在，单个核上的单个指令进行原子操作的时候，要确保其它处理器或者核不访问此原子操作的地址，或者是确保其它处理器或者核总是访问原子操作之后的最新的值
     - 不同的 CPU 架构提供了不同的 CPU 指令来完成原子操作
     - 因为不同的 CPU 架构甚至不同的版本提供的原子操作的指令是不同的，所以，要用一种编程语言实现支持不同架构的原子操作是相当有难度的，Go 语言为我们做好了这一切
-    - Go 提供了一个通用的原子操作的 API，将更底层的不同的架构下的实现封装成 atomic 包，提供了修改类型的原子操作（atomic read-modify-write，RMW）和加载存储类型的原子操作（Load 和 Store）的 API
+
+Go 提供了一个通用的原子操作的 API，将更底层的不同的架构下的实现封装成 atomic 包，提供了**修改类型的原子操作**（atomic **read-modify-write**，RMW）和**加载存储类型的原子操作**（**Load 和 Store**）的 API
 
 ### 1.2 原子操作应用场景
 原子操作适用以下场景:
-1. 首先 atomic 原子操作适用于"不涉及到对资源复杂的竞争逻辑"
+1. 首先 atomic 原子操作适用于"不涉及到对资源复杂的竞争逻辑"，比如
+  - 并发地读写某个标志变量 - 对应 read-modify-write API
+  - 配置对象的更新和加载 - 对应 Load and Store API
 2. 基于 atomic 可以实现自定义的基本并发原语，原子操作是解决并发问题的根本
 2. atomic 原子操作还是实现 lock-free 数据结构的基石，lock-freeze 数据结构的实现可以参考这篇文章[Lockless Programming Considerations for Xbox 360 and Microsoft Windows](https://docs.microsoft.com/zh-cn/windows/win32/dxtecharts/lockless-programming)
 
@@ -34,7 +37,7 @@ CPU 提供了基础的原子操作，不过，不同架构的系统的原子操�
 
 atomic 为了支持 int32、int64、uint32、uint64、uintptr、Pointer（Add 方法不支持）类型，分别提供了 AddXXX、CompareAndSwapXXX、SwapXXX、LoadXXX、StoreXXX 等方法。
 
-atomic 操作的对象是一个地址，你需要把可寻址的变量的地址作为参数传递给方法，而不是把变量的值传递给方法。下面我们就来看看 atomic 提供的方法。
+atomic 操作的对象是一个地址，你需要把**可寻址的变量的地址**作为参数传递给方法，而不是把变量的值传递给方法。下面我们就来看看 atomic 提供的方法。
 
 #### Add
 
@@ -93,6 +96,7 @@ func LoadUintptr(addr *uintptr) (val uintptr)
 
 Load 方法:
 1. 取出 addr 地址中的值，即使在多处理器、多核、有 CPU cache 的情况下，这个操作也能保证 Load 是一个原子操作
+2. LoadPointer 保证的是原子的读取 Pointer 指针的值，而不是保证原子的读取 Pointer 指向的对象
 
 #### Store
 ```go
@@ -116,7 +120,7 @@ type Value
 ```
 
 Value 类型:
-1. 可以原子地存取对象类型，但也只能存取，不能 CAS 和 Swap，常常用在配置变更等场景中
+1. 可以**原子地存取对象类型**，但也只能存取，不能 CAS 和 Swap，**常常用在配置变更等场景中**
 
 接下来，我们以一个配置变更的例子，来演示 Value 类型的使用。
 
@@ -178,7 +182,7 @@ fmt.Println(running.Load()) // false
 atomic.Value 只有 Load/Store 方法，可以参考[这篇文章](https://github.com/golang/go/issues/39351)为其增加 Swap 和 CompareAndSwap 方法。
 
 ### 3. 使用 atomic 实现 Lock-Free queue
-atomic 常常用来实现 Lock-Free 的数据结构，这里我们实现一个  Lock-Free queue。
+atomic 常常用来实现 Lock-Free 的数据结构，这里我们实现一个  Lock-Free queue。(sync.Pool 的实现中就包含了一个 lock-free queue 的实现 poolDequeue)
 
 ```go
 
@@ -258,13 +262,13 @@ func cas(p *unsafe.Pointer, old, new *node) (ok bool) {
 
 
 ## 4. 对一个地址的赋值是原子操作吗？
-如何理解 atomic 和直接内存操作的区别？(参见[Dave Cheney](https://dave.cheney.net/2018/01/06/if-aligned-memory-writes-are-atomic-why-do-we-need-the-sync-atomic-package))
+对一个地址的赋值是原子操作吗？这是一个很有趣的问题，如果是原子操作，还要 atomic 包干什么(Value 类型的 Store Load 方法)？如何理解 atomic 和直接内存操作的区别？(参见[Dave Cheney](https://dave.cheney.net/2018/01/06/if-aligned-memory-writes-are-atomic-why-do-we-need-the-sync-atomic-package))
 1. 在现在的系统中，write 的地址基本上都是对齐的（aligned），对齐地址的写，不会导致其他人看到只写了一半的数据，因为它通过一个指令就可以实现对地址的操作
 2. 如果地址不是对齐的话，那么，处理器就需要分成两个指令去处理，如果执行了一个指令，其它人就会看到更新了一半的错误的数据，这被称做撕裂写（torn write）
 3. 所以，你可以认为赋值操作是一个原子操作，这个“原子操作”可以认为是保证数据的完整性。
 4. 对于现代的多处理多核的系统来说，由于 cache、指令重排，可见性等问题，我们对原子操作的意义有了更多的追求。在多核系统中，一个核对地址的值的更改，在更新到主内存中之前，是在多级缓存中存放的。这时，多个核看到的数据可能是不一样的，其它的核可能还没有看到更新的数据，还在使用旧的数据。
-5. 多处理器多核心系统为了处理这类问题，使用了一种叫做内存屏障（memory fence 或 memory barrier）的方式。一个写内存屏障会告诉处理器，必须要等到它管道中的未完成的操作（特别是写操作）都被刷新到内存中，再进行操作。此操作还会让相关的处理器的 CPU 缓存失效，以便让它们从主存中拉取最新的值。
-6. atomic 包提供的方法会提供内存屏障的功能，所以，atomic 不仅仅可以保证赋值的数据完整性，还能保证数据的可见性，一旦一个核更新了该地址的值，其它处理器总是能读取到它的最新值。但是，需要注意的是，因为需要处理器之间保证数据的一致性，atomic 的操作也是会降低性能的。
+5. 多处理器多核心系统为了处理这类问题，使用了一种叫做**内存屏障（memory fence 或 memory barrier）**的方式。一个写内存屏障会告诉处理器，必须要等到它管道中的未完成的操作（特别是写操作）都被刷新到内存中，再进行操作。此操作还会让相关的处理器的 CPU 缓存失效，以便让它们从主存中拉取最新的值。
+6. atomic 包提供的方法会提供内存屏障的功能，所以，**atomic 不仅仅可以保证赋值的数据完整性，还能保证数据的可见性**，一旦一个核更新了该地址的值，其它处理器总是能读取到它的最新值。但是，需要注意的是，因为需要处理器之间保证数据的一致性，atomic 的操作也是会降低性能的。
 
 ## 参考
 本文内容摘录自:

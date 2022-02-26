@@ -102,7 +102,7 @@ Go 1.13 之前的 sync.Pool 的实现有 2 大问题：
 
 在 Go 1.13 中，sync.Pool 做了大量的优化。优化的方式就是避免使用锁，同时将加锁的 queue 改成 lock-free 的 queue 的实现，给即将移除的元素再多一次“复活”的机会。sync.Pool 的数据结构如下图所示：
 
-![Pool](/images/go/sync/Pool.jpg)
+![Pool](/images/go/sync/pool.jpg)
 
 Pool 实现中:
 1. 每次垃圾回收的时候，Pool 会把 victim 中的对象移除，然后把 local 的数据给 victim
