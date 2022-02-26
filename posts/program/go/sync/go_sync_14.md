@@ -1,13 +1,23 @@
 ---
-title: 14 Channel 应用
-date: 2019-02-12
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "Channel 应用"
+date: 2021-05-11T22:00:00+08:00
+lastmod: 2021-05-11T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "channel 的应用"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-应用
-<!-- more -->
+
 
 ## 1. 使用反射操作 Channel
 在学习如何使用 Channel 之前，我们来看看如何通过反射的方式执行 select 语句，这在处理很多的 case clause，尤其是不定长的 case clause 的时候，非常有用。
@@ -101,112 +111,7 @@ func createCases(chs ...chan int) []reflect.SelectCase {
 从 chan 的内部实现看，它是以一个循环队列的方式存放数据，所以，它有时候也会被当成线程安全的队列和 buffer 使用。我们来看几个例子。
 
 ### 2.1 worker 池
-Marcio Castilho 在 [使用 Go 每分钟处理百万请求](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/)  这篇文章中，就介绍了他们应对大并发请求的设计。他们将用户的请求放在一个 chan Job 中，这个 chan Job 就相当于一个待处理任务队列。除此之外，还有一个 chan chan Job 队列，用来存放可以处理任务的 worker 的缓存队列。下面核心代码实现:
-
-```go
-// 1. 定义Worker 池和消息队列的长度
-var (
-	MaxWorker = os.Getenv("MAX_WORKERS")
-	MaxQueue  = os.Getenv("MAX_QUEUE")
-)
-
-// 2. 定义任务队列 
-type Job struct {
-	Payload Payload
-}
-
-var JobQueue chan Job
-
-// 3. 定义 Worker
-type Worker struct {
-	WorkerPool  chan chan Job 
-	JobChannel  chan Job  // 接收任务
-	quit    	chan bool // Worker 退出
-}
-
-func NewWorker(workerPool chan chan Job) Worker {
-	return Worker{
-		WorkerPool: workerPool,
-		JobChannel: make(chan Job),
-		quit:       make(chan bool)}
-}
-// 3.1 启动任务
-func (w Worker) Start() {
-	go func() {
-		for {
-			// 重要: register the current worker into the worker queue.
-			w.WorkerPool <- w.JobChannel
-
-			select {
-			case job := <-w.JobChannel:
-				// we have received a work request.
-				if err := job.Payload.UploadToS3(); err != nil {
-					log.Errorf("Error uploading to S3: %s", err.Error())
-				}
-
-			case <-w.quit:
-				// we have received a signal to stop
-				return
-			}
-		}
-	}()
-}
-
-// 3.2 停止任务
-func (w Worker) Stop() {
-	go func() {
-		w.quit <- true
-	}()
-}
-
-// 4. 创建 Worker Pool
-type Dispatcher struct {
-	WorkerPool chan chan Job
-}
-
-func NewDispatcher(maxWorkers int) *Dispatcher {
-	pool := make(chan chan Job, maxWorkers)
-	return &Dispatcher{WorkerPool: pool}
-}
-
-func (d *Dispatcher) Run() {
-    // starting n number of workers
-	for i := 0; i < d.maxWorkers; i++ {
-		worker := NewWorker(d.pool)
-		worker.Start()
-	}
-
-	go d.dispatch()
-}
-// 4.1 将任务从 JobQueue 放入到 Woker Pool 中某一个 Workder 的 JobChannel 中，来调用 Worker
-func (d *Dispatcher) dispatch() {
-	for {
-		select {
-		case job := <-JobQueue:
-			// a job request has been received
-			go func(job Job) {
-				// try to obtain a worker job channel that is available.
-				// this will block until a worker is idle
-				jobChannel := <-d.WorkerPool
-
-				// dispatch the job to the worker job channel
-				jobChannel <- job
-			}(job)
-		}
-	}
-}
-// 5. 使用 Worker Pool
-func payloadHandler(w http.ResponseWriter, r *http.Request) {
-    for _, payload := range content.Payloads {
-
-        // let's create a job with the payload
-        work := Job{Payload: payload}
-
-        // Push the work onto the queue.
-        JobQueue <- work
-    }
-}
-```
+Marcio Castilho 在 [使用 Go 每分钟处理百万请求](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/)  这篇文章中，就介绍了他们应对大并发请求的设计。他们将用户的请求放在一个 chan Job 中，这个 chan Job 就相当于一个待处理任务队列。除此之外，还有一个 chan chan Job 队列，用来存放可以处理任务的 worker 的缓存队列。具体的实现参见 [Go Work Pool]({{< ref "posts/program/go/modules/33_work_pool.md" >}})
 
 ## 3. 数据传递
 下面是一个数据传递(任务编排)的例子，让四个 goroutine 顺序打印 1,2,3,4
@@ -400,7 +305,7 @@ Or-Done 模式是信号通知模式中更宽泛的一种模式。我们会使用
 1. 我们为这个任务定义一个类型为 chan struct{}类型的 done 变量
 2. 等任务结束后，我们就可以 close 这个变量，然后，其它 receiver 就会收到这个通知。
 
-这是有一个任务的情况，如果有多个任务，只要有任意一个任务执行完，我们就想获得这个信号，这就是 Or-Done 模式。比如发送同一个请求到多个微服务节点，只要任意一个微服务返回结果就算成功。下面是Or-Done 的一个实现:
+这是有一个任务的情况，**如果有多个任务，只要有任意一个任务执行完，我们就想获得这个信号，这就是 Or-Done 模式**。比如发送同一个请求到多个微服务节点，只要任意一个微服务返回结果就算成功。下面是Or-Done 的一个实现:
 
 ```go
 
@@ -471,7 +376,7 @@ func or(channels ...<-chan interface{}) <-chan interface{} {
 ```
 
 ### 6.2 扇入
-Channel 扇入模式来说，是指有多个源 Channel 输入、一个目的 Channel 输出的情况。每个源 Channel 的元素都会发送给目标 Channel，相当于目标 Channel 的 receiver 只需要监听目标 Channel，就可以接收所有发送给源 Channel 的数据。
+Channel 扇入模式来说，是指有多个源 Channel 输入、一个目的 Channel 输出的情况。每个源 Channel 的元素都会发送给目标 Channel，相当于目标 Channel 的 receiver 只需要监听目标 Channel，就可以接收所有发送给源 Channel 的数据。即**合并多个 channel 为一个 channel**
 
 扇入模式也可以使用反射、递归，或者是用最笨的每个 goroutine 处理一个 Channel 的方式来实现。
 
@@ -553,10 +458,9 @@ func mergeTwo(a, b <-chan interface{}) <-chan interface{} {
 ```
 
 ### 6.3 扇出
-扇出模式只有一个输入源 Channel，有多个目标 Channel，经常用在设计模式中的观察者模式中，将一个一个对象的状态变化通知到多个观察者中。扇入模式也可以使用反射、递归，或者是用最笨的每个 goroutine 处理一个 Channel 的方式来实现。
+扇出模式只有一个输入源 Channel，有多个目标 Channel，经常用在设计模式中的观察者模式中，将一个一个对象的状态变化通知到多个观察者中。扇入模式也可以使用反射、递归，或者是用最笨的每个 goroutine 处理一个 Channel 的方式来实现。**即消息的广播**。
 
 
-#### 反射实现
 ```go
 
 func fanOut(ch <-chan interface{}, out []chan interface{}, async bool) {
@@ -570,6 +474,7 @@ func fanOut(ch <-chan interface{}, out []chan interface{}, async bool) {
         for v := range ch { // 从输入chan中读取数据
             v := v
             for i := 0; i < len(out); i++ {
+                // 注意这里的赋值
                 i := i
                 if async { //异步
                     go func() {
@@ -582,10 +487,6 @@ func fanOut(ch <-chan interface{}, out []chan interface{}, async bool) {
         }
     }()
 }
-```
-
-#### 递归实现
-```go
 ```
 
 ### 6.4 Stream
