@@ -1,13 +1,22 @@
 ---
-title: 15 Golang 内存模型
-date: 2019-02-15
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go 内存模型"
+date: 2021-05-13T22:00:00+08:00
+lastmod: 2021-05-13T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 内存模型"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-内存模型
-<!-- more -->
 
 ## 1. Go 内存模型概述
 [Go 内存模型](https://golang.org/ref/mem) 描述的是并发环境中多 goroutine 读相同变量的时候，变量的可见性条件。具体点说，就是指，**在什么条件下，goroutine 在读取一个变量的值的时候，能够看到其它 goroutine 对这个变量进行的写的结果**。
