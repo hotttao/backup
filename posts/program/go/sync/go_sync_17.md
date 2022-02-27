@@ -1,26 +1,37 @@
 ---
-title: 17 SingleFlight 请求合并
-date: 2019-02-17
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go SingleFlight 请求合并"
+date: 2021-05-16T22:00:00+08:00
+lastmod: 2021-05-16T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go SingleFlight 请求合并"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-SingleFlight 
-<!-- more -->
+
 
 ## 1. SingleFlight 栅栏概述
 SingleFlight 的作用是将并发请求合并成一个请求，以减少对下层服务的压力。当多个 goroutine 同时调用同一个函数的时候，只让一个 goroutine 去调用这个函数，等到这个 goroutine 返回结果的时候，再把结果返回给这几个同时调用的 goroutine，这样可以减少并发调用的数量。
 
-如果你学会了 SingleFlight，在面对秒杀等大并发请求的场景，而且这些请求都是读请求时，你就可以把这些请求合并为一个请求，这样，你就可以将后端服务的压力从 n 降到 1。尤其是在面对后端是数据库这样的服务的时候，采用 SingleFlight 可以极大地提高性能。
+如果你学会了 SingleFlight，**在面对秒杀等大并发请求的场景，而且这些请求都是读请求时，你就可以把这些请求合并为一个请求，这样，你就可以将后端服务的压力从 n 降到 1**。**尤其是在面对后端是数据库这样的服务的时候，采用 SingleFlight 可以极大地提高性能。**
 
 Go 标准库的代码中就有一个 [SingleFlight](https://github.com/golang/go/blob/50bd1c4d4eb4fac8ddeb5f063c099daccfb71b26/src/internal/singleflight/singleflight.go) 的实现，而扩展库中的 SingleFlight(golang.org/x/sync/singleflight) 就是在标准库的代码基础上改的，逻辑几乎一模一样。
 
 ### 1.1 SingleFlight 与 Sync.Once
 
 标准库中的 sync.Once 也可以保证并发的 goroutine 只会执行一次函数 f，那么，SingleFlight 和 sync.Once 有什么区别呢？
-
-sync.Once 不是只在并发的时候保证只有一个 goroutine 执行函数 f，而是会保证永远只执行一次，而 SingleFlight 是每次调用都重新执行，并且在多个请求同时调用的时候只有一个执行。它们两个面对的场景是不同的，sync.Once 主要是用在单次初始化场景中，而 SingleFlight 主要用在合并并发请求的场景中，尤其是缓存场景。
+1. sync.Once 不是只在并发的时候保证只有一个 goroutine 执行函数 f，而是会保证永远只执行一次
+2. SingleFlight 是每次调用都重新执行，并且在多个请求同时调用的时候只有一个执行。
+3. 它们两个面对的场景是不同的，sync.Once 主要是用在单次初始化场景中，而 SingleFlight 主要用在合并并发请求的场景中，尤其是缓存场景。
 
 ## 2. 实现原理
 SingleFlight 使用互斥锁 Mutex 和 Map 来实现。Mutex 提供并发时的读写保护，Map 用来保存同一个 key 的正在处理（in flight）的请求。SingleFlight 的数据结构是 Group，它提供了三个方法：
@@ -68,9 +79,9 @@ type call struct {
 
 // group代表一个singleflight对象
 type Group struct {
-mu sync.Mutex       // protects m
-m  map[string]*call // lazily initialized
-  }
+  mu sync.Mutex       // protects m
+  m  map[string]*call // lazily initialized
+}
 ```
 
 ### 2.2 Do 方法
@@ -145,9 +156,7 @@ func metaImportsForPrefix(importPrefix string, mod ModuleMode, security web.Secu
             ......
 ```
 
-设计缓存问题时，我们常常需要解决缓存穿透、缓存雪崩和缓存击穿问题。缓存击穿问题是指，在平常高并发的系统中，大量的请求同时查询一个 key 时，如果这个 key 正好过期失效了，就会导致大量的请求都打到数据库上。这就是缓存击穿。用 SingleFlight 来解决缓存击穿问题再合适不过了。因为，这个时候，只要这些对同一个 key 的并发请求的其中一个到数据库中查询，就可以了，这些并发的请求可以共享同一个结果。因为是缓存查询，不用考虑幂等性问题。
-
-在 Go 生态圈知名的缓存框架 groupcache 中，就使用了较早的 Go 标准库的 SingleFlight 实现。
+设计缓存问题时，我们常常需要解决缓存穿透、缓存雪崩和缓存击穿问题。缓存击穿问题是指，在平常高并发的系统中，大量的请求同时查询一个 key 时，如果这个 key 正好过期失效了，就会导致大量的请求都打到数据库上。这就是缓存击穿。用 SingleFlight 来解决缓存击穿问题再合适不过了。因为，这个时候，只要这些对同一个 key 的并发请求的其中一个到数据库中查询，就可以了，这些并发的请求可以共享同一个结果。因为是缓存查询，不用考虑幂等性问题。在 Go 生态圈知名的缓存框架 groupcache 中，就使用了较早的 Go 标准库的 SingleFlight 实现。
 
 ## 参考
 本文内容摘录自:

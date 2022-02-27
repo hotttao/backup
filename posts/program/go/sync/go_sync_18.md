@@ -1,36 +1,48 @@
 ---
-title: 18 CyclicBarrier 循环栅栏
-date: 2019-02-18
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go CyclicBarrier 循环栅栏"
+date: 2021-05-17T22:00:00+08:00
+lastmod: 2021-05-17T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go CyclicBarrier 循环栅栏"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-CyclicBarrier  
-<!-- more -->
+
 
 ## 1. CyclicBarrier 概述
 [CyclicBarrier](https://github.com/marusama/cyclicbarrier) 是一个可重用的栅栏并发原语，常常应用于重复进行一组 goroutine 同时执行的场景中。
 
-CyclicBarrier允许一组 goroutine 彼此等待，到达一个共同的执行点。同时，因为它可以被重复使用，所以叫循环栅栏。具体的机制是，大家都在栅栏前等待，等全部都到齐了，就抬起栅栏放行。
+**CyclicBarrier允许一组 goroutine 彼此等待，到达一个共同的执行点**。同时，因为它可以被重复使用，所以叫循环栅栏。具体的机制是，大家都在栅栏前等待，等全部都到齐了，就抬起栅栏放行。
 
 
 ### 1.1 CyclicBarrier 与 WaitGroup
-你可能会觉得，CyclicBarrier 和 WaitGroup 的功能有点类似，确实是这样。不过，CyclicBarrier 更适合用在“固定数量的 goroutine 等待同一个执行点”的场景中，而且在放行 goroutine 之后，CyclicBarrier 可以重复利用，不像 WaitGroup 重用的时候，必须小心翼翼避免 panic。
+你可能会觉得，CyclicBarrier 和 WaitGroup 的功能有点类似，确实是这样。不过还是有区别的:
+1. CyclicBarrier 更适合用在“固定数量的 goroutine 等待同一个执行点”的场景中，
+2. 而且在放行 goroutine 之后，CyclicBarrier 可以重复利用，
+3. 不像 WaitGroup 重用的时候，必须小心翼翼避免 panic。
 
 处理可重用的多 goroutine 等待同一个执行点的场景的时候，CyclicBarrier 和 WaitGroup 方法调用的对应关系如下：
 
 ![Mutex实现原理](/images/go/sync/CyclicBarrier.jpg)
 
-如果使用 WaitGroup 实现的话，调用比较复杂，不像 CyclicBarrier 那么清爽。更重要的是，如果想重用 WaitGroup，你还要保证，将 WaitGroup 的计数值重置到 n 的时候不会出现并发问题。WaitGroup 更适合用在“一个 goroutine 等待一组 goroutine 到达同一个执行点”的场景中，或者是不需要重用的场景中。
+如果使用 WaitGroup 实现的话，调用比较复杂，不像 CyclicBarrier 那么清爽。更重要的是，如果想重用 WaitGroup，你还要保证，将 WaitGroup 的计数值重置到 n 的时候不会出现并发问题。**WaitGroup 更适合用在“一个 goroutine 等待一组 goroutine 到达同一个执行点”的场景中，或者是不需要重用的场景中。**
 
 ### 1.2 CyclicBarrier 使用
-
 CyclicBarrier 有两个初始化方法：
 1. 第一个是 New 方法，它只需要一个参数，来指定循环栅栏参与者的数量；
 2. 第二个方法是 NewWithAction
     - 它额外提供一个函数，可以在每一次到达执行点的时候执行一次
-    - 执行具体的时间点是在最后一个参与者到达之后，但是其它的参与者还未被放行之前。我们可以利用它，做放行之前的一些共享状态的更新等操作。
+    - 执行具体的时间点是在**最后一个参与者到达之后，但是其它的参与者还未被放行之前**。我们可以利用它，做放行之前的一些共享状态的更新等操作。
 
 ```go
 
@@ -230,6 +242,140 @@ func (h2o *H2O) oxygen(releaseOxygen func()) {
 ```
 
 使用 WaitGroup 非常复杂，而且，重用和 Done 方法的调用有并发的问题，程序可能 panic，远远没有使用循环栅栏更加简单直接。
+
+### 1.3 CyclicBarrier 的实现
+#### CyclicBarrier 的数据结构
+```go
+// round
+type round struct {
+	count    int           // count of goroutines for this roundtrip
+	waitCh   chan struct{} // wait channel for this roundtrip
+	brokeCh  chan struct{} // channel for isBroken broadcast
+	isBroken bool          // is barrier broken
+}
+
+// cyclicBarrier impl CyclicBarrier intf
+type cyclicBarrier struct {
+	parties       int
+	barrierAction func() error
+
+	lock  sync.RWMutex
+	round *round
+}
+
+// New initializes a new instance of the CyclicBarrier, specifying the number of parties.
+func New(parties int) CyclicBarrier {
+	if parties <= 0 {
+		panic("parties must be positive number")
+	}
+	return &cyclicBarrier{
+		parties: parties,
+		lock:    sync.RWMutex{},
+		round: &round{
+			waitCh:  make(chan struct{}),
+			brokeCh: make(chan struct{}),
+		},
+	}
+}
+```
+
+#### Await
+```go
+func (b *cyclicBarrier) Await(ctx context.Context) error {
+	var (
+		ctxDoneCh <-chan struct{}
+	)
+	if ctx != nil {
+		ctxDoneCh = ctx.Done()
+	}
+
+	// check if context is done
+	select {
+	case <-ctxDoneCh:
+		return ctx.Err()
+	default:
+	}
+
+	b.lock.Lock()
+
+	// check if broken
+	if b.round.isBroken {
+		b.lock.Unlock()
+		return ErrBrokenBarrier
+	}
+
+	// increment count of waiters
+	b.round.count++
+
+	// saving in local variables to prevent race
+	waitCh := b.round.waitCh
+	brokeCh := b.round.brokeCh
+	count := b.round.count
+
+	b.lock.Unlock()
+
+	if count > b.parties {
+		panic("CyclicBarrier.Await is called more than count of parties")
+	}
+
+	if count < b.parties {
+		// wait other parties
+		select {
+		case <-waitCh:
+			return nil
+		case <-brokeCh:
+			return ErrBrokenBarrier
+		case <-ctxDoneCh:
+			b.breakBarrier(true)
+			return ctx.Err()
+		}
+	} else {
+		// we are last, run the barrier action and reset the barrier
+		if b.barrierAction != nil {
+			err := b.barrierAction()
+			if err != nil {
+				b.breakBarrier(true)
+				return err
+			}
+		}
+		b.reset(true)
+		return nil
+	}
+}
+
+func (b *cyclicBarrier) reset(safe bool) {
+	b.lock.Lock()
+	defer b.lock.Unlock()
+
+	if safe {
+		// broadcast to pass waiting goroutines
+		close(b.round.waitCh)
+
+	} else if b.round.count > 0 {
+		b.breakBarrier(false)
+	}
+
+	// create new round
+	b.round = &round{
+		waitCh:  make(chan struct{}),
+		brokeCh: make(chan struct{}),
+	}
+}
+
+func (b *cyclicBarrier) breakBarrier(needLock bool) {
+	if needLock {
+		b.lock.Lock()
+		defer b.lock.Unlock()
+	}
+
+	if !b.round.isBroken {
+		b.round.isBroken = true
+
+		// broadcast
+		close(b.round.brokeCh)
+	}
+}
+```
 
 ## 参考
 本文内容摘录自:
