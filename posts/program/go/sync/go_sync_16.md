@@ -1,16 +1,25 @@
 ---
-title: 16 信号量
-date: 2019-02-16
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go 信号量"
+date: 2021-05-15T22:00:00+08:00
+lastmod: 2021-05-15T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "go 信号量"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-信号量
-<!-- more -->
 
 ## 1. 信号量概述
-信号量（Semaphore）是用来控制多个 goroutine 同时访问多个资源的并发原语。最简单的信号量就是一个变量加一些并发控制的能力，更复杂的信号量类型，就是使用抽象数据类型代替变量，用来代表复杂的资源类型。实际上，大部分的信号量都使用一个整型变量来表示一组资源，并没有实现太复杂的抽象数据类型。
+信号量（Semaphore）是用来控制多个 goroutine 同时访问多个资源的并发原语。最简单的信号量就是**一个变量加一些并发控制的能力**，更复杂的信号量类型，就是使用**抽象数据类型代替变量，用来代表复杂的资源类型**。实际上，大部分的信号量都使用一个整型变量来表示一组资源，并没有实现太复杂的抽象数据类型。
 
 信号量这个并发原语在多资源共享的并发控制的场景中被广泛使用，有时候也会被 Channel 类型所取代，因为一个 buffered chan 也可以代表 n 个资源。
 
@@ -234,7 +243,7 @@ notifyWaiters 方法是按照先入先出的方式唤醒调用者。这样做的
 
 #### 2.4 总结
 
-官方扩展的信号量最大的优势是可以一次获取多个资源。在批量获取资源的场景中，建议使用此官方扩展的信号量。
+**官方扩展的信号量最大的优势是可以一次获取多个资源**。在批量获取资源的场景中，建议使用此官方扩展的信号量。
 
 ## 3. Channel 实现的信号量
 除了官方扩展库的实现，还有很多方法实现信号量，比较典型的就是使用 Channel 来实现。使用一个 buffer 为 n 的 Channel 很容易实现信号量:
@@ -257,12 +266,12 @@ return &semaphore{ch: make(chan struct{}, capacity)}
 
 // 请求一个资源
 func (s *semaphore) Lock() {
-s.ch <- struct{}{}
+  s.ch <- struct{}{}
 }
 
 // 释放资源
 func (s *semaphore) Unlock() {
-<-s.ch
+  <-s.ch
 }
 ```
 
