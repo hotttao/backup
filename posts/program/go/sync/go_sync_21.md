@@ -1,13 +1,22 @@
 ---
-title: 21 分布式并发原语二
-date: 2019-02-21
-categories:
-    - Go
-tags:
-    - go并发编程
+weight: 1
+title: "go 分布式并发原语二"
+date: 2021-05-20T22:00:00+08:00
+lastmod: 2021-05-20T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "基于 etcd 的分布式队列、栅栏和 STM"
+featuredImage: 
+
+tags: ["go 并发"]
+categories: ["Go"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
-今天，我们来学习下基于 etcd 的分布式队列、栅栏和 STM。
-<!-- more -->
 
 
 ## 1. 分布式队列
