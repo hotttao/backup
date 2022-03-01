@@ -1,3 +1,23 @@
+---
+weight: 1
+title: "文本和字节序列"
+date: 2018-01-04T22:00:00+08:00
+lastmod: 2018-01-04T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Python 文本和字节序列"
+featuredImage: 
+
+tags: ["python 进阶"]
+categories: ["Python"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
 # 1.4 文本和字节序列
 ## 1. 字符与字节
 ### 1.1 字符的理解

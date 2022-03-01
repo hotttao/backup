@@ -1,3 +1,23 @@
+---
+weight: 1
+title: "字典和集合"
+date: 2018-01-03T22:00:00+08:00
+lastmod: 2018-01-03T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Python 字典和集合"
+featuredImage: 
+
+tags: ["python 进阶"]
+categories: ["Python"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
 # 1.3 字典和集合
 ## 1. 内置散列类型概览
 ![内置散列类型概览](../image/maping_abc.png)

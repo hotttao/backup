@@ -1,3 +1,23 @@
+---
+weight: 1
+title: "序列"
+date: 2018-01-02T22:00:00+08:00
+lastmod: 2018-01-02T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Python 序列，迭代器与生成器"
+featuredImage: 
+
+tags: ["python 进阶"]
+categories: ["Python"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
 # 1.2 序列
 ## 1. 内置序列类型概览
 1. **容器序列**:

@@ -1,3 +1,23 @@
+---
+weight: 1
+title: "Python 数据模型"
+date: 2018-01-01T22:00:00+08:00
+lastmod: 2018-01-01T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "这个系列我们开始学习 Python 语言的第二部分-进阶"
+featuredImage: 
+
+tags: ["python 进阶"]
+categories: ["Python"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
 # 1.1 Python 数据模型
 
 ## 1. 语言特性
