@@ -176,3 +176,226 @@ func makechan(t *chantype, size int) *hchan {
 
 ## 3. slice
 slice 动态数组，可以自动对数组进行扩缩容。
+
+### 3.1 切片的初始化和操作
+声明和初始化切片有如下几种方式:
+
+```go
+// 1. 变量声明
+var s []int // s 为 nil 未分配空间
+
+// 2. 字面量
+s := []int{}
+s := []int{1, 2, 3}
+
+// 3. make
+s := make([]int, 2, 100)
+
+// 4. 切片
+array := [5]int{1, 2, 3, 4, 5}
+s := array[0:2:5]
+```
+
+内置函数 append() 用于向切片中追加元素:
+
+```go
+s := make([]int, 9)
+s = append(s, 1)
+s = append(s, 2, 3, 4)
+s = append(s []int{5, 6}...)
+```
+### 3.2 slice 实现
+slice 定义在 src/runtime/slice.go 中，由 makeslice 函数创建:
+
+```go
+type slice struct {
+	array unsafe.Pointer // 指向底层数组
+	len   int
+	cap   int
+}
+
+func makeslice(et *_type, len, cap int) unsafe.Pointer {
+	mem, overflow := math.MulUintptr(et.size, uintptr(cap))
+	if overflow || mem > maxAlloc || len < 0 || len > cap {
+		// NOTE: Produce a 'len out of range' error instead of a
+		// 'cap out of range' error when someone does make([]T, bignumber).
+		// 'cap out of range' is true too, but since the cap is only being
+		// supplied implicitly, saying len is clearer.
+		// See golang.org/issue/4085.
+		mem, overflow := math.MulUintptr(et.size, uintptr(len))
+		if overflow || mem > maxAlloc || len < 0 {
+			panicmakeslicelen()
+		}
+		panicmakeslicecap()
+	}
+
+	return mallocgc(mem, et, true)
+}
+
+// slice 扩缩容处理
+func growslice(et *_type, old slice, cap int) slice {}
+
+// slice copy 操作实现
+func slicecopy(toPtr unsafe.Pointer, toLen int, fromPtr unsafe.Pointer, fromLen int, width uintptr) int
+```
+
+slice 的 struct 定义以及底层的数组指针决定了其具有如下的赋值特性: 
+1. **赋值操作会复制整个 struct 但是共享底层的数组**
+3. 赋值前后，数组的 len 和 cap 是独立的，但共享的底层数组是可能导致读写冲突的
+
+另外，slice 的扩容和拷贝规则如下:
+1. slice 的容量小于 1024 时，新的容量扩大为原来的 2 倍
+2. slice 的容量大于 1024 时，新的容量扩大为原来的 1.25 倍
+3. 使用 copy() 内置函数拷贝两个切片是，会将源切片数据逐个拷贝到目的切片指向的数组，拷贝数量取两个切片长度的最小值。
+
+最后 slice 的切片有一个扩展表达式 `a[low:high:max]` max 用于限定新生成的切片容量，**注意 max 表示的是到哪，而不是有多少个**，新生成的切片:
+1. len=high-low
+2. cap=max-low
+
+## 4. map
+map 定义在 src/runtime/map.go 中，由 makemap 函数创建
+
+```go
+// A header for a Go map.
+type hmap struct {
+	// Note: the format of the hmap is also encoded in cmd/compile/internal/gc/reflect.go.
+	// Make sure this stays in sync with the compiler's definition.
+	count     int // # live cells == size of map.  Must be first (used by len() builtin)
+	flags     uint8
+	B         uint8  // log_2 of # of buckets (can hold up to loadFactor * 2^B items)
+	noverflow uint16 // approximate number of overflow buckets; see incrnoverflow for details
+	hash0     uint32 // hash seed
+
+	buckets    unsafe.Pointer // array of 2^B Buckets. may be nil if count==0.
+	oldbuckets unsafe.Pointer // previous bucket array of half the size, non-nil only when growing
+	nevacuate  uintptr        // progress counter for evacuation (buckets less than this have been evacuated)
+
+	extra *mapextra // optional fields
+}
+
+// mapextra holds fields that are not present on all maps.
+type mapextra struct {
+	// If both key and elem do not contain pointers and are inline, then we mark bucket
+	// type as containing no pointers. This avoids scanning such maps.
+	// However, bmap.overflow is a pointer. In order to keep overflow buckets
+	// alive, we store pointers to all overflow buckets in hmap.extra.overflow and hmap.extra.oldoverflow.
+	// overflow and oldoverflow are only used if key and elem do not contain pointers.
+	// overflow contains overflow buckets for hmap.buckets.
+	// oldoverflow contains overflow buckets for hmap.oldbuckets.
+	// The indirection allows to store a pointer to the slice in hiter.
+	overflow    *[]*bmap
+	oldoverflow *[]*bmap
+
+	// nextOverflow holds a pointer to a free overflow bucket.
+	nextOverflow *bmap
+}
+
+// A bucket for a Go map.
+type bmap struct {
+	// tophash generally contains the top byte of the hash value
+	// for each key in this bucket. If tophash[0] < minTopHash,
+	// tophash[0] is a bucket evacuation state instead.
+	tophash [bucketCnt]uint8
+	// Followed by bucketCnt keys and then bucketCnt elems.
+	// NOTE: packing all the keys together and then all the elems together makes the
+	// code a bit more complicated than alternating key/elem/key/elem/... but it allows
+	// us to eliminate padding which would be needed for, e.g., map[int64]int8.
+	// Followed by an overflow pointer.
+}
+
+// makemap implements Go map creation for make(map[k]v, hint).
+// If the compiler has determined that the map or the first bucket
+// can be created on the stack, h and/or bucket may be non-nil.
+// If h != nil, the map can be created directly in h.
+// If h.buckets != nil, bucket pointed to can be used as the first bucket.
+func makemap(t *maptype, hint int, h *hmap) *hmap {
+	mem, overflow := math.MulUintptr(uintptr(hint), t.bucket.size)
+	if overflow || mem > maxAlloc {
+		hint = 0
+	}
+
+	// initialize Hmap
+	if h == nil {
+		h = new(hmap)
+	}
+	h.hash0 = fastrand()
+
+	// Find the size parameter B which will hold the requested # of elements.
+	// For hint < 0 overLoadFactor returns false since hint < bucketCnt.
+	B := uint8(0)
+	for overLoadFactor(hint, B) {
+		B++
+	}
+	h.B = B
+
+	// allocate initial hash table
+	// if B == 0, the buckets field is allocated lazily later (in mapassign)
+	// If hint is large zeroing this memory could take a while.
+	if h.B != 0 {
+		var nextOverflow *bmap
+		h.buckets, nextOverflow = makeBucketArray(t, h.B, nil)
+		if nextOverflow != nil {
+			h.extra = new(mapextra)
+			h.extra.nextOverflow = nextOverflow
+		}
+	}
+
+	return h
+}
+
+func makeBucketArray(t *maptype, b uint8, dirtyalloc unsafe.Pointer) (buckets unsafe.Pointer, nextOverflow *bmap){}
+```
+
+一个哈希表有如下实现要点:
+1. 首先哈希表由哈希函数和底层的数组组成
+2. 哈希函数用来定位 key 的存储位置，并可能存在哈希冲突
+2. 当负载因子高或者低时，哈希表需要动态扩缩容(rehash)
+
+### 4.1 底层数组
+hmap.buckets 就是 hmap 的底层数组，它由 bmap 定义，注意 bmap 的完整定义如下:
+
+```go
+type bmap struct {
+	tophash [bucketCnt]uint8
+	data []byte
+	overflow *bmap
+}
+```
+
+其中:
+1. tophash:
+	- 用来存储 Hash 值的高 8 位
+	- 这个字段与 hmap 的定位过程有关，后面就会看到它存在的意义
+2. data: 
+	- 存放的是key-value 数据
+	- 内存布局是 key/key/.....value/value
+	- 这么存储是为了节省字节对齐带来的空间浪费
+3. overflow:
+	- 指向下一个 bucket
+	- hmap 使用链表法解决哈希冲突
+
+注意: data 和 overflow 并没有显示的定义在结构体中，运行时在访问 bucket 时直接通过指针的偏移来访问这些虚拟成员。
+
+### 4.2 key 定位过程
+hmap 的增删改查都需要先定位 key 在 buckets 中的位置， hmap 定位过程如下:
+1. 计算 key 的 Hash 值
+2. 将 Hash 值分为高 8 位和剩余低位
+3. 取 Hash 值低位与 hmap.B 取模确定 bucket 的位置
+4. 取 Hash 值高 8 位，在 bucket.tophash 数组中查询，如果在索引 i 处查找到，则获取索引 i 对应的 key 进行比较
+
+所以 bmap 的 tophash 的类型为 `[bucketCnt]uint8` 保存的是存储在当前bucket 的所有key 的Hash 的值高 8 位，目的是加快 key 的索引过程。
+
+### 4.3 负载因子
+负载因子 = 键数量/bucket数量，Go 的 map 会在负载因为达到 6.5 时才会触发 rehash。那为什么 Go map 要在 bucket 存储多个 key-value 呢？目的是为了优化 hamp 中指针占用的存储空间。
+
+### 4.4 扩缩容 rehash
+#### 扩容条件
+触发 hmap 扩容的条件有两个:
+1. 负载因子 > 6.5
+2. overflow 数量大于2^15
+
+#### 扩容过程
+hmap 扩容时，会新建一个 bucket 数组，长度为原来的 2 倍，Go 会采用逐步搬迁的策略，每次访问 map 时都会触发一次搬迁，每次搬迁 2 个键值对。因此 hmap 的结构体中包含了 oldbuckets 成员，指向了扩容前的原 buckets 数组。buckets 则指向新分配的数组。带 oldbuckets 数组中所有键值对搬迁完毕后，oldbuckets就会被释放。
+
+#### 缩容过程
+缩容过程发生在大量key 被删除之后，过程与扩容类似。
