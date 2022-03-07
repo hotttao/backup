@@ -382,6 +382,7 @@ hmap 的增删改查都需要先定位 key 在 buckets 中的位置， hmap 定�
 2. 将 Hash 值分为高 8 位和剩余低位
 3. 取 Hash 值低位与 hmap.B 取模确定 bucket 的位置
 4. 取 Hash 值高 8 位，在 bucket.tophash 数组中查询，如果在索引 i 处查找到，则获取索引 i 对应的 key 进行比较
+5. 当前 bucket 中没有找到，则依次从溢出的 bucket 中查找，如果 map 处于扩缩容过程中，优先从 oldbuckets 数组中查找
 
 所以 bmap 的 tophash 的类型为 `[bucketCnt]uint8` 保存的是存储在当前bucket 的所有key 的Hash 的值高 8 位，目的是加快 key 的索引过程。
 
@@ -399,3 +400,142 @@ hmap 扩容时，会新建一个 bucket 数组，长度为原来的 2 倍，Go �
 
 #### 缩容过程
 缩容过程发生在大量key 被删除之后，过程与扩容类似。
+
+## 5. struct
+Go 语言中 struct 的一个特点是允许为字段标记 Tag，如下所示:
+
+```go
+type TypeMeta struct {
+	Kind string `json:"kind,omitempty" protobuf:"bytes,1,opt,name=kind"`
+}
+```
+
+### 5.1 Tag 的本质
+首先 Tag 是 struct 的一部分，用于标识结构体字段的额外属性。在 reflect 包中，使用**结构体 StructField 表示结构体的一个字段**:
+
+```go
+// A StructField describes a single field in a struct.
+type StructField struct {
+	// Name is the field name.
+	Name string
+	// PkgPath is the package path that qualifies a lower case (unexported)
+	// field name. It is empty for upper case (exported) field names.
+	// See https://golang.org/ref/spec#Uniqueness_of_identifiers
+	PkgPath string
+
+	Type      Type      // field type
+	Tag       StructTag // field tag string
+	Offset    uintptr   // offset within struct, in bytes
+	Index     []int     // index sequence for Type.FieldByIndex
+	Anonymous bool      // is an embedded field
+}
+
+type StructTag string
+
+func (tag StructTag) Get(key string) string {
+	v, _ := tag.Lookup(key)
+	return v
+}
+```
+
+可以看到，Tag 也是字段的一个组成部分。从类型可以看出 Tag 是一个字符串，它有一个约定的格式，就是由 key:"value" 组成:
+1. key: 必须是非空字符串，字符串不能包含控制字符、空格、引号、冒号
+2. value: 以双引号括住的字符串
+3. key 和 value 之间使用冒号相隔，冒号前后不能有空格，多个 key:"value" 由空格分割
+
+### 5.2 Tag 的获取
+通过反射可以获取 Tag 中 key 对应的 value，下面是一个代码示例:
+
+```go
+func PrintTag(){
+	t := TypeMeta{}
+	ty := reflect.TypeOf(t)
+
+	for i := 0; i < ty.NumField(); i++ {
+		fmt.Printf("Field: %s, Tag: %s\n", ty.Field(i).Name, ty.Field(i).Tag.Get("json"))
+	}
+}
+```
+
+Go 语言的反射特性可以动态的给结构体成员赋值，Tag 就可以给这种赋值提供"指引"。
+
+## 6. iota
+Go 中 iota 用于声明连续的整型常量，iota 的取值与其出现的额位置强相关。从编译器的角度看 iota，其取值规则只有一条: **iota 代表了 const 声明块的行索引**。除此之外，const 声明还有一个特点，如果为常量指定了一个表达式，但后续的常量没有表达式，则继承上面的表达式。
+
+### 6.1 实现原理
+在编译器代码中，每个常量或者变量的声明语句使用 ValueSpec 结构表示，ValueSpec 定义在 `src/go/ast/ast.go` 
+
+```go
+	ValueSpec struct {
+		Doc     *CommentGroup // associated documentation; or nil
+		Names   []*Ident      // value names (len(Names) > 0)
+		Type    Expr          // value type; or nil
+		Values  []Expr        // initial values; or nil
+		Comment *CommentGroup // line comments; or nil
+	}
+```
+
+ValueSpec 仅表示一行声明语句，比如:
+
+```go
+const (
+	// 常量块注释
+	a, b = iota, iota // 常量行注释
+)
+```
+
+上面的常量声明中仅包括一行声明语句，对应一个 ValueSpec 结构:
+1. Doc: 表示注释
+2. Name: 常量的名字，使用切片表示当行语句中声明的多个变量
+3. Type: 常量类型
+4. Value: 常量值
+5. Comment: 常量行注释
+
+如果 const 包含多行常量声明，就会对应多个 ValueSpec，编译器在遍历时会使用类似下面的伪代码:
+
+```go
+for iota, spec := range ValueSpecs {
+	for i, name := range spec.Names }{
+		obj := NewConst(name, iota)
+	}
+}
+```
+
+从上面的代码就可以看出，iota 的本质: 仅代表常量声明的索引。
+
+## 7. string
+### 7.1 string 实现
+string 定义在 `src/runtime/string.go` 中:
+
+```go
+type stringStruct struct {
+	str unsafe.Pointer
+	len int
+}
+
+func gostringnocopy(str *byte) string {
+	ss := stringStruct{str: unsafe.Pointer(str), len: findnull(str)}
+	s := *(*string)(unsafe.Pointer(&ss))
+	return s
+}
+```
+stringStruct 中:
+1. str: 字符串的首地址
+2. len: 字符串的长度
+
+在 runtime 包中使用 gostringnocopy 函数来生成字符串，gostringnocopy 会先构建 stringStruct 对象，然后在转换成 string，string 定义在 buildin 包中:
+
+```go
+// string is the set of all strings of 8-bit bytes, conventionally but not
+// necessarily representing UTF-8-encoded text. A string may be empty, but
+// not nil. Values of string type are immutable.
+type string string
+```
+
+从注释中可以看到:
+1. string 是 8bit 的集合，通常是 UTF-8 的文本
+2. string 可以为空，但不会是 nil
+3. string 对象不可修改
+
+### 7.2 字符串拼接
+Go 中字符串可以直接使用 + 号拼接，`str := "str1" + "str2" + "str3"`。
