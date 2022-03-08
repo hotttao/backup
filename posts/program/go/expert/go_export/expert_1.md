@@ -538,4 +538,178 @@ type string string
 3. string 对象不可修改
 
 ### 7.2 字符串拼接
-Go 中字符串可以直接使用 + 号拼接，`str := "str1" + "str2" + "str3"`。
+Go 中字符串可以直接使用 + 号进行拼接: `str := "str1" + "str2" + "str3"`，拼接过程在内部则会调用 string 包的 concatstrings() 函数，代码如下:
+
+```go
+// concatstrings implements a Go string concatenation x+y+z+...
+// The operands are passed in the slice a.
+// If buf != nil, the compiler has determined that the result does not
+// escape the calling function, so the string data can be stored in buf
+// if small enough.
+func concatstrings(buf *tmpBuf, a []string) string {
+	idx := 0
+	l := 0
+	count := 0
+	for i, x := range a {
+		n := len(x)
+		if n == 0 {
+			continue
+		}
+		if l+n < l {
+			throw("string concatenation too long")
+		}
+		l += n
+		count++
+		idx = i
+	}
+	if count == 0 {
+		return ""
+	}
+
+	// If there is just one string and either it is not on the stack
+	// or our result does not escape the calling frame (buf != nil),
+	// then we can return that string directly.
+	if count == 1 && (buf != nil || !stringDataOnStack(a[idx])) {
+		return a[idx]
+	}
+	// 返回一个 string 和切片，二者共享内存空间
+	s, b := rawstringtmp(buf, l)
+	for _, x := range a {
+		copy(b, x)
+		b = b[len(x):]
+	}
+	return s
+}
+
+func rawstringtmp(buf *tmpBuf, l int) (s string, b []byte) {
+	if buf != nil && l <= len(buf) {
+		b = buf[:l]
+		s = slicebytetostringtmp(&b[0], len(b))
+	} else {
+		s, b = rawstring(l)
+	}
+	return
+}
+
+// rawstring allocates storage for a new string. The returned
+// string and byte slice both refer to the same storage.
+// The storage is not zeroed. Callers should use
+// b to set the string contents and then drop b.
+func rawstring(size int) (s string, b []byte) {
+	p := mallocgc(uintptr(size), nil, false)
+
+	stringStructOf(&s).str = p
+	stringStructOf(&s).len = size
+
+	*(*slice)(unsafe.Pointer(&b)) = slice{p, size, size}
+
+	return
+}
+```
+
+concatstrings 实现中:
+1. 所有待拼接字符串都被编译器组织到一个切片中并传入 concatstrings 函数
+2. 拼接需要遍历两次切片，第一次遍历获取总的字符串长度，据此申请内存
+3. 第二次遍历把字符串逐个拷贝过去
+
+### 7.3 类型转换
+[]byte 和 string 可以直接相互转换，但是转换过程需要一次内存拷贝。
+
+#### []byte -> string
+[]byte -> string 调用的是 string 包的 slicebytetostring 函数
+
+```go
+// slicebytetostring converts a byte slice to a string.
+// It is inserted by the compiler into generated code.
+// ptr is a pointer to the first element of the slice;
+// n is the length of the slice.
+// Buf is a fixed-size buffer for the result,
+// it is not nil if the result does not escape.
+func slicebytetostring(buf *tmpBuf, ptr *byte, n int) (str string) {
+	if n == 0 {
+		// Turns out to be a relatively common case.
+		// Consider that you want to parse out data between parens in "foo()bar",
+		// you find the indices and convert the subslice to string.
+		return ""
+	}
+	if raceenabled {
+		racereadrangepc(unsafe.Pointer(ptr),
+			uintptr(n),
+			getcallerpc(),
+			funcPC(slicebytetostring))
+	}
+	if msanenabled {
+		msanread(unsafe.Pointer(ptr), uintptr(n))
+	}
+	if n == 1 {
+		p := unsafe.Pointer(&staticuint64s[*ptr])
+		if sys.BigEndian {
+			p = add(p, 7)
+		}
+		stringStructOf(&str).str = p
+		stringStructOf(&str).len = 1
+		return
+	}
+
+	var p unsafe.Pointer
+	if buf != nil && n <= len(buf) {
+		// 如果预留 buf 够用，则用预留的 buf
+		p = unsafe.Pointer(buf)
+	} else {
+		// 否则重新申请内存
+		p = mallocgc(uintptr(n), nil, false)
+	}
+	// 构建字符串
+	stringStructOf(&str).str = p
+	stringStructOf(&str).len = n
+	// 将切片底层数组中数据拷贝到字符串
+	memmove(p, unsafe.Pointer(ptr), uintptr(n))
+	return
+}
+
+func memmove(to, from unsafe.Pointer, n uintptr)
+
+func mallocgc(size uintptr, typ *_type, needzero bool) unsafe.Pointer 
+```
+
+#### string -> []byte
+[]byte -> string 调用的是 string 包的 slicebytetostring 函数:
+
+```go
+type tmpBuf [tmpStringBufSize]byte
+
+func stringtoslicebyte(buf *tmpBuf, s string) []byte {
+	var b []byte
+	if buf != nil && len(s) <= len(buf) {
+		// buf 小直接从栈上分配
+		*buf = tmpBuf{}
+		b = buf[:len(s)]
+	} else {
+		// 生成新的切片
+		b = rawbyteslice(len(s))
+	}
+	copy(b, s)
+	return b
+}
+
+// rawbyteslice allocates a new byte slice. The byte slice is not zeroed.
+func rawbyteslice(size int) (b []byte) {
+	cap := roundupsize(uintptr(size))
+	p := mallocgc(cap, nil, false)
+	if cap != uintptr(size) {
+		memclrNoHeapPointers(add(p, uintptr(size)), cap-uintptr(size))
+	}
+
+	*(*slice)(unsafe.Pointer(&b)) = slice{p, size, int(cap)}
+	return
+}
+
+type Type int
+func copy(dst, src []Type) int
+```
+
+### 7.4 编译优化
+[]byte 和 string 相互转化都会进行一次内存拷贝，而在某些**临时场景**下，byte 切换在转化成 string 是并不会拷贝内存，而是直接返回一个 string ，string.str 的指针指向切片的内存，这些场景都符合一个特征，即在 string 的存续期间 []byte 肯定不会修改:
+1. 使用 `map[string(b)]`
+2. 字符串拼接 `"a" + string(b) + "c"`
+3. 字符串比较 `string(b) == "foo"`
