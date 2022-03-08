@@ -1,12 +1,23 @@
 ---
-title: 2. perf Examples 
-date: 2020-06-18
-categories:
-    - 运维
-tags:
-    - Brendan Gregg
-    - 
+weight: 1
+title: "[译]perf Examples"
+date: 2020-06-18T22:00:00+08:00
+lastmod: 2020-06-18T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Linux profiling - perf"
+featuredImage: 
+
+tags: ["profiling"]
+categories: ["Linux"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
+
 
 这是大神 Brendangregg [perf Examples](http://www.brendangregg.com/perf.html) 一文的翻译。ftrace，perf，dtrace，systemtap等等追踪工具依赖的底层技术是类似的，深入了解一个工具，有助于我们学习其他的技术。本人英文能力一般，大家将就着看。
 
