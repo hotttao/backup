@@ -38,9 +38,9 @@ eBPF 有 BPF 发展而来，时至今日 eBPF 经历如下重大的时间节点:
 1. 1992 年的 USENIX 会议上，Steven McCanne 和 Van Jacobson 发布的论文[“The BSD Packet Filter: A New Architecture for User-level Packet Capture”](https://www.tcpdump.org/papers/bpf-usenix93.pdf) 为 BSD 操作系统带来了革命性的包过滤机制 BSD Packet Filter（简称为 BPF）
 2. 1997 年，在 BPF 诞生五年后，Linux 2.1.75 首次引入了 BPF 技术
 3. 2011 年，Linux 3.0 中增加的 BPF 即时编译器，替换掉了原本性能更差的解释器，进一步优化了 BPF 指令运行的效率。
-4. 2014 年，为了研究新的软件定义网络方案，Alexei Starovoitov 为 BPF 带来了第一次革命性的更新，将 BPF 扩展为一个通用的虚拟机，也就是 eBPF。eBPF 不仅扩展了寄存器的数量，引入了全新的 BPF 映射存储，还在 4.x 内核中将原本单一的**数据包过滤事件**逐步扩展到了**内核态函数、用户态函数、跟踪点、性能事件（perf_events）**以及安全控制等。
+4. 2014 年，为了研究新的软件定义网络方案，Alexei Starovoitov 为 BPF 带来了第一次革命性的更新，将 BPF 扩展为一个通用的虚拟机，也就是 eBPF。eBPF 不仅扩展了寄存器的数量，引入了全新的 BPF 映射存储，还在 4.x 内核中将原本单一的 **数据包过滤事件** 逐步扩展到了 **内核态函数、用户态函数、跟踪点、性能事件（perf_events）** 以及安全控制等。
 5.  2015 年，iovisor 带来的 BCC、bpftrace 等工具，成为 eBPF 在跟踪和排错领域的最佳实践
-6.  2016 年 Linux 4.7-4.10 带来了**跟踪点、perf 事件、XDP 以及 cgroups 的支持**，丰富了 **eBPF 的事件源**
+6.  2016 年 Linux 4.7-4.10 带来了 **跟踪点、perf 事件、XDP 以及 cgroups 的支持** ，丰富了 **eBPF 的事件源**
 7.  2017 年，BPF 成为内核独立子模块，并支持了 KTLS、bpftool、libbpf 等
 8.  2018 年，BPF 新增了轻量级调试信息格式 BTF 以及新的 AF_XDP 类型，bpftrace 和 bpffilter 项目也正是发布
 9.  2019 年，BPF 新增了尾调用和热更新支持，GCC 也开始支持 BPF 编译，童年 Cilium1.6 发布基于 BPF的服务发现代理，完全替代基于 iptables 的 kube-proxy
@@ -63,7 +63,7 @@ eBPF 程序并不像常规的线程那样，启动后就一直运行在那里，
 - BPF 程序必须在有限时间内完成
 
 ### 3.2 eBPF 交互
-BPF 程序可以利用 **BPF 映射（map）**进行存储，而用户程序通常也需要通过 BPF 映射同运行在内核中的 BPF 程序进行交互。如下图（图片来自[ebpf.io](https://ebpf.io/)）所示，在性能观测中，BPF 程序收集内核运行状态存储在映射中，用户程序再从映射中读出这些状态。
+BPF 程序可以利用 **BPF 映射(map)** 进行存储，而用户程序通常也需要通过 BPF 映射同运行在内核中的 BPF 程序进行交互。如下图（图片来自[ebpf.io](https://ebpf.io/)）所示，在性能观测中，BPF 程序收集内核运行状态存储在映射中，用户程序再从映射中读出这些状态。
 
 ![ebpf 执行过程](/images/ebpf/ebpf_storage.webp)
 
