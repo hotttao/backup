@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "[译]perf Examples"
 date: 2020-06-18T22:00:00+08:00
 lastmod: 2020-06-18T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Linux"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 

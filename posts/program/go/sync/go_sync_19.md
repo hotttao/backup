@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "go 分组操作的并发控制"
 date: 2021-05-18T22:00:00+08:00
 lastmod: 2021-05-18T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 ## 1. 分组操作概述

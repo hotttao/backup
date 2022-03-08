@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "Go 并发调试工具"
 date: 2021-07-01T22:00:00+08:00
 lastmod: 2021-07-01T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
  Go 语言提供了一些并发调试工具，这些工具可以帮我们有效的发现并发编程中的 bug

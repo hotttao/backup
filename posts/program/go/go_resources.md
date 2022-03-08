@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "go 学习资源"
 date: 2021-01-01T09:00:00+08:00
 lastmod: 2021-01-01T09:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 

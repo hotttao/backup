@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "Cond 条件变量"
 date: 2021-05-06T22:00:00+08:00
 lastmod: 2021-05-06T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 Cond 条件变量

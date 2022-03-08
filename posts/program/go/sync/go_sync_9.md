@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "线程安全的 map"
 date: 2021-05-08T22:00:00+08:00
 lastmod: 2021-05-08T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 线程安全的 map

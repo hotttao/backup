@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "Go Mutex 设计与实现"
 date: 2021-05-02T22:00:00+08:00
 lastmod: 2021-05-02T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 Go 第一个并发原语 Mutex 互斥锁

@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "go 信号量"
 date: 2021-05-15T22:00:00+08:00
 lastmod: 2021-05-15T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 ## 1. 信号量概述

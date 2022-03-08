@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "go 并发编程入门指南"
 date: 2021-05-01T22:00:00+08:00
 lastmod: 2021-05-01T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 这个系列我们开始学习 Go 语言的第四个部分: 并发编程。

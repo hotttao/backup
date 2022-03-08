@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "Channel 应用"
 date: 2021-05-13T22:00:00+08:00
 lastmod: 2021-05-13T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Go"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 

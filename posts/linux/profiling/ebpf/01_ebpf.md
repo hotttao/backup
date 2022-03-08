@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 4
 title: "eBPF 简介"
 date: 2022-03-01T22:00:00+08:00
 lastmod: 2022-03-01T22:00:00+08:00
@@ -14,8 +14,6 @@ categories: ["Linux"]
 
 lightgallery: true
 
-toc:
-  auto: false
 ---
 
 这个系列我们来学习 Linux profiling 的另一款大杀器 - eBPF，学习资源来自于[极客时间倪朋飞老师专栏-eBPF 核心技术与实战](https://time.geekbang.org/column/intro/100104501?tab=catalog)。
