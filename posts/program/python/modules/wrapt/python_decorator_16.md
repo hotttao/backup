@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 16 wrapt 模块实战
-date: 2018-06-07
-categories:
-    - Python
+date: '2018-06-07T22:10:00+08:00'
+lastmod: '2018-06-07T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 16 wrapt 模块实战
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 装饰器和 wrapt 模块的介绍已经结束，作为整个系列的最后一篇的实战篇，我们来实现在一开始我提出的一个需求
 
 <!-- more -->

@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 14 为 Python 应用自动打补丁
-date: 2018-06-05
-categories:
-    - Python
+date: '2018-06-05T22:10:00+08:00'
+lastmod: '2018-06-05T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 14 为 Python 应用自动打补丁
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 前面我们已经决绝了猴子补丁的导入次序问题，但是这个解决方案有个前提，就是我们必需能修改应用程序代码，以在程序的最开始执行我们的注册函数。本节我们的目的是找到另一种解决方案取消这个限制。
 <!-- more -->

@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 13 猴子补丁在 Python 中的加载次序问题
-date: 2018-06-04
-categories:
-    - Python
+date: '2018-06-04T22:10:00+08:00'
+lastmod: '2018-06-04T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 13 猴子补丁在 Python 中的加载次序问题
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 本节我们就来解决如何在 Python 中打补丁的问题。
 <!-- more -->

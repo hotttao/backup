@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 04 实现一个通用装饰器
-date: 2018-05-22
-categories:
-    - Python
+date: '2018-05-22T22:10:00+08:00'
+lastmod: '2018-05-22T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 04 实现一个通用装饰器
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 本节我们将实现一个"通用装饰器"，它能够让用户提供的包装函数通过传入的参数判断其被使用的上下文，即确定，它是被应用在函数，实例方法，类方法，类对象中的哪一个。因为装饰器不是在各个环境种被单独实现，而是以一种更加统一的方式创建，所以将这种能确定上下文的装饰器称为通用装饰器。
 <!-- more -->
 ## 1. 内容回顾

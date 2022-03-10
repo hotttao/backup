@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 08 将 @synchronized 实现为上下文管理器
-date: 2018-05-29
-categories:
-    - Python
+date: '2018-05-29T22:10:00+08:00'
+lastmod: '2018-05-29T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 08 将 @synchronized 实现为上下文管理器
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 在前一篇文章中，我们描述了如何使用新的通用装饰器模式来实现Python的 `@synchronized` 同步原语装饰器。在Java提供的两个同步机制中，同步方法和同步原语，目前为止我们只实现了同步方法。本文将描述如何将其扩展为上下文管理器，从而等效的实现Java的同步原语。
 <!-- more -->

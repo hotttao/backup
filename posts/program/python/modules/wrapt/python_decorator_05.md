@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 05 带参数的装饰器
-date: 2018-05-24
-categories:
-    - Python
+date: '2018-05-24T22:10:00+08:00'
+lastmod: '2018-05-24T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 05 带参数的装饰器
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 在之前的博客，通过使用代理对象，装饰器工厂函数等技术，我们已经实现了一个通用装饰器。在这篇文章中，我们将使用前面文章中描述的装饰器工厂函数，介绍如何使用它来实现接受参数的装饰器，包括强制参数和可选的接收参数。
 <!-- more -->

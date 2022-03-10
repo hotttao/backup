@@ -1,15 +1,19 @@
 ---
+weight: 1
 title: virtualenv
-date: 2017-09-04 13:54:03
-categories:
-    - 运维
+date: '2018-06-09T22:10:00+08:00'
+lastmod: '2018-06-09T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: "virtualenv 基本使用"
+featuredImage: null
 tags:
-    - python
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![hexo blog](/images/python/virtualenv.jpg)
-virtualenv 基本使用
-
-<!-- more -->
 
 ## 1. 环境创建
 `virtualenv dirname` -- 创建虚拟环境  

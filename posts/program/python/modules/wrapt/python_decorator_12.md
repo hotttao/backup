@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 12 使用 wrapt 辅助测试
-date: 2018-06-03
-categories:
-    - Python
+date: '2018-06-03T22:10:00+08:00'
+lastmod: '2018-06-03T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 12 使用 wrapt 辅助测试
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 前面我们说道过 Python 中使用猴子补丁典型情景之一就是使用模拟库来帮助执行单元测试，本节我们先把补丁和模块导入的相对次序问题放一放，先来看看如何使用 wrapt 模块辅助单元测试。
 <!-- more -->

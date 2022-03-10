@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 09 装饰器性能比较
-date: 2018-05-30
-categories:
-    - Python
+date: '2018-05-30T22:10:00+08:00'
+lastmod: '2018-05-30T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 09 装饰器性能比较
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 前面我们探讨了装饰器的实现方式，并实现了一个所谓的通用装饰器模式，并用它创建了一个类似 Java 的 `@synchronized` 装饰器作为使用示例。本节我们来看看不同的装饰器实现方式的性能问题。在这篇关于装饰器的实现性能这篇文章之后，我们将开始深入探讨如何实现代理，它是通用装饰器机制中的基础组件。
 <!-- more -->

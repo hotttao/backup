@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 03 使用工厂函数创建装饰器
-date: 2018-05-12
-categories:
-    - Python
+date: '2018-05-12T22:10:00+08:00'
+lastmod: '2018-05-12T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 03 使用工厂函数创建装饰器
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 上一篇文章描述了一种基于代理对象创建装饰器的模式，并且通过将装饰器实现为一个描述符，解决了当装饰器应用于类方法时，对象绑定问题。代理对象和描述符的组合自动确保了内省机制能正常进行。现在的问题是如何消除样本代码来解决代码复用的问题。
 <!-- more -->
 本文我们将进一步改进创建装饰器的方式，通过使用装饰器工厂函数，来抽象装饰器的创建，用户只需提供一个执行所需功能的的包装函数即可。

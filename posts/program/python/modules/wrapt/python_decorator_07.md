@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 07 实现 java 的 @synchronized 装饰器
-date: 2018-05-26
-categories:
-    - Python
+date: '2018-05-26T22:10:00+08:00'
+lastmod: '2018-05-26T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 07 实现 java 的 @synchronized 装饰器
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 在之前的博客中，我们讨论了装饰器的实现，并实现了一个通用装饰器模式。作为这种模式的使用示例，本节我们来实现 java 中的 `@synchronized` 装饰器。
 <!-- more -->

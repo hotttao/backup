@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 01 如何实现一个 Python 装饰器
-date: 2018-05-04
-categories:
-    - Python
+date: '2018-05-04T22:10:00+08:00'
+lastmod: '2018-05-04T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 01 如何实现一个 Python 装饰器
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 稍微对 Python 有所了解的程序员一定知道 Python 装饰器和函数闭包。我曾经也以为很了解，直到在《流畅的Python》中看到了 Wrapt 模块。
 <!-- more -->

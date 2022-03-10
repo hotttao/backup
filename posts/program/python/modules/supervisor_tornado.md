@@ -1,15 +1,20 @@
 ---
+weight: 1
 title: supervisor tornado 部署
-date: 2017-09-21
-categories:
-    - 运维
+date: '2018-06-08T22:10:00+08:00'
+lastmod: '2018-06-08T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: "通过 supervisor 创建监听套接字的文件描述符，为多个 tornado 进程共享"
+featuredImage: null
 tags:
-    - python
-
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![tornado](/images/python/tornado.jpg)
-通过 supervisor 创建监听套接字的文件描述符，为多个 tornado 进程共享
-<!-- more -->
+
 
 ### 1. tornado 启动
 ```python

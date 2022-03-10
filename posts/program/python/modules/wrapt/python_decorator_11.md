@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 11 在 Python 中安全的使用猴子补丁
-date: 2018-06-02
-categories:
-    - Python
+date: '2018-06-02T22:10:00+08:00'
+lastmod: '2018-06-02T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 11 在 Python 中安全的使用猴子补丁
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 在之前 10 篇博客中，我们几乎完整的讨论了装饰器的实现。现在我们将焦点从装饰器转移到猴子补丁上来。
 <!-- more -->

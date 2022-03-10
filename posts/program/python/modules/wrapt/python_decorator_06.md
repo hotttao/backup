@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 06 装饰器的类实现
-date: 2018-05-25
-categories:
-    - Python
+date: '2018-05-25T22:10:00+08:00'
+lastmod: '2018-05-25T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 06 装饰器的类实现
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 上一篇文章中，我们讨论了如何实现一个带参数的装饰器，以及如何让装饰器可选的接收参数而不是必需输入参数。也讨论了如何让装饰器能在被包装函数的不同调用之间保持状态。保持状态的一种可用方法是使用类实现装饰器。然而我们实现的通用装饰器模式在使用类实现装饰器还存在一些问题，本文我们将来探讨问题出现的根源以及如何解决。
 <!-- more -->

@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 10 装饰类的性能
-date: 2018-06-01
-categories:
-    - Python
+date: '2018-06-01T22:10:00+08:00'
+lastmod: '2018-06-01T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 10 装饰类的性能
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 
 在上一篇文章中，我们对作为函数闭包实现的装饰器与前文描述的通用装饰器进行了性能比较。本节我们继续我们的性能测试，看看装饰一个类方法时，不同实现方式的性能表现。
 <!-- more -->

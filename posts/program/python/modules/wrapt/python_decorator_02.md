@@ -1,12 +1,20 @@
 ---
+weight: 1
 title: 02 装饰器与描述符协议
-date: 2018-05-08
-categories:
-    - Python
+date: '2018-05-08T22:10:00+08:00'
+lastmod: '2018-05-08T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 02 装饰器与描述符协议
+featuredImage: null
 tags:
-    - wrapt
+- python 库
+categories:
+- Python
+lightgallery: true
 ---
-![Python decorator](/images/python/decorator.jpg)
+
 上一篇文章说明了普通函数实现的装饰器存在的问题。本文我们将着眼于之前阐述的最后一个问题，如何将装饰器应用到一个描述符上。
 <!-- more -->
 
