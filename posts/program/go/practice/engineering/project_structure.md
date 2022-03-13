@@ -6,7 +6,7 @@ lastmod: 2021-04-01T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "Go 工程化实践"
+description: "Go 工程化实践-项目结构"
 featuredImage: 
 
 tags: ["go 惯例"]
@@ -36,6 +36,17 @@ lightgallery: true
         - 服务发现和注册
     - main.go 里面所做的事情就是一个**应用的生命周期管理**，可以参考 [kratos](https://github.com/go-kratos/kratos/blob/main/README_zh.md) 里面的设计
 
+```shell
+.
+└── cmd
+    ├── demo
+    │   ├── demo
+    │   └── main.go
+    └── myapp
+        ├── main.go
+        └── myapp
+
+```
 
 ### 1.2 /pkg
 /pkg
@@ -44,10 +55,25 @@ lightgallery: true
     - /pkg 目录可以显式地表示该目录中的代码对于其他人来说是可以安全使用的
 - 说明: 
 
+```
+└── pkg
+    ├── cache
+    │   ├── memcache
+    │   └── redis
+    └── conf
+        ├── dsn
+        ├── env
+        ├── flagvar
+        └── paladin
+
+```
+
 ### 1.3 /internal
 /internal
 - 作用: 应用程序私有的库代码，存放不希望被其他应用或库导入的代码
 - 说明: internal 是 Go1.4 提供的机制隔离机制
+
+/internal 通常与应用包含的内容以及应用在编写时所采纳的编程思想有关，后面我们在着重介绍微服务时，会更详细的探讨 /internal 目录应该如何组织
 
 ### 1.4 其他文件夹
 1. /init: 系统初始化（systemd、upstart、sysv）和进程管理（runit、supervisord）配置。
@@ -122,12 +148,74 @@ lightgallery: true
 - 作用: 存放 Web 应用程序特定的组件：静态Web资源，服务器端模板和单页应用（Single-Page App，SPA）
 
 ## 4. 微服务的项目结构
-前面我们介绍了标准应用和服务类应用的标注项目结构。这个结构对于一个项目来说通常是固定，也通常不会有太大的变化。但是设计到应用本身业务目录结构就需要跟不同的应用需求结合起来。这里我们就不讨论一些特殊应用的设计，而专注于微服务的业务项目结构设计。
+前面我们介绍了标准应用和服务类应用的标注项目结构。这个结构对于一个项目来说通常是固定，也通常不会有太大的变化。而唯一会变化的则是需要结合应用需求设计的 /internal 目录。这里我们就不讨论一些特殊应用的设计，而专注于微服务的业务项目结构设计。
 
 微服务的项目结构与微服务背后的设计思想密切相关，也在不断的演化中，下面将分成几个阶段来介绍微服务的项目结构的演化过程。
 
+### 4.1 微服务的 /cmd
+微服务中的 app 服务类型分为4类：interface、service、job、admin。
+1. interface: 对外的 BFF 服务，接受来自用户的请求，比如暴露了 HTTP/gRPC 接口。
+2. service: 对内的微服务，仅接受来自内部其他服务或者网关的请求，比如暴露了gRPC 接口只对内服务。
+3. admin：区别于 service，更多是面向运营测的服务，通常数据权限更高，隔离带来更好的代码级别安全。
+4. job: 流式任务处理的服务，上游一般依赖 message broker。
+5. task: 定时任务，类似 cronjob，部署到 task 托管平台中。
+
+所以微服务应用的 /cmd 目录会包含如下几个入口:
+
+```shell
+myapp-interface
+myapp-service
+myapp-admin
+myapp-job
+myapp-task
+```
+
 ### 4.1 微服务项目结构 V1
+V1 版本的项目结构采用的是典型的 MVCC 三层架构，/internal 下包含了如下几个目录:
+1. /model: 
+    - 作用: 公共模型层，面向数据库表，即服务层
+    - 说明: 放对应“存储层”的结构体，是对存储的一一隐射
+2. /dao: 
+    - 作用: 数据访问层，面向业务需求，即展示层
+    - 说明: 数据读写层，数据库和缓存全部在这层统一处理，包括 cache miss 处理。
+3. /service: 
+    - 作用: 业务逻辑层
+    - 说明: 组合各种数据访问来构建业务逻辑
+4. /server: 
+    - 作用: 存放路由以及一些 DTO 对象转换的代码，依赖 proto 定义的服务作为入参，提供快捷的启动服务全局方法
+
+在 MVCC 的模型中，项目的依赖路径为: model -> dao -> service -> api，model struct 串联各个层，直到 api 需要做 DTO 对象转换。
+
+/api 定义了 API proto 文件，和生成的 stub 代码，它生成的 interface，其实现者在 service 中。service 的方法签名因为实现了 API 的 接口定义，DTO 直接在业务逻辑层直接使用了，更有 dao 直接使用，最简化代码。
+
+### 4.2 微服务项目结构 V2
+V2 版本的项目结构采用的是领域编程的思想，/internal 下包含了如下几个目录:
+1. biz: 
+    - 作用: 业务逻辑的组装层，类似 DDD 的 domain 领域层
+    - 说明: data 类似 DDD的 repo，repo 接口在这里定义，使用依赖倒置的原则
+    - 目的: 由业务层去定义数据访问的接口，data 去实现业务定义的接口，抽象数据的访问
+2. data: 
+    - 作用: 业务数据访问，包含 cache、db 等封装，实现了 biz 的 repo接口
+    - 说明: 我们可能会把 data 与 dao 混淆在一起，data 偏重业务的含义，它所要做的是将领域对象重新拿出来，我们去掉了 DDD 的 infra 层。
+3. service: 
+    - 作用: 实现了 api 定义的服务层，类似 DDD 的 application 层，处理 /api 内定义的 grpc 到 biz 领域实体的转换(DTO -> DO)，同时协同各类 biz 交互，但是不应处理复杂逻辑。
+
+![V2中的对象转换过程](/images/go/practice/domain_trans.png)
+
+注:
+1. DO(Domain Object): 领域对象，就是从现实世界中抽象出来的有形或无形的业务实体。
+2. PO(Persistent Object): 持久化对象，它跟持久层（通常是关系型数据库）的数据结构形成一一对应的映射关系，如果持久层是关系型数据库，那么数据表中的每个字段（或若干个）就对应 PO 的一个（或若干个）属性。https://github.com/facebook/ent 
+
+#### 设计思想
+V2 的结构设计就是将 DDD 设计中的一些思想和工程结构做了一些简化，映射到 api、service、biz、data 各层。
+
+![V2设计思想](/images/go/practice/ddd.png)
+
+### 4.3 LifeCycle
+Lifecycle 需要考虑服务应用的对象初始化以及生命周期的管理，所有 HTTP/gRPC 依赖的前置资源初始化，包括 data、biz、service，之后再启动监听服务。我们使用 https://github.com/google/wire ，来管理所有资源的依赖注入。
 
 ## 参考
 1. [极客时间-毛剑老师的 Go 工程化实践](https://u.geekbang.org/subject/intro/100107201)
 2. [Go项目标准布局](https://github.com/golang-standards/project-layout/blob/master/README_zh-CN.md)
+2. [DDD 设计思想]()
+3. [洋葱架构/整洁架构]()
