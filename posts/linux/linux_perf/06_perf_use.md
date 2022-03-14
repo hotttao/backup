@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 2.4 perf 的使用
-date: 2020-01-05
-categories:
-    - 运维
+date: '2020-01-05T22:10:00+08:00'
+lastmod: '2020-01-05T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 2.4 perf 的使用
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 上一节我们学习了 perf 的基本原理，对 perf 有了一个整体上的认识，本节我们来学如何使用 perf 进行性能分析。

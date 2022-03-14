@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 3.3 Systemtap 内核空间探测
-date: 2020-01-10
-categories:
-    - 运维
+date: '2020-01-10T22:10:00+08:00'
+lastmod: '2020-01-10T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 3.3 Systemtap 内核空间探测
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 本节我们继续来学习 Systemtap 的使用 -- 内核的动态追踪

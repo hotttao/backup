@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 5.6 bcc
-date: 2020-02-15
-categories:
-    - 运维
+date: '2020-02-15T22:10:00+08:00'
+lastmod: '2020-02-15T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 5.6 bcc
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 <!-- more -->

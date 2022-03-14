@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 3.4 Systemtap 用户空间探测
-date: 2020-01-11
-categories:
-    - 运维
+date: '2020-01-11T22:10:00+08:00'
+lastmod: '2020-01-11T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 3.4 Systemtap 用户空间探测
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 本节我们继续来学习 Systemtap 的使用 -- 用户空间的动态追踪

@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 4.2 CPU 监测工具
-date: 2020-01-17
-categories:
-    - 运维
+date: '2020-01-17T22:10:00+08:00'
+lastmod: '2020-01-17T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 4.2 CPU 监测工具
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 本节我们来介绍 CPU 相关的监测工具，这类工具属于我们前面所说的第一类计数器类命令。

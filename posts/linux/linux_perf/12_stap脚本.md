@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 3.2 stap 脚本
-date: 2020-01-09
-categories:
-    - 运维
+date: '2020-01-09T22:10:00+08:00'
+lastmod: '2020-01-09T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 3.2 stap 脚本
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 本节我们来看看 stap 脚本的基本语法。

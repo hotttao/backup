@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 3.5 Systemtap Python
-date: 2020-01-12
-categories:
-    - 运维
+date: '2020-01-12T22:10:00+08:00'
+lastmod: '2020-01-12T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 3.5 Systemtap Python
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 本节我们来看看如何使用 Systemtap 来追踪 Python 程序的执行。

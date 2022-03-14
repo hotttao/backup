@@ -1,10 +1,18 @@
 ---
-title: 5.1 top 
-date: 2020-02-11
-categories:
-    - 运维
+weight: 1
+title: 5.1 top
+date: '2020-02-11T22:10:00+08:00'
+lastmod: '2020-02-11T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 5.1 top
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 top 命令
 <!-- more -->

@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 2.1 ftrace 的原理与使用
-date: 2020-01-03
-categories:
-    - 运维
+date: '2020-01-03T22:10:00+08:00'
+lastmod: '2020-01-03T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 2.1 ftrace 的原理与使用
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 最早 ftrace 是一个 function tracer，仅能够记录内核的函数调用流程。如今 ftrace 已经成为一个 framework，采用 plugin 的方式支持开发人员添加更多种类的 trace 功能。

@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 4.3 CPU 动态追踪
-date: 2020-01-18
-categories:
-    - 运维
+date: '2020-01-18T22:10:00+08:00'
+lastmod: '2020-01-18T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 4.3 CPU 动态追踪
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 本节我们来介绍 CPU 动态追踪技术，包括 perf，systemtap，dtrace
 <!-- more -->

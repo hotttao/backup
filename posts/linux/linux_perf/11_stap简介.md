@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 3.1 Systemp 简介
-date: 2020-01-08
-categories:
-    - 运维
+date: '2020-01-08T22:10:00+08:00'
+lastmod: '2020-01-08T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 3.1 Systemp 简介
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 从今天开始我们将学习第一个可编程的动态追踪工具 Systemtap。本节是 Systemtap 的一个基本介绍。

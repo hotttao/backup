@@ -1,11 +1,18 @@
 ---
+weight: 1
 title: 1.1 Linux 性能调优入门指南
-date: 2020-01-01
-categories:
-    - 运维
+date: '2020-01-01T22:10:00+08:00'
+lastmod: '2020-01-01T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 1.1 Linux 性能调优入门指南
+featuredImage: null
 tags:
-    - Linux性能调优
-    - 入门指南
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 ![linux_perf](/images/linux_pf/linux_perf.jpg)
 这个系列文章，目的是学习一下 Linux 的性能优化，希望下一次服务器出问题时，不是只会一个 top。Linux 性能优化与 Linux 操作系统密切相关，所以想要学好非常不容易。

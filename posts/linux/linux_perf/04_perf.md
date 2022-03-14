@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 2.2 perf 的原理
-date: 2020-01-04
-categories:
-    - 运维
+date: '2020-01-04T22:10:00+08:00'
+lastmod: '2020-01-04T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 2.2 perf 的原理
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 perf 感觉像是一个完全版的 top，可以帮助我们看到操作系统运行的全貌。perf 的使用非常复杂，本文只是一个入门，推荐大家去阅读大神 Brendangregg 的文章[perf Examples](http://www.brendangregg.com/perf.html)。

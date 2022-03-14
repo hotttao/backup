@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 1.2 Linux 性能调优概览
-date: 2020-01-02
-categories:
-    - 运维
+date: '2020-01-02T22:10:00+08:00'
+lastmod: '2020-01-02T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 1.2 Linux 性能调优概览
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 为了调试和追踪程序的运行过程，Linux 提供了众多的分析工具，本节我们先对它们做一个宏观概览。

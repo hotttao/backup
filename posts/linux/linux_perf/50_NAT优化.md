@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 6.1 案例-NAT 优化和丢包分析
-date: 2020-02-22
-categories:
-    - 运维
+date: '2020-02-22T22:10:00+08:00'
+lastmod: '2020-02-22T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 6.1 案例-NAT 优化和丢包分析
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 本节我们来学习Linux性能优化的第一个案例 NAT 优化。来自[极客时间专栏-Linux性能优化实战-42讲](https://time.geekbang.org/column/article/83520)

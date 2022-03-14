@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 4.1 CPU
-date: 2020-01-16
-categories:
-    - 运维
+date: '2020-01-16T22:10:00+08:00'
+lastmod: '2020-01-16T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 4.1 CPU
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 本节我们来介绍 CPU 相关的操作系统原理。
 <!-- more -->

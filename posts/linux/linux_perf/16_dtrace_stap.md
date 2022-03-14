@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 3.6 Systemtap 与 Dtrace 的语法比较
-date: 2020-01-13
-categories:
-    - 运维
+date: '2020-01-13T22:10:00+08:00'
+lastmod: '2020-01-13T22:10:00+08:00'
+draft: false
+author: 宋涛
+authorLink: https://hotttao.github.io/
+description: 3.6 Systemtap 与 Dtrace 的语法比较
+featuredImage: null
 tags:
-    - Linux性能调优
+- Linux 性能调优
+categories:
+- Linux
+lightgallery: true
 ---
 
 《性能之巅》内对 Dtrace 和 Systemtap 的语法做了一个对比，对于学习二者是一个不错的资源，现整理如下。
