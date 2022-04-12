@@ -73,9 +73,17 @@ lightgallery: true
 - 作用: 应用程序私有的库代码，存放不希望被其他应用或库导入的代码
 - 说明: internal 是 Go1.4 提供的机制隔离机制
 
-/internal 通常与应用包含的内容以及应用在编写时所采纳的编程思想有关，后面我们在着重介绍微服务时，会更详细的探讨 /internal 目录应该如何组织
+internal 内的第一层目录通常是与 /cmd 定义的应用相对的，比如像下面这样，表示每个服务私有的代码库
+```bash
+└── internal
+    ├── demo
+    ├── myapp
+```
+
+同时 internal 下也可以有 pkg 目录(/internal/pkg)，表示跨应用的私有库共享库目录。具体到 /internal/myapp 下具体应用包含的内容与应用在编写时所采纳的编程思想有关，后面我们在着重介绍微服务时，会更详细的探讨这一层级的目录应该如何组织。
 
 ### 1.4 其他文件夹
+除了前面介绍了两个重要的顶级目录 /internal 和  /pkg 外，一个标准应用通常还会包含如下目录:
 1. /init: 系统初始化（systemd、upstart、sysv）和进程管理（runit、supervisord）配置。
 2. /scripts: 
     - 用于执行各种构建，安装，分析等操作的脚本。
@@ -117,12 +125,69 @@ lightgallery: true
 
 最后不要再项目中包含 /src 目录。
 
+### 1.5 多应用的项目的目录结构
+上面描述的标准应用目录结构式针对的是单应用的，如果你公司内部有很多 app，如果为每个 app 都创建一个 git 仓库，可能也会难以管理。而且有些应用在领域驱动的划分中虽然属于不同的服务但是彼此之间又有比较密切的联系，这时候我们就可以在一个 git 仓库中存放多个 app。此时我们可以在顶层目录中加一个 /app 目录，如下图所示。然后每个 /app/account 子应用的目录内是一个标准应用的目录结构，包含上面介绍的多个目录。
+
+```bash
+├── app
+│   ├── account  # account 服务应用目录
+│   │   ├── pkg
+│   │   ├── internal
+│   ├── video    # video 服务应用目录
+│   │   ├── pkg
+│   │   ├── internal
+└── pkg
+```
+
 ## 2. 基础库/框架的项目结构
-基础库 kit 为独立项目，公司级建议只有一个，按照功能目录来拆分会带来不少的管理工作，因此建议合并整合。kit 项目必须具备的特点:
+每个公司应该为不同的微服务项目建立一个统一的 kit 工具包项目(基础库和框架)。统一的 kit 工具可以对微服务的项目结构、配置管理等做统一的强制性约束，避免管理上的混乱。基础库 kit 为独立项目，公司级建议只有一个，因为按照功能目录来拆分会带来不少的管理工作，因此建议合并整合。kit 项目必须具备如下的特点:
 - 统一
 - 标准库方式布局
 - 高度抽象
 - 支持插件
+
+kit 库的项目结构以及功能可以参考 B 站开源的 [kratos](https://github.com/go-kratos/kratos) 框架，后面我们会有专门的系列来解析这个库的源码。下面是其目录结构:
+
+```bash
+tree . -L 2
+.
+tree -L 1  -s
+.
+├── [         37]  api
+├── [       4403]  app.go
+├── [       4722]  app_test.go
+├── [         71]  cmd
+├── [         39]  codecov.yml
+├── [       5219]  CODE_OF_CONDUCT.md
+├── [       4096]  config
+├── [         73]  contrib
+├── [       4402]  CONTRIBUTING.md
+├── [         48]  docs
+├── [       4096]  encoding
+├── [       4096]  errors
+├── [        653]  go.mod
+├── [      18279]  go.sum
+├── [       4096]  hack
+├── [        104]  internal
+├── [       1066]  LICENSE
+├── [       4096]  log
+├── [       2795]  Makefile
+├── [         47]  metadata
+├── [         39]  metrics
+├── [       4096]  middleware
+├── [       2129]  options.go
+├── [       3091]  options_test.go
+├── [       8096]  README.md
+├── [       7111]  README_zh.md
+├── [         40]  registry
+├── [       1510]  ROADMAP.md
+├── [        560]  SECURITY.md
+├── [       4096]  selector
+├── [         63]  third_party
+├── [         71]  transport
+└── [         83]  version.go
+```
+
 
 ### 3. 服务类应用的项目结构
 服务类应用相对于标准应用，会多出如下几个目录
@@ -142,6 +207,16 @@ lightgallery: true
 3. job: 流式任务处理的服务，上游一般依赖 message broker
 4. admin: 区别于 service，更多是面向运营测的服务，通常数据权限更高，隔离带来更好的代码级别安全
 5. task: 定时任务，类似 cronjob，部署到 task 托管平台中
+
+```bash
+└── cmd
+    └── myapp
+        ├── myapp-admin
+        ├── myapp-interface
+        ├── myapp-job
+        ├── myapp-services
+        └── myapp-task
+```
 
 ### 3.2 /web
 /web:
@@ -171,7 +246,7 @@ myapp-task
 ```
 
 ### 4.1 微服务项目结构 V1
-V1 版本的项目结构采用的是典型的 MVCC 三层架构，/internal 下包含了如下几个目录:
+V1 版本的项目结构采用的是典型的 MVCC 三层架构，/internal/myapp 下包含了如下几个目录:
 1. /model: 
     - 作用: 公共模型层，面向数据库表，即服务层
     - 说明: 放对应“存储层”的结构体，是对存储的一一隐射
@@ -189,7 +264,7 @@ V1 版本的项目结构采用的是典型的 MVCC 三层架构，/internal 下�
 /api 定义了 API proto 文件，和生成的 stub 代码，它生成的 interface，其实现者在 service 中。service 的方法签名因为实现了 API 的 接口定义，DTO 直接在业务逻辑层直接使用了，更有 dao 直接使用，最简化代码。
 
 ### 4.2 微服务项目结构 V2
-V2 版本的项目结构采用的是领域编程的思想，/internal 下包含了如下几个目录:
+V2 版本的项目结构采用的是领域编程的思想，/internal/myapp 下包含了如下几个目录:
 1. biz: 
     - 作用: 业务逻辑的组装层，类似 DDD 的 domain 领域层
     - 说明: data 类似 DDD的 repo，repo 接口在这里定义，使用依赖倒置的原则
@@ -211,8 +286,8 @@ V2 的结构设计就是将 DDD 设计中的一些思想和工程结构做了一
 
 ![V2设计思想](/images/go/practice/ddd.png)
 
-### 4.3 LifeCycle
-Lifecycle 需要考虑服务应用的对象初始化以及生命周期的管理，所有 HTTP/gRPC 依赖的前置资源初始化，包括 data、biz、service，之后再启动监听服务。我们使用 https://github.com/google/wire ，来管理所有资源的依赖注入。
+## 5. 应用的声明周期 LifeCycle
+Lifecycle 需要考虑服务应用的对象初始化以及生命周期的管理，所有 HTTP/gRPC 依赖的前置资源初始化，包括 data、biz、service，之后再启动监听服务。我们可以使用 https://github.com/google/wire ，来管理所有资源的依赖注入。
 
 ## 参考
 1. [极客时间-毛剑老师的 Go 工程化实践](https://u.geekbang.org/subject/intro/100107201)
