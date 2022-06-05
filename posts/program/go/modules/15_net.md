@@ -270,7 +270,7 @@ for {
 2. 单个请求的处理: srv.newConn(rw)，返回连接处理对象，这个方法里面会完成当前的请求处理
 
 ## 3. 单个请求的处理
-srv.newConn(rw) 处理过程比较负责，我们先来看看里面涉及的数据结构。首先 l.Accept() 返回的是 Conn 的 interface.
+srv.newConn(rw) 处理过程比较复杂，我们先来看看里面涉及的数据结构。首先 l.Accept() 返回的是 Conn 的 interface.
 
 ```go
 // l.Accept()
@@ -388,7 +388,7 @@ func (c *conn) serve(ctx context.Context) {
   for {
     // 3.1 Request 的生成
     // func (c *conn) readRequest(ctx context.Context) (w *response, err error) 
-    // c.readRequest 会生成 Handler 所需要的 Request 对象以后一个内部的 response 对象，这个 response 实现了 http.ResponseWriter 接口
+    // c.readRequest 会生成 Handler 所需要的 Request 对象和一个内部的 response 对象，这个 response 实现了 http.ResponseWriter 接口
     // 所以 w 就是 http.ResponseWriter
 		w, err := c.readRequest(ctx)
     req := w.req
