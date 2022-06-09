@@ -1,10 +1,18 @@
 ---
-title: 3. Builder模式与Function Options
-date: 2021-01-03
-categories:
-    - Go
-tags:
-    - Go设计模式
+weight: 4
+title: "Builder模式与Function Options"
+date: 2021-03-03T22:00:00+08:00
+lastmod: 2021-03-03T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Builder模式与Function Options"
+featuredImage: 
+
+tags: ["go 惯例"]
+categories: ["Go"]
+
+lightgallery: true
 ---
 
 Go 语言中的可选参数与创建型模式。这篇文章摘录自[耗子哥博客-Go编程模式](https://coolshell.cn/articles/21146.html)
@@ -239,3 +247,97 @@ s3, _ := NewServer("0.0.0.0", 8080, Timeout(300*time.Second), MaxConns(1000))
 不同的编程语言，因为语法上的差异，在设计模式或者说特定功能的实现上还是存在着一些明显的差异。所以要想写出特定语言的专业代码，去研究特定语言的23种设计模式实现还是很有必要的。随着软件编程的不断进步，更新的更优雅的编程模式也在不断出现，需要我们与时俱进。
 
 但是想保持与时俱进并不容易，就拿 23 中设计模式来说，网上有关 Go 语言的实现，很多都是简单的复刻，而不是基于 Go 的最佳实践。作为互联网人，有效的获取我们需要的知识其实一个非常重要的能力。
+
+## 2. grpc 中的配置处理
+Functional Options 在众多的 go package 中都被使用。我们就以 grpc 中的 ServerOption 作为示例，简单介绍一下他的使用:
+
+```go
+type ServerOption interface {
+	apply(*serverOptions)
+}
+
+// 1. 服务端所有的配置选项
+type serverOptions struct {
+	creds                 credentials.TransportCredentials
+	codec                 baseCodec
+	cp                    Compressor
+	dc                    Decompressor
+	unaryInt              UnaryServerInterceptor
+	streamInt             StreamServerInterceptor
+	chainUnaryInts        []UnaryServerInterceptor
+	chainStreamInts       []StreamServerInterceptor
+  ...
+}
+
+// 2. 默认的参数配置
+var defaultServerOptions = serverOptions{
+	maxReceiveMessageSize: defaultServerMaxReceiveMessageSize,
+	maxSendMessageSize:    defaultServerMaxSendMessageSize,
+	connectionTimeout:     120 * time.Second,
+	writeBufferSize:       defaultWriteBufSize,
+	readBufferSize:        defaultReadBufSize,
+}
+
+// 3. Functional Options，不过这里多了一层包装
+// funcServerOption wraps a function that modifies serverOptions into an
+// implementation of the ServerOption interface.
+type funcServerOption struct {
+	f func(*serverOptions)
+}
+
+func (fdo *funcServerOption) apply(do *serverOptions) {
+	fdo.f(do)
+}
+
+// f func(*serverOptions) 就是 Functional Options，不过 grpc 多了一层包装
+func newFuncServerOption(f func(*serverOptions)) *funcServerOption {
+	return &funcServerOption{
+		f: f,
+	}
+}
+
+// 4. Function Options 配置
+func WriteBufferSize(s int) ServerOption {
+	return newFuncServerOption(func(o *serverOptions) {
+		o.writeBufferSize = s
+	})
+}
+
+// 5. 服务初始化
+func NewServer(opt ...ServerOption) *Server {
+	// 默认参数
+  opts := defaultServerOptions
+	// funcServerOption.apply(&opts)
+  // f(&opts)
+  for _, o := range opt {
+		o.apply(&opts)
+	}
+	s := &Server{
+		lis:      make(map[net.Listener]bool),
+		opts:     opts,
+		conns:    make(map[string]map[transport.ServerTransport]bool),
+		services: make(map[string]*serviceInfo),
+		quit:     grpcsync.NewEvent(),
+		done:     grpcsync.NewEvent(),
+		czData:   new(channelzData),
+	}
+
+  // 处理拦截器的链式调用
+  // chainUnaryServerInterceptors chains all unary server interceptors into one.
+	chainUnaryServerInterceptors(s)
+	chainStreamServerInterceptors(s)
+	s.cv = sync.NewCond(&s.mu)
+	if EnableTracing {
+		_, file, line, _ := runtime.Caller(1)
+		s.events = trace.NewEventLog("grpc.Server", fmt.Sprintf("%s:%d", file, line))
+	}
+
+	if s.opts.numServerWorkers > 0 {
+		s.initServerWorkers()
+	}
+
+	s.channelzID = channelz.RegisterServer(&channelzServer{s}, "")
+	channelz.Info(logger, s.channelzID, "Server created")
+	return s
+}
+```
