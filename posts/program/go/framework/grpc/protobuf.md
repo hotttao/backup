@@ -23,7 +23,7 @@ RPC 大体上包括两个组成部分:
 1. 序列化协议
 2. 底层的传输协议
 
-Go net/rpc 标准库提供了 rpc 的 go 实现，采用的是 Go语言特有的gob编码，因为无法实现跨语言，并不是很常用。所以我们把精力放在更常用的 grpc 和 Protobuf 上。
+Go net/rpc 标准库提供了 rpc 的 go 实现，采用的是 Go语言特有的gob编码，因为无法实现跨语言，并不是很常用。gRPC是Google公司基于Protobuf开发的跨语言的开源RPC框架。支持跨语言。所以我们把精力放在更常用的 grpc 和 Protobuf 上。
 
 ### 1.1 Protobuf
 要想使用 Protobuf 首先要安装 protocol compiler，即 protoc，其次需要安装特定语言的代码生成工具。安装的命令如下:
@@ -64,6 +64,7 @@ $ tree .
 │       ├── helloword_grpc.pb.go
 │       ├── helloword.pb.go
 │       └── helloword.proto
+└── client.go
 ├── Makefile
 ├── openapi.yaml
 └── server.go
@@ -134,12 +135,12 @@ api:
 2. --go-grpc_out 调用 protoc-gen-go-grpc 生成一个 helloword_grpc.pb.go 文件，里面则包含所有由 service 关键字定义而生成的 grpc 服务相关代码
 3. --go-http_out 调用 protoc-gen-go-http 生成一个 helloword_http.pb.go，里面包含所有由 `option (google.api.http)` 定义而生成 http 服务相关代码。
 
-在 protoc 插件的体系中，protoc-gen-go 是 protoc go语言代码生成的插件，而 protoc-gen-go-grpc/protoc-gen-go-http 则是 protoc-gen-go 的插件。当protoc 执行命令的时候，插件解析步骤如下
+当protoc 执行命令的时候，插件解析步骤如下
 
-1. 解析 proto 文件，类似于AST树的解析，将整个proto文件有用的语法内容提取出来
+1. protoc 解析 proto 文件，类似于AST树的解析，将整个proto文件有用的语法内容提取出来
 2. 将解析的结果转为成二进制流，然后传入到protoc-gen-xx标准输入。也就是说protoc 会去程序执行路径去找 protoc-gen-go 这个二进制，将解析结果写入到这个程序的标准输入。如果命令是--go_out，那么找到是protoc-gen-go，如果自己定义一个插件叫xxoo，那么--xxoo_out找到就是protoc-gen-xxoo了
-3. protoc-gen-xx 必须实现从标准输入读取上面解析完的二进制流，然后将得到的proto 信息按照自己的语言生成代码，最后将输出的代码写回到标准输出
-4. protoc 接收protoc-gen-xx的标准输出，然后写入文件
+3. protoc-gen-xx 必须实现从标准输入读取上面解析完的二进制流，然后将得到的 proto 信息按照自己的语言生成代码，最后将输出的代码写回到标准输出
+4. protoc 接收 protoc-gen-xx的标准输出，然后写入文件
 
 理解 Porotobuf 代码生成的过程，最好的方式就是自己写一个插件，我们就以 [kratos error 代码生成插件](https://github.com/go-kratos/kratos/tree/main/cmd/protoc-gen-go-errors)为例看看如何写一个 go protoc 插件。
 
@@ -242,6 +243,7 @@ type File struct {
 }
 ```
 
+grpc 支持的所有语言为了便于开发者，开发出特定语言的插件，都会把整个解析过程封装成一个库，上面介绍的就是 Go 语言所作的封装。而大多数情况下，业务的开发者所需要的就是拿到上面解析后的对象，按照业务规则生成自己所需要的代码即可。就像示例中 generateFile 所作的工作一样。
 
 ```go
 // generateFile generates a _errors.pb.go file containing kratos errors definitions.
@@ -262,3 +264,4 @@ func generateFile(gen *protogen.Plugin, file *protogen.File) *protogen.Generated
 ```
 
 g.P() 会把参数输出到标准输出，这些标准输出会被  protoc 捕获并写入到生成 pb 文件中。生成得核心代码则通常使用 template 完成。
+
