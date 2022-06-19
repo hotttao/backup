@@ -422,7 +422,7 @@ func (s *Server) filter() mux.MiddlewareFunc {
 }
 ```
 
-`FilterChain(srv.filters...)(srv.router)` 与 middleware 的实现逻辑类似，但是需要注意的是，这里的 FilterChain 并不是 middleware，但是感觉起到的作用好像是类似的。
+`FilterChain(srv.filters...)(srv.router)` 与 middleware 的实现逻辑类似，但是需要注意的是，这里的 FilterChain 并不是 middleware。FilterChanin 处理的是原始的 http.Handler，而 kratos 定义的 middleware 处理的是框架层定义的 middleware.Handler。FilterChanin 的执行顺序在 middleware 之前，kratos 定义 FilterChanin 的目的应该是为了方便集成其他为 net/http 编写的 middleware。
 
 ```go
 // FilterFunc is a function which receives an http.Handler and returns another http.Handler.

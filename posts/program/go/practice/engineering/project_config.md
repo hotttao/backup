@@ -1,8 +1,8 @@
 ---
 weight: 4
-title: "go 工程化项目配置"
-date: 2021-04-02T22:00:00+08:00
-lastmod: 2021-04-02T22:00:00+08:00
+title: "go 配置管理"
+date: 2021-04-03T22:00:00+08:00
+lastmod: 2021-04-03T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
