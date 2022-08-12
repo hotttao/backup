@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "gRPC 使用基础"
+title: "gRPC 插件"
 date: 2021-06-23T22:00:00+08:00
 lastmod: 2021-06-23T22:00:00+08:00
 draft: false
@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Protobuf 入门"
 featuredImage: 
 
-tags: ["go 框架"]
+tags: ["go grpc", "python grpc"]
 categories: ["Go"]
 
 lightgallery: true
@@ -18,97 +18,9 @@ toc:
   auto: false
 ---
 
-## 1. Protobuf 简介
-RPC 大体上包括两个组成部分:
-1. 序列化协议
-2. 底层的传输协议
+前面我们以一个示例，简单介绍了，go/python gRPC 生成的代码。今天我们来聊聊 gRPC 的插件机制。毕竟所有语言的 gRPC 代码都是通过 gRPC 插件生成的。
 
-Go net/rpc 标准库提供了 rpc 的 go 实现，采用的是 Go语言特有的gob编码，因为无法实现跨语言，并不是很常用。gRPC是Google公司基于Protobuf开发的跨语言的开源RPC框架。支持跨语言。所以我们把精力放在更常用的 grpc 和 Protobuf 上。
-
-### 1.1 Protobuf
-要想使用 Protobuf 首先要安装 protocol compiler，即 protoc，其次需要安装特定语言的代码生成工具。安装的命令如下:
-
-```bash
-# 1. 安装 protocol compiler
-sudo yum install protobuf-compiler
-
-# 2. 安装 go 语言代码生成插件
-go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
-go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
-
-# 3. 安装其他 go grpc 插件
-go install github.com/go-kratos/kratos/cmd/kratos/v2@latest
-go install github.com/go-kratos/kratos/cmd/protoc-gen-go-http/v2@latest
-
-go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-grpc-gateway
-go get -u github.com/grpc-ecosystem/grpc-gateway/protoc-gen-swagger
-go install github.com/google/gnostic/cmd/protoc-gen-openapi@latest
-go get github.com/mwitkow/go-proto-validators/protoc-gen-govalidators
-```
-
-安装脚本中有一些 grpc 插件，先装上后面我们在介绍他们的用法。
-
-### 1.2 Protobuf 使用示例
-我们先来看简单看看 Protobuf 的使用示例，代码位于 [grpc/Protobuf示例](https://github.com/hotttao/goalgo/tree/master/grpc)。
-
-示例代码的目录结构如下:
-
-```bash
-# 代码生成
-$ make api 
-
-# 目录结构
-$ tree .
-├── api
-│   └── helloworld
-│       ├── helloword_grpc.pb.go
-│       ├── helloword.pb.go
-│       └── helloword.proto
-└── client.go
-├── Makefile
-├── openapi.yaml
-└── server.go
-```
-
-proto 文件的定义如下:
-
-```Proto
-syntax = "proto3";
-
-option go_package = "github.com/hotttao/goalgo/grpc/api/helloworld;helloworld";
-option java_multiple_files = true;
-option java_package = "io.grpc.examples.helloworld";
-option java_outer_classname = "HelloWorldProto";
-
-package helloworld;
-
-service Greeter {
-  // Sends a greeting
-  rpc SayHello (HelloRequest) returns (HelloReply) {
-    option (google.api.http) = {
-      // 定义一个 GET 接口，并且把 name 映射到 HelloRequest
-      get: "/helloworld/{name}",
-      // 可以添加附加接口
-      additional_bindings {
-          // 定义一个 POST 接口，并且把 body 映射到 HelloRequest
-          post: "/v1/greeter/say_hello",
-          body: "*",
-      }
-    };
-  }
-}
-
-// The request message containing the user's name.
-message HelloRequest {
-  string name = 1;
-}
-
-// The response message containing the greetings
-message HelloReply {
-  string message = 1;
-}[
-```
-
+## 1. gRPC 插件执行过程
 代码生成的命令如下:
 
 ```Makefile
@@ -116,19 +28,16 @@ API_PROTO_FILES=$(shell find api -name *.proto)
 
 .PHONY: api
 # generate api proto
-api:
-	protoc --proto_path=./api \
+golang:
+	protoc --proto_path=./protobuf \
 	       --proto_path=../third_party \
- 	       --go_out=paths=source_relative:./api \
- 	       --go-http_out=paths=source_relative:./api \
- 	       --go-grpc_out=paths=source_relative:./api \
- 	       --openapi_out==paths=source_relative:. \
+ 	       --go_out=paths=source_relative:./golang/api \
+ 	       --go-http_out=paths=source_relative:./golang/api \
+ 	       --go-grpc_out=paths=source_relative:./golang/api \
+ 	       --openapi_out==paths=source_relative:./golang \
 	       $(API_PROTO_FILES)
 ```
---go_out，--go-http_out 等等调用的都是 grpc 的插件，protoc 在编译 Protobuf 文件时会分别调用 protoc-gen-go，protoc-gen-go-http 命令。有关 Protobuf 的语法，protoc 命令的使用这里就不介绍了，推荐阅读下面这些材料:
-1. [Protobuf 官方文档]()
-2. [grpc 官方文档]()
-3. [Go语言高级编程]()
+--go_out，--go-http_out 等等调用的都是 grpc 的插件，protoc 在编译 Protobuf 文件时会分别调用 protoc-gen-go，protoc-gen-go-http 命令。
 
 不同的插件会生成的不同的结果文件，这里:
 1. --go_out 调用 protoc-gen-go 生成一个 helloword.pb.go 文件，里面会包含所有由 message 关键字定义而生成的 go struct 结构代码

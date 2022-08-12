@@ -556,3 +556,26 @@ func _Income_GetIncome0_HTTP_Handler(srv IncomeHTTPServer) func(ctx http.Context
 4. r.GET 会调用 transport.Router.Handle 进行路由注册，这个过程会做一个转换，把 net/http HandlerFunc 转换成 kratos 定义的 HandlerFunc 其接受一个包装的 context(`&wrapper{router: r}`)
 5. 这个经过包装的 Context 包含有之前生成的 transport.Router
 6. 最后在调用注册的 handler 时，通过 ctx.Middleware(内部通过 context.router.srv.ms) 获取到保存在 http.Server 中的 middleware 并执行
+
+### 1.5 handler 转换过程
+上面一连串 middleware 的调用过程，还是比较绕的。同时存在 Filter 和 Middleware，它们作用的 handler 也是不一样。从上面我们可以看到handler 的转换过程:
+
+1. _Income_GetIncome0_HTTP_Handler: 会把 proto 中定义的 Service 转换成 kratos transport 的 htt.HandlerFunc: `type HandlerFunc func(Context) error`，kratos 定义的 middleware 作用在此 http.HandlerFunc 上
+2. 真正的路由注册在 RegisterIncomeHTTPServer，内部调用了 kratos transport http.Router 的 Handler 方法，讲 http.HandlerFunc 转换成了 net/http 的 HandlerFunc。ktratos 定义的 Filter 作用在 net/http 的 HandlerFunc 上。
+
+```go
+func (r *Router) Handle(method, relativePath string, h HandlerFunc, filters ...FilterFunc) {
+	next := http.Handler(http.HandlerFunc(func(res http.ResponseWriter, req *http.Request) {
+		ctx := r.pool.Get().(Context)
+		ctx.Reset(res, req)
+		if err := h(ctx); err != nil {
+			r.srv.ene(res, req, err)
+		}
+		ctx.Reset(nil, nil)
+		r.pool.Put(ctx)
+	}))
+	next = FilterChain(filters...)(next)
+	next = FilterChain(r.filters...)(next)
+	r.srv.router.Handle(path.Join(r.prefix, relativePath), next).Methods(method)
+}
+```
