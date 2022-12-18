@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "Go 语言的复合数据类型"
+title: "Go 语言进阶开篇"
 date: 2022-12-15T22:00:00+08:00
 lastmod: 2021-02-01T22:00:00+08:00
 draft: false
