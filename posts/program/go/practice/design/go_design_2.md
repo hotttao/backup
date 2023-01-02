@@ -315,6 +315,7 @@ default:
 1. sentinel error: 预定义错误
 2. error types: 实现了 error 接口的自定义类型并结合断言进行使用
 3. error wrapt: 错误包装
+4. 错误行为特征检视策略: 将某个包中的错误类型归类，统一提取出一些公共的错误行为特征（behaviour），并将这些错误行为特征放入一个公开的接口类型
 
 接下来我们会一一比较这几种处理方式得优劣，得出最佳得 Error 得处理实践。
 
@@ -466,7 +467,68 @@ func main() {
 
 最后一单错误已经被处理了，这个错误就不应该被继续上抛给调用方，应该只返回 nil。
 
-### 2.5 错误判定
+### 2.5 错误行为特征检视策略
+以标准库中的net包为例，它将包内的所有错误类型的公共行为特征抽象并放入net.Error这个接口中。而错误处理方仅需依赖这个公共接口即可检视具体错误值的错误行为特征信息，并根据这些信息做出后续错误处理分支选择的决策。
+
+```go
+// $GOROOT/src/net/net.go
+type Error interface {
+    error
+    Timeout() bool   // 是超时类错误吗？
+    Temporary() bool // 是临时性错误吗？
+}
+```
+下面是http包使用错误行为特征检视策略进行错误处理的代码：
+
+```go
+// $GOROOT/src/net/http/server.go
+func (srv *Server) Serve(l net.Listener) error {
+    ...
+    for {
+        rw, e := l.Accept()
+        if e != nil {
+            select {
+            case <-srv.getDoneChan():
+                return ErrServerClosed
+            default:
+            }
+            if ne, ok := e.(net.Error); ok && ne.Temporary() {
+                // 这里对临时性错误进行处理
+                ...
+                time.Sleep(tempDelay)
+                continue
+            }
+            return e
+        }
+        ...
+    }
+
+```
+
+Accept方法实际上返回的错误类型为*OpError，它是net包中的一个自定义错误类型，实现了错误公共特征接口net.Error，因此可以被错误处理方通过net.Error接口的方法判断其行为是否满足Temporary或Timeout特征。
+
+```go
+// $GOROOT/src/net/net.go
+type OpError struct {
+    ...
+    // Err is the error that occurred during the operation.
+    Err error
+}
+
+type temporary interface {
+    Temporary() bool
+}
+
+func (e *OpError) Temporary() bool {
+    if ne, ok := e.Err.(*os.SyscallError); ok {
+        t, ok := ne.Err.(temporary)
+        return ok && t.Temporary()
+    }
+    t, ok := e.Err.(temporary)
+    return ok && t.Temporary()
+}
+```
+### 2.6 错误判定
 前面我们提到了两种错误判定的方法:
 1. 使用 == 进行 sentinel error 的错误判定
 2. 通过断言进行自定义错误的判定
@@ -634,4 +696,41 @@ type withMessage struct {
 }
 
 func (w *withMessage) Unwrap() error { return w.cause }
+```
+
+### 2.7 错误处理的总结
+Go社区中关于如何进行错误处理的讨论有很多，但唯一正确的结论是没有哪一种错误处理策略适用于所有项目或场合。综合上述的构造错误值方法及错误处理策略，请记住如下几点：
+1. 尽量使用透明错误处理策略降低错误处理方与错误值构造方之间的耦合；
+2. 如果可以通过错误值类型的特征进行错误检视，那么尽量使用错误行为特征检视策略；
+3. 在上述两种策略无法实施的情况下，再用“哨兵”策略和错误值类型检视策略；
+4. 在Go 1.13及后续版本中，尽量用errors.Is和errors.As方法替换原先的错误检视比较语句。
+
+## 3. Go 的异常处理
+Go的正常错误处理与异常处理之间是泾渭分明的，这与其他主流编程语言使用结构化错误处理统一处理错误与异常是两种不同的理念。Go提供了panic专门用于处理异常。
+
+panic是一个Go内置函数，它用来停止当前常规控制流并启动panicking过程。当函数F调用panic函数时，函数F的执行停止，函数F中已进行了求值的defer函数都将得到正常执行，然后函数F将控制权返还给其调用者。对于函数F的调用者而言，函数F之后的行为就如同调用者调用的函数是panic一样，该panicking过程将继续在栈上进行下去，直到当前goroutine中的所有函数都返回为止，此时程序将崩溃退出。
+
+在Go中，panic则是“不得已而为之”，即所有引发panic的情形，无论是显式的（我们主动调用panic函数引发的）还是隐式的（Go运行时检测到违法情况而引发的），都是我们不期望看到的。对这些引发的panic，我们很少有预案应对，更多的是让程序快速崩溃掉。因此一旦发生panic，就意味着我们的代码很大可能出现了bug。
+
+使用recover可以捕获panic，防止goroutine意外退出
+
+```go
+func (s *ss) Token(skipSpace bool, f func(rune) bool) (tok []byte, err error) {
+    defer func() {
+        if e := recover(); e != nil {
+            if se, ok := e.(scanError); ok {
+                err = se.err
+            } else {
+                panic(e)
+            }
+        }
+    }()
+    if f == nil {
+        f = notSpace
+    }
+    s.buf = s.buf[:0]
+    tok = s.token(skipSpace, f)
+    return
+}
+
 ```
