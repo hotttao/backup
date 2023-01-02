@@ -1,16 +1,22 @@
 ---
-title: 4. 委托和反转控制
-date: 2021-01-04
-categories:
-    - Go
-tags:
-    - Go设计模式
----
+weight: 4
+title: "委托和反转控制"
+date: 2021-03-04T22:00:00+08:00
+lastmod: 2021-03-04T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Builder模式与Function Options"
+featuredImage: 
 
+tags: ["go 惯例"]
+categories: ["Go"]
+
+lightgallery: true
+---
 反转控制，这篇文章摘录自[耗子哥博客-Go编程模式](https://coolshell.cn/articles/21214.html)
 
 <!-- more -->
-
 ## 1. 嵌入和委托
 
 ### 1.1 反转控制

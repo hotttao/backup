@@ -1,10 +1,18 @@
 ---
-title: 5. Go 代码生成和泛型
-date: 2021-01-05
-categories:
-    - Go
-tags:
-    - Go设计模式
+weight: 4
+title: "Go 代码生成和泛型"
+date: 2021-03-05T22:00:00+08:00
+lastmod: 2021-03-05T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Builder模式与Function Options"
+featuredImage: 
+
+tags: ["go 惯例"]
+categories: ["Go"]
+
+lightgallery: true
 ---
 Go 的泛型和代码生成，这篇文章摘录自[耗子哥博客-Go编程模式](https://coolshell.cn/articles/21179.html)
 
