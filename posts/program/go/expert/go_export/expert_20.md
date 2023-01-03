@@ -58,6 +58,13 @@ $ GODEBUG=schedtrace=1000,scheddetail=1 godoc -http=:6060
 4. 将Go代码编译成汇编代码：`go tool compile -S xx.go > xx.s`
 5. 使用go tool工具反编译Go程序：`go tool objdump -S go-binary > xx.s`
 
+```go
+// 编译
+GOARCH=386 go tool compile -N -l test.go
+// 反编译
+GOARCH=386 go tool objdump -gnu test.o
+```
+
 
 ## 参考资料
 1. [Debugging Performance Issues in Go Programs](https://software.intel.com/en-us/blogs/2014/05/10/debugging-performance-issues-in-go-programs)
