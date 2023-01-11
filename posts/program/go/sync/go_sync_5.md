@@ -94,7 +94,7 @@ readers-writers 问题一般有三类，基于对读和写操作的优先级，�
     - 这种设计比较简单，不区分 reader 和 writer 优先级
     - 某些场景下这种不指定优先级的设计反而更有效，因为第一类优先级会导致写饥饿，第二类优先级可能会导致读饥饿，这种不指定优先级的访问不再区分读写，大家都是同一个优先级，解决了饥饿的问题
     
-Go 标准库中的 RWMutex 设计是 Write-preferring 方案。一个正在阻塞的 Lock 调用会排除新的 reader 请求到锁。
+Go 标准库中的 RWMutex 设计是 Write-preferring 方案。**一个正在阻塞的 Lock 调用会排除新的 reader 请求到锁**。
 
 ### 2.1 RWMutex 的定义
 

@@ -46,26 +46,6 @@ sync.Pool 只提供了三个对外方法:
 	- 如果 Put 一个 nil 值，Pool 就会忽略这个值
 
 
-```go
-type Pool struct {
-	noCopy noCopy
-
-	local     unsafe.Pointer // local fixed-size per-P pool, actual type is [P]poolLocal
-	localSize uintptr        // size of the local array
-
-	victim     unsafe.Pointer // local from previous cycle
-	victimSize uintptr        // size of victims array
-
-	// New optionally specifies a function to generate
-	// a value when Get would otherwise return nil.
-	// It may not be changed concurrently with calls to Get.
-	New func() interface{}
-}
-
-func (p *Pool) Put(x interface{}) {}
-func (p *Pool) Get() interface{} {}
-```
-
 下面是 sync.Pool 实现的 buffer 池(缓冲池)。注意下面这段代码是有问题的，你一定不要将这段代码应用到实际的产品中，它可能会有内存泄漏的问题。
 
 ```go
@@ -122,6 +102,74 @@ Pool 的数据结构相对于其他同步原语是比较复杂的，其中:
 4. poolChainElt: 是 poolChain 链表中的每个 Item
 5. poolDequeue: 是一个双向队列保存了缓存的池化对象
 
+```go
+type Pool struct {
+	noCopy noCopy
+
+	local     unsafe.Pointer // local fixed-size per-P pool, actual type is [P]poolLocal
+	localSize uintptr        // size of the local array
+
+	victim     unsafe.Pointer // local from previous cycle
+	victimSize uintptr        // size of victims array
+
+	// New optionally specifies a function to generate
+	// a value when Get would otherwise return nil.
+	// It may not be changed concurrently with calls to Get.
+	New func() interface{}
+}
+
+func (p *Pool) Put(x interface{}) {}
+func (p *Pool) Get() interface{} {}
+
+// Local per-P Pool appendix.
+type poolLocalInternal struct {
+	private any       // Can be used only by the respective P.
+	shared  poolChain // Local P can pushHead/popHead; any P can popTail.
+}
+
+type poolLocal struct {
+	poolLocalInternal
+
+	// Prevents false sharing on widespread platforms with
+	// 128 mod (cache line size) = 0 .
+	pad [128 - unsafe.Sizeof(poolLocalInternal{})%128]byte
+}
+
+
+// poolChain is a dynamically-sized version of poolDequeue.
+//
+// This is implemented as a doubly-linked list queue of poolDequeues
+// where each dequeue is double the size of the previous one. Once a
+// dequeue fills up, this allocates a new one and only ever pushes to
+// the latest dequeue. Pops happen from the other end of the list and
+// once a dequeue is exhausted, it gets removed from the list.
+type poolChain struct {
+	// head is the poolDequeue to push to. This is only accessed
+	// by the producer, so doesn't need to be synchronized.
+	head *poolChainElt
+
+	// tail is the poolDequeue to popTail from. This is accessed
+	// by consumers, so reads and writes must be atomic.
+	tail *poolChainElt
+}
+
+type poolChainElt struct {
+	poolDequeue
+
+	// next and prev link to the adjacent poolChainElts in this
+	// poolChain.
+	//
+	// next is written atomically by the producer and read
+	// atomically by the consumer. It only transitions from nil to
+	// non-nil.
+	//
+	// prev is written atomically by the consumer and read
+	// atomically by the producer. It only transitions from
+	// non-nil to nil.
+	next, prev *poolChainElt
+}
+```
+
 我们先从 pool 的垃圾回收看起，这能反映出上面所说 victim 与 local 之间的关系。
 
 ### 2.1 Pool 的垃圾回收
@@ -157,6 +205,10 @@ func poolCleanup() {
     }
 
     oldPools, allPools = allPools, nil
+}
+
+func init() {
+	runtime_registerPoolCleanup(poolCleanup)
 }
 ```
 
@@ -222,6 +274,11 @@ func (p *Pool) getSlow(pid int) interface{} {
 
     return nil
 }
+
+func indexLocal(l unsafe.Pointer, i int) *poolLocal {
+	lp := unsafe.Pointer(uintptr(l) + uintptr(i)*unsafe.Sizeof(poolLocal{}))
+	return (*poolLocal)(lp)
+}
 ```
 
 这里没列出 pin 代码的实现，你只需要知道，pin 方法会将此 goroutine 固定在当前的 P 上，避免查找元素期间被其它的 P 执行。固定的好处就是查找元素期间直接得到跟这个 P 相关的 local。有一点需要注意的是，pin 方法在执行的时候，如果跟这个 P 相关的 local 还没有创建，或者运行时 P 的数量被修改了的话，就会新创建 local。
@@ -244,9 +301,50 @@ func (p *Pool) Put(x interface{}) {
     }
     runtime_procUnpin()
 }
+
+// pin pins the current goroutine to P, disables preemption and
+// returns poolLocal pool for the P and the P's id.
+// Caller must call runtime_procUnpin() when done with the pool.
+func (p *Pool) pin() (*poolLocal, int) {
+	pid := runtime_procPin()
+	// In pinSlow we store to local and then to localSize, here we load in opposite order.
+	// Since we've disabled preemption, GC cannot happen in between.
+	// Thus here we must observe local at least as large localSize.
+	// We can observe a newer/larger local, it is fine (we must observe its zero-initialized-ness).
+	s := runtime_LoadAcquintptr(&p.localSize) // load-acquire
+	l := p.local                              // load-consume
+	if uintptr(pid) < s {
+		return indexLocal(l, pid), pid
+	}
+	return p.pinSlow()
+}
+
+func (p *Pool) pinSlow() (*poolLocal, int) {
+	// Retry under the mutex.
+	// Can not lock the mutex while pinned.
+	runtime_procUnpin()
+	allPoolsMu.Lock()
+	defer allPoolsMu.Unlock()
+	pid := runtime_procPin()
+	// poolCleanup won't be called while we are pinned.
+	s := p.localSize
+	l := p.local
+	if uintptr(pid) < s {
+		return indexLocal(l, pid), pid
+	}
+	if p.local == nil {
+		allPools = append(allPools, p)
+	}
+	// If GOMAXPROCS changes between GCs, we re-allocate the array and lose the old one.
+	size := runtime.GOMAXPROCS(0)
+	local := make([]poolLocal, size)
+	atomic.StorePointer(&p.local, unsafe.Pointer(&local[0])) // store-release
+	runtime_StoreReluintptr(&p.localSize, uintptr(size))     // store-release
+	return &local[pid], pid
+}
 ```
 
-Put 的逻辑相对简单，优先设置本地 private，如果 private 字段已经有值了，那么就把此元素 push 到本地队列中。
+Put 的逻辑相对简单，优先设置本地 private，如果 private 字段已经有值了，那么就把此元素 push 到本地队列中。注意: poolLocal 对象在 pinSlow 方法中创建。
 
 ## 3. Pool 采坑点
 使用 Once 有两个常见错误:分别是内存泄漏和内存浪费。

@@ -213,20 +213,17 @@ Go 内建的 map 类型不是线程安全的，所以 Go 1.9 中增加了一个�
 
 sync.Map 的实现有几个优化点，我们先列出来:
 1. 空间换时间。通过冗余的两个数据结构（只读的 read 字段、可写的 dirty），来减少加锁对性能的影响。对只读字段（read）的操作不需要加锁。
-2. 优先从 read 字段读取、更新、删除，因为对 read 字段的读取不需要锁。
+2. 优先从 read 字段**读取、更新、删除(不包括新增)**，因为对 read 字段的读取不需要锁。
 3. 动态调整。miss 次数多了之后，将 dirty 数据提升为 read，避免总是从 dirty 中加锁读取。
 4. double-checking。加锁之后先还要再检查 read 字段，确定真的不存在才操作 dirty 字段。
 5. 延迟删除。删除一个键值只是打标记，只有在提升 dirty 字段为 read 字段的时候才清理删除的数据。
 
 #### 个人理解
-锁的性能优化，核心就如下几个点:
-1. 降低加锁的粒度
-2. 通过 lock-free(核心就是原子操作)，降低加锁的频率和次数
-3. 合并需要锁的操作，本质上也是降低加锁的次数
-
-对应到 sync.Map 就是:
-1. 通过分离 read 和 dirty，read 字段上面的读取操作大多数都是原子操作降低了加锁的频率
-2. 延迟删除，合并需要锁的操作
+sync.Map 的实现看了好几遍，始终不太理解为什么 sync.Map 要区分新增、删除。后来重读时思考了一下，个人理解是这样的:
+1. sync.Map 是为了实现支持并发的 map，实际保存数据的还是底层的 map，所以增删操作最后修改的还是底层的 map，map 不是并发安全的，所以增删操作无论如何都需要加锁。
+2. 对于更新操作，key 和 value 已经存在，更新操作修改是 value 对应内存中的值，可使用 atomic 原子操作完成
+3. 删除操作会在 dirty 中直接删除，但是 read 中只是将 value 设置为 nil 标记删除，这样可以避免对 read 加锁，但是这样 map 使用的内存会一直增长无法收缩，read 中真正的数据删除发生在 dirty 提升为 read 时
+4. 新加的元素需要放入到 dirty 中，如果 dirty 为 nil，那么需要从 read 字段中复制出来一个 dirty 对象。在数据从 read 往 dirty 迁移的过程中只迁移没有被标记为删除的KV，同时把 value 为 nil 的 value 重置为 expunged，表示 key 只存在于readonly之中，不存在于dirty中。所以 nil 和 expunged 都代表元素被删除了，只不过expunged比较特殊，如果被删除的元素是expunged,代表它只存在于readonly之中，不存在于dirty中。这样如果重新设置这个key的话，需要往dirty增加key
 
 下面我们就来看看 sync.Map 的设计与实现
 
@@ -268,6 +265,10 @@ func (e *entry) load() (value interface{}, ok bool) {
 	}
 	return *(*interface{})(p), true
 }
+
+func newEntry(i interface{}) *entry {
+	return &entry{p: unsafe.Pointer(&i)}
+}
 ```
 
 通过 [go doc](https://pkg.go.dev/sync) 可以轻松看到 sync.Map 具有如下方法:
@@ -300,6 +301,7 @@ func (m *Map) Store(key, value interface{}) {
     if e, ok := read.m[key]; ok { // 双检查，看看read是否已经存在了
         if e.unexpungeLocked() {
             // 此项目先前已经被删除了，通过将它的值设置为nil，标记为unexpunged
+            // 注: 属于重用删除的对象，必须先把 read 中的 unexpunged 重置为 nil，否则重用的 key 会一直被标记为已经删除
             // e.unexpungeLocked 执行后，read 和 dirty 中 e.p 的指向就不一样了，
             // read 中 e.p 已经被置为 nil，所以这里需要设置 dirty
             m.dirty[key] = e 
@@ -357,10 +359,23 @@ func (e *entry) tryStore(i *interface{}) bool {
 		}
 	}
 }
+
+func (e *entry) tryExpungeLocked() (isExpunged bool) {
+	p := atomic.LoadPointer(&e.p)
+	for p == nil {
+		if atomic.CompareAndSwapPointer(&e.p, nil, expunged) {
+			return true
+		}
+		p = atomic.LoadPointer(&e.p)
+	}
+	return p == expunged
+}
+
 ```
 在 Store 方法的实现中:
 1. 如果 dirty 字段非 nil 的话，map 的 read 字段和 dirty 字段会包含相同的非 expunged 的项，所以如果通过 read 字段更改了这个项的值，从 dirty 字段中也会读取到这个项的新值，因为本来它们指向的就是同一个地址。
-2. sync.Map 可能是更新也可能是保存，只有在更新的是已存在的未被删除的元素，不会用到锁。其他的，需要更新（重用）删除的对象、更新还未提升的 dirty 中的对象，或者新增加元素的时候就会使用到了锁。从这一点来看，sync.Map 适合那些只会增长的缓存系统，可以进行更新，但是不要删除，并且不要频繁地增加新元素。
+2. 新加的元素需要放入到 dirty 中，如果 dirty 为 nil，那么需要从 read 字段中复制出来一个 dirty 对象。在 dirtyLocked 中数据从 read 往 dirty 迁移的过程中只迁移没有被标记为删除的KV，同时把 value 为 nil 的 value 重置为 expunged，表示 key 只存在于readonly之中，不存在于dirty中
+2. sync.Map 可能是更新也可能是保存，**只有在更新的是已存在的未被删除的元素，不会用到锁**。其他的，需要**更新（重用）删除的对象**、**更新还未提升的 dirty 中的对象**，或者**新增加元素**的时候就会使用到了锁。从这一点来看，sync.Map 适合那些只会增长的缓存系统，可以进行更新，但是不要删除，并且不要频繁地增加新元素。
 
 #### Load 方法
 ```go
@@ -387,6 +402,14 @@ func (m *Map) Load(key interface{}) (value interface{}, ok bool) {
     return e.load() //返回读取的对象，e既可能是从read中获得的，也可能是从dirty中获得的
 }
 
+func (e *entry) load() (value any, ok bool) {
+	p := atomic.LoadPointer(&e.p)
+	if p == nil || p == expunged {
+		return nil, false
+	}
+	return *(*interface{})(p), true
+}
+
 
 func (m *Map) missLocked() {
     m.misses++ // misses计数加一
@@ -401,6 +424,7 @@ func (m *Map) missLocked() {
 
 在 Load 方法的实现中:
 1. 只有在读取已经存在的键时，才有可能不加锁
+2. 如果请求的 key 不存在或者是新加的，就需要加锁从 dirty 中读取。所以，**读取不存在的 key 会因为加锁而导致性能下降**，读取还没有提升的新值的情况下也会因为加锁性能下降。
 2. missLocked 增加 miss 的时候，如果 miss 数等于 dirty 长度，会将 dirty 提升为 read，并将 dirty 置空。
 
 #### Delete 方法
@@ -445,7 +469,8 @@ func (e *entry) delete() (value interface{}, ok bool) {
 }
 ```
 在 LoadDelete 方法的实现中:
-1. 如果项目存在就删除（将它的值标记为 nil）
+1. `delete(m.dirty, key)` 删除 dirty 中的 key
+2. read 中的 key 则是通过 e.delete 将 value 设置为 nil，在下一次 dirty 提升为 read 时真正删除。 
 
 #### 其他方法
 最后，sync.map 还有一些 LoadAndDelete、LoadOrStore、Range 等辅助方法，但是没有 Len 这样查询 sync.Map 的包含项目数量的方法，并且官方也不准备提供。如果你想得到 sync.Map 的项目数量的话，你可能不得不通过 Range 逐个计数。

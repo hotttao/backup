@@ -155,6 +155,61 @@ func (c *Cond) Broadcast() {
 3. Signal 和 Broadcast 只涉及到 notifyList 数据结构，不涉及到锁
 4. Wait 把调用者加入到等待队列时会释放锁，在被唤醒之后还会请求锁。在阻塞休眠期间，调用者是不持有锁的，这样能让其他 goroutine 有机会检查或者更新等待变量。
 
+### 2.1 开源项目的应用
+开源项目中使用 sync.Cond 的代码少之又少，Kubernetes 中有一个使用 Cond 的例子。Kubernetes 项目中定义了优先级队列 PriorityQueue 这样一个数据结构，用来实现 Pod 的调用。它内部有三个 Pod 的队列，即 activeQ、podBackoffQ 和 unschedulableQ，其中 activeQ 就是用来调度的活跃队列（heap）。Pop 方法调用的时候，如果这个队列为空，并且这个队列没有 Close 的话，会调用 Cond 的 Wait 方法等待。
+
+```go
+
+// 从队列中取出一个元素
+func (p *PriorityQueue) Pop() (*framework.QueuedPodInfo, error) {
+    p.lock.Lock()
+    defer p.lock.Unlock()
+    for p.activeQ.Len() == 0 { // 如果队列为空
+      if p.closed {
+        return nil, fmt.Errorf(queueClosed)
+      }
+      p.cond.Wait() // 等待，直到被唤醒
+    }
+    ......
+    return pInfo, err
+  }
+
+```
+
+当 activeQ 增加新的元素时，会调用条件变量的 Boradcast 方法，通知被 Pop 阻塞的调用者。
+
+```go
+
+// 增加元素到队列中
+func (p *PriorityQueue) Add(pod *v1.Pod) error {
+    p.lock.Lock()
+    defer p.lock.Unlock()
+    pInfo := p.newQueuedPodInfo(pod)
+    if err := p.activeQ.Add(pInfo); err != nil {//增加元素到队列中
+      klog.Errorf("Error adding pod %v to the scheduling queue: %v", nsNameForPod(pod), err)
+      return err
+    }
+    ......
+    p.cond.Broadcast() //通知其它等待的goroutine，队列中有元素了
+
+    return nil
+  }
+```
+
+这个优先级队列被关闭的时候，也会调用 Broadcast 方法，避免被 Pop 阻塞的调用者永远 hang 住。
+
+```go
+
+func (p *PriorityQueue) Close() {
+    p.lock.Lock()
+    defer p.lock.Unlock()
+    close(p.stop)
+    p.closed = true
+    p.cond.Broadcast() //关闭时通知等待的goroutine，避免它们永远等待
+}
+```
+
+对于需要重复调用 Broadcast 的场景，比如这里的 Kubernetes 的例子，每次往队列中成功增加了元素后就需要调用 Broadcast 通知所有的等待者，使用 Cond 就再合适不过了。
 
 ## 3. Cond 采坑点
 使用 Cond 时有两个常见错误
