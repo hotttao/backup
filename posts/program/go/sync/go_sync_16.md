@@ -250,8 +250,8 @@ notifyWaiters 方法是按照先入先出的方式唤醒调用者。这样做的
 
 // Semaphore 数据结构，并且还实现了Locker接口
 type semaphore struct {
-sync.Locker
-ch chan struct{}
+    sync.Locker
+    ch chan struct{}
 }
 
 // 创建一个新的信号量
@@ -264,12 +264,12 @@ return &semaphore{ch: make(chan struct{}, capacity)}
 
 // 请求一个资源
 func (s *semaphore) Lock() {
-  s.ch <- struct{}{}
+    s.ch <- struct{}{}
 }
 
 // 释放资源
 func (s *semaphore) Unlock() {
-  <-s.ch
+    <-s.ch
 }
 ```
 

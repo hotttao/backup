@@ -23,6 +23,8 @@ lightgallery: true
 3. Hunch
 4. schedgroup
 
+这些分组执行的并发原语相比于 WaitGroup 目的是为了增加获取子任务的错误信息，以及子任务的并发数。
+
 ## 2. ErrGroup
 [ErrGroup](https://github.com/golang/sync/tree/master/errgroup):
 - 包位置: `golang.org/x/sync/errgroup`
@@ -296,6 +298,136 @@ func main() {
 }
 ```
 
+[bilibili errgroup 源码如下](https://github.com/ssoor/open-bilibili/blob/master/library/sync/errgroup.v2/errgroup.go)
+
+```go
+// Copyright 2016 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package errgroup provides synchronization, error propagation, and Context
+// cancelation for groups of goroutines working on subtasks of a common task.
+package errgroup
+
+import (
+	"context"
+	"fmt"
+	"runtime"
+	"sync"
+)
+
+// A Group is a collection of goroutines working on subtasks that are part of
+// the same overall task.
+//
+// A zero Group is valid and does not cancel on error.
+type Group struct {
+	err     error
+	wg      sync.WaitGroup
+	errOnce sync.Once
+
+	workerOnce sync.Once
+	ch         chan func(ctx context.Context) error
+	chs        []func(ctx context.Context) error
+
+	ctx    context.Context
+	cancel func()
+}
+
+// WithContext create a Group.
+// given function from Go will receive this context,
+func WithContext(ctx context.Context) *Group {
+	return &Group{ctx: ctx}
+}
+
+// WithCancel create a new Group and an associated Context derived from ctx.
+//
+// given function from Go will receive context derived from this ctx,
+// The derived Context is canceled the first time a function passed to Go
+// returns a non-nil error or the first time Wait returns, whichever occurs
+// first.
+func WithCancel(ctx context.Context) *Group {
+	ctx, cancel := context.WithCancel(ctx)
+	return &Group{ctx: ctx, cancel: cancel}
+}
+
+func (g *Group) do(f func(ctx context.Context) error) {
+	ctx := g.ctx
+	if ctx == nil {
+		ctx = context.Background()
+	}
+	var err error
+	defer func() {
+		if r := recover(); r != nil {
+			buf := make([]byte, 64<<10)
+			buf = buf[:runtime.Stack(buf, false)]
+			err = fmt.Errorf("errgroup: panic recovered: %s\n%s", r, buf)
+		}
+		if err != nil {
+			g.errOnce.Do(func() {
+				g.err = err
+				if g.cancel != nil {
+					g.cancel()
+				}
+			})
+		}
+		g.wg.Done()
+	}()
+	err = f(ctx)
+}
+
+// GOMAXPROCS set max goroutine to work.
+func (g *Group) GOMAXPROCS(n int) {
+	if n <= 0 {
+		panic("errgroup: GOMAXPROCS must great than 0")
+	}
+	g.workerOnce.Do(func() {
+		g.ch = make(chan func(context.Context) error, n)
+		for i := 0; i < n; i++ {
+			go func() {
+				for f := range g.ch {
+					g.do(f)
+				}
+			}()
+		}
+	})
+}
+
+// Go calls the given function in a new goroutine.
+//
+// The first call to return a non-nil error cancels the group; its error will be
+// returned by Wait.
+func (g *Group) Go(f func(ctx context.Context) error) {
+	g.wg.Add(1)
+	if g.ch != nil {
+		select {
+		case g.ch <- f:
+		default:
+			g.chs = append(g.chs, f)
+		}
+		return
+	}
+	go g.do(f)
+}
+
+// Wait blocks until all function calls from the Go method have returned, then
+// returns the first non-nil error (if any) from them.
+func (g *Group) Wait() error {
+	if g.ch != nil {
+		for _, f := range g.chs {
+			g.ch <- f
+		}
+	}
+	g.wg.Wait()
+	if g.ch != nil {
+		close(g.ch) // let all receiver exit
+	}
+	if g.cancel != nil {
+		g.cancel()
+	}
+	return g.err
+}
+```
+
 ### 2.4 neilotoole/errgroup 扩展 
 [neilotoole/errgroup](https://github.com/neilotoole/errgroup) 是今年年中新出现的一个 ErrGroup 扩展库，它可以直接替换官方的 ErrGroup，方法都一样，原有功能也一样，只不过增加了可以控制并发 goroutine 的功能。它的方法集如下：
 
@@ -309,6 +441,230 @@ type Group
 
 新增加的方法 WithContextN，可以**设置并发的 goroutine 数**，以及**等待处理的子任务队列的大小**。当队列满的时候，如果调用 Go 方法，就会被阻塞，直到子任务可以放入到队列中才返回。如果你传给这两个参数的值不是正整数，它就会使用 runtime.NumCPU 代替你传入的参数。
 
+[neilotoole/errgroup](https://github.com/neilotoole/errgroup) 源码如下:
+
+```go
+// Package neilotoole/errgroup is an extension of the sync/errgroup
+// concept, and much of the code herein is descended from
+// or directly copied from that sync/errgroup code which
+// has this header comment:
+//
+// Copyright 2016 The Go Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style
+// license that can be found in the LICENSE file.
+
+// Package errgroup is a drop-in alternative to sync/errgroup but
+// limited to N goroutines. In effect, neilotoole/errgroup is
+// sync/errgroup but with a worker pool of N goroutines.
+package errgroup
+
+import (
+	"context"
+	"runtime"
+	"sync"
+
+	"sync/atomic"
+)
+
+// A Group is a collection of goroutines working on subtasks that are part of
+// the same overall task.
+//
+// A zero Group is valid and does not cancel on error.
+//
+// This Group implementation differs from sync/errgroup in that instead
+// of each call to Go spawning a new Go routine, the f passed to Go
+// is sent to a queue channel (qCh), and is picked up by one of N
+// worker goroutines. The number of goroutines (numG) and the queue
+// channel size (qSize) are args to WithContextN. The zero Group and
+// the Group returned by WithContext both use default values (the value
+// of runtime.NumCPU) for the numG and qSize args. A side-effect of this
+// implementation is that the Go method will block while qCh is full: in
+// contrast, errgroup.Group's Go method never blocks (it always spawns
+// a new goroutine).
+type Group struct {
+	cancel func()
+
+	wg sync.WaitGroup
+
+	errOnce sync.Once
+	err     error
+
+	// numG is the maximum number of goroutines that can be started.
+	numG int
+
+	// qSize is the capacity of qCh, used for buffering funcs
+	// passed to method Go.
+	qSize int
+
+	// qCh is the buffer used to hold funcs passed to method Go
+	// before they are picked up by worker goroutines.
+	qCh chan func() error
+
+	// qMu protects qCh.
+	qMu sync.Mutex
+
+	// gCount tracks the number of worker goroutines.
+	gCount int64
+}
+
+// WithContext returns a new Group and an associated Context derived from ctx.
+// It is equivalent to WithContextN(ctx, 0, 0).
+func WithContext(ctx context.Context) (*Group, context.Context) {
+	return WithContextN(ctx, 0, 0) // zero indicates default values
+}
+
+// WithContextN returns a new Group and an associated Context derived from ctx.
+//
+// The derived Context is canceled the first time a function passed to Go
+// returns a non-nil error or the first time Wait returns, whichever occurs
+// first.
+//
+// Param numG controls the number of worker goroutines. Param qSize
+// controls the size of the queue channel that holds functions passed
+// to method Go: while the queue channel is full, Go blocks.
+// If numG <= 0, the value of runtime.NumCPU is used; if qSize is
+// also <= 0, a qSize of runtime.NumCPU is used.
+func WithContextN(ctx context.Context, numG, qSize int) (*Group, context.Context) {
+	ctx, cancel := context.WithCancel(ctx)
+	return &Group{cancel: cancel, numG: numG, qSize: qSize}, ctx
+}
+
+// Wait blocks until all function calls from the Go method have returned, then
+// returns the first non-nil error (if any) from them.
+func (g *Group) Wait() error {
+	g.qMu.Lock()
+
+	if g.qCh != nil {
+		// qCh is typically initialized by the first call to method Go.
+		// qCh can be nil if Wait is invoked before the first
+		// call to Go, hence this check before we close qCh.
+		close(g.qCh)
+	}
+
+	// Wait for the worker goroutines to finish.
+	g.wg.Wait()
+
+	// All of the worker goroutines have finished,
+	// so it's safe to set qCh to nil.
+	g.qCh = nil
+
+	g.qMu.Unlock()
+
+	if g.cancel != nil {
+		g.cancel()
+	}
+
+	return g.err
+}
+
+// Go adds the given function to a queue of functions that are called
+// by one of g's worker goroutines.
+//
+// The first call to return a non-nil error cancels the group; its error will be
+// returned by Wait.
+//
+// Go may block while g's qCh is full.
+func (g *Group) Go(f func() error) {
+	g.qMu.Lock()
+	if g.qCh == nil {
+		// We need to initialize g.
+
+		// The zero value of numG would mean no worker goroutine
+		// would be created, which would be daft.
+		// We want the "effective" zero value to be runtime.NumCPU.
+		if g.numG == 0 {
+			// Benchmarking has shown that the optimal numG and
+			// qSize values depend on the particular workload. In
+			// the absence of any other deciding factor, we somewhat
+			// arbitrarily default to NumCPU, which seems to perform
+			// reasonably in benchmarks. Users that care about performance
+			// tuning will use the WithContextN func to specify the numG
+			// and qSize args.
+			g.numG = runtime.NumCPU()
+			if g.qSize == 0 {
+				g.qSize = g.numG
+			}
+		}
+
+		g.qCh = make(chan func() error, g.qSize)
+
+		// Being that g.Go has been invoked, we'll need at
+		// least one goroutine.
+		atomic.StoreInt64(&g.gCount, 1)
+		g.startG()
+
+		g.qMu.Unlock()
+
+		g.qCh <- f
+
+		return
+	}
+
+	g.qCh <- f
+
+	// Check if we can or should start a new goroutine?
+	g.maybeStartG()
+
+	g.qMu.Unlock()
+
+}
+
+// maybeStartG might start a new worker goroutine, if
+// needed and allowed.
+func (g *Group) maybeStartG() {
+	if len(g.qCh) == 0 {
+		// No point starting a new goroutine if there's
+		// nothing in qCh
+		return
+	}
+
+	// We have at least one item in qCh. Maybe it's time to start
+	// a new worker goroutine?
+	if atomic.AddInt64(&g.gCount, 1) > int64(g.numG) {
+		// Nope: not allowed. Starting a new goroutine would put us
+		// over the numG limit, so we back out.
+		atomic.AddInt64(&g.gCount, -1)
+		return
+	}
+
+	// It's safe to start a new worker goroutine.
+	g.startG()
+}
+
+// startG starts a new worker goroutine.
+func (g *Group) startG() {
+	g.wg.Add(1)
+	go func() {
+		defer g.wg.Done()
+		defer atomic.AddInt64(&g.gCount, -1)
+
+		var f func() error
+
+		for {
+			// Block until f is received from qCh or
+			// the channel is closed.
+			f = <-g.qCh
+			if f == nil {
+				// qCh was closed, time for this goroutine
+				// to die.
+				return
+			}
+
+			if err := f(); err != nil {
+				g.errOnce.Do(func() {
+					g.err = err
+					if g.cancel != nil {
+						g.cancel()
+					}
+				})
+
+				return
+			}
+		}
+	}()
+}
+```
+
 ### 2.5 facebookgo/errgroup
 [facebookgo/errgroup](https://github.com/facebookarchive/errgroup) Facebook 提供的这个 ErrGroup，其实并不是对 Go 扩展库 ErrGroup 的扩展，而是对标准库 WaitGroup 的扩展。
 
@@ -320,6 +676,116 @@ type Group
   func (g *Group) Done()
   func (g *Group) Error(e error) // 设置 error 给 ErrorGroup，Wait 返回时会返回这些 error
   func (g *Group) Wait() error
+```
+
+[facebookgo/errgroup](https://github.com/facebookarchive/errgroup) 源码如下:
+
+```go
+// Package errgroup provides a Group that is capable of collecting errors
+// as it waits for a collection of goroutines to finish.
+package errgroup
+
+import (
+	"bytes"
+	"sync"
+)
+
+// MultiError allows returning a group of errors as one error.
+type MultiError []error
+
+// Error returns a concatenated string of all contained errors.
+func (m MultiError) Error() string {
+	l := len(m)
+	if l == 0 {
+		panic("MultiError with no errors")
+	}
+	if l == 1 {
+		panic("MultiError with only 1 error")
+	}
+	var b bytes.Buffer
+	b.WriteString("multiple errors: ")
+	for i, e := range m {
+		b.WriteString(e.Error())
+		if i != l-1 {
+			b.WriteString(" | ")
+		}
+	}
+	return b.String()
+}
+
+// NewMultiError returns nil if all input errors passed in are nil. Otherwise,
+// it coalesces all input errors into a single error instance. Useful for
+// code like this:
+//
+//   func doThisAndThat() error {
+//     err1 := tryThis()
+//     err2 := tryThat()
+//     return errgroup.NewMultiError(err1, err2)
+//   }
+//
+func NewMultiError(errs ...error) error {
+	var multiErr MultiError
+	for _, err := range errs {
+		if err != nil {
+			multiErr = append(multiErr, err)
+		}
+	}
+
+	if len(multiErr) == 1 {
+		return multiErr[0]
+	} else if len(multiErr) > 1 {
+		return multiErr
+	}
+	return nil
+}
+
+// Group is similar to a sync.WaitGroup, but allows for collecting errors.
+// The collected errors are never reset, so unlike a sync.WaitGroup, this Group
+// can only be used _once_. That is, you may only call Wait on it once.
+type Group struct {
+	wg     sync.WaitGroup
+	mu     sync.Mutex
+	errors MultiError
+}
+
+// Add adds delta, which may be negative. See sync.WaitGroup.Add documentation
+// for details.
+func (g *Group) Add(delta int) {
+	g.wg.Add(delta)
+}
+
+// Done decrements the Group counter.
+func (g *Group) Done() {
+	g.wg.Done()
+}
+
+// Error adds an error to return in Wait. The error must not be nil.
+func (g *Group) Error(e error) {
+	if e == nil {
+		panic("error must not be nil")
+	}
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	g.errors = append(g.errors, e)
+}
+
+// Wait blocks until the Group counter is zero. If no errors were recorded, it
+// returns nil. If one error was recorded, it returns it as is. If more than
+// one error was recorded it returns a MultiError which is a slice of errors.
+func (g *Group) Wait() error {
+	g.wg.Wait()
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	errors := g.errors
+	l := len(errors)
+	if l == 0 {
+		return nil
+	}
+	if l == 1 {
+		return errors[0]
+	}
+	return errors
+}
 ```
 
 
@@ -443,16 +909,59 @@ func (g *SizedGroup) Wait() {
 }
 ```
 
+SizedGroup 使用到的信号量实现:
+
+```go
+package syncs
+
+import "sync"
+
+// Semaphore implementation, counted lock only. Implements sync.Locker interface, thread safe.
+type semaphore struct {
+	sync.Locker
+	ch chan struct{}
+}
+
+// NewSemaphore makes Semaphore with given capacity
+func NewSemaphore(capacity int) sync.Locker {
+	if capacity <= 0 {
+		capacity = 1
+	}
+	return &semaphore{ch: make(chan struct{}, capacity)}
+}
+
+// Lock acquires semaphore, can block if out of capacity.
+func (s *semaphore) Lock() {
+	s.ch <- struct{}{}
+}
+
+// Unlock releases semaphore, can block if nothing acquired before.
+func (s *semaphore) Unlock() {
+	<-s.ch
+}
+```
+
 ### 3.2 ErrSizedGroup
 
 ErrSizedGroup 为 SizedGroup 提供了 error 处理的功能，它的功能和 Go 官方扩展库的功能一样，就是等待子任务完成并返回第一个出现的 error。不过，它还提供了额外的功能
 1. 可以控制并发的 goroutine 数量，这和 SizedGroup 的功能一样
 2. 如果设置了 termOnError，子任务出现第一个错误的时候会 cancel Context，而且后续的 Go 调用会直接返回，Wait 调用者会得到这个错误，这相当于是遇到错误快速返回。如果没有设置 termOnError，Wait 会返回所有的子任务的错误
 
-不过，ErrSizedGroup 和 SizedGroup 设计得不太一致的地方是，SizedGroup 可以把 Context 传递给子任务，这样可以通过 cancel 让子任务中断执行，但是 ErrSizedGroup 却没有实现。ErrsizedGroup 的实现类似，但是增加了手机 Error 的能力:
+不过，ErrSizedGroup 和 SizedGroup 设计得不太一致的地方是，SizedGroup 可以把 Context 传递给子任务，这样可以通过 cancel 让子任务中断执行，但是 ErrSizedGroup 却没有实现。ErrsizedGroup 的实现类似，但是增加了收集 Error 的能力:
 
 #### ErrSizedGroup 实现
 ```go
+package syncs
+
+import (
+	"fmt"
+	"strings"
+	"sync"
+)
+
+// ErrSizedGroup is a SizedGroup with error control. Works the same as errgrp.Group, i.e. returns first error.
+// Can work as regular errgrp.Group or with early termination. Thread safe.
+// ErrSizedGroup interface enforces constructor usage and doesn't allow direct creation of errSizedGroup
 type ErrSizedGroup struct {
 	options
 	wg   sync.WaitGroup
@@ -461,6 +970,81 @@ type ErrSizedGroup struct {
 	err     *multierror
 	errLock sync.RWMutex
 	errOnce sync.Once
+}
+
+// NewErrSizedGroup makes wait group with limited size alive goroutines.
+// By default all goroutines will be started but will wait inside. For limited number of goroutines use Preemptive() options.
+// TermOnErr will skip (won't start) all other goroutines if any error returned.
+func NewErrSizedGroup(size int, options ...GroupOption) *ErrSizedGroup {
+
+	res := ErrSizedGroup{
+		sema: NewSemaphore(size),
+		err:  new(multierror),
+	}
+
+	for _, opt := range options {
+		opt(&res.options)
+	}
+
+	return &res
+}
+
+// Go calls the given function in a new goroutine.
+// The first call to return a non-nil error cancels the group if termOnError; its error will be
+// returned by Wait. If no termOnError all errors will be collected in multierror.
+func (g *ErrSizedGroup) Go(f func() error) {
+
+	g.wg.Add(1)
+
+	if g.preLock {
+		g.sema.Lock()
+	}
+
+	go func() {
+		defer g.wg.Done()
+
+		// terminated will be true if any error happened before and g.termOnError
+		terminated := func() bool {
+			if !g.termOnError {
+				return false
+			}
+			g.errLock.RLock()
+			defer g.errLock.RUnlock()
+			return g.err.errorOrNil() != nil
+		}
+
+		if terminated() {
+			return // terminated due prev error, don't run anything in this group anymore
+		}
+
+		if !g.preLock {
+			g.sema.Lock()
+		}
+
+		if err := f(); err != nil {
+
+			g.errLock.Lock()
+			g.err = g.err.append(err)
+			g.errLock.Unlock()
+
+			g.errOnce.Do(func() { // call context cancel once
+				if g.cancel != nil {
+					g.cancel()
+				}
+			})
+		}
+		g.sema.Unlock()
+	}()
+}
+
+// Wait blocks until all function calls from the Go method have returned, then
+// returns all errors (if any) wrapped with multierror from them.
+func (g *ErrSizedGroup) Wait() error {
+	g.wg.Wait()
+	if g.cancel != nil {
+		g.cancel()
+	}
+	return g.err.errorOrNil()
 }
 
 type multierror struct {
@@ -788,6 +1372,325 @@ Waterfall:
     - 前一个子任务的执行结果会被当作参数传给下一个子任务，直到所有的任务都完成，返回最后的执行结果
     - 一旦一个子任务出现错误，它就会返回错误信息，执行结果（第一个返回参数）为 nil
 
+[Hunch](https://github.com/AaronJan/Hunch) 的源码如下:
+
+```go
+// Package hunch provides functions like: `All`, `First`, `Retry`, `Waterfall` etc., that makes asynchronous flow control more intuitive.
+package hunch
+
+import (
+	"context"
+	"fmt"
+	"sort"
+	"sync"
+)
+
+// Executable represents a singular logic block.
+// It can be used with several functions.
+type Executable func(context.Context) (interface{}, error)
+
+// ExecutableInSequence represents one of a sequence of logic blocks.
+type ExecutableInSequence func(context.Context, interface{}) (interface{}, error)
+
+// IndexedValue stores the output of Executables,
+// along with the index of the source Executable for ordering.
+type IndexedValue struct {
+	Index int
+	Value interface{}
+}
+
+// IndexedExecutableOutput stores both output and error values from a Excetable.
+type IndexedExecutableOutput struct {
+	Value IndexedValue
+	Err   error
+}
+
+func pluckVals(iVals []IndexedValue) []interface{} {
+	vals := []interface{}{}
+	for _, val := range iVals {
+		vals = append(vals, val.Value)
+	}
+
+	return vals
+}
+
+func sortIdxVals(iVals []IndexedValue) []IndexedValue {
+	sorted := make([]IndexedValue, len(iVals))
+	copy(sorted, iVals)
+	sort.SliceStable(
+		sorted,
+		func(i, j int) bool {
+			return sorted[i].Index < sorted[j].Index
+		},
+	)
+
+	return sorted
+}
+
+// Take returns the first `num` values outputted by the Executables.
+func Take(parentCtx context.Context, num int, execs ...Executable) ([]interface{}, error) {
+	execCount := len(execs)
+
+	if num > execCount {
+		num = execCount
+	}
+
+	// Create a new sub-context for possible cancelation.
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
+	output := make(chan IndexedExecutableOutput, 1)
+	go runExecs(ctx, output, execs)
+
+	fail := make(chan error, 1)
+	success := make(chan []IndexedValue, 1)
+	go takeUntilEnough(fail, success, min(len(execs), num), output)
+
+	select {
+
+	case <-parentCtx.Done():
+		// Stub comment to fix a test coverage bug.
+		return nil, parentCtx.Err()
+
+	case err := <-fail:
+		cancel()
+		if parentCtxErr := parentCtx.Err(); parentCtxErr != nil {
+			return nil, parentCtxErr
+		}
+		return nil, err
+
+	case uVals := <-success:
+		cancel()
+		return pluckVals(uVals), nil
+	}
+}
+
+func runExecs(ctx context.Context, output chan<- IndexedExecutableOutput, execs []Executable) {
+	var wg sync.WaitGroup
+	for i, exec := range execs {
+		wg.Add(1)
+
+		go func(i int, exec Executable) {
+			val, err := exec(ctx)
+			if err != nil {
+				output <- IndexedExecutableOutput{
+					IndexedValue{i, nil},
+					err,
+				}
+				wg.Done()
+				return
+			}
+
+			output <- IndexedExecutableOutput{
+				IndexedValue{i, val},
+				nil,
+			}
+			wg.Done()
+		}(i, exec)
+	}
+
+	wg.Wait()
+	close(output)
+}
+
+func takeUntilEnough(fail chan error, success chan []IndexedValue, num int, output chan IndexedExecutableOutput) {
+	uVals := make([]IndexedValue, num)
+
+	enough := false
+	outputCount := 0
+	for r := range output {
+		if enough {
+			continue
+		}
+
+		if r.Err != nil {
+			enough = true
+			fail <- r.Err
+			continue
+		}
+
+		uVals[outputCount] = r.Value
+		outputCount++
+
+		if outputCount == num {
+			enough = true
+			success <- uVals
+			continue
+		}
+	}
+}
+
+// All returns all the outputs from all Executables, order guaranteed.
+func All(parentCtx context.Context, execs ...Executable) ([]interface{}, error) {
+	// Create a new sub-context for possible cancelation.
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
+	output := make(chan IndexedExecutableOutput, 1)
+	go runExecs(ctx, output, execs)
+
+	fail := make(chan error, 1)
+	success := make(chan []IndexedValue, 1)
+	go takeUntilEnough(fail, success, len(execs), output)
+
+	select {
+
+	case <-parentCtx.Done():
+		// Stub comment to fix a test coverage bug.
+		return nil, parentCtx.Err()
+
+	case err := <-fail:
+		cancel()
+		if parentCtxErr := parentCtx.Err(); parentCtxErr != nil {
+			return nil, parentCtxErr
+		}
+		return nil, err
+
+	case uVals := <-success:
+		cancel()
+		return pluckVals(sortIdxVals(uVals)), nil
+	}
+}
+
+/*
+Last returns the last `num` values outputted by the Executables.
+*/
+func Last(parentCtx context.Context, num int, execs ...Executable) ([]interface{}, error) {
+	execCount := len(execs)
+	if num > execCount {
+		num = execCount
+	}
+	start := execCount - num
+
+	vals, err := Take(parentCtx, execCount, execs...)
+	if err != nil {
+		return nil, err
+	}
+
+	return vals[start:], err
+}
+
+// MaxRetriesExceededError stores how many times did an Execution run before exceeding the limit.
+// The retries field holds the value.
+type MaxRetriesExceededError struct {
+	retries int
+}
+
+func (err MaxRetriesExceededError) Error() string {
+	var word string
+	switch err.retries {
+	case 0:
+		word = "infinity"
+	case 1:
+		word = "1 time"
+	default:
+		word = fmt.Sprintf("%v times", err.retries)
+	}
+
+	return fmt.Sprintf("Max retries exceeded (%v).\n", word)
+}
+
+// Retry attempts to get a value from an Executable instead of an Error.
+// It will keeps re-running the Executable when failed no more than `retries` times.
+// Also, when the parent Context canceled, it returns the `Err()` of it immediately.
+func Retry(parentCtx context.Context, retries int, fn Executable) (interface{}, error) {
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
+	c := 0
+	fail := make(chan error, 1)
+	success := make(chan interface{}, 1)
+
+	for {
+		go func() {
+			val, err := fn(ctx)
+			if err != nil {
+				fail <- err
+				return
+			}
+			success <- val
+		}()
+
+		select {
+		//
+		case <-parentCtx.Done():
+			// Stub comment to fix a test coverage bug.
+			return nil, parentCtx.Err()
+
+		case <-fail:
+			if parentCtxErr := parentCtx.Err(); parentCtxErr != nil {
+				return nil, parentCtxErr
+			}
+
+			c++
+			if retries == 0 || c < retries {
+				continue
+			}
+			return nil, MaxRetriesExceededError{c}
+
+		case val := <-success:
+			return val, nil
+		}
+	}
+}
+
+// Waterfall runs `ExecutableInSequence`s one by one,
+// passing previous result to next Executable as input.
+// When an error occurred, it stop the process then returns the error.
+// When the parent Context canceled, it returns the `Err()` of it immediately.
+func Waterfall(parentCtx context.Context, execs ...ExecutableInSequence) (interface{}, error) {
+	ctx, cancel := context.WithCancel(parentCtx)
+	defer cancel()
+
+	var lastVal interface{}
+	execCount := len(execs)
+	i := 0
+	fail := make(chan error, 1)
+	success := make(chan interface{}, 1)
+
+	for {
+		go func() {
+			val, err := execs[i](ctx, lastVal)
+			if err != nil {
+				fail <- err
+				return
+			}
+			success <- val
+		}()
+
+		select {
+
+		case <-parentCtx.Done():
+			// Stub comment to fix a test coverage bug.
+			return nil, parentCtx.Err()
+
+		case err := <-fail:
+			if parentCtxErr := parentCtx.Err(); parentCtxErr != nil {
+				return nil, parentCtxErr
+			}
+
+			return nil, err
+
+		case val := <-success:
+			lastVal = val
+			i++
+			if i == execCount {
+				return val, nil
+			}
+
+			continue
+		}
+	}
+}
+
+func min(x, y int) int {
+	if x > y {
+		return y
+	}
+	return x
+}
+```
+
 ### 5.6 总结
 gollback 和 Hunch 是属于同一类的并发原语，对一组子任务的执行结果，可以选择一个结果或者多个结果
 
@@ -810,7 +1713,7 @@ type Group
     - 如果调用了 Wait 方法，你就不能再调用它的 Delay 和 Schedule 方法，否则会 panic。
     - Wait 方法只能调用一次，如果多次调用的话，就会 panic
 
-你可能认为，简单地使用 timer 就可以实现这个功能。其实，如果只有几个子任务，使用 timer 不是问题，但一旦有大量的子任务，而且还要能够 cancel，那么，使用 timer 的话，CPU 资源消耗就比较大了。所以，schedgroup 在实现的时候，就使用 container/heap，按照子任务的执行时间进行排序，这样可以避免使用大量的 timer，从而提高性能。
+你可能认为，简单地使用 timer 就可以实现这个功能。其实，如果只有几个子任务，使用 timer 不是问题，但**一旦有大量的子任务，而且还要能够 cancel，那么，使用 timer 的话，CPU 资源消耗就比较大了。所以，schedgroup 在实现的时候，就使用 container/heap**，按照子任务的执行时间进行排序，这样可以避免使用大量的 timer，从而提高性能。
 
 ```go
 
@@ -827,6 +1730,256 @@ for i := 0; i < 3; i++ {
 // 等待所有的子任务都完成
 if err := sg.Wait(); err != nil {
     log.Fatalf("failed to wait: %v", err)
+}
+```
+
+[schedgroup](https://github.com/mdlayher/schedgroup) 源码如下:
+
+```go
+package schedgroup
+
+import (
+	"container/heap"
+	"context"
+	"sync"
+	"sync/atomic"
+	"time"
+)
+
+// Although unnecessary, explicit break labels should be used in all select
+// statements in this package so that test coverage tools are able to identify
+// which cases have been triggered.
+
+// A Group is a goroutine worker pool which schedules tasks to be performed
+// after a specified time. A Group must be created with the New constructor.
+// Once Wait is called, New must be called to create a new Group to schedule
+// more tasks.
+type Group struct {
+	// Atomics must come first per sync/atomic.
+	waiting uint32
+
+	// Context/cancelation support.
+	ctx    context.Context
+	cancel func()
+
+	// Task runner and a heap of tasks to be run.
+	wg    sync.WaitGroup
+	mu    sync.Mutex
+	tasks tasks
+
+	// Signals for when a task is added and how many tasks remain on the heap.
+	addC chan struct{}
+	lenC chan int
+}
+
+// New creates a new Group which will use ctx for cancelation. If cancelation
+// is not a concern, use context.Background().
+func New(ctx context.Context) *Group {
+	// Monitor goroutine context and cancelation.
+	mctx, cancel := context.WithCancel(ctx)
+
+	g := &Group{
+		ctx:    ctx,
+		cancel: cancel,
+
+		addC: make(chan struct{}),
+		lenC: make(chan int),
+	}
+
+	g.wg.Add(1)
+	go func() {
+		defer g.wg.Done()
+		g.monitor(mctx)
+	}()
+
+	return g
+}
+
+// Delay schedules a function to run at or after the specified delay. Delay
+// is a convenience wrapper for Schedule which adds delay to the current time.
+// Specifying a negative delay will cause the task to be scheduled immediately.
+//
+// If Delay is called after a call to Wait, Delay will panic.
+func (g *Group) Delay(delay time.Duration, fn func()) {
+	g.Schedule(time.Now().Add(delay), fn)
+}
+
+// Schedule schedules a function to run at or after the specified time.
+// Specifying a past time will cause the task to be scheduled immediately.
+//
+// If Schedule is called after a call to Wait, Schedule will panic.
+func (g *Group) Schedule(when time.Time, fn func()) {
+	if atomic.LoadUint32(&g.waiting) != 0 {
+		panic("schedgroup: attempted to schedule task after Group.Wait was called")
+	}
+
+	g.mu.Lock()
+	defer g.mu.Unlock()
+
+	heap.Push(&g.tasks, task{
+		Deadline: when,
+		Call:     fn,
+	})
+
+	// Notify monitor that a new task has been pushed on to the heap.
+	select {
+	case g.addC <- struct{}{}:
+		break
+	default:
+		break
+	}
+}
+
+// Wait waits for the completion of all scheduled tasks, or for cancelation of
+// the context passed to New. Wait will only returns errors due to context
+// cancelation. If no context is associated the the Group, wait never returns
+// an error.
+//
+// Once Wait is called, any further calls to Delay or Schedule will panic. If
+// Wait is called more than once, Wait will panic.
+func (g *Group) Wait() error {
+	if v := atomic.SwapUint32(&g.waiting, 1); v != 0 {
+		panic("schedgroup: multiple calls to Group.Wait")
+	}
+
+	// Context cancelation takes priority.
+	if err := g.ctx.Err(); err != nil {
+		return err
+	}
+
+	// See if the task heap is already empty. If so, we can exit early.
+	g.mu.Lock()
+	if g.tasks.Len() == 0 {
+		// Release the mutex immediately so that any running jobs are able to
+		// complete and send on g.lenC.
+		g.mu.Unlock()
+		g.cancel()
+		g.wg.Wait()
+		return nil
+	}
+	g.mu.Unlock()
+
+	// Wait on context cancelation or for the number of items in the heap
+	// to reach 0.
+	var n int
+	for {
+		select {
+		case <-g.ctx.Done():
+			return g.ctx.Err()
+		case n = <-g.lenC:
+			// Context cancelation takes priority.
+			if err := g.ctx.Err(); err != nil {
+				return err
+			}
+		}
+
+		if n == 0 {
+			// No more tasks left, cancel the monitor goroutine and wait for
+			// all tasks to complete.
+			g.cancel()
+			g.wg.Wait()
+			return nil
+		}
+	}
+}
+
+// monitor triggers tasks at the interval specified by g.Interval until ctx
+// is canceled.
+func (g *Group) monitor(ctx context.Context) {
+	t := time.NewTimer(0)
+	defer t.Stop()
+
+	for {
+		if ctx.Err() != nil {
+			// Context canceled.
+			return
+		}
+
+		now := time.Now()
+		var tickC <-chan time.Time
+
+		// Start any tasks that are ready as of now.
+		next := g.trigger(now)
+		if !next.IsZero() {
+			// Wait until the next scheduled task is ready.
+			t.Reset(next.Sub(now))
+			tickC = t.C
+		} else {
+			t.Stop()
+		}
+
+		select {
+		case <-ctx.Done():
+			// Context canceled.
+			return
+		case <-g.addC:
+			// A new task was added, check task heap again.
+			//lint:ignore SA4011 intentional break for code coverage
+			break
+		case <-tickC:
+			// An existing task should be ready as of now.
+			//lint:ignore SA4011 intentional break for code coverage
+			break
+		}
+	}
+}
+
+// trigger checks for scheduled tasks and runs them if they are scheduled
+// on or after the time specified by now.
+func (g *Group) trigger(now time.Time) time.Time {
+	g.mu.Lock()
+	defer func() {
+		// Notify how many tasks are left on the heap so Wait can stop when
+		// appropriate.
+		select {
+		case g.lenC <- g.tasks.Len():
+			break
+		default:
+			// Wait hasn't been called.
+			break
+		}
+
+		g.mu.Unlock()
+	}()
+
+	for g.tasks.Len() > 0 {
+		next := &g.tasks[0]
+		if next.Deadline.After(now) {
+			// Earliest scheduled task is not ready.
+			return next.Deadline
+		}
+
+		// This task is ready, pop it from the heap and run it.
+		t := heap.Pop(&g.tasks).(task)
+		g.wg.Add(1)
+		go func() {
+			defer g.wg.Done()
+			t.Call()
+		}()
+	}
+
+	return time.Time{}
+}
+
+// A task is a function which is called after the specified deadline.
+type task struct {
+	Deadline time.Time
+	Call     func()
+}
+
+// tasks implements heap.Interface.
+type tasks []task
+
+var _ heap.Interface = &tasks{}
+
+func (pq tasks) Len() int            { return len(pq) }
+func (pq tasks) Less(i, j int) bool  { return pq[i].Deadline.Before(pq[j].Deadline) }
+func (pq tasks) Swap(i, j int)       { pq[i], pq[j] = pq[j], pq[i] }
+func (pq *tasks) Push(x interface{}) { *pq = append(*pq, x.(task)) }
+func (pq *tasks) Pop() (item interface{}) {
+	n := len(*pq)
+	item, *pq = (*pq)[n-1], (*pq)[:n-1]
+	return item
 }
 ```
 

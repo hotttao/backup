@@ -125,8 +125,215 @@ Store 方法:
 type Value
     func (v *Value) Load() (x interface{})
     func (v *Value) Store(x interface{})
+
+// go1.8 之后 Value 已经直至 CAS 操作
+type Value
+    func (v *Value) CompareAndSwap(old, new any) (swapped bool)
+    func (v *Value) Load() (val any)
+    func (v *Value) Store(val any)
+    func (v *Value) Swap(new any) (old any)
 ```
 
+## 2. atomic.Value 的实现和使用
+### 2.1 atomic.Value 的实现
+相比于其他原子操作直接与 CPU 指令相关，atomic.Value 的实现是基于其他更基本原子操作实现的。
+
+```go
+package atomic
+
+import (
+	"unsafe"
+)
+
+// A Value provides an atomic load and store of a consistently typed value.
+// The zero value for a Value returns nil from Load.
+// Once Store has been called, a Value must not be copied.
+//
+// A Value must not be copied after first use.
+type Value struct {
+	v any
+}
+
+// ifaceWords is interface{} internal representation.
+type ifaceWords struct {
+	typ  unsafe.Pointer
+	data unsafe.Pointer
+}
+
+// Load returns the value set by the most recent Store.
+// It returns nil if there has been no call to Store for this Value.
+func (v *Value) Load() (val any) {
+	vp := (*ifaceWords)(unsafe.Pointer(v))
+	typ := LoadPointer(&vp.typ)
+	if typ == nil || typ == unsafe.Pointer(&firstStoreInProgress) {
+		// First store not yet completed.
+		return nil
+	}
+	data := LoadPointer(&vp.data)
+	vlp := (*ifaceWords)(unsafe.Pointer(&val))
+	vlp.typ = typ
+	vlp.data = data
+	return
+}
+
+var firstStoreInProgress byte
+
+// Store sets the value of the Value to x.
+// All calls to Store for a given Value must use values of the same concrete type.
+// Store of an inconsistent type panics, as does Store(nil).
+func (v *Value) Store(val any) {
+	if val == nil {
+		panic("sync/atomic: store of nil value into Value")
+	}
+	vp := (*ifaceWords)(unsafe.Pointer(v))
+	vlp := (*ifaceWords)(unsafe.Pointer(&val))
+	for {
+		typ := LoadPointer(&vp.typ)
+		if typ == nil {
+			// Attempt to start first store.
+			// Disable preemption so that other goroutines can use
+			// active spin wait to wait for completion.
+			runtime_procPin()
+			if !CompareAndSwapPointer(&vp.typ, nil, unsafe.Pointer(&firstStoreInProgress)) {
+				runtime_procUnpin()
+				continue
+			}
+			// Complete first store.
+			StorePointer(&vp.data, vlp.data)
+			StorePointer(&vp.typ, vlp.typ)
+			runtime_procUnpin()
+			return
+		}
+		if typ == unsafe.Pointer(&firstStoreInProgress) {
+			// First store in progress. Wait.
+			// Since we disable preemption around the first store,
+			// we can wait with active spinning.
+			continue
+		}
+		// First store completed. Check type and overwrite data.
+		if typ != vlp.typ {
+			panic("sync/atomic: store of inconsistently typed value into Value")
+		}
+		StorePointer(&vp.data, vlp.data)
+		return
+	}
+}
+
+// Swap stores new into Value and returns the previous value. It returns nil if
+// the Value is empty.
+//
+// All calls to Swap for a given Value must use values of the same concrete
+// type. Swap of an inconsistent type panics, as does Swap(nil).
+func (v *Value) Swap(new any) (old any) {
+	if new == nil {
+		panic("sync/atomic: swap of nil value into Value")
+	}
+	vp := (*ifaceWords)(unsafe.Pointer(v))
+	np := (*ifaceWords)(unsafe.Pointer(&new))
+	for {
+		typ := LoadPointer(&vp.typ)
+		if typ == nil {
+			// Attempt to start first store.
+			// Disable preemption so that other goroutines can use
+			// active spin wait to wait for completion; and so that
+			// GC does not see the fake type accidentally.
+			runtime_procPin()
+			if !CompareAndSwapPointer(&vp.typ, nil, unsafe.Pointer(&firstStoreInProgress)) {
+				runtime_procUnpin()
+				continue
+			}
+			// Complete first store.
+			StorePointer(&vp.data, np.data)
+			StorePointer(&vp.typ, np.typ)
+			runtime_procUnpin()
+			return nil
+		}
+		if typ == unsafe.Pointer(&firstStoreInProgress) {
+			// First store in progress. Wait.
+			// Since we disable preemption around the first store,
+			// we can wait with active spinning.
+			continue
+		}
+		// First store completed. Check type and overwrite data.
+		if typ != np.typ {
+			panic("sync/atomic: swap of inconsistently typed value into Value")
+		}
+		op := (*ifaceWords)(unsafe.Pointer(&old))
+		op.typ, op.data = np.typ, SwapPointer(&vp.data, np.data)
+		return old
+	}
+}
+
+// CompareAndSwap executes the compare-and-swap operation for the Value.
+//
+// All calls to CompareAndSwap for a given Value must use values of the same
+// concrete type. CompareAndSwap of an inconsistent type panics, as does
+// CompareAndSwap(old, nil).
+func (v *Value) CompareAndSwap(old, new any) (swapped bool) {
+	if new == nil {
+		panic("sync/atomic: compare and swap of nil value into Value")
+	}
+	vp := (*ifaceWords)(unsafe.Pointer(v))
+	np := (*ifaceWords)(unsafe.Pointer(&new))
+	op := (*ifaceWords)(unsafe.Pointer(&old))
+	if op.typ != nil && np.typ != op.typ {
+		panic("sync/atomic: compare and swap of inconsistently typed values")
+	}
+	for {
+		typ := LoadPointer(&vp.typ)
+		if typ == nil {
+			if old != nil {
+				return false
+			}
+			// Attempt to start first store.
+			// Disable preemption so that other goroutines can use
+			// active spin wait to wait for completion; and so that
+			// GC does not see the fake type accidentally.
+			runtime_procPin()
+			if !CompareAndSwapPointer(&vp.typ, nil, unsafe.Pointer(&firstStoreInProgress)) {
+				runtime_procUnpin()
+				continue
+			}
+			// Complete first store.
+			StorePointer(&vp.data, np.data)
+			StorePointer(&vp.typ, np.typ)
+			runtime_procUnpin()
+			return true
+		}
+		if typ == unsafe.Pointer(&firstStoreInProgress) {
+			// First store in progress. Wait.
+			// Since we disable preemption around the first store,
+			// we can wait with active spinning.
+			continue
+		}
+		// First store completed. Check type and overwrite data.
+		if typ != np.typ {
+			panic("sync/atomic: compare and swap of inconsistently typed value into Value")
+		}
+		// Compare old and current via runtime equality check.
+		// This allows value types to be compared, something
+		// not offered by the package functions.
+		// CompareAndSwapPointer below only ensures vp.data
+		// has not changed since LoadPointer.
+		data := LoadPointer(&vp.data)
+		var i any
+		(*ifaceWords)(unsafe.Pointer(&i)).typ = typ
+		(*ifaceWords)(unsafe.Pointer(&i)).data = data
+		if i != old {
+			return false
+		}
+		return CompareAndSwapPointer(&vp.data, data, np.data)
+	}
+}
+
+// Disable/enable preemption, implemented in runtime.
+func runtime_procPin()
+func runtime_procUnpin()
+```
+
+本质上跟 interface 的内部表示有关，
+
+### 2.2 atomic.Value 的使用
 Value 类型:
 1. 可以**原子地存取对象类型**，但也只能存取，不能 CAS 和 Swap，**常常用在配置变更等场景中**
 
@@ -175,7 +382,7 @@ func main() {
 }
 ```
 
-## 2. Atomic 的扩展
+## 3. Atomic 的扩展
 atomic 的 API 已经算是很简单的了，它提供了包一级的函数，可以对几种类型的数据执行原子操作。有些人就对这些函数做了进一步的包装，跟 atomic 中的 Value 类型类似，这些类型也提供了面向对象的使用方式，比如关注度比较高的[uber-go/atomic](https://github.com/uber-go/atomic)。
 
 uber-go/atomic 定义和封装了几种与常见类型相对应的原子操作类型，这些类型提供了原子操作的方法。这些类型包括 Bool、Duration、Error、Float64、Int32、Int64、String、Uint32、Uint64 等。s
@@ -189,7 +396,7 @@ fmt.Println(running.Load()) // false
 
 atomic.Value 只有 Load/Store 方法，可以参考[这篇文章](https://github.com/golang/go/issues/39351)为其增加 Swap 和 CompareAndSwap 方法。
 
-### 3. 使用 atomic 实现 Lock-Free queue
+### 4. 使用 atomic 实现 Lock-Free queue
 atomic 常常用来实现 Lock-Free 的数据结构，这里我们实现一个  Lock-Free queue。(sync.Pool 的实现中就包含了一个 lock-free queue 的实现 poolDequeue)
 
 ```go
@@ -269,7 +476,7 @@ func cas(p *unsafe.Pointer, old, new *node) (ok bool) {
 ```
 
 
-## 4. 对一个地址的赋值是原子操作吗？
+## 5. 对一个地址的赋值是原子操作吗？
 对一个地址的赋值是原子操作吗？这是一个很有趣的问题，如果是原子操作，还要 atomic 包干什么(Value 类型的 Store Load 方法)？如何理解 atomic 和直接内存操作的区别？(参见[Dave Cheney](https://dave.cheney.net/2018/01/06/if-aligned-memory-writes-are-atomic-why-do-we-need-the-sync-atomic-package))
 1. 在现在的系统中，write 的地址基本上都是对齐的（aligned），对齐地址的写，不会导致其他人看到只写了一半的数据，因为它通过一个指令就可以实现对地址的操作
 2. 如果地址不是对齐的话，那么，处理器就需要分成两个指令去处理，如果执行了一个指令，其它人就会看到更新了一半的错误的数据，这被称做撕裂写（torn write）

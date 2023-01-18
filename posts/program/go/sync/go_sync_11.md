@@ -283,6 +283,11 @@ type cancelCtx struct {
 	err      error                 // set to non-nil by the first cancel call
 }
 
+type canceler interface {
+	cancel(removeFromParent bool, err error)
+	Done() <-chan struct{}
+}
+
 type timerCtx struct {
 	cancelCtx
 	timer *time.Timer // Under cancelCtx.mu.
@@ -336,6 +341,7 @@ func (c *valueCtx) Value(key interface{}) interface{} {
 ### 3.3 propagateCancel
 ```go
 var cancelCtxKey int
+var closedchan = make(chan struct{})
 
 func (c *cancelCtx) Value(key interface{}) interface{} {
 	if key == &cancelCtxKey {
