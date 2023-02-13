@@ -22,6 +22,13 @@ toc:
 <!-- more -->
 
 ## 1. 文件 IO 概述
+
+### 1.1 标准库的读写模型
+Go基于io.Writer和io.Reader这两个简单的接口类型构建了图57-1所示的Go标准库读写模型。
+
+![Go标准库读写模型](/images/go/expert/io_model.png)
+
+### 1.2 包含 I/O 操作的标准库
 Go 的标准库我们就从文件 IO 开始。Go 标准库中为文件 IO 提供了如下这些包:
 1. os: 文件操作的方法都在 os 包中
 2. io：
@@ -114,8 +121,13 @@ io 包将文件 IO 中所有的文件操作及其组合都抽象为独立的接�
 
 ```go
 // 1. 基础 io 操作及其组合
-type Reader
-type Writer
+type Reader interface {
+	Read(p []byte) (n int, err error)
+}
+
+type Writer interface {
+	Write(p []byte) (n int, err error)
+}
 type Closer
 type Seeker
 type ReaderAt
