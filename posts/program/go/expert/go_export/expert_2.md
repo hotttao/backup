@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "Go 声明、类型与初始化"
-date: 2022-12-15T20:00:00+08:00
-lastmod: 2022-12-15T20:00:00+08:00
+date: 2022-12-26T20:00:00+08:00
+lastmod: 2022-12-26T20:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"

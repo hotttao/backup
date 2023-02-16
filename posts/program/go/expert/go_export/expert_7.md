@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "Go 函数、方法和接口"
-date: 2022-12-17T22:00:00+08:00
-lastmod: 2022-12-17T22:00:00+08:00
+date: 2022-12-30T22:00:00+08:00
+lastmod: 2022-12-30T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"

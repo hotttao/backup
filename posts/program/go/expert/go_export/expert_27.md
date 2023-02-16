@@ -1,8 +1,8 @@
 ---
 weight: 1
-title: "Go 反射"
-date: 2023-01-08T22:00:00+08:00
-lastmod: 2023-01-08T22:00:00+08:00
+title: "Go 常用工具"
+date: 2023-01-12T22:00:00+08:00
+lastmod: 2023-01-12T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -17,5 +17,3 @@ lightgallery: true
 toc:
   auto: false
 ---
-
-<!-- more -->

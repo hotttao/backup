@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "Go 语言的复合数据类型"
-date: 2022-12-16T22:00:00+08:00
-lastmod: 2022-12-16T22:00:00+08:00
+date: 2022-12-28T22:00:00+08:00
+lastmod: 2022-12-28T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
