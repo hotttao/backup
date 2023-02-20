@@ -40,19 +40,26 @@ Go是自带运行时的跨平台编程语言，Go中暴露给语言使用者的T
   - ，用户应用线程发起异步I/O调用后，内核将启动等待数据的操作并马上返回。之后，用户应用线程可以继续执行其他操作，既无须阻塞，也无须轮询并再次发起I/O调用。
   - 在内核空间数据就绪并被从内核空间复制到用户空间后，内核会主动生成信号以驱动执行用户线程在异步I/O调用时注册的信号处理函数，或主动执行用户线程注册的回调函数，让用户线程完成对数据的处理。
 
+#### 阻塞I/O模型
 ![阻塞I/O模型](/images/go/expert/network_model_blcok.png)
+
+#### 非阻塞I/O模型
 ![非阻塞I/O模型](/images/go/expert/network_model_nonblcok.png)
+
+#### I/O多路复用模型
 ![I/O多路复用模型](/images/go/expert/network_model_poll.png)
+
+#### 异步I/O模型
 ![异步I/O模型](/images/go/expert/network_model_aio.png)
 
-有些标准使用同步和异步来描述网络I/O操作模型。所谓同步I/O指的是能**引起请求线程阻塞**，直到I/O操作完成；而异步I/O则不引起请求线程的阻塞。按照这个说法，前面提到的阻塞I/O、非阻塞I/O、I/O多路复用均可看成同步I/O模型，而只有异步I/O才是名副其实的“异步I/O”模型。
+有些标准使用同步和异步来描述网络I/O操作模型。所谓同步I/O指的是能 ** 引起请求线程阻塞 ** ，直到I/O操作完成；而异步I/O则不引起请求线程的阻塞。按照这个说法，前面提到的阻塞I/O、非阻塞I/O、I/O多路复用均可看成同步I/O模型，而只有异步I/O才是名副其实的“异步I/O”模型。
 
 相较于上述几个模型，异步I/O模型受各个平台的支持程度不一，且使用起来复杂度较高，在如何进行内存管理、信号处理/回调函数等逻辑设计上会给开发人员带来不小的心智负担。
 
 目前主流网络服务器采用的多是I/O多路复用模型，有的也结合了多线程。不过I/O多路复用模型在支持更多连接、提升I/O操作效率的同时，也给使用者带来了不低的复杂性，以至于出现了许多高性能的I/O多路复用框架（如libevent、libev、libuv等）以降低开发复杂性，减轻开发者的心智负担。
 
 ### 1.2 Go 的网络I/O模型
-Go语言的设计者认为I/O多路复用的这种通过**回调割裂控制流的模型**依旧复杂，且有悖于一般顺序的逻辑设计，为此他们结合Go语言的自身特点，将该“复杂性”隐藏在了Go运行时中。这样，在大多数情况下，Go开发者无须关心Socket是不是阻塞的，也无须亲自将Socket文件描述符的回调函数注册到类似select这样的系统调用中，而只需在每个连接对应的goroutine中以最简单、最易用的阻塞I/O模型的方式进行Socket操作即可，这种设计大大减轻了网络应用开发人员的心智负担。
+Go语言的设计者认为I/O多路复用的这种通过 ** 回调割裂控制流的模型 ** 依旧复杂，且有悖于一般顺序的逻辑设计，为此他们结合Go语言的自身特点，将该“复杂性”隐藏在了Go运行时中。这样，在大多数情况下，Go开发者无须关心Socket是不是阻塞的，也无须亲自将Socket文件描述符的回调函数注册到类似select这样的系统调用中，而只需在每个连接对应的goroutine中以最简单、最易用的阻塞I/O模型的方式进行Socket操作即可，这种设计大大减轻了网络应用开发人员的心智负担。
 
 一个典型的Go网络服务端程序大致如下：
 
@@ -86,7 +93,7 @@ func main() {
 }
 ```
 
-在**Go程序的用户层**（相对于Go运行时层）看来，goroutine采用了“阻塞I/O模型”进行网络I/O操作，Socket都是“阻塞”的。但实际上，这样的假象是Go运行时中的**netpoller（网络轮询器）**通过I/O多路复用机制模拟出来的，对应的底层操作系统Socket实际上是非阻塞的：
+在 ** Go程序的用户层 ** （相对于Go运行时层）看来，goroutine采用了“阻塞I/O模型”进行网络I/O操作，Socket都是“阻塞”的。但实际上，这样的假象是Go运行时中的 ** netpoller（网络轮询器） ** 通过I/O多路复用机制模拟出来的，对应的底层操作系统Socket实际上是非阻塞的：
 
 ```go
 // $GOROOT/src/net/sock_cloexec.go
@@ -100,7 +107,7 @@ func sysSocket(family, sotype, proto int) (int, error) {
 }
 ```
 
-**运行时拦截了针对底层Socket的系统调用返回的错误码，并通过netpoller和goroutine调度让goroutine“阻塞”在用户层所看到的Socket描述符上。比如：当用户层针对某个Socket描述符发起read操作时，如果该Socket对应的连接上尚无数据，那么Go运行时会将该Socket描述符加入netpoller中监听，直到Go运行时收到该Socket数据可读的通知，Go运行时才会重新唤醒等待在该Socket上准备读数据的那个goroutine。而这个过程从goroutine的视角来看，就像是read操作一直阻塞在那个Socket描述符上似的。**
+ ** 运行时拦截了针对底层Socket的系统调用返回的错误码，并通过netpoller和goroutine调度让goroutine“阻塞”在用户层所看到的Socket描述符上。比如：当用户层针对某个Socket描述符发起read操作时，如果该Socket对应的连接上尚无数据，那么Go运行时会将该Socket描述符加入netpoller中监听，直到Go运行时收到该Socket数据可读的通知，Go运行时才会重新唤醒等待在该Socket上准备读数据的那个goroutine。而这个过程从goroutine的视角来看，就像是read操作一直阻塞在那个Socket描述符上似的。 ** 
 
 Go语言在netpoller中采用了I/O多路复用模型。Go运行时会选择在不同操作系统上使用操作系统各自实现的高性能多路复用函数，比如Linux上的epoll、Windows上的iocp、FreeBSD/macOS上的kqueue、Solaris上的event port等，这样可以最大限度地提高netpoller的调度和执行性能。
 
@@ -281,7 +288,7 @@ func (fd *netFD) Write(p []byte) (nn int, err error) {
 }
 ```
 
-**每次Write操作都是受锁保护的，直到此次数据全部写完。因此在应用层面，要想保证多个goroutine在一个conn上的Write操作是安全的，需要让每一次Write操作完整地写入一个业务包。**Read操作，也是有锁保护的。多个goroutine对同一conn的并发读不会出现读出内容重叠的情况，但内容断点是依运行时调度来随机确定的。存在一个业务包数据三分之一的内容被goroutine-1读走，而另三分之二被goroutine-2读走的情况。
+ ** 每次Write操作都是受锁保护的，直到此次数据全部写完。因此在应用层面，要想保证多个goroutine在一个conn上的Write操作是安全的，需要让每一次Write操作完整地写入一个业务包。 ** Read操作，也是有锁保护的。多个goroutine对同一conn的并发读不会出现读出内容重叠的情况，但内容断点是依运行时调度来随机确定的。存在一个业务包数据三分之一的内容被goroutine-1读走，而另三分之二被goroutine-2读走的情况。
 
 ### 2.3 Socket属性
 原生Socket API提供了丰富的sockopt设置接口，Go提供的socket options接口也是基于上述模型的必要的属性设置，包括SetKeepAlive、SetKeep-AlivePeriod、SetLinger、SetNoDelay （默认为no delay）、SetWriteBuffer、SetReadBuffer。不过这些方法是TCPConn类型的，而不是Conn类型的。要使用上面的方法，需要进行类型断言（type assertion）操作：
