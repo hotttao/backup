@@ -33,6 +33,13 @@ GOARCH=386 go tool compile -N -l test.go
 GOARCH=386 go tool objdump -gnu test.o
 ```
 
+## 交叉编译
+```go
+GOOS=linux GOARCH=amd64 go build
+
+// 交叉编译支持的所有架构
+$GOROOT/src/go/build/syslist.go
+```
 
 ## 参考资料
 1. [Debugging Performance Issues in Go Programs](https://software.intel.com/en-us/blogs/2014/05/10/debugging-performance-issues-in-go-programs)

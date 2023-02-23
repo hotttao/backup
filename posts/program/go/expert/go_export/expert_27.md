@@ -236,7 +236,7 @@ go build 在 gopath 模式下比较常用，在module-aware模式下，go module
 
 Go社区的一个最佳实践是在正式发布到生产环境之前的调试、测试环节使用带有-race构建选项构建出的程序，以便于在正式发布到生产环境之前尽可能多地发现程序中潜在的并发竞态问题并快速将其解决。
 
-#### 4.4 go build -gcflags
+### 4.4 go build -gcflags
 go build 实质上是通过调用Go自带的compile工具（以Linux系统为例，该工具对应的是`$GOROOT/pkg/tool/linux_amd64/compile`）对Go代码进行编译的。
 
 go build可以经由`-gcflags`向compile工具传递编译所需的命令行标志选项集合。
