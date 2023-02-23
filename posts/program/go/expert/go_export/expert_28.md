@@ -1,15 +1,15 @@
 ---
 weight: 4
-title: "Go 并发调试工具"
-date: 2021-07-01T22:00:00+08:00
-lastmod: 2021-07-01T22:00:00+08:00
+title: "Go Race Check"
+date: 2023-01-13T22:00:00+08:00
+lastmod: 2023-01-13T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "Go 提供的并发冲突以及死循环检测"
 featuredImage: 
 
-tags: ["go 工具集"]
+tags: ["go 进阶"]
 categories: ["Go"]
 
 lightgallery: true
