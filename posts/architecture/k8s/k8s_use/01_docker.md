@@ -40,14 +40,12 @@ Namespace 用来修改应用进程看待整个计算机“视图”，即应用�
 4. IPC: 隔离进程间通信
 6. User: 隔离用户
 
-要知道在 Namespace 的隔离技术是在，操作系统发展的后期演化的，他们都是在已有的进程创建扩展而来。所以这些 Namespace 实际上是在创建容器进程时，指定的一组 Namespace 参数。这样，容器就只能“看”到当前 Namespace 所限定的资源、文件、设备、状态，或者配置。所以说，容器，其实是一种特殊的进程而已。对于宿主机来说，这些被“隔离”了的进程跟其他进程并没有太大区别。
-
-Namespace 的底层实现原理参见，耗子叔的博客:
+Namespace 是在操作系统发展的后期演化的，他们都是在已有的进程创建扩展而来。所以这些 Namespace 实际上是在创建容器进程时，指定的一组 Namespace 参数: `int pid = clone(main_function, stack_size, CLONE_NEWPID | SIGCHLD, NULL); `。这样，容器就只能“看”到当前 Namespace 所限定的资源、文件、设备、状态，或者配置。所以说，容器，其实是一种特殊的进程而已。对于宿主机来说，这些被“隔离”了的进程跟其他进程并没有太大区别。Namespace 的底层实现原理参见，耗子叔的博客:
 1. [DOCKER基础技术：LINUX NAMESPACE（上）](https://coolshell.cn/articles/17010.html)
 2. [DOCKER基础技术：LINUX NAMESPACE（下）](https://coolshell.cn/articles/17029.html)
 
 ### 1.2 进程 Namespace 查看
-一个进程的每种 Linux Namespace，都在它对应的 /proc/[进程号]/ns 下有一个对应的虚拟文件，并且链接到一个真实的 Namespace 文件上。
+一个进程的每种 Linux Namespace，都在它对应的 `/proc/[进程号]/ns` 下有一个对应的虚拟文件，并且链接到一个真实的 Namespace 文件上。
 ```shell
 # 1. 查看容器对应的进程 PID
 $ docker inspect --format '{{ .State.Pid }}'  3cfcb77fe21b
@@ -68,9 +66,9 @@ lrwxrwxrwx. 1 root root 0 3月   5 21:05 uts -> 'uts:[4026532618]'
 
 ```
 
-正是因为 Namespace 对应的是一个个正是的文件，所以一个进程，可以选择加入到某个进程已有的 Namespace 当中，从而达到“进入”这个进程所在容器的目的，这正是 docker exec 的实现原理。而这个操作所依赖的，乃是一个名叫 setns() 的 Linux 系统调用。
+正是因为 Namespace 对应的是一个个正是的文件，所以一个进程，可以选择加入到某个进程已有的 Namespace 当中，从而达到“进入”这个进程所在容器的目的，这正是 docker exec 的实现原理。而这个操作所依赖的，乃是一个名叫 `setns()` 的 Linux 系统调用。
 
-Docker 还专门提供了一个参数，可以让你启动一个容器并“加入”到另一个容器的 Network Namespace 里，这个参数就是 -net，比如:
+Docker 专门提供了一个参数，可以在启动一个容器并“加入”到另一个容器的 Network Namespace 里，这个参数就是 -net，比如:
 
 ```shell
 $ docker run -it --net container:4ddf4638572d busybox ifconfig
@@ -159,6 +157,17 @@ $ cat /sys/fs/cgroup/cpu/docker/3cfcb77fe21b26db68d05aceaa6790ba998ac157a566bdd2
 ```
 
 ### 1.3 容器镜像
+#### bootfs/rootfs
+
+典型的 Linux 文件系统组成：
+1. Bootfs（boot file system） 包括:
+  - Bootloader: 引导加载 kernel
+  - Kernel: 当 kernel 被加载到内存中后 umount bootfs
+2. rootfs （root file system）包括:
+  - /dev，/proc，/bin，/etc 等标准目录和文件
+
+对于不同的 linux 发行版, bootfs 基本是一致的，但 rootfs 会有差别。
+
 #### 容器镜像和 Mount Namespace
 要理解容器镜像的关键是搞清楚**容器镜像与 Mount Namespace 之间的关系**。
 
@@ -171,6 +180,8 @@ $ cat /sys/fs/cgroup/cpu/docker/3cfcb77fe21b26db68d05aceaa6790ba998ac157a566bdd2
 #### 容器镜像带来的改变
 对一个应用来说，操作系统本身才是它运行所需要的最完整的“依赖库”。由于 rootfs 里打包的不只是应用，而是整个操作系统的文件和目录，也就意味着，应用以及它运行所需要的所有依赖，都被封装在了一起。这种深入到操作系统级别的运行环境一致性，打通了应用在本地开发和远端执行环境之间难以逾越的鸿沟。
 
+另外，需要明确的是，rootfs 只是一个操作系统所包含的文件、配置和目录，并不包括操作系统内核。在 Linux 操作系统中，这两部分是分开存放的，操作系统只有在开机启动时才会加载指定版本的内核镜像。所以说，rootfs 只包括了操作系统的“躯壳”，并没有包括操作系统的“灵魂”。
+
 ### 1.4 容器启动过程
 所以对 Docker 项目来说，它最核心的原理实际上就是为待创建的用户进程：
 1. 启用 Linux Namespace 配置；
@@ -181,24 +192,22 @@ $ cat /sys/fs/cgroup/cpu/docker/3cfcb77fe21b26db68d05aceaa6790ba998ac157a566bdd2
 
 ### 1.5 容器的缺陷
 容器的缺陷，根本原因在于**隔离不够彻底**。
-
-#### 共享内核
-首先，既然容器只是运行在宿主机上的一种特殊的进程，那么多个容器之间使用的就还是同一个宿主机的操作系统内核。这意味着，如果你要在 Windows 宿主机上运行 Linux 容器，或者在低版本的 Linux 宿主机上运行高版本的 Linux 容器，都是行不通的。
-
-同时这也意味着，如果你的应用程序需要配置内核参数、加载额外的内核模块，以及跟内核进行直接的交互，你就需要注意了：这些操作和依赖的对象，都是宿主机操作系统的内核，它对于该机器上的所有容器来说是一个“全局变量”，牵一发而动全身。
-
-#### Namespace 隔离粒度不够
-其次，在 Linux 内核中，有很多资源和对象是不能被 Namespace 化的，最典型的例子就是：时间。这就意味着，如果你的容器中的程序使用 settimeofday(2) 系统调用修改了时间，整个宿主机的时间都会被随之修改，这显然不符合用户的预期。
-
-#### 资源统计不准确
-另外，跟 Namespace 的情况类似，Cgroups 对资源的限制能力也有很多不完善的地方，被提及最多的自然是 /proc 文件系统的问题。Linux 下的 /proc 目录存储的是记录当前内核运行状态的一系列特殊文件，用户可以通过访问这些文件，查看系统以及当前正在运行的进程的信息。但是，你如果在容器里执行 top 指令，就会发现，它显示的信息居然是宿主机的 CPU 和内存数据，而不是当前容器的数据。造成这个问题的原因就是，/proc 文件系统并不知道用户通过 Cgroups 给这个容器做了什么样的资源限制，即：/proc 文件系统不了解 Cgroups 限制的存在。
-
-在生产环境中，这个问题必须进行修正，否则应用程序在容器里读取到的 CPU 核数、可用内存等信息都是宿主机上的数据，这会给应用的运行带来非常大的困惑和风险。这也是在企业中，容器化应用碰到的一个常见问题，也是容器相较于虚拟机另一个不尽如人意的地方。注: 解决办法参见 lxcfs。
-
-#### 安全限制不够
-此外，由于上述问题，尤其是共享宿主机内核的事实，容器给应用暴露出来的攻击面是相当大的，应用“越狱”的难度自然也比虚拟机低得多。尽管在实践中我们确实可以使用 Seccomp 等技术，对容器内部发起的所有系统调用进行过滤和甄别来进行安全加固，但这种方法因为多了一层对系统调用的过滤，必然会拖累容器的性能。何况，默认情况下，谁也不知道到底该开启哪些系统调用，禁止哪些系统调用。
-
-所以，在生产环境中，没有人敢把运行在物理机上的 Linux 容器直接暴露到公网上。当然，我后续会讲到的基于虚拟化或者独立内核技术的容器实现，则可以比较好地在隔离与性能之间做出平衡。
+1. 共享内核
+  - 首先，既然容器只是运行在宿主机上的一种特殊的进程，那么多个容器之间使用的就还是同一个宿主机的操作系统内核。
+  - 这意味着，如果你要在 Windows 宿主机上运行 Linux 容器，或者在低版本的 Linux 宿主机上运行高版本的 Linux 容器，都是行不通的。
+  - 同时这也意味着，如果你的应用程序需要配置内核参数、加载额外的内核模块，以及跟内核进行直接的交互，你就需要注意了：这些操作和依赖的对象，都是宿主机操作系统的内核，它对于该机器上的所有容器来说是一个“全局变量”，牵一发而动全身。
+2. Namespace 隔离粒度不够
+  - 在 Linux 内核中，有很多资源和对象是不能被 Namespace 化的
+  - 最典型的例子就是：时间。这就意味着，如果你的容器中的程序使用 settimeofday(2) 系统调用修改了时间，整个宿主机的时间都会被随之修改，这显然不符合用户的预期。新版本的 Linux 内核应该已经支持 time namespaces 了。
+3. 资源统计不准确
+  - 跟 Namespace 的情况类似，Cgroups 对资源的限制能力也有很多不完善的地方，被提及最多的自然是 /proc 文件系统的问题。
+  - Linux 下的 /proc 目录存储的是记录当前内核运行状态的一系列特殊文件，用户可以通过访问这些文件，查看系统以及当前正在运行的进程的信息。
+  - 如果在容器里执行 top 指令，就会发现，它显示的信息居然是宿主机的 CPU 和内存数据，而不是当前容器的数据。造成这个问题的原因就是，/proc 文件系统并不知道用户通过 Cgroups 给这个容器做了什么样的资源限制，即：/proc 文件系统不了解 Cgroups 限制的存在。
+  - 在生产环境中，这个问题必须进行修正，否则应用程序在容器里读取到的 CPU 核数、可用内存等信息都是宿主机上的数据，这会给应用的运行带来非常大的困惑和风险。这也是在企业中，容器化应用碰到的一个常见问题，也是容器相较于虚拟机另一个不尽如人意的地方。注: 解决办法参见 lxcfs。
+4. 安全限制不够
+  - 此外，由于上述问题，尤其是共享宿主机内核的事实，容器给应用暴露出来的攻击面是相当大的，应用“越狱”的难度自然也比虚拟机低得多。
+  - 尽管在实践中我们确实可以使用 `Seccomp` 等技术，对容器内部发起的所有系统调用进行过滤和甄别来进行安全加固，但这种方法因为多了一层对系统调用的过滤，必然会拖累容器的性能。默认情况下，谁也不知道到底该开启哪些系统调用，禁止哪些系统调用。
+  - 所以，在生产环境中，没有人敢把运行在物理机上的 Linux 容器直接暴露到公网上。当然，我后续会讲到的基于虚拟化或者独立内核技术的容器实现，则可以比较好地在隔离与性能之间做出平衡。
 
 ### 1.6 容器的单进程模型
 正因为容器的 Namespace 和 Cgroups 是施加在单个进程上的，所以容器技术中一个非常重要的概念，即：容器是一个“单进程”模型。
@@ -207,11 +216,56 @@ $ cat /sys/fs/cgroup/cpu/docker/3cfcb77fe21b26db68d05aceaa6790ba998ac157a566bdd2
 
 在容器的设计模式中，容器本身的设计，是**希望容器和应用能够同生命周期**，这个概念对后续的容器编排非常重要。否则，一旦出现类似于“容器是正常运行的，但是里面的应用早已经挂了”的情况，编排系统处理起来就非常麻烦了。
 
+
+1. overlay2 文件系统使用
+2. docker 架构，containerd
+
 ## 2. 联合文件系统
-为了提高容器镜像的复用能力，Docker 在容器镜像的制作上采用了一个叫联合文件系统的新实现。联合文件系统（Union File System）的能力。Union File System 也叫 UnionFS，最主要的功能是将多个不同位置的目录联合挂载（union mount）到同一个目录下。
+为了提高容器镜像的复用能力，Docker 在容器镜像的制作上采用了一个叫联合文件系统的新实现。联合文件系统（Union File System）的能力。Union File System 也叫 UnionFS，最主要的功能是将多个不同位置的目录联合挂载（union mount）到同一个目录下。联合文件系统有多种实现，后面我们以 Centos 上默认使用的是 overlay2 作为演示的核心:
+
+![联合文件系统的对比](/images/k8s/k8s_use/union_fs.png)
 
 ### 2.1 overlay2 
-在我的 Centos 机器上，docker 使用的联合文件系统是 overlay2，它的关键目录位于 /var/lib/docker/overlay2。我在前面运行了一个 ubuntu 的容器，docker 自动将 ubuntu 的镜像拉取了本地。
+#### overlay2 的基本原理
+OverlayFS将单个Linux主机上的两个目录合并成一个目录。这些目录被称为层，统一过程被称为联合挂载 OverlayFS底层目录称为lowerdir， 高层目录称为upperdir,合并统一视图称为merged。
+
+![overlay2 原理](/images/k8s/k8s_use/overlay2.image)
+
+可以看到:
+1. 最下层是lower层,也是只读/镜像层
+2. upper是容器的读写层,采用了CoW(写时复制)机制,只有对文件进行修改才会将文件拷贝到upper层,之后所有的修改操作都会对upper层的副本进行修改
+3. upper并列还有workdir层,它的作用是充当一个中间层的作用,每当对upper层里面的副本进行修改时,会先当到workdir,然后再从workdir移动upper层
+4. 最上层是mergedir,是一个统一图层,从mergedir可以看到lower,upper,workdir中所有数据的整合,整个容器展现出来的就是mergedir层.
+
+注：overlay2 原理摘录自 [高级小白 Docker原理剖析--文件系统](https://juejin.cn/post/6844903574137208839)
+
+#### overlay2 使用
+
+```bash 
+# 以 overlay2 为例:
+[tao@master overlay2]$ mkdir upper lower merged work
+[tao@master overlay2]$ echo "from lower" > lower/in_lower.txt
+[tao@master overlay2]$ echo "from upper" > upper/in_upper.txt
+[tao@master overlay2]$ echo "from lower" > lower/in_both.txt
+[tao@master overlay2]$ echo "from upper" > upper/in_both.txt
+[tao@master overlay2]$ sudo mount -t overlay overlay -o lowerdir=`pwd`/lower,upperdir=`pwd`/upper,workdir=`pwd`/work `pwd`/merged
+[tao@master overlay2]$ cat merged/in_both.txt
+from upper
+[tao@master overlay2]$ rm merged/in_both.txt 
+[tao@master overlay2]$ ll lower/
+总用量 8
+-rw-rw-r--. 1 tao tao 11 2月  25 20:30 in_both.txt
+-rw-rw-r--. 1 tao tao 11 2月  25 20:30 in_lower.txt
+[tao@master overlay2]$ ll upper/
+总用量 4
+c---------. 1 root root 0, 0 2月  25 20:31 in_both.txt
+-rw-rw-r--. 1 tao  tao    11 2月  25 20:30 in_upper.txt
+[tao@master overlay2]$ cat upper/in_both.txt 
+cat: upper/in_both.txt: 权限不够
+```
+
+### 2.2 容器的 rootfs 组成
+overlay2 关键目录位于 /var/lib/docker/overlay2。我在前面运行了一个 ubuntu 的容器，docker 自动将 ubuntu 的镜像拉取了本地。
 
 这个所谓的“镜像”，实际上就是一个 Ubuntu 操作系统的 rootfs，它的内容是 Ubuntu 操作系统的所有文件和目录。而这个 Ubuntu 的镜像实际上是由多个层组成的。
 
@@ -231,13 +285,7 @@ docker inspect 3cfcb77fe21b
         },
 ```
 
-在 overlay2 中:
-1. LowerDir：指向镜像层；
-2. UpperDir：指向容器层，在容器中创建文件后，文件出现在此目录；
-3. MergedDir：容器挂载点 ，lowerdir和upperdir整合起来提供统一的视图给容器，作为根文件系统；
-4. WorkDir：用于实现copy_up操作。
-
-所以 3cfcb77fe21b 的镜像由下面三个层组成:
+3cfcb77fe21b 容器的 rootfs 由下面三个层组成:
 1. /var/lib/docker/overlay2/b09b7979ceab286d53ed72fe122c2807cb2145e14b60bdc33ab3de3267a73200/diff
 1. /var/lib/docker/overlay2/b09b7979ceab286d53ed72fe122c2807cb2145e14b60bdc33ab3de3267a73200-init/diff
 2. /var/lib/docker/overlay2/7c200b7659c9c12d5ab0baeae54d03bbeb7d490c3d97f6a85d18c8ae8d1a2f0e/diff
@@ -273,7 +321,6 @@ lrwxrwxrwx. 1 root root 77 3月   5 20:20 72ZL2SJGZXEDYBHENYYYYXVRYS -> ../b09b7
 lrwxrwxrwx. 1 root root 72 3月   5 15:49 GRNLLRA54UDERQYOS6AQFNC5K4 -> ../7c200b7659c9c12d5ab0baeae54d03bbeb7d490c3d97f6a85d18c8ae8d1a2f0e/diff
 ```
 
-### 2.2 容器的 rootfs 组成
 从这个结构可以看出来，这个容器的 rootfs 由如下图所示的三部分组成：
 1. 第一部分，只读层: 
   - 这个容器的 rootfs 最下面的一层，挂载方式都是只读的(ro+wh)
@@ -331,7 +378,7 @@ Dockerfile 描述了我们所要构建的 Docker 镜像，它使用一些标准�
 需要注意的是，Dockerfile 中的每个原语执行后，都会生成一个对应的镜像层。即使原语本身并没有明显地修改文件的操作（比如，ENV 原语），它对应的层也会存在。只不过在外界看来，这个层是空的。
 
 ## 4. docker exec
-一个进程的每种 Linux Namespace，都在它对应的 /proc/[进程号]/ns 下有一个对应的虚拟文件，并且链接到一个真实的 Namespace 文件上。有了这些 Linux Namespace 的文件，我们就可以对 Namespace 做一些很有意义事情了，比如：加入到一个已经存在的 Namespace 当中。这也就意味着：一个进程，可以选择加入到某个进程已有的 Namespace 当中，从而达到“进入”这个进程所在容器的目的，这正是 docker exec 的实现原理。而这个操作所依赖的，乃是一个名叫 setns() 的 Linux 系统调用。
+一个进程的每种 Linux Namespace，都在它对应的 `/proc/[进程号]/ns` 下有一个对应的虚拟文件，并且链接到一个真实的 Namespace 文件上。有了这些 Linux Namespace 的文件，我们就可以对 Namespace 做一些很有意义事情了，比如：加入到一个已经存在的 Namespace 当中。这也就意味着：一个进程，可以选择加入到某个进程已有的 Namespace 当中，从而达到“进入”这个进程所在容器的目的，这正是 docker exec 的实现原理。而这个操作所依赖的，乃是一个名叫 setns() 的 Linux 系统调用。
 
 ## 5. docker volume
 ### 5.1 volume 介绍
@@ -386,7 +433,6 @@ $ ll /var/lib/docker/volumes/a4c01d9046842c0f19addd9012c2f01556af04ea02fdb6a826d
 ### 5.3 Docker copyData 功能
 执行 docker run -v /home:/test 的时候，如果宿主机 /home 和 容器 /test 同时存在文件，最终以哪个为准，是可以设置的。(怎么设置未查到)
 
-
 ### 5.4 容器的总结
 Docker 容器，我们就可以用下面这个“全景图”描述出来：
 
@@ -403,38 +449,4 @@ Docker 容器，我们就可以用下面这个“全景图”描述出来：
 1. 一组联合挂载在 /var/lib/docker/aufs/mnt 上的 rootfs，这一部分我们称为“容器镜像”（Container Image），是容器的静态视图；
 2. 一个由 Namespace+Cgroups 构成的隔离环境，这一部分我们称为“容器运行时”（Container Runtime），是容器的动态视图。
 
-## 6. 从容器到 kubernetes
-### 6.1 kubernetes 架构
-
-![k8s 架构](/images/k8s/k8s_use/k8s_architecture.webp)
-
-Kubernetes 的架构由 Master 和 Node 两种节点组成，而这两种角色分别对应着控制节点和计算节点。
-1. 控制节点，即 Master 节点，由三个紧密协作的独立组件组合而成，它们分别是:
-  - 负责 API 服务的 kube-apiserver
-  - 负责调度的 kube-scheduler
-  - 负责容器编排的 kube-controller-manager
-  - 整个集群的持久化数据，则由 kube-apiserver 处理后保存在 Etcd 中
-2. 计算节点上最核心的部分，则是一个叫作 kubelet 的组件
-  - kubelet 主要负责同容器运行时（比如 Docker 项目）打交道。这个交互所依赖的，是一个称作 **CRI（Container Runtime Interface）** 的远程调用接口，这个接口定义了容器运行时的各项核心操作
-  - 具体的容器运行时，比如 Docker 项目，则一般通过 **OCI 这个容器运行时规范**同底层的 Linux 操作系统进行交互，即：把 CRI 请求翻译成对 Linux 操作系统的调用（操作 Linux Namespace 和 Cgroups 等）
-  - kubelet 还通过 gRPC 协议同一个叫作 **Device Plugin 的插件**进行交互。这个插件，是 Kubernetes 项目用来管理 GPU 等宿主机物理设备的主要组件，也是基于 Kubernetes 项目进行机器学习训练、高性能作业支持等工作必须关注的功能
-  - kubelet 的另一个重要功能，则是调用网络插件和存储插件为容器配置网络和持久化存储。这两个插件与 kubelet 进行交互的接口，分别是 **CNI（Container Networking Interface）** 和 **CSI（Container Storage Interface）** 。
-
-Kubernetes 从 Google Borg 系统演化而来。因此从一开始就把关注点放到了**如何编排、管理、调度用户提交的作业上**。这个出发点来自于 Borg 的研究人员在论文中提到的一个非常重要的观点：**运行在大规模集群中的各种任务之间，实际上存在着各种各样的关系。这些关系的处理，才是作业编排和管理系统最困难的地方。**
-
-### 6.2 kubernetes 核心功能
-所以 Kubernetes 项目最主要的设计思想是，从更宏观的角度，以统一的方式来定义任务之间的各种关系，并且为将来支持更多种类的关系留有余地。除了应用与应用之间的关系外，**应用运行的形态**是影响“如何容器化这个应用”的第二个重要因素。
-
-正是基于**容器间关系和形态**两个维度，Kubernetes 演化出了下面的核心功能:
-
-![k8s 核心功能](/images/k8s/k8s_use/k8s_function.webp)
-
-当我们在使用这些核心功能时 Kubernetes 所推崇的使用方法是：
-1. 首先，通过一个“编排对象”，比如 Pod、Job、CronJob 等，来描述你试图管理的应用；
-2. 然后，再为它定义一些“服务对象”，比如 Service、Secret、Horizontal Pod Autoscaler（自动水平扩展器）等。这些对象，会负责具体的平台级功能。
-
-这种使用方法，就是所谓的**声明式 API**。这种 API 对应的**编排对象和服务对象**，都是 Kubernetes 项目中的 API 对象（API Object）。
-
-过去很多的集群管理项目（比如 Yarn、Mesos，以及 Swarm）所擅长的，都是把一个容器，按照某种规则，放置在某个最佳节点上运行起来。这种功能，我们称为“调度”。而 Kubernetes 项目所擅长的，是按照用户的意愿和整个系统的规则，完全自动化地处理好容器之间的各种关系。这种功能，就是我们经常听到的一个概念：编排。所以说，Kubernetes 项目的本质，是为用户提供一个具有普遍意义的容器编排工具。
-
-不过，更重要的是，Kubernetes 项目为用户提供的不仅限于一个工具。它真正的价值，乃在于提供了一套基于容器构建分布式系统的基础依赖。
+## 6. Docker 引擎架构
