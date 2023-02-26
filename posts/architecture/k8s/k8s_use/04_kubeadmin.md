@@ -86,13 +86,128 @@ kubeadm 确实简单易用，可是我又该如何定制我的集群组件参数
 $ kubeadm init --config kubeadm.yaml
 ```
 
+[kubeadm.yaml](https://kubernetes.io/docs/reference/config-api/kubeadm-config.v1beta3/) 的内容参考如下:
+
+```yaml
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+bootstrapTokens:
+  - token: "9a08jv.c0izixklcxtmnze7"
+    description: "kubeadm bootstrap token"
+    ttl: "24h"
+  - token: "783bde.3f89s0fje9f38fhf"
+    description: "another bootstrap token"
+    usages:
+      - authentication
+      - signing
+    groups:
+      - system:bootstrappers:kubeadm:default-node-token
+nodeRegistration:
+  name: "ec2-10-100-0-1"
+  criSocket: "/var/run/dockershim.sock"
+  taints:
+    - key: "kubeadmNode"
+      value: "someValue"
+      effect: "NoSchedule"
+  kubeletExtraArgs:
+    v: 4
+  ignorePreflightErrors:
+    - IsPrivilegedUser
+  imagePullPolicy: "IfNotPresent"
+localAPIEndpoint:
+  advertiseAddress: "10.100.0.1"
+  bindPort: 6443
+certificateKey: "e6a2eb8581237ab72a4f494f30285ec12a9694d750b9785706a83bfcbbbd2204"
+skipPhases:
+  - addon/kube-proxy
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+etcd:
+  # one of local or external
+  local:
+    imageRepository: "registry.k8s.io"
+    imageTag: "3.2.24"
+    dataDir: "/var/lib/etcd"
+    extraArgs:
+      listen-client-urls: "http://10.100.0.1:2379"
+    serverCertSANs:
+      -  "ec2-10-100-0-1.compute-1.amazonaws.com"
+    peerCertSANs:
+      - "10.100.0.1"
+  # external:
+    # endpoints:
+    # - "10.100.0.1:2379"
+    # - "10.100.0.2:2379"
+    # caFile: "/etcd/kubernetes/pki/etcd/etcd-ca.crt"
+    # certFile: "/etcd/kubernetes/pki/etcd/etcd.crt"
+    # keyFile: "/etcd/kubernetes/pki/etcd/etcd.key"
+networking:
+  serviceSubnet: "10.96.0.0/16"
+  podSubnet: "10.244.0.0/24"
+  dnsDomain: "cluster.local"
+kubernetesVersion: "v1.21.0"
+controlPlaneEndpoint: "10.100.0.1:6443"
+apiServer:
+  extraArgs:
+    authorization-mode: "Node,RBAC"
+  extraVolumes:
+    - name: "some-volume"
+      hostPath: "/etc/some-path"
+      mountPath: "/etc/some-pod-path"
+      readOnly: false
+      pathType: File
+  certSANs:
+    - "10.100.1.1"
+    - "ec2-10-100-0-1.compute-1.amazonaws.com"
+  timeoutForControlPlane: 4m0s
+controllerManager:
+  extraArgs:
+    "node-cidr-mask-size": "20"
+  extraVolumes:
+    - name: "some-volume"
+      hostPath: "/etc/some-path"
+      mountPath: "/etc/some-pod-path"
+      readOnly: false
+      pathType: File
+scheduler:
+  extraArgs:
+    address: "10.100.0.1"
+  extraVolumes:
+    - name: "some-volume"
+      hostPath: "/etc/some-path"
+      mountPath: "/etc/some-pod-path"
+      readOnly: false
+      pathType: File
+certificatesDir: "/etc/kubernetes/pki"
+imageRepository: "registry.k8s.io"
+clusterName: "example-cluster"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+# kubelet specific options here
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+# kube-proxy specific options here
+```
+
 kubeadm 就会使用 kubeadm.yaml 中的信息替换 /etc/kubernetes/manifests/ 里对应服务的 pod yaml 文件。kubeadmin.yaml 支持的参数参见 k8s 的[文档](https://kubernetes.io/zh/docs/setup/production-environment/tools/kubeadm/control-plane-flags/)。
 
 kubeadm 的源代码，直接就在 kubernetes/cmd/kubeadm 目录下，是 Kubernetes 项目的一部分。其中，app/phases 文件夹下的代码，对应的就是我在这篇文章中详细介绍的每一个具体步骤。
 
-kubeadm 目前应该已经具备一键部署一个高可用的 Kubernetes 集群，即：Etcd、Master 组件都应该是多节点集群，而不是现在这样的单点。可参考文档[Creating Highly Available Clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)。除了 kubadmin 更推荐采用如下两种方式:
-1. 使用[kops](https://github.com/kubernetes/kops)
-2. 使用[Ansible](https://github.com/gjmzj/kubeasz) 
+kubeadm 目前应该已经具备一键部署一个高可用的 Kubernetes 集群，即：Etcd、Master 组件都应该是多节点集群，而不是现在这样的单点。可参考文档[Creating Highly Available Clusters with kubeadm](https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/high-availability/)。除了 kubadmin 目前有多种安装 k8s 的方式:
+
+|工具|适用|原理|推荐指数|
+|:---|:---|:---|:---|
+|[kops](https://github.com/kubernetes/kops)|生产环境|||
+|[kubeasz](https://github.com/gjmzj/kubeasz) |生产环境|ansible||
+|[kubespray](https://imroc.cc/kubernetes/deploy/kubespray/index.html)|生产环境|ansible||
+|[Rancher](https://rancher.com/docs/rancher/latest/zh/)|生产环境||标准|
+|[kubeadm](https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/)|生产/学习||推荐|
+|[kind](https://github.com/kubernetes-sigs/kind)|单机安装|||
+|[minikube](https://github.com/kubernetes/minikube)|单机安装|||
+
 
 ## 2. kubadmin 安装 k8s 
 使用 kubadmin 安装 k8s 分成如下几个步骤:
@@ -108,92 +223,154 @@ kubeadm 目前应该已经具备一键部署一个高可用的 Kubernetes 集群
 首先准备 yum 源安装 Docker 和 kubeadmin
 
 ```bash
-cd /etc/yum.repo.d/
 # docker-ce 源
-wget https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
+yum install -y yum-utils
+yum-config-manager \
+  --add-repo \
+  https://download.docker.com/linux/centos/docker-ce.repo
 
 # kubernetes 源
-vim kubernetes.repo
-[kuberneters]
-name=kuberneters repo
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
-gpgcheck=1
+cat <<EOF | tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-\$basearch
 enabled=1
+gpgcheck=1
 gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
+EOF
+```
 
+#### 系统参数配置
+```bash
+# Set SELinux in permissive mode (effectively disabling it)
+# Set SELinux in permissive mode (effectively disabling it)
+setenforce 0
+sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
-# 设置 docker kubelet 开机自启动
-systemctl enable docker kubelet
+sysctl -w net.bridge.bridge-nf-call-ip6tables=1
+sysctl -w net.bridge.bridge-nf-call-iptables=1
+iptables -F
+
+systemctl stop firewalld.service
 ```
 
 #### 安装配置相关组件
 ```bash
 # 安装相关组件
-yum install docker-ce kubectl kubelet kubeadm
-
-# 配置 docer 的 unit file 添加 https 代理，以便能下载相关被墙的镜像
-# 不过依旧不能用，此步骤省略
-# vim /usr/lib/systemd/system/docker.service # 添加
-# Environment="HTTPS_PROXY=http://www.ik8s.io:10080"
-
-systemctl daemon-reload
-systemctl restart docker
-docker info   # 看到 HTTPS_PROXY 行即可
-
-# 配置 kuberneters 不受 swap 分区的影响
-vim /etc/sysconfig/kubelet
-KUBELET_EXTRA_ARGS="--fail-swap-on=false"
-
-# 系统参数初始化
-sysctl -w net.bridge.bridge-nf-call-ip6tables=1
-sysctl -w net.bridge.bridge-nf-call-iptables=1
-iptables -F
+set -e
+# 安装相关组件
+yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 ```
 
-#### 准备 kubeadm 所需镜像
-因为某种不可描述的原因，kubeadm 使用到的镜像无法访问，因此需要手动准备 kubeadm 所需的镜像文件。这里有片文章可以指导你去构建相应的 镜像 https://ieevee.com/tech/2017/04/07/k8s-mirror.html
-
+#### 启动服务
 ```bash
-> kubeadm config images list
-k8s.gcr.io/kube-apiserver:v1.12.2
-k8s.gcr.io/kube-controller-manager:v1.12.2
-k8s.gcr.io/kube-scheduler:v1.12.2
-k8s.gcr.io/kube-proxy:v1.12.2
-k8s.gcr.io/pause:3.1
-k8s.gcr.io/etcd:3.2.24
-k8s.gcr.io/coredns:1.2.2
+# 配置 kuberneters 不受 swap 分区的影响
+sed -i 's@KUBELET_EXTRA_ARGS=$@KUBELET_EXTRA_ARGS="--fail-swap-on=false"@' /etc/sysconfig/kubelet
+
+# 设置 docker kubelet 开机自启动
+# 设置 docker kubelet 开机自启动
+systemctl enable --now docker kubelet
+# systemctl restart docker kubelet
 ```
 
-我是自己去阿里云自建的镜像，使用下面的脚本对镜像进行重命名
+#### 生成 kubeadm 默认配置文件
 ```bash
 #!/bin/bash
-base=k8s.gcr.io
-aliyun="registry.cn-qingdao.aliyuncs.com/htttao"
-images=(kube-apiserver:v1.12.2 kube-controller-manager:v1.12.2 kube-scheduler:v1.12.2 kube-proxy:v1.12.2  pause:3.1  etcd:3.2.24 coredns:1.2.2)
+# 作用: 生成 kubeadm 的默认配置文件
 
-for i in ${images[@]}
-do
-	docker	pull $aliyun/$i
-	docker  tag  $aliyun/$i  $base/$i
-done
+set -e
+SHELL_PATH=`readlink -f $0`
+PROJECT_ROOT=$(dirname  $SHELL_PATH)
+
+kubeadm config print init-defaults > $PROJECT_ROOT/kubeadm_default.yaml
 ```
 
+
+
+#### 准备 kubeadm 所需镜像
+```bash
+set -e
+SHELL_PATH=`readlink -f $0`
+PROJECT_ROOT=$(dirname  $SHELL_PATH)
+
+# # 查看需要安装的镜像
+# kubeadm config images list
+
+# pull 镜像
+# kubeadm.yaml 是在上面 kubeadm_default.yaml 修改而来，添加了部分自定义参数，详细内容见下
+kubeadm config images pull --config $PROJECT_ROOT/kubeadm.yaml
+
+# 重命名镜像
+for i in `kubeadm config images list`; do
+    image_aliyun=`echo "$i" |sed 's@registry.k8s.io@registry.cn-hangzhou.aliyuncs.com/google_containers@'`
+    image_aliyun=`echo "$image_aliyun"| sed 's@coredns/@@'`
+    echo "===================================="
+    echo "sudo docker pull $image_aliyun"
+    docker pull $image_aliyun
+    docker tag $image_aliyun $i
+done
+
+```
 
 ### 2.2 初始化 Master 节点
-首先我们为 kubadmin 准备一个配置文件，已启动一些特殊实验性功能。
+首先我们为 kubadmin 准备一个配置文件: 
 
 ```yaml
-apiVersion: kubeadm.k8s.io/v1alpha1
-kind: MasterConfiguration
-controllerManagerExtraArgs:
-  horizontal-pod-autoscaler-use-rest-clients: "true"
-  horizontal-pod-autoscaler-sync-period: "10s"
-  node-monitor-grace-period: "10s"
-apiServerExtraArgs:
-  runtime-config: "api/all=true"
-kubernetesVersion: "stable-1.11"
+apiVersion: kubeadm.k8s.io/v1beta3
+bootstrapTokens:
+- groups:
+  - system:bootstrappers:kubeadm:default-node-token
+  token: abcdef.0123456789abcdef
+  ttl: 24h0m0s
+  usages:
+  - signing
+  - authentication
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 1.2.3.4
+  bindPort: 6443
+nodeRegistration:
+  criSocket: unix:///var/run/containerd/containerd.sock
+  imagePullPolicy: IfNotPresent
+  name: node
+  taints: null
+  
+---
+apiServer:
+  timeoutForControlPlane: 4m0s
+apiVersion: kubeadm.k8s.io/v1beta3
+certificatesDir: /etc/kubernetes/pki
+clusterName: kubernetes
+controllerManager: {}
+dns: {}
+etcd:
+  local:
+    dataDir: /var/lib/etcd
+imageRepository: registry.cn-hangzhou.aliyuncs.com/google_containers
+kind: ClusterConfiguration
+kubernetesVersion: 1.26.0
+networking:
+  dnsDomain: cluster.local
+  serviceSubnet: 10.96.0.0/12
+scheduler: {}
+
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+# kubelet specific options here
+cgroupDriver: systemd
+
 ```
-其中 `horizontal-pod-autoscaler-use-rest-clients: "true"` 意味着，将来部署的 kube-controller-manager 能够使用自定义资源（Custom Metrics）进行自动水平扩展。然后我们只需要下面的命令就可以完成 master 节点的部署。
+然后我们只需要下面的命令就可以完成 master 节点的部署。
 
 ```bash
 $ kubeadm init --config kubeadm.yaml
@@ -346,63 +523,4 @@ ifconfig docker0 down
 ip link delete cni0
 ip link delete flannel.1
 systemctl start docker
-```
-
-## 2.9 安装脚本
-整个集群安装比较复杂，因此我将物理环境准备以及镜像下载写成了两个脚本，以便于 k8s 集群的安装。
-
-#### 基础环境配置脚本
-```bash
-#!/bin/bash
-# 1. 设置系统参数
-mount /dev/cdrom /cdrom
-iptables -F
-
-# 2. 准备 yum 源
-wget -P /etc/yum.repos.d/ https://mirrors.aliyun.com/docker-ce/linux/centos/docker-ce.repo
-cat << EOF >> /etc/yum.repos.d/kubernetes.repo
-[kuberneters]
-name=kuberneters repo
-baseurl=https://mirrors.aliyun.com/kubernetes/yum/repos/kubernetes-el7-x86_64/
-gpgcheck=1
-enabled=1
-gpgkey=https://mirrors.aliyun.com/kubernetes/yum/doc/rpm-package-key.gpg
-EOF
-
-# 3. 配置 kuberneters 不受 swap 分区的影响
-yum install docker-ce kubelet kubeadm kubectl -y
-echo 'KUBELET_EXTRA_ARGS="--fail-swap-on=false"' > /etc/sysconfig/kubelet
-
-# 4. 启动相关服务
-systemctl start docker
-systemctl enable docker kubelet
-
-cat << EOF > /etc/docker/daemon.json
-{
-  "registry-mirrors": ["https://osafqkzd.mirror.aliyuncs.com"]
-}
-EOF
-```
-
-#### 镜像下载脚本
-执行下面的下载脚本 `/root/kubernetes.sh`
-```bash
-#!/bin/bash
-sudo docker login --username=1556824234@qq.com registry.cn-qingdao.aliyuncs.com
-sysctl net.bridge.bridge-nf-call-ip6tables=1
-sysctl net.bridge.bridge-nf-call-iptables=1
-
-base=k8s.gcr.io
-aliyun="registry.cn-qingdao.aliyuncs.com/htttao"
-images=(kube-apiserver:v1.12.2 kube-controller-manager:v1.12.2 kube-scheduler:v1.12.2 kube-proxy:v1.12.2  pause:3.1  etcd:3.2.24 coredns:1.2.2)
-
-for i in ${images[@]}
-do
-	docker	pull $aliyun/$i
-	docker  tag  $aliyun/$i  $base/$i
-done
-
-flannel=flannel:v0.10.0-amd64
-docker    pull $aliyun/$flannel
-docker    tag  $aliyun/$flannel  quay.io/coreos/$flannel
 ```
