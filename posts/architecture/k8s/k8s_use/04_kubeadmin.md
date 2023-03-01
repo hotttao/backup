@@ -466,11 +466,11 @@ spec:
 ```
 
 像这样的一个 YAML 文件，对应到 Kubernetes 中，就是一个 API Object（API 对象），其中:
-1. kind 字段，指定了这个 API 对象的类型（Type）
+1. kind 字段，指定了这个 API 对象的类型（Type），是一个 Deployment
 2. spec.template 定义了Pod 的模版
 3. metadata: API 对象的“标识”，即元数据
-4. metadata.labels: 就是一组 key-value 格式的标签
-  - selector.matchLabels: labels 与 matchLabels 组合定义了控制器与被控制对象之间的关联关系
+4. metadata.labels: 就是一组 key-value 格式的标签，在 k8s 中称为 Label Selector。
+  - selector.matchLabels: metadata.labels 与 matchLabels 组合定义了控制器与被控制对象之间的关联关系
   - 像上面这样使用一种 API 对象（Deployment）管理另一种 API 对象（Pod）的方法，在 Kubernetes 中，叫作 **控制器模式（controller pattern）** ，Deployment 扮演的正是 Pod 的控制器的角色。
 4. metadata.annotations: 
   - 在 Metadata 中，还有一个与 Labels 格式、层级完全相同的字段叫 Annotations
@@ -551,6 +551,8 @@ spec:
 ```
 
 如上，Deployment 的 Pod 模板部分添加了一个 volumes 字段，定义了这个 Pod 声明的所有 Volume。它的名字叫作 nginx-vol，类型是 emptyDir。emptyDir 类型其实就等同于我们之前讲过的 Docker 的隐式 Volume 参数，即：不显式声明宿主机目录的 Volume。所以，Kubernetes 也会在宿主机上创建一个临时目录，这个目录将来就会被绑定挂载到容器所声明的 Volume 目录上。
+
+Pod 中的容器，使用的是 volumeMounts 字段来声明自己要挂载哪个 Volume，并通过 mountPath 字段来定义容器内的 Volume 目录，比如：/usr/share/nginx/html。
 
 Kubernetes 也提供了显式的 Volume 定义，它叫作 hostPath:
 
