@@ -6,7 +6,7 @@ lastmod: 2020-08-02T23:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "k8s 安装部署"
+description: "k8s 使用工具"
 featuredImage: 
 
 tags: ["k8s", "工具集"]
