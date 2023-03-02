@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "k8s 安装部署"
+title: "k8s 使用工具"
 date: 2020-08-02T23:00:00+08:00
 lastmod: 2020-08-02T23:00:00+08:00
 draft: false
