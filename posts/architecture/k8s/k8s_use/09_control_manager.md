@@ -9,27 +9,56 @@ authorLink: "https://hotttao.github.io/"
 description: "Pod 使用进阶"
 featuredImage: 
 
-tags: ["k8s"]
+tags: ["k8s", "k8s 实现"]
 categories: ["architecture"]
 
 lightgallery: true
 
 ---
+在 kubernetes 中操作各种  API 对象的逻辑都是由控制器完成的。本节我们来学习控制器的实现原理。
 
 ## 1. 控制器模式
-Pod 这个看似复杂的 API 对象，实际上就是对容器的进一步抽象和封装而已。所以，Pod 对象，其实就是容器的升级版。它对容器进行了组合，添加了更多的属性和字段。这就好比给集装箱四面安装了吊环，使得 Kubernetes 这架“吊车”，可以更轻松地操作它。
-
-在前面介绍 Kubernetes 架构的时候，曾经提到过一个叫作 kube-controller-manager 的组件。实际上，这个组件，就是一系列控制器的集合。我们可以查看一下 Kubernetes 项目的 pkg/controller 目录：
+在前面介绍 Kubernetes 架构的时候，曾经提到过一个叫作 kube-controller-manager 的组件。实际上，这个组件，就是一系列控制器的集合，它们位于源码的 pkg/controller 目录下: 
 
 ```shell
 
 $ cd kubernetes/pkg/controller/
-$ ls -d */              
-deployment/             job/                    podautoscaler/          
-cloud/                  disruption/             namespace/              
-replicaset/             serviceaccount/         volume/
-cronjob/                garbagecollector/       nodelifecycle/          replication/            statefulset/            daemon/
-...
+$ ll
+总用量 156
+drwxrwxr-x.  3 tao tao    20 2月  28 20:32 apis
+drwxrwxr-x.  2 tao tao   185 2月  28 20:32 bootstrap
+drwxrwxr-x.  7 tao tao   263 2月  28 20:32 certificates
+drwxrwxr-x.  2 tao tao    99 2月  28 20:32 clusterroleaggregation
+drwxrwxr-x.  4 tao tao   187 2月  28 20:32 cronjob
+drwxrwxr-x.  4 tao tao   180 2月  28 20:32 daemon
+drwxrwxr-x.  4 tao tao  4096 2月  28 20:32 deployment
+drwxrwxr-x.  2 tao tao    67 2月  28 20:32 disruption
+-rw-rw-r--.  1 tao tao   725 2月  28 20:32 doc.go
+drwxrwxr-x.  3 tao tao   115 2月  28 20:32 endpoint
+drwxrwxr-x.  5 tao tao   229 2月  28 20:32 endpointslice
+drwxrwxr-x.  4 tao tao  4096 2月  28 20:32 endpointslicemirroring
+drwxrwxr-x.  6 tao tao  4096 2月  28 20:32 garbagecollector
+drwxrwxr-x.  2 tao tao    83 2月  28 20:32 history
+drwxrwxr-x.  4 tao tao  4096 2月  28 20:32 job
+-rw-rw-r--.  1 tao tao  2913 2月  28 20:32 lookup_cache.go
+drwxrwxr-x.  4 tao tao    95 2月  28 20:32 namespace
+drwxrwxr-x.  4 tao tao   179 2月  28 20:32 nodeipam
+drwxrwxr-x.  4 tao tao   146 2月  28 20:32 nodelifecycle
+-rw-rw-r--.  1 tao tao   269 2月  28 20:32 OWNERS
+drwxrwxr-x.  4 tao tao   197 2月  28 20:32 podautoscaler
+drwxrwxr-x.  3 tao tao   119 2月  28 20:32 podgc
+drwxrwxr-x.  4 tao tao   193 2月  28 20:32 replicaset
+drwxrwxr-x.  3 tao tao   185 2月  28 20:32 replication
+drwxrwxr-x.  3 tao tao   116 2月  28 20:32 resourceclaim
+drwxrwxr-x.  3 tao tao   158 2月  28 20:32 resourcequota
+drwxrwxr-x.  3 tao tao   210 2月  28 20:32 serviceaccount
+drwxrwxr-x.  3 tao tao  4096 2月  28 20:32 statefulset
+drwxrwxr-x.  2 tao tao    59 2月  28 20:32 storageversiongc
+drwxrwxr-x.  2 tao tao    27 2月  28 20:32 testutil
+drwxrwxr-x.  2 tao tao    61 2月  28 20:32 ttl
+drwxrwxr-x.  4 tao tao   116 2月  28 20:32 ttlafterfinished
+drwxrwxr-x.  6 tao tao    72 2月  28 20:32 util
+drwxrwxr-x. 11 tao tao   186 2月  28 20:32 volume
 ```
 
 ### 1.1 控制循环
@@ -48,12 +77,12 @@ for {
 }
 ```
 
-在具体实现中，实际状态往往来自于 Kubernetes 集群本身。比如，
-1. kubelet 通过心跳汇报的容器状态和节点状态
-2. 监控系统中保存的应用监控数据
-3. 控制器主动收集的它自己感兴趣的信息
-
-期望状态，一般来自于用户提交的 YAML 文件。
+在具体实现中
+1. 实际状态: 自于 Kubernetes 集群本身。比如，
+  1. kubelet 通过心跳汇报的容器状态和节点状态
+  2. 监控系统中保存的应用监控数据
+  3. 控制器主动收集的它自己感兴趣的信息
+2. 期望状态: 一般来自于用户提交的 YAML 文件。
 
 ### 1.2 控制循环执行示例
 ```yaml
@@ -92,7 +121,6 @@ spec:
 
 Deployment 这个 template 字段里的内容，跟一个标准的 Pod 对象的 API 定义，丝毫不差。而所有被这个 Deployment 管理的 Pod 实例，其实都是根据这个 template 字段的内容创建出来的。像 Deployment 定义的 template 字段，在 Kubernetes 项目中有一个专有的名字，叫作 PodTemplate（Pod 模板）。
 
-
 ![控制器模式](/images/k8s/k8s_use/ped_templates.webp)
 
-如上图所示，类似 Deployment 这样的一个控制器，实际上都是由上半部分的控制器定义（包括期望状态），加上下半部分的被控制对象的模板组成的。
+如上图所示，类似 Deployment 这样的一个控制器，实际上都是由上半部分的控制器定义（包括期望状态），加上下半部分的被控制对象的模板组成的。这就是为什么，在所有 API 对象的 Metadata 里，都有一个字段叫作 ownerReference，用于保存当前这个 API 对象的拥有者（Owner）的信息。

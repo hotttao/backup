@@ -1,8 +1,8 @@
 ---
 weight: 1
-title: "k8s 部署 Mysql 集群"
-date: 2020-08-06T22:00:00+08:00
-lastmod: 2020-08-06T22:00:00+08:00
+title: "API Server 处理流程"
+date: 2020-08-16T22:00:00+08:00
+lastmod: 2020-08-16T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -15,3 +15,4 @@ categories: ["architecture"]
 lightgallery: true
 
 ---
+
