@@ -18,7 +18,7 @@ toc:
   auto: false
 ---
 
-在 [go 网络库 net/http 的请求处理过程]({{< ref "posts/program/go/modules/15_net.md" >}}) 中我们解析了 net/http 的请求处理流程。并说到所有基于 net/http 的 web 框架定制的其实就是 Server 中的下面几个部分:
+在 [go 网络库 net/http 的请求处理过程]({{< ref "posts/program/go/modules/net/http.md" >}}) 中我们解析了 net/http 的请求处理流程。并说到所有基于 net/http 的 web 框架定制的其实就是 Server 中的下面几个部分:
 1. Handler: 实现更丰富的路由
 2. Context: 实现更丰富的请求控制逻辑(即: 中间件)
 3. Request/ResponseWriter: 在 net/http 已有的 RnseWriter 和 Request 基础上包装更易用的 Request 和 Response 对象。
