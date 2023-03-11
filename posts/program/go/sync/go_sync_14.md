@@ -109,7 +109,7 @@ func createCases(chs ...chan int) []reflect.SelectCase {
 从 chan 的内部实现看，它是以一个循环队列的方式存放数据，所以，它有时候也会被当成线程安全的队列和 buffer 使用。我们来看几个例子。
 
 ### 2.1 worker 池
-Marcio Castilho 在 [使用 Go 每分钟处理百万请求](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/)  这篇文章中，就介绍了他们应对大并发请求的设计。他们将用户的请求放在一个 chan Job 中，这个 chan Job 就相当于一个待处理任务队列。除此之外，还有一个 chan chan Job 队列，用来存放可以处理任务的 worker 的缓存队列。具体的实现参见 [Go Work Pool]({{< ref "posts/program/go/modules/33_work_pool.md" >}})
+Marcio Castilho 在 [使用 Go 每分钟处理百万请求](http://marcio.io/2015/07/handling-1-million-requests-per-minute-with-golang/)  这篇文章中，就介绍了他们应对大并发请求的设计。他们将用户的请求放在一个 chan Job 中，这个 chan Job 就相当于一个待处理任务队列。除此之外，还有一个 chan chan Job 队列，用来存放可以处理任务的 worker 的缓存队列。具体的实现参见 [Go Work Pool]({{< ref "posts/program/go/modules/sync/work_pool.md" >}})
 
 ## 3. 数据传递
 下面是一个数据传递(任务编排)的例子，让四个 goroutine 顺序打印 1,2,3,4
