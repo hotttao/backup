@@ -19,7 +19,7 @@ toc:
 ---
 
 ## 1. httprouter 简介
-在 [go 网络库 net/http 的请求处理过程]({{< ref "posts/program/go/modules/16_net.md" >}}) 中我们了解了标准库 net/http 的请求处理流程。net/http 中提供了一个默认的路由实现 ServeMux，通过一个 map 能实现 url 到 handler 的映射，功能较为简单。第三方库 httprouter 已经成为事实上 router 的实现标准。大多数 web 框架的路由实现都是基于 httprouter，所以今天我们就来看看 httprouter 的实现。
+在 [go 网络库 net/http 的请求处理过程]({{< ref "posts/program/go/modules/net/http.md" >}}) 中我们了解了标准库 net/http 的请求处理流程。net/http 中提供了一个默认的路由实现 ServeMux，通过一个 map 能实现 url 到 handler 的映射，功能较为简单。第三方库 httprouter 已经成为事实上 router 的实现标准。大多数 web 框架的路由实现都是基于 httprouter，所以今天我们就来看看 httprouter 的实现。
 
 httprouter 将 url 实现为了一个 Radix Tree。下面是从维基百科摘录的 Radix Tree 的示意图:
 
