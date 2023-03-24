@@ -54,195 +54,78 @@ Kubernetes 的架构由 Master 和 Node 两种节点组成，而这两种角色�
 ![Deployment 创建流程](/images/k8s/k8s_use/control_plane_workflow.png)
 
 ## 2. k8s 源码结构
-有了架构图，我们再来看看源码结构，看看架构与源码是如何对应起来。个人觉得结合代码的方式来学习 k8s 可以让我们更加结构化的理解 k8s 中的抽象概念，这样理解和记忆会更加深刻。
+有了架构图，我们再来看看源码结构，看看架构与源码是如何对应起来。个人觉得结合代码的方式来学习 k8s 可以让我们更加结构化的理解 k8s 中的抽象概念，这样理解和记忆会更加深刻。对于 k8s 来说最终的就是源码下的 pkg 和 staging 两个目录。pkg 比较好理解，就是 k8s 的代码库，那 staging 是什么呢？k8s 允许我们做很多自定义开发，比如自定义控制器、webhook，staging 保存的就是为 k8s 做扩展开发时会用到的功能代码。[staging](https://github.com/kubernetes/kubernetes/tree/master/staging) 内的代码会被定义同步到其他 repo。pkg 也同样依赖 staging。
 
-|目录 |作用|
-|:---|:---|
-|api/ |	存放 OpenAPI/ |Swagger 的 spec 文件，包括 JSON、Protocol 的定义等|
-|build/ |	存放构建相关的脚本|
-|cmd/ |	存放可执行文件的入口代码，每一个可执行文件都会对应有一个 main 函数|
-|docs/ |	存放设计或者用户使用文档|
-|hack/ |	存放与构建、测试相关的脚本|
-|pkg/ |	存放核心库代码，可被项目内部或外部，直接引用|
-|plugin/ |	存放 kubernetes 的插件，例如认证插件、授权插件等|
-|staging/ |	存放部分核心库的暂存代码，也就是还没有集成到 pkg 目录的代码，包括一些与云服务厂商集成的 provider|
-|test/ |	存放测试工具，以及测试数据|
-|third_party/ |	存放第三方工具、代码或其他组件|
-|translations/ |	存放 i18n(国际化)语言包的相关文件，可以在不修改内部代码的情况下支持不同语言及地区|
-|vendor/ |	存放项目依赖的库代码，一般为第三方库代码|
 
-cmd 是可执行文件入口，与 kubernetes 提供的各个组件一一对应。cmd 中实际调用的就是 pkg 中的代码。在 pkg 中下面几个目录与我们后面学习 k8s 密切相关:
+```bash
+$ ll pkg/
+总用量 40
+drwxrwxr-x. 12 tao tao  188 3月   4 22:08 api
+drwxrwxr-x. 27 tao tao 4096 2月  28 20:32 apis
+drwxrwxr-x.  4 tao tao   60 2月  28 20:32 auth
+drwxrwxr-x.  2 tao tao   71 2月  28 20:32 capabilities
+drwxrwxr-x.  5 tao tao   67 2月  28 20:32 client
+drwxrwxr-x.  3 tao tao   68 2月  28 20:32 cloudprovider
+drwxrwxr-x.  3 tao tao   19 2月  28 20:32 cluster
+drwxrwxr-x. 33 tao tao 4096 2月  28 20:32 controller
+drwxrwxr-x.  5 tao tao 4096 2月  28 20:32 controlplane
+drwxrwxr-x.  7 tao tao  239 2月  28 20:32 credentialprovider
+drwxrwxr-x.  2 tao tao   44 2月  28 20:32 features
+drwxrwxr-x.  2 tao tao   65 2月  28 20:32 fieldpath
+drwxrwxr-x.  3 tao tao   35 2月  28 20:32 generated
+drwxrwxr-x.  6 tao tao  147 2月  28 20:32 kubeapiserver
+drwxrwxr-x.  3 tao tao   73 2月  28 20:32 kubectl
+drwxrwxr-x. 44 tao tao 4096 2月  28 20:32 kubelet
+drwxrwxr-x.  2 tao tao  117 2月  28 20:32 kubemark
+-rw-rw-r--.  1 tao tao  366 2月  28 20:32 OWNERS
+drwxrwxr-x.  4 tao tao  161 2月  28 20:32 printers
+drwxrwxr-x.  6 tao tao  181 2月  28 20:32 probe
+drwxrwxr-x. 11 tao tao 4096 2月  28 20:32 proxy
+drwxrwxr-x.  3 tao tao   16 2月  28 20:32 quota
+drwxrwxr-x. 23 tao tao 4096 2月  28 20:32 registry
+drwxrwxr-x.  2 tao tao  140 2月  28 20:32 routes
+drwxrwxr-x.  9 tao tao 4096 2月  28 20:32 scheduler
+drwxrwxr-x.  3 tao tao   36 2月  28 20:32 security
+drwxrwxr-x.  2 tao tao  115 2月  28 20:32 securitycontext
+drwxrwxr-x.  2 tao tao  182 2月  28 20:32 serviceaccount
+drwxrwxr-x. 29 tao tao 4096 2月  28 20:32 util
+drwxrwxr-x. 27 tao tao 4096 2月  28 20:32 volume
+drwxrwxr-x.  3 tao tao   21 2月  28 20:32 windows
 
-|目录|作用|
-|:---|:---|
-|apis|kubernetes 核心对象的定义，后面我们将学习的 Pod，Deployment 等等核心对象的可定义字段都在这个目录下 go 代码中定义|
-
-### 2.1 API 对象
-API 对象是 Kubernetes 集群中的管理操作单元。每个 API 对象都有四大类属性：
-1. TypeMeta: 通用属性，用于表示一个 API 对象的类型、版本
-2. MetaData: 通用属性，定义 API 对象的元数据信息
-3. Spec: 用户的期望状态，由创建对象的用户端来定义
-4. Status: 对象的实际状态，由对应的控制器收集实际状态并更新
-
-TypeMeta、MetaData 是通用属性，Spec 和 Status 与 API 对象定义对应。
-
-#### TypeMeta
-TypeMeta 只包含了，两个属性
-1. name: API 对象名称
-2. apiVersion: API 对象版本
-```go
-message TypeMeta { 
-  // Kind is a string value representing the REST resource this object represents.
-  // Servers may infer this from the endpoint the client submits requests to.
-  // Cannot be updated.
-  // In CamelCase.
-  // More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
-  // +optional
-  optional string kind = 1;
-
-  // APIVersion defines the versioned schema of this representation of an object.
-  // Servers should convert recognized schemas to the latest internal value, and
-  // may reject unrecognized values.
-  // More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
-  // +optional
-  optional string apiVersion = 2;
-}
+ll staging/src/k8s.io/
+总用量 32
+drwxrwxr-x. 28 tao tao 4096 2月  28 20:32 api
+drwxrwxr-x.  8 tao tao  252 2月  28 20:32 apiextensions-apiserver
+drwxrwxr-x.  5 tao tao  213 2月  28 20:32 apimachinery
+drwxrwxr-x.  5 tao tao  236 2月  28 20:32 apiserver
+drwxrwxr-x. 24 tao tao 4096 2月  28 20:32 client-go
+drwxrwxr-x.  5 tao tao  211 2月  28 20:32 cli-runtime
+drwxrwxr-x. 14 tao tao 4096 2月  28 20:32 cloud-provider
+drwxrwxr-x.  5 tao tao  208 2月  28 20:32 cluster-bootstrap
+drwxrwxr-x.  8 tao tao 4096 2月  28 20:32 code-generator
+drwxrwxr-x. 13 tao tao 4096 2月  28 20:32 component-base
+drwxrwxr-x.  9 tao tao  272 2月  28 20:32 component-helpers
+drwxrwxr-x.  8 tao tao  252 2月  28 20:32 controller-manager
+drwxrwxr-x.  4 tao tao  194 2月  28 20:32 cri-api
+drwxrwxr-x.  4 tao tao  229 2月  28 20:32 csi-translation-lib
+drwxrwxr-x.  7 tao tao  265 2月  28 20:32 dynamic-resource-allocation
+drwxrwxr-x.  6 tao tao  222 2月  28 20:32 kms
+drwxrwxr-x.  6 tao tao  224 2月  28 20:32 kube-aggregator
+drwxrwxr-x.  4 tao tao  197 2月  28 20:32 kube-controller-manager
+drwxrwxr-x.  7 tao tao  236 2月  28 20:32 kubectl
+drwxrwxr-x.  5 tao tao  208 2月  28 20:32 kubelet
+drwxrwxr-x.  4 tao tao  197 2月  28 20:32 kube-proxy
+drwxrwxr-x.  5 tao tao  213 2月  28 20:32 kube-scheduler
+drwxrwxr-x.  7 tao tao  210 2月  28 20:32 legacy-cloud-providers
+drwxrwxr-x.  5 tao tao  206 2月  28 20:32 metrics
+drwxrwxr-x.  3 tao tao 4096 2月  28 20:32 mount-utils
+drwxrwxr-x.  5 tao tao  212 2月  28 20:32 noderesourcetopology-api
+drwxrwxr-x. 10 tao tao 4096 2月  28 20:32 pod-security-admission
+drwxrwxr-x.  7 tao tao  236 2月  28 20:32 sample-apiserver
+drwxrwxr-x.  5 tao tao  232 2月  28 20:32 sample-cli-plugin
+drwxrwxr-x.  7 tao tao 4096 2月  28 20:32 sample-controller
 ```
 
-### ObjectMeta
-ObjectMeta 的定义[github](https://github.com/kubernetes/kubernetes/blob/master/staging/src/k8s.io/apimachinery/pkg/apis/meta/v1/types.go#L111)，比较重要的是以下几个:
+### 2.1 staging
+#### apimachinery
 
-```go
-type ObjectMeta struct {
-	Name string `json:"name,omitempty" protobuf:"bytes,1,opt,name=name"`
-	GenerateName string `json:"generateName,omitempty" protobuf:"bytes,2,opt,name=generateName"`
-	Namespace string `json:"namespace,omitempty" protobuf:"bytes,3,opt,name=namespace"`
-
-	// Deprecated: selfLink is a legacy read-only field that is no longer populated by the system.
-	// +optional
-	SelfLink string `json:"selfLink,omitempty" protobuf:"bytes,4,opt,name=selfLink"`
-
-	// UID is the unique in time and space value for this object. It is typically generated by
-	// the server on successful creation of a resource and is not allowed to change on PUT
-	// operations.
-	UID types.UID `json:"uid,omitempty" protobuf:"bytes,5,opt,name=uid,casttype=k8s.io/kubernetes/pkg/types.UID"`
-
-	// An opaque value that represents the internal version of this object that can
-	// be used by clients to determine when objects have changed. May be used for optimistic
-	// concurrency, change detection, and the watch operation on a resource or set of resources.
-	// Clients must treat these values as opaque and passed unmodified back to the server.
-	// They may only be valid for a particular resource or set of resources.
-	//
-	// Populated by the system.
-	// Read-only.
-	// Value must be treated as opaque by clients and .
-	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#concurrency-control-and-consistency
-	// +optional
-	ResourceVersion string `json:"resourceVersion,omitempty" protobuf:"bytes,6,opt,name=resourceVersion"`
-
-	// A sequence number representing a specific generation of the desired state.
-	// Populated by the system. Read-only.
-	// +optional
-	Generation int64 `json:"generation,omitempty" protobuf:"varint,7,opt,name=generation"`
-
-	// CreationTimestamp is a timestamp representing the server time when this object was
-	// created. It is not guaranteed to be set in happens-before order across separate operations.
-	// Clients may not set this value. It is represented in RFC3339 form and is in UTC.
-	//
-	// Populated by the system.
-	// Read-only.
-	// Null for lists.
-	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-	// +optional
-	CreationTimestamp Time `json:"creationTimestamp,omitempty" protobuf:"bytes,8,opt,name=creationTimestamp"`
-
-	// DeletionTimestamp is RFC 3339 date and time at which this resource will be deleted. This
-	// field is set by the server when a graceful deletion is requested by the user, and is not
-	// directly settable by a client. The resource is expected to be deleted (no longer visible
-	// from resource lists, and not reachable by name) after the time in this field, once the
-	// finalizers list is empty. As long as the finalizers list contains items, deletion is blocked.
-	// Once the deletionTimestamp is set, this value may not be unset or be set further into the
-	// future, although it may be shortened or the resource may be deleted prior to this time.
-	// For example, a user may request that a pod is deleted in 30 seconds. The Kubelet will react
-	// by sending a graceful termination signal to the containers in the pod. After that 30 seconds,
-	// the Kubelet will send a hard termination signal (SIGKILL) to the container and after cleanup,
-	// remove the pod from the API. In the presence of network partitions, this object may still
-	// exist after this timestamp, until an administrator or automated process can determine the
-	// resource is fully terminated.
-	// If not set, graceful deletion of the object has not been requested.
-	//
-	// Populated by the system when a graceful deletion is requested.
-	// Read-only.
-	// More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#metadata
-	// +optional
-	DeletionTimestamp *Time `json:"deletionTimestamp,omitempty" protobuf:"bytes,9,opt,name=deletionTimestamp"`
-
-	// Number of seconds allowed for this object to gracefully terminate before
-	// it will be removed from the system. Only set when deletionTimestamp is also set.
-	// May only be shortened.
-	// Read-only.
-	// +optional
-	DeletionGracePeriodSeconds *int64 `json:"deletionGracePeriodSeconds,omitempty" protobuf:"varint,10,opt,name=deletionGracePeriodSeconds"`
-
-	// Map of string keys and values that can be used to organize and categorize
-	// (scope and select) objects. May match selectors of replication controllers
-	// and services.
-	// More info: http://kubernetes.io/docs/user-guide/labels
-	// +optional
-	Labels map[string]string `json:"labels,omitempty" protobuf:"bytes,11,rep,name=labels"`
-
-	// Annotations is an unstructured key value map stored with a resource that may be
-	// set by external tools to store and retrieve arbitrary metadata. They are not
-	// queryable and should be preserved when modifying objects.
-	// More info: http://kubernetes.io/docs/user-guide/annotations
-	// +optional
-	Annotations map[string]string `json:"annotations,omitempty" protobuf:"bytes,12,rep,name=annotations"`
-
-	// List of objects depended by this object. If ALL objects in the list have
-	// been deleted, this object will be garbage collected. If this object is managed by a controller,
-	// then an entry in this list will point to this controller, with the controller field set to true.
-	// There cannot be more than one managing controller.
-	// +optional
-	// +patchMergeKey=uid
-	// +patchStrategy=merge
-	OwnerReferences []OwnerReference `json:"ownerReferences,omitempty" patchStrategy:"merge" patchMergeKey:"uid" protobuf:"bytes,13,rep,name=ownerReferences"`
-
-	// Must be empty before the object is deleted from the registry. Each entry
-	// is an identifier for the responsible component that will remove the entry
-	// from the list. If the deletionTimestamp of the object is non-nil, entries
-	// in this list can only be removed.
-	// Finalizers may be processed and removed in any order.  Order is NOT enforced
-	// because it introduces significant risk of stuck finalizers.
-	// finalizers is a shared field, any actor with permission can reorder it.
-	// If the finalizer list is processed in order, then this can lead to a situation
-	// in which the component responsible for the first finalizer in the list is
-	// waiting for a signal (field value, external system, or other) produced by a
-	// component responsible for a finalizer later in the list, resulting in a deadlock.
-	// Without enforced ordering finalizers are free to order amongst themselves and
-	// are not vulnerable to ordering changes in the list.
-	// +optional
-	// +patchStrategy=merge
-	Finalizers []string `json:"finalizers,omitempty" patchStrategy:"merge" protobuf:"bytes,14,rep,name=finalizers"`
-
-	// Tombstone: ClusterName was a legacy field that was always cleared by
-	// the system and never used.
-	// ClusterName string `json:"clusterName,omitempty" protobuf:"bytes,15,opt,name=clusterName"`
-
-	// ManagedFields maps workflow-id and version to the set of fields
-	// that are managed by that workflow. This is mostly for internal
-	// housekeeping, and users typically shouldn't need to set or
-	// understand this field. A workflow can be the user's name, a
-	// controller's name, or the name of a specific apply path like
-	// "ci-cd". The set of fields is always in the version that the
-	// workflow used when modifying the object.
-	//
-	// +optional
-	ManagedFields []ManagedFieldsEntry `json:"managedFields,omitempty" protobuf:"bytes,17,rep,name=managedFields"`
-}
-```
-1. Name: API 对象的实例名称
-2. Namespace: 实例存放的 namespace
-3. Labels: 实例的标签，通过 label Selector 可以实现对实例的筛选
-4. Annotations: 携带 key-value 格式的内部信息
-5. Finalizer: Finalizer 本质上是一个资源锁，Kubernetes 在接收某对象的删除请求时，会检查 Finalizer 是否为空，如果不为空则只对其做逻辑删除，即只会更新对象中的 metadata.deletionTimestamp 字段。
-4. ResourceVersion: ResourceVersion 可以被看作一种乐观锁，每个对象在任意时刻都有其ResourceVersion，当 Kubernetes 对象被客户端读取以后，ResourceVersion 信息也被一并读取。此机制确保了分布式系统中任意多线程能够无锁并发访问对象，极大提升了系统的整体效率
