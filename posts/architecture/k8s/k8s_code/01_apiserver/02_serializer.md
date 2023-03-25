@@ -6,7 +6,7 @@ lastmod: 2023-03-02T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "Pod 使用进阶"
+description: "kube-apiserver 序列化协议实现"
 featuredImage: 
 
 tags: ["k8s"]
