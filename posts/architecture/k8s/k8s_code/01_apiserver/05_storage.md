@@ -122,8 +122,8 @@ kubernetes 整个数据访问层组成总结如下:
 ## 2. 后端存储
 kubernetes 为后端存储抽象出了三个接口:
 1. Versioner
-2. Interface
-3. Preconditions
+2. Preconditions
+3. Interface
 
 ### 2.1 Versioner
 从 etcd 中读取到的数据是带有版本的，通过这个版本我们执行类似 CAS 的操作，避免多个客户端的并发请求产生冲突。Versioner 接口抽象了，如何将 etcd 中的 Version 信息更新到 API 对象中。
@@ -174,7 +174,56 @@ func (a APIObjectVersioner) UpdateList(obj runtime.Object, resourceVersion uint6
 }
 ```
 
-### 2.2 Interface
+### 2.2 Preconditions
+Preconditions 表示在执行操作(更新、删除等)之前，必须满足的先决条件。
+
+```go
+type Preconditions struct {
+	// Specifies the target UID.
+	// +optional
+	UID *types.UID `json:"uid,omitempty"`
+	// Specifies the target ResourceVersion
+	// +optional
+	ResourceVersion *string `json:"resourceVersion,omitempty"`
+}
+
+func NewUIDPreconditions(uid string) *Preconditions {
+	u := types.UID(uid)
+	return &Preconditions{UID: &u}
+}
+
+// 使用 Preconditions 中的 UUID/ResourceVersion，与 obj 中的 对比，确保 obj 未发生变化
+func (p *Preconditions) Check(key string, obj runtime.Object) error {
+	if p == nil {
+		return nil
+	}
+	objMeta, err := meta.Accessor(obj)
+	if err != nil {
+		return NewInternalErrorf(
+			"can't enforce preconditions %v on un-introspectable object %v, got error: %v",
+			*p,
+			obj,
+			err)
+	}
+	if p.UID != nil && *p.UID != objMeta.GetUID() {
+		err := fmt.Sprintf(
+			"Precondition failed: UID in precondition: %v, UID in object meta: %v",
+			*p.UID,
+			objMeta.GetUID())
+		return NewInvalidObjError(key, err)
+	}
+	if p.ResourceVersion != nil && *p.ResourceVersion != objMeta.GetResourceVersion() {
+		err := fmt.Sprintf(
+			"Precondition failed: ResourceVersion in precondition: %v, ResourceVersion in object meta: %v",
+			*p.ResourceVersion,
+			objMeta.GetResourceVersion())
+		return NewInvalidObjError(key, err)
+	}
+	return nil
+}
+```
+
+### 2.3 Interface
 Interface 为对象序列化和反序列化提供了一个通用接口并隐藏所有与存储相关的操作。
 
 ```go
@@ -198,13 +247,13 @@ type Interface interface {
 
 Interface 提供的接口还是比较明了的，接下我们直接来看  etcd3 的实现
 
-## 3. etcd3 的存储实现
+## 3. etcd3 的成员变量
 #### 3.1 etcd3 store 定义
 etcd3 的存储实现核心是 [store 结构体](https://github.com/kubernetes/apiserver/blob/master/pkg/storage/etcd3/store.go#L75)，store 的定义中:
 1. client: etcd3 的客户端
 2. codec: 前面的 Codec 用于完成数据的编解码
 3. versioner: etcd3 就是 APIObjectVersioner
-4. transformer: 数据保存和数据读取前后的加解密
+4. transformer: 从底层存储区读取或写入值之前对值进行转换
 5. pathPrefix: 保存到 etc 中 key 的根路径
 6. groupResource: 数据的 group 和 resource
 7. watcher: 实现了 watch.Interface 接口，与 Watch 方法相关
@@ -228,9 +277,24 @@ type store struct {
 }
 ```
 
-在介绍 store 实现的方法之前，我们先来看看 watcher 和 leaseManager 的实现。
+在介绍 store 实现的方法之前，我们先来看看 Transformer 、watcher 和 leaseManager 的实现。
 
-### 3.2 leaseManager
+
+### 3.2 Transformer
+Transformer允许在从底层存储区读取或写入值之前对值进行转换。Transformer 的接口定义如下:
+
+```go
+
+type Transformer interface {
+	// TransformFromStorage 对从底层存储获取的数据，进行转换
+	// 如果 stable 返回 true 表示表示当前写入操作已经发布，数据已稳定，否则当前获取的数据在 etcd 上未达成共识
+	TransformFromStorage(ctx context.Context, data []byte, dataCtx Context) (out []byte, stale bool, err error)
+	// TransformToStorage 将提供的数据转换成，底层存储需要的数据
+	TransformToStorage(ctx context.Context, data []byte, dataCtx Context) (out []byte, err error)
+}
+```
+
+### 3.3 leaseManager
 leaseManager 的定义如下:
 
 ```go
@@ -319,7 +383,7 @@ func (l *leaseManager) getReuseDurationSecondsLocked(ttl int64) int64 {
 
 新的请求 ttl 只要落在 A 和 B 之间说明，ttl 在租约过期之前到达但同时与过期时间比较接近，可以认为复用当前租约影响较小，可以复用。租约的可重用时间在 getReuseDurationSecondsLocked 方法中计算。
 
-### 3.3 watcher
+### 3.4 watcher
 watcher 定义如下:
 
 ```go
@@ -519,233 +583,5 @@ func (wc *watchChan) startWatching(watchClosedCh chan struct{}) {
 	// If this watch chan is broken and context isn't cancelled, other goroutines will still hang.
 	// We should notify the main thread that this goroutine has exited.
 	close(watchClosedCh)
-}
-```
-
-### 3.3 etcd3 实现
-有了上面的基础，我们就可以阅读 etcd3 的实现了。这里我们重点关注 etcd3 实现的 Get、Watch、GuaranteedUpdate 三个方法。
-
-#### Get
-
-```go
-// Get implements storage.Interface.Get.
-func (s *store) Get(ctx context.Context, key string, opts storage.GetOptions, out runtime.Object) error {
-	// 1. key 标准化
-	preparedKey, err := s.prepareKey(key)
-	if err != nil {
-		return err
-	}
-	startTime := time.Now()
-	getResp, err := s.client.KV.Get(ctx, preparedKey)
-	metrics.RecordEtcdRequestLatency("get", s.groupResourceString, startTime)
-	if err != nil {
-		return err
-	}
-	// 2. 当提供的 minimumResourceVersion 大于存储中可用的最近的actualRevision时，validateminumresourceversion返回“too large resource”版本错误。
-	if err = s.validateMinimumResourceVersion(opts.ResourceVersion, uint64(getResp.Header.Revision)); err != nil {
-		return err
-	}
-
-	if len(getResp.Kvs) == 0 {
-		if opts.IgnoreNotFound {
-			return runtime.SetZeroValue(out)
-		}
-		return storage.NewKeyNotFoundError(preparedKey, 0)
-	}
-	kv := getResp.Kvs[0]
-
-	data, _, err := s.transformer.TransformFromStorage(ctx, kv.Value, authenticatedDataString(preparedKey))
-	if err != nil {
-		return storage.NewInternalError(err.Error())
-	}
-	// 3. 解码数据
-	err = decode(s.codec, s.versioner, data, out, kv.ModRevision)
-	if err != nil {
-		recordDecodeError(s.groupResourceString, preparedKey)
-		return err
-	}
-	return nil
-}
-```
-
-#### GuaranteedUpdate
-
-```go
-// GuaranteedUpdate implements storage.Interface.GuaranteedUpdate.
-func (s *store) GuaranteedUpdate(
-	ctx context.Context, key string, destination runtime.Object, ignoreNotFound bool,
-	preconditions *storage.Preconditions, tryUpdate storage.UpdateFunc, cachedExistingObject runtime.Object) error {
-	// 1. key 标准化
-	preparedKey, err := s.prepareKey(key)
-	if err != nil {
-		return err
-	}
-	ctx, span := tracing.Start(ctx, "GuaranteedUpdate etcd3",
-		attribute.String("audit-id", audit.GetAuditIDTruncated(ctx)),
-		attribute.String("key", key),
-		attribute.String("type", getTypeName(destination)),
-		attribute.String("resource", s.groupResourceString))
-	defer span.End(500 * time.Millisecond)
-
-	v, err := conversion.EnforcePtr(destination)
-	if err != nil {
-		return fmt.Errorf("unable to convert output object to pointer: %v", err)
-	}
-	// 2. 解析 key 当前的数据，返回的是 objState 对象
-	// objState 包含了 decode 后的结果数据，解析前的原始数据，etcd 返回的 metadata 数据
-	getCurrentState := func() (*objState, error) {
-		startTime := time.Now()
-		getResp, err := s.client.KV.Get(ctx, preparedKey)
-		metrics.RecordEtcdRequestLatency("get", s.groupResourceString, startTime)
-		if err != nil {
-			return nil, err
-		}
-		return s.getState(ctx, getResp, preparedKey, v, ignoreNotFound)
-	}
-
-	var origState *objState
-	var origStateIsCurrent bool
-	// 从传入的缓存对象中，解析出 objState
-	if cachedExistingObject != nil {
-		origState, err = s.getStateFromObject(cachedExistingObject)
-	} else {
-		origState, err = getCurrentState()
-		origStateIsCurrent = true
-	}
-	if err != nil {
-		return err
-	}
-	span.AddEvent("initial value restored")
-
-	transformContext := authenticatedDataString(preparedKey)
-	for {
-		if err := preconditions.Check(preparedKey, origState.obj); err != nil {
-			// If our data is already up to date, return the error
-			if origStateIsCurrent {
-				return err
-			}
-
-			// It's possible we were working with stale data
-			// Actually fetch
-			origState, err = getCurrentState()
-			if err != nil {
-				return err
-			}
-			origStateIsCurrent = true
-			// Retry
-			continue
-		}
-
-		ret, ttl, err := s.updateState(origState, tryUpdate)
-		if err != nil {
-			// If our data is already up to date, return the error
-			if origStateIsCurrent {
-				return err
-			}
-
-			// It's possible we were working with stale data
-			// Remember the revision of the potentially stale data and the resulting update error
-			cachedRev := origState.rev
-			cachedUpdateErr := err
-
-			// Actually fetch
-			origState, err = getCurrentState()
-			if err != nil {
-				return err
-			}
-			origStateIsCurrent = true
-
-			// it turns out our cached data was not stale, return the error
-			if cachedRev == origState.rev {
-				return cachedUpdateErr
-			}
-
-			// Retry
-			continue
-		}
-
-		span.AddEvent("About to Encode")
-		data, err := runtime.Encode(s.codec, ret)
-		if err != nil {
-			span.AddEvent("Encode failed", attribute.Int("len", len(data)), attribute.String("err", err.Error()))
-			return err
-		}
-		span.AddEvent("Encode succeeded", attribute.Int("len", len(data)))
-		if !origState.stale && bytes.Equal(data, origState.data) {
-			// if we skipped the original Get in this loop, we must refresh from
-			// etcd in order to be sure the data in the store is equivalent to
-			// our desired serialization
-			if !origStateIsCurrent {
-				origState, err = getCurrentState()
-				if err != nil {
-					return err
-				}
-				origStateIsCurrent = true
-				if !bytes.Equal(data, origState.data) {
-					// original data changed, restart loop
-					continue
-				}
-			}
-			// recheck that the data from etcd is not stale before short-circuiting a write
-			if !origState.stale {
-				err = decode(s.codec, s.versioner, origState.data, destination, origState.rev)
-				if err != nil {
-					recordDecodeError(s.groupResourceString, preparedKey)
-					return err
-				}
-				return nil
-			}
-		}
-
-		newData, err := s.transformer.TransformToStorage(ctx, data, transformContext)
-		if err != nil {
-			span.AddEvent("TransformToStorage failed", attribute.String("err", err.Error()))
-			return storage.NewInternalError(err.Error())
-		}
-		span.AddEvent("TransformToStorage succeeded")
-
-		opts, err := s.ttlOpts(ctx, int64(ttl))
-		if err != nil {
-			return err
-		}
-		span.AddEvent("Transaction prepared")
-
-		startTime := time.Now()
-		txnResp, err := s.client.KV.Txn(ctx).If(
-			clientv3.Compare(clientv3.ModRevision(preparedKey), "=", origState.rev),
-		).Then(
-			clientv3.OpPut(preparedKey, string(newData), opts...),
-		).Else(
-			clientv3.OpGet(preparedKey),
-		).Commit()
-		metrics.RecordEtcdRequestLatency("update", s.groupResourceString, startTime)
-		if err != nil {
-			span.AddEvent("Txn call failed", attribute.String("err", err.Error()))
-			return err
-		}
-		span.AddEvent("Txn call completed")
-		span.AddEvent("Transaction committed")
-		if !txnResp.Succeeded {
-			getResp := (*clientv3.GetResponse)(txnResp.Responses[0].GetResponseRange())
-			klog.V(4).Infof("GuaranteedUpdate of %s failed because of a conflict, going to retry", preparedKey)
-			origState, err = s.getState(ctx, getResp, preparedKey, v, ignoreNotFound)
-			if err != nil {
-				return err
-			}
-			span.AddEvent("Retry value restored")
-			origStateIsCurrent = true
-			continue
-		}
-		putResp := txnResp.Responses[0].GetResponsePut()
-
-		err = decode(s.codec, s.versioner, data, destination, putResp.Header.Revision)
-		if err != nil {
-			span.AddEvent("decode failed", attribute.Int("len", len(data)), attribute.String("err", err.Error()))
-			recordDecodeError(s.groupResourceString, preparedKey)
-			return err
-		}
-		span.AddEvent("decode succeeded", attribute.Int("len", len(data)))
-		return nil
-	}
 }
 ```
