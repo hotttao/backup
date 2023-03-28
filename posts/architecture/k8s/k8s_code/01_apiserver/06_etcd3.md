@@ -311,3 +311,78 @@ func (s *store) Watch(ctx context.Context, key string, opts storage.ListOptions)
 	return s.watcher.Watch(ctx, preparedKey, int64(rev), opts.Recursive, opts.ProgressNotify, s.transformer, opts.Predicate)
 }
 ```
+
+### 1.3 Create 方法
+
+```go
+func (s *store) Create(ctx context.Context, key string, obj, out runtime.Object, ttl uint64) error {
+	preparedKey, err := s.prepareKey(key)
+	if err != nil {
+		return err
+	}
+	ctx, span := tracing.Start(ctx, "Create etcd3",
+		attribute.String("audit-id", audit.GetAuditIDTruncated(ctx)),
+		attribute.String("key", key),
+		attribute.String("type", getTypeName(obj)),
+		attribute.String("resource", s.groupResourceString),
+	)
+	defer span.End(500 * time.Millisecond)
+	// 1. 设置元数据
+	if version, err := s.versioner.ObjectResourceVersion(obj); err == nil && version != 0 {
+		return errors.New("resourceVersion should not be set on objects to be created")
+	}
+	if err := s.versioner.PrepareObjectForStorage(obj); err != nil {
+		return fmt.Errorf("PrepareObjectForStorage failed: %v", err)
+	}
+	span.AddEvent("About to Encode")
+	// 2. 编码数据数据
+	data, err := runtime.Encode(s.codec, obj)
+	if err != nil {
+		span.AddEvent("Encode failed", attribute.Int("len", len(data)), attribute.String("err", err.Error()))
+		return err
+	}
+	span.AddEvent("Encode succeeded", attribute.Int("len", len(data)))
+
+	opts, err := s.ttlOpts(ctx, int64(ttl))
+	if err != nil {
+		return err
+	}
+	// 3. 数据转换
+	newData, err := s.transformer.TransformToStorage(ctx, data, authenticatedDataString(preparedKey))
+	if err != nil {
+		span.AddEvent("TransformToStorage failed", attribute.String("err", err.Error()))
+		return storage.NewInternalError(err.Error())
+	}
+	span.AddEvent("TransformToStorage succeeded")
+
+	startTime := time.Now()
+	// 4. 存储到 etcd
+	txnResp, err := s.client.KV.Txn(ctx).If(
+		notFound(preparedKey),
+	).Then(
+		clientv3.OpPut(preparedKey, string(newData), opts...),
+	).Commit()
+	metrics.RecordEtcdRequestLatency("create", s.groupResourceString, startTime)
+	if err != nil {
+		span.AddEvent("Txn call failed", attribute.String("err", err.Error()))
+		return err
+	}
+	span.AddEvent("Txn call succeeded")
+
+	if !txnResp.Succeeded {
+		return storage.NewKeyExistsError(preparedKey, 0)
+	}
+	// 5. 成功时，填充 out 
+	if out != nil {
+		putResp := txnResp.Responses[0].GetResponsePut()
+		err = decode(s.codec, s.versioner, data, out, putResp.Header.Revision)
+		if err != nil {
+			span.AddEvent("decode failed", attribute.Int("len", len(data)), attribute.String("err", err.Error()))
+			recordDecodeError(s.groupResourceString, preparedKey)
+			return err
+		}
+		span.AddEvent("decode succeeded", attribute.Int("len", len(data)))
+	}
+	return nil
+}
+```
