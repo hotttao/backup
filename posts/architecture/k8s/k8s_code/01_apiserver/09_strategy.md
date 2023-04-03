@@ -187,3 +187,10 @@ func (daemonSetStatusStrategy) PrepareForUpdate(ctx context.Context, obj, old ru
 	newDaemonSet.Spec = oldDaemonSet.Spec
 }
 ```
+
+## 2. API 对象 REST 实现定义位置
+|代码位置|作用|
+|:---|:---|
+|kubernetes/pkg/registry|负责k8s内置的资源对象存储逻辑实现|
+|kubenetes/staging/src/k8s.io/apiextensions-apiserver/pkg/registry|负责crd和cr资源对象存储逻辑实现|
+|kubenetes/staging/src/k8s.io/kube-aggregator/pkg/registry|负责APIService资源对象的存储和实现|
