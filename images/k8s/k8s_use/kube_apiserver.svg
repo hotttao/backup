@@ -1,0 +1,137 @@
+@startuml
+namespace apiserver {
+    class APIAggregator << (S,Aquamarine) >> {
+        - delegateHandler http.Handler
+        - proxyCurrentCertKeyContent certKeyFunc
+        - proxyTransport *http.Transport
+        - proxyHandlers <font color=blue>map</font>[string]*proxyHandler
+        - handledGroups sets.String
+        - lister v1.APIServiceLister
+        - serviceResolver ServiceResolver
+        - openAPIConfig *common.Config
+        - openAPIV3Config *common.Config
+        - openAPIAggregationController *openapi.AggregationController
+        - openAPIV3AggregationController *openapiv3.AggregationController
+        - discoveryAggregationController DiscoveryAggregationController
+        - egressSelector *egressselector.EgressSelector
+        - rejectForwardingRedirects bool
+
+        + GenericAPIServer *server.GenericAPIServer
+        + APIRegistrationInformers externalversions.SharedInformerFactory
+
+        + PrepareRun() (preparedAPIAggregator, error)
+        + AddAPIService(apiService *v1.APIService) error
+        + RemoveAPIService(apiServiceName string) 
+
+    }
+
+    class preparedAPIAggregator << (S,Aquamarine) >> {
+        - runnable runnable
+
+        + Run(stopCh <font color=blue>chan</font> <font color=blue>struct</font>{}) error
+
+    }
+
+
+    interface runnable  {
+        + Run(stopCh <font color=blue>chan</font> <font color=blue>struct</font>{}) error
+
+    }
+
+
+    class GenericAPIServer << (S,Aquamarine) >> {
+
+        + LoopbackClientConfig *rest.Config
+        + ShutdownTimeout time.Duration
+        + SecureServingInfo *SecureServingInfo
+        + ExternalAddress string
+        + Serializer runtime.NegotiatedSerializer
+        + Handler *APIServerHandler
+        + UnprotectedDebugSocket *routes.DebugSocket
+        + DiscoveryGroupManager discovery.GroupManager
+        + AggregatedDiscoveryGroupManager aggregated.ResourceManager
+        + AggregatedLegacyDiscoveryGroupManager aggregated.ResourceManager
+        + OpenAPIVersionedService *handler.OpenAPIService
+        + OpenAPIV3VersionedService *handler3.OpenAPIService
+        + StaticOpenAPISpec *spec.Swagger
+        + AuditBackend audit.Backend
+        + Authorizer authorizer.Authorizer
+        + EquivalentResourceRegistry runtime.EquivalentResourceRegistry
+        + NonLongRunningRequestWaitGroup *waitgroup.SafeWaitGroup
+        + WatchRequestWaitGroup *waitgroup.RateLimitedSafeWaitGroup
+        + ShutdownDelayDuration time.Duration
+        + APIServerID string
+        + StorageVersionManager storageversion.Manager
+        + Version *version.Info
+        + ShutdownSendRetryAfter bool
+        + ShutdownWatchTerminationGracePeriod time.Duration
+
+        - installAPIResources(apiPrefix string, apiGroupInfo *APIGroupInfo, openAPIModels *spec.Swagger) error
+        - getAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupVersion schema.GroupVersion, apiPrefix string) (*endpoints.APIGroupVersion, error)
+        - newAPIGroupVersion(apiGroupInfo *APIGroupInfo, groupVersion schema.GroupVersion) *endpoints.APIGroupVersion
+        - getOpenAPIModels(apiPrefix string, apiGroupInfos ...*APIGroupInfo) (*spec.Swagger, error)
+
+        + UnprotectedHandler() http.Handler
+        + PostStartHooks() <font color=blue>map</font>[string]postStartHookEntry
+        + PreShutdownHooks() <font color=blue>map</font>[string]preShutdownHookEntry
+        + HealthzChecks() []healthz.HealthChecker
+        + ListedPaths() []string
+        + NextDelegate() DelegationTarget
+        + RegisterMuxAndDiscoveryCompleteSignal(signalName string, signal <font color=blue>chan</font> <font color=blue>struct</font>{}) error
+        + MuxAndDiscoveryCompleteSignals() <font color=blue>map</font>[string]<font color=blue>chan</font> <font color=blue>struct</font>{}
+        + RegisterDestroyFunc(destroyFn <font color=blue>func</font>() ) 
+        + Destroy() 
+        + PrepareRun() preparedGenericAPIServer
+        + InstallLegacyAPIGroup(apiPrefix string, apiGroupInfo *APIGroupInfo) error
+        + InstallAPIGroups(apiGroupInfos ...*APIGroupInfo) error
+        + InstallAPIGroup(apiGroupInfo *APIGroupInfo) error
+
+    }
+    class emptyDelegate << (S,Aquamarine) >> {
+        - handler http.Handler
+
+        + UnprotectedHandler() http.Handler
+        + PostStartHooks() <font color=blue>map</font>[string]postStartHookEntry
+        + PreShutdownHooks() <font color=blue>map</font>[string]preShutdownHookEntry
+        + HealthzChecks() []healthz.HealthChecker
+        + ListedPaths() []string
+        + NextDelegate() DelegationTarget
+        + PrepareRun() preparedGenericAPIServer
+        + MuxAndDiscoveryCompleteSignals() <font color=blue>map</font>[string]<font color=blue>chan</font> <font color=blue>struct</font>{}
+        + Destroy() 
+
+    }
+    class preparedGenericAPIServer << (S,Aquamarine) >> {
+        + Run(stopCh <font color=blue>chan</font> <font color=blue>struct</font>{}) error
+        + NonBlockingRun(stopCh <font color=blue>chan</font> <font color=blue>struct</font>{}, shutdownTimeout time.Duration) (<font color=blue>chan</font> <font color=blue>struct</font>{}, <font color=blue>chan</font> <font color=blue>struct</font>{}, error)
+
+    }
+
+    interface DelegationTarget  {
+        + UnprotectedHandler() http.Handler
+        + PostStartHooks() <font color=blue>map</font>[string]postStartHookEntry
+        + PreShutdownHooks() <font color=blue>map</font>[string]preShutdownHookEntry
+        + HealthzChecks() []healthz.HealthChecker
+        + ListedPaths() []string
+        + NextDelegate() DelegationTarget
+        + PrepareRun() preparedGenericAPIServer
+        + MuxAndDiscoveryCompleteSignals() <font color=blue>map</font>[string]<font color=blue>chan</font> <font color=blue>struct</font>{}
+        + Destroy() 
+
+    }
+
+}
+"apiserver.APIAggregator" *-- "apiserver.preparedAPIAggregator"
+
+"apiserver.APIHandlerManager" <|-- "apiserver.APIAggregator"
+
+"apiserver.runnable" <|-- "apiserver.preparedAPIAggregator"
+
+"apiserver.GenericAPIServer" *-- "apiserver.preparedGenericAPIServer"
+
+"apiserver.DelegationTarget" <|-- "apiserver.GenericAPIServer"
+"apiserver.DelegationTarget" <|-- "apiserver.emptyDelegate"
+"apiserver.runnable" <|-- "apiserver.preparedGenericAPIServer"
+
+"apiserver.preparedAPIAggregator" o-- "apiserver.preparedGenericAPIServer"
+@enduml

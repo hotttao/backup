@@ -747,3 +747,77 @@ Instance.InstallLegacyAPI --> Instance.InstallAPIs  --> GenericAPIServer.Install
 						       |
 					APIInstaller.registerResourceHandlers		                                                    
 ```
+
+registerResourceHandlers 如下两个对象:
+1. ResourceInfo
+2. APIResource
+
+#### ResourceInfo
+```go
+// ResourceInfo 包含了注册资源到存储版本 API 所需的信息。
+type ResourceInfo struct {
+	GroupResource schema.GroupResource
+	EncodingVersion string
+	// 用于计算可解码版本，只能在 InstallREST 注册所有等效版本后使用。
+	EquivalentResourceMapper runtime.EquivalentResourceRegistry
+
+	// DirectlyDecodableVersions 是转换为 REST 存储器所知道如何转换的版本列表。
+	// 即使我们不提供某些版本，它也包含类似于 apiextensions.k8s.io/v1beta1 的项目。
+	DirectlyDecodableVersions []schema.GroupVersion
+}
+
+// EquivalentResourceRegistry 提供一个 EquivalentResourceMapper 接口，并允许注册已知的资源[/子资源] -> 种类（kind）
+type EquivalentResourceRegistry interface {
+	EquivalentResourceMapper
+	// RegisterKindFor注册指定资源[ /子资源]及其预期种类（kind）的存在。
+	RegisterKindFor(resource schema.GroupVersionResource, subresource string, kind schema.GroupVersionKind)
+}
+
+// EquivalentResourceMapper 提供关于与指定资源指向相同基础数据的资源的信息
+type EquivalentResourceMapper interface {
+	// EquivalentResourcesFor 返回一个资源列表，这些资源与 resource 指向相同的基础数据。
+	// 如果指定了 subresource，则只包括具有相同 subresource 的等效资源。
+	// 指定的 resource 可以包含在返回的列表中。
+	EquivalentResourcesFor(resource schema.GroupVersionResource, subresource string) []schema.GroupVersionResource
+	// KindFor 返回指定资源[/subresource]所期望的 kind。
+	// 如果未知，则返回零值。
+	KindFor(resource schema.GroupVersionResource, subresource string) schema.GroupVersionKind
+}
+```
+
+#### APIResource
+
+```go
+// APIResource 指定了一个资源的名称和它是否是命名空间的。
+type APIResource struct {
+	// Name 是资源的复数名称。
+	Name string json:"name" protobuf:"bytes,1,opt,name=name"
+	// SingularName 是资源的单数名称。这允许客户端透明地处理复数和单数。
+	// SingularName 对于报告单个项目的状态更正确，kubectl CLI 接口允许使用单数和复数。
+	SingularName string json:"singularName" protobuf:"bytes,6,opt,name=singularName"
+	// Namespaced 表示资源是否在命名空间中。
+	Namespaced bool json:"namespaced" protobuf:"varint,2,opt,name=namespaced"
+	// Group 是资源的首选组。空表示包含资源列表的组。
+	// 对于子资源，它可能有不同的值，例如：Scale。
+	Group string json:"group,omitempty" protobuf:"bytes,8,opt,name=group"
+	// Version 是资源的首选版本。空表示包含资源列表的版本。
+	// 对于子资源，它可能有不同的值，例如：v1（在核心资源组的 v1beta1 版本内）。
+	Version string json:"version,omitempty" protobuf:"bytes,9,opt,name=version"
+	// Kind 是资源的类型（例如，“Foo”是资源“foo”的类型）。
+	Kind string json:"kind" protobuf:"bytes,3,opt,name=kind"
+	// Verbs 是支持的 Kubernetes 动词列表（包括 get、list、watch、create、
+	// update、patch、delete、deletecollection 和 proxy）。
+	Verbs Verbs json:"verbs" protobuf:"bytes,4,opt,name=verbs"
+	// ShortNames 是建议的资源短名称列表。
+	ShortNames []string json:"shortNames,omitempty" protobuf:"bytes,5,rep,name=shortNames"
+	// Categories 是资源所属的分组资源列表（例如，'all'）。
+	Categories []string json:"categories,omitempty" protobuf:"bytes,7,rep,name=categories"
+	// 存储版本的哈希值，将该资源写入数据存储时会被转换为该版本。
+	// 客户端必须将该值视为不透明。仅对值进行相等比较是有效的。
+	// 这是一个 Alpha 特性，可能会在将来更改或删除。
+	// 只有启用了 StorageVersionHash 功能门卫，apiserver 才会填充该字段。
+	// 即使该字段毕业，它仍将保持可选。
+	// +optional
+	StorageVersionHash string json:"storageVersionHash,omitempty" protobuf:"bytes,10,opt,name=storageVersionHash"
+}
+```
