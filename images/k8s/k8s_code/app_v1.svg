@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="333px" preserveAspectRatio="none" style="width:2095px;height:333px;background:#FFFFFF;" version="1.1" viewBox="0 0 2095 333" width="2095px" zoomAndPan="magnify"><defs/><g><!--MD5=[9a32cd3984fdd08205638aa42968fc5c]
+cluster v1--><g id="cluster_v1"><path d="M8.5,6.532 L25.5,6.532 A3.75,3.75 0 0 1 28,9.032 L35,32.8039 L2085.5,32.8039 A2.5,2.5 0 0 1 2088,35.3039 L2088,324.032 A2.5,2.5 0 0 1 2085.5,326.532 L8.5,326.532 A2.5,2.5 0 0 1 6,324.032 L6,9.032 A2.5,2.5 0 0 1 8.5,6.532 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="6" x2="35" y1="32.8039" y2="32.8039"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="16" x="10" y="24.7719">v1</text></g><!--MD5=[ac79b50e34e10cc1c819af7dc6010770]
+class v1.AppsV1Client--><g id="elem_v1.AppsV1Client"><rect codeLine="2" fill="#F1F1F1" height="60.2719" id="v1.AppsV1Client" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="181" x="808.5" y="248.032"/><ellipse cx="850.5" cy="264.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M850.6875,270.7351 C852.9844,270.7351 854.4375,269.1101 854.4375,267.1101 C854.4375,265.282 853.6094,264.4382 852.4688,263.6414 L851.4531,262.9226 C850.3281,262.1101 849.9063,261.8132 849.9063,260.9539 C849.9063,260.2664 850.3906,259.8601 850.9688,259.8601 C851.7031,259.8601 852.1875,260.2507 852.8906,260.8914 L854.2031,259.3132 C853.2344,258.2976 852.2188,257.7039 850.9531,257.7039 C848.8125,257.7039 847.3594,259.2195 847.3594,261.1414 C847.3594,262.9382 848.2813,263.8445 849.375,264.5945 L850.4688,265.3445 C851.4063,265.9539 851.8594,266.532 851.8594,267.4695 C851.8594,268.1414 851.3906,268.5632 850.6875,268.5632 C849.9844,268.5632 849.2344,268.0476 848.5781,267.2195 L847.0313,268.907 C848.0625,270.0945 849.3594,270.7351 850.6875,270.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89" x="870.5" y="270.136">AppsV1Client</text><line style="stroke:#181818;stroke-width:0.5;" x1="809.5" x2="988.5" y1="280.032" y2="280.032"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="816.5" y="292.6679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="155" x="828.5" y="300.2719">restClient rest.Interface</text></g><!--MD5=[25aa65919514c138d48f5237bbfd6852]
+class v1.AppsV1Interface--><g id="elem_v1.AppsV1Interface"><rect codeLine="13" fill="#F1F1F1" height="40" id="v1.AppsV1Interface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="141" x="882.5" y="137.532"/><ellipse cx="897.5" cy="153.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M893.8594,160.032 L900.6406,160.032 L900.6406,157.9539 L898.4844,157.9539 L898.4844,149.5164 L900.6406,149.5164 L900.6406,147.407 L893.8594,147.407 L893.8594,149.5164 L895.9531,149.5164 L895.9531,157.9539 L893.8594,157.9539 L893.8594,160.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="109" x="911.5" y="159.636">AppsV1Interface</text><line style="stroke:#181818;stroke-width:0.5;" x1="883.5" x2="1022.5" y1="169.532" y2="169.532"/></g><!--MD5=[82a349b0c62055f83aab68307c95a871]
+class v1.ControllerRevisionExpansion--><g id="elem_v1.ControllerRevisionExpansion"><rect codeLine="17" fill="#F1F1F1" height="40" id="v1.ControllerRevisionExpansion" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="222" x="1858" y="37.532"/><ellipse cx="1873" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1869.3594,60.032 L1876.1406,60.032 L1876.1406,57.9539 L1873.9844,57.9539 L1873.9844,49.5164 L1876.1406,49.5164 L1876.1406,47.407 L1869.3594,47.407 L1869.3594,49.5164 L1871.4531,49.5164 L1871.4531,57.9539 L1869.3594,57.9539 L1869.3594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="190" x="1887" y="59.636">ControllerRevisionExpansion</text><line style="stroke:#181818;stroke-width:0.5;" x1="1859" x2="2079" y1="69.532" y2="69.532"/></g><!--MD5=[2c2d71e2adacc4152b41d48378ddd662]
+class v1.ControllerRevisionInterface--><g id="elem_v1.ControllerRevisionInterface"><rect codeLine="19" fill="#F1F1F1" height="40" id="v1.ControllerRevisionInterface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="212" x="1863" y="137.532"/><ellipse cx="1878" cy="153.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1874.3594,160.032 L1881.1406,160.032 L1881.1406,157.9539 L1878.9844,157.9539 L1878.9844,149.5164 L1881.1406,149.5164 L1881.1406,147.407 L1874.3594,147.407 L1874.3594,149.5164 L1876.4531,149.5164 L1876.4531,157.9539 L1874.3594,157.9539 L1874.3594,160.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="180" x="1892" y="159.636">ControllerRevisionInterface</text><line style="stroke:#181818;stroke-width:0.5;" x1="1864" x2="2074" y1="169.532" y2="169.532"/></g><!--MD5=[05e42a44d1b8e299b9507d813b873771]
+class v1.ControllerRevisionsGetter--><g id="elem_v1.ControllerRevisionsGetter"><rect codeLine="31" fill="#F1F1F1" height="40" id="v1.ControllerRevisionsGetter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="201" x="615.5" y="37.532"/><ellipse cx="630.5" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M626.8594,60.032 L633.6406,60.032 L633.6406,57.9539 L631.4844,57.9539 L631.4844,49.5164 L633.6406,49.5164 L633.6406,47.407 L626.8594,47.407 L626.8594,49.5164 L628.9531,49.5164 L628.9531,57.9539 L626.8594,57.9539 L626.8594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="169" x="644.5" y="59.636">ControllerRevisionsGetter</text><line style="stroke:#181818;stroke-width:0.5;" x1="616.5" x2="815.5" y1="69.532" y2="69.532"/></g><!--MD5=[1fe25452e7db1d00761a0fc020cd7422]
+class v1.DaemonSetExpansion--><g id="elem_v1.DaemonSetExpansion"><rect codeLine="35" fill="#F1F1F1" height="40" id="v1.DaemonSetExpansion" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="178" x="1645" y="37.532"/><ellipse cx="1660" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1656.3594,60.032 L1663.1406,60.032 L1663.1406,57.9539 L1660.9844,57.9539 L1660.9844,49.5164 L1663.1406,49.5164 L1663.1406,47.407 L1656.3594,47.407 L1656.3594,49.5164 L1658.4531,49.5164 L1658.4531,57.9539 L1656.3594,57.9539 L1656.3594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="146" x="1674" y="59.636">DaemonSetExpansion</text><line style="stroke:#181818;stroke-width:0.5;" x1="1646" x2="1822" y1="69.532" y2="69.532"/></g><!--MD5=[e4c2e5fa6b1cf95f31aa584c8ddb1f5b]
+class v1.DaemonSetInterface--><g id="elem_v1.DaemonSetInterface"><rect codeLine="37" fill="#F1F1F1" height="40" id="v1.DaemonSetInterface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="168" x="1650" y="137.532"/><ellipse cx="1665" cy="153.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1661.3594,160.032 L1668.1406,160.032 L1668.1406,157.9539 L1665.9844,157.9539 L1665.9844,149.5164 L1668.1406,149.5164 L1668.1406,147.407 L1661.3594,147.407 L1661.3594,149.5164 L1663.4531,149.5164 L1663.4531,157.9539 L1661.3594,157.9539 L1661.3594,160.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="136" x="1679" y="159.636">DaemonSetInterface</text><line style="stroke:#181818;stroke-width:0.5;" x1="1651" x2="1817" y1="169.532" y2="169.532"/></g><!--MD5=[6352d7d202c91f7e7de3ff467af76aa9]
+class v1.DaemonSetsGetter--><g id="elem_v1.DaemonSetsGetter"><rect codeLine="51" fill="#F1F1F1" height="40" id="v1.DaemonSetsGetter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="157" x="1235.5" y="37.532"/><ellipse cx="1250.5" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1246.8594,60.032 L1253.6406,60.032 L1253.6406,57.9539 L1251.4844,57.9539 L1251.4844,49.5164 L1253.6406,49.5164 L1253.6406,47.407 L1246.8594,47.407 L1246.8594,49.5164 L1248.9531,49.5164 L1248.9531,57.9539 L1246.8594,57.9539 L1246.8594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="125" x="1264.5" y="59.636">DaemonSetsGetter</text><line style="stroke:#181818;stroke-width:0.5;" x1="1236.5" x2="1391.5" y1="69.532" y2="69.532"/></g><!--MD5=[ebfa93964f634733cf1e534b72953adc]
+class v1.DeploymentExpansion--><g id="elem_v1.DeploymentExpansion"><rect codeLine="55" fill="#F1F1F1" height="40" id="v1.DeploymentExpansion" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="182" x="1428" y="37.532"/><ellipse cx="1443" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1439.3594,60.032 L1446.1406,60.032 L1446.1406,57.9539 L1443.9844,57.9539 L1443.9844,49.5164 L1446.1406,49.5164 L1446.1406,47.407 L1439.3594,47.407 L1439.3594,49.5164 L1441.4531,49.5164 L1441.4531,57.9539 L1439.3594,57.9539 L1439.3594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="150" x="1457" y="59.636">DeploymentExpansion</text><line style="stroke:#181818;stroke-width:0.5;" x1="1429" x2="1609" y1="69.532" y2="69.532"/></g><!--MD5=[26f56220e395d4e5e8ab3c8fd351594f]
+class v1.DeploymentInterface--><g id="elem_v1.DeploymentInterface"><rect codeLine="57" fill="#F1F1F1" height="40" id="v1.DeploymentInterface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="172" x="1433" y="137.532"/><ellipse cx="1448" cy="153.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1444.3594,160.032 L1451.1406,160.032 L1451.1406,157.9539 L1448.9844,157.9539 L1448.9844,149.5164 L1451.1406,149.5164 L1451.1406,147.407 L1444.3594,147.407 L1444.3594,149.5164 L1446.4531,149.5164 L1446.4531,157.9539 L1444.3594,157.9539 L1444.3594,160.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="140" x="1462" y="159.636">DeploymentInterface</text><line style="stroke:#181818;stroke-width:0.5;" x1="1434" x2="1604" y1="169.532" y2="169.532"/></g><!--MD5=[9733e268ca3c53d04072f81554dbb7fa]
+class v1.DeploymentsGetter--><g id="elem_v1.DeploymentsGetter"><rect codeLine="74" fill="#F1F1F1" height="40" id="v1.DeploymentsGetter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="161" x="851.5" y="37.532"/><ellipse cx="866.5" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M862.8594,60.032 L869.6406,60.032 L869.6406,57.9539 L867.4844,57.9539 L867.4844,49.5164 L869.6406,49.5164 L869.6406,47.407 L862.8594,47.407 L862.8594,49.5164 L864.9531,49.5164 L864.9531,57.9539 L862.8594,57.9539 L862.8594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="129" x="880.5" y="59.636">DeploymentsGetter</text><line style="stroke:#181818;stroke-width:0.5;" x1="852.5" x2="1011.5" y1="69.532" y2="69.532"/></g><!--MD5=[781829c086e4b3e18bcd319cc394572a]
+class v1.ReplicaSetExpansion--><g id="elem_v1.ReplicaSetExpansion"><rect codeLine="78" fill="#F1F1F1" height="40" id="v1.ReplicaSetExpansion" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="171" x="223.5" y="37.532"/><ellipse cx="238.5" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M234.8594,60.032 L241.6406,60.032 L241.6406,57.9539 L239.4844,57.9539 L239.4844,49.5164 L241.6406,49.5164 L241.6406,47.407 L234.8594,47.407 L234.8594,49.5164 L236.9531,49.5164 L236.9531,57.9539 L234.8594,57.9539 L234.8594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="139" x="252.5" y="59.636">ReplicaSetExpansion</text><line style="stroke:#181818;stroke-width:0.5;" x1="224.5" x2="393.5" y1="69.532" y2="69.532"/></g><!--MD5=[08a76eb9441fb1e29e49406b7604eae3]
+class v1.ReplicaSetInterface--><g id="elem_v1.ReplicaSetInterface"><rect codeLine="80" fill="#F1F1F1" height="40" id="v1.ReplicaSetInterface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="161" x="228.5" y="137.532"/><ellipse cx="243.5" cy="153.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M239.8594,160.032 L246.6406,160.032 L246.6406,157.9539 L244.4844,157.9539 L244.4844,149.5164 L246.6406,149.5164 L246.6406,147.407 L239.8594,147.407 L239.8594,149.5164 L241.9531,149.5164 L241.9531,157.9539 L239.8594,157.9539 L239.8594,160.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="129" x="257.5" y="159.636">ReplicaSetInterface</text><line style="stroke:#181818;stroke-width:0.5;" x1="229.5" x2="388.5" y1="169.532" y2="169.532"/></g><!--MD5=[d3b7f6dae650d0c12fc1049394f13f69]
+class v1.ReplicaSetsGetter--><g id="elem_v1.ReplicaSetsGetter"><rect codeLine="97" fill="#F1F1F1" height="40" id="v1.ReplicaSetsGetter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="150" x="430" y="37.532"/><ellipse cx="445" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M441.3594,60.032 L448.1406,60.032 L448.1406,57.9539 L445.9844,57.9539 L445.9844,49.5164 L448.1406,49.5164 L448.1406,47.407 L441.3594,47.407 L441.3594,49.5164 L443.4531,49.5164 L443.4531,57.9539 L441.3594,57.9539 L441.3594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="118" x="459" y="59.636">ReplicaSetsGetter</text><line style="stroke:#181818;stroke-width:0.5;" x1="431" x2="579" y1="69.532" y2="69.532"/></g><!--MD5=[839b69bb3946443e73129eddf9973dac]
+class v1.StatefulSetExpansion--><g id="elem_v1.StatefulSetExpansion"><rect codeLine="101" fill="#F1F1F1" height="40" id="v1.StatefulSetExpansion" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="174" x="14" y="37.532"/><ellipse cx="29" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M25.3594,60.032 L32.1406,60.032 L32.1406,57.9539 L29.9844,57.9539 L29.9844,49.5164 L32.1406,49.5164 L32.1406,47.407 L25.3594,47.407 L25.3594,49.5164 L27.4531,49.5164 L27.4531,57.9539 L25.3594,57.9539 L25.3594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="142" x="43" y="59.636">StatefulSetExpansion</text><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="187" y1="69.532" y2="69.532"/></g><!--MD5=[b02d37ba19ce9f05ca500329259cd990]
+class v1.StatefulSetInterface--><g id="elem_v1.StatefulSetInterface"><rect codeLine="103" fill="#F1F1F1" height="40" id="v1.StatefulSetInterface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="164" x="19" y="137.532"/><ellipse cx="34" cy="153.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M30.3594,160.032 L37.1406,160.032 L37.1406,157.9539 L34.9844,157.9539 L34.9844,149.5164 L37.1406,149.5164 L37.1406,147.407 L30.3594,147.407 L30.3594,149.5164 L32.4531,149.5164 L32.4531,157.9539 L30.3594,157.9539 L30.3594,160.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="132" x="48" y="159.636">StatefulSetInterface</text><line style="stroke:#181818;stroke-width:0.5;" x1="20" x2="182" y1="169.532" y2="169.532"/></g><!--MD5=[1b4ac52b4ce7670931af20885e48f857]
+class v1.StatefulSetsGetter--><g id="elem_v1.StatefulSetsGetter"><rect codeLine="120" fill="#F1F1F1" height="40" id="v1.StatefulSetsGetter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="153" x="1047.5" y="37.532"/><ellipse cx="1062.5" cy="53.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1058.8594,60.032 L1065.6406,60.032 L1065.6406,57.9539 L1063.4844,57.9539 L1063.4844,49.5164 L1065.6406,49.5164 L1065.6406,47.407 L1058.8594,47.407 L1058.8594,49.5164 L1060.9531,49.5164 L1060.9531,57.9539 L1058.8594,57.9539 L1058.8594,60.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="121" x="1076.5" y="59.636">StatefulSetsGetter</text><line style="stroke:#181818;stroke-width:0.5;" x1="1048.5" x2="1199.5" y1="69.532" y2="69.532"/></g><!--MD5=[110331a0ac6a5d8ec5641d9d665c31e4]
+class v1.controllerRevisions--><g id="elem_v1.controllerRevisions"><rect codeLine="124" fill="#F1F1F1" height="80.5438" id="v1.controllerRevisions" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="158" x="1890" y="237.532"/><ellipse cx="1905" cy="253.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1905.1875,260.2351 C1907.4844,260.2351 1908.9375,258.6101 1908.9375,256.6101 C1908.9375,254.782 1908.1094,253.9382 1906.9688,253.1414 L1905.9531,252.4226 C1904.8281,251.6101 1904.4063,251.3132 1904.4063,250.4539 C1904.4063,249.7664 1904.8906,249.3601 1905.4688,249.3601 C1906.2031,249.3601 1906.6875,249.7507 1907.3906,250.3914 L1908.7031,248.8132 C1907.7344,247.7976 1906.7188,247.2039 1905.4531,247.2039 C1903.3125,247.2039 1901.8594,248.7195 1901.8594,250.6414 C1901.8594,252.4382 1902.7813,253.3445 1903.875,254.0945 L1904.9688,254.8445 C1905.9063,255.4539 1906.3594,256.032 1906.3594,256.9695 C1906.3594,257.6414 1905.8906,258.0632 1905.1875,258.0632 C1904.4844,258.0632 1903.7344,257.5476 1903.0781,256.7195 L1901.5313,258.407 C1902.5625,259.5945 1903.8594,260.2351 1905.1875,260.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="126" x="1919" y="259.636">controllerRevisions</text><line style="stroke:#181818;stroke-width:0.5;" x1="1891" x2="2047" y1="269.532" y2="269.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1898" y="282.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128" x="1910" y="289.7719">client rest.Interface</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1898" y="302.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="1910" y="310.0438">ns string</text></g><!--MD5=[805b2a054bc35da94d4877bb8b08b3ca]
+class v1.daemonSets--><g id="elem_v1.daemonSets"><rect codeLine="139" fill="#F1F1F1" height="80.5438" id="v1.daemonSets" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="154" x="1657" y="237.532"/><ellipse cx="1689.55" cy="253.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1689.7375,260.2351 C1692.0344,260.2351 1693.4875,258.6101 1693.4875,256.6101 C1693.4875,254.782 1692.6594,253.9382 1691.5188,253.1414 L1690.5031,252.4226 C1689.3781,251.6101 1688.9563,251.3132 1688.9563,250.4539 C1688.9563,249.7664 1689.4406,249.3601 1690.0188,249.3601 C1690.7531,249.3601 1691.2375,249.7507 1691.9406,250.3914 L1693.2531,248.8132 C1692.2844,247.7976 1691.2688,247.2039 1690.0031,247.2039 C1687.8625,247.2039 1686.4094,248.7195 1686.4094,250.6414 C1686.4094,252.4382 1687.3313,253.3445 1688.425,254.0945 L1689.5188,254.8445 C1690.4563,255.4539 1690.9094,256.032 1690.9094,256.9695 C1690.9094,257.6414 1690.4406,258.0632 1689.7375,258.0632 C1689.0344,258.0632 1688.2844,257.5476 1687.6281,256.7195 L1686.0813,258.407 C1687.1125,259.5945 1688.4094,260.2351 1689.7375,260.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="1707.45" y="259.636">daemonSets</text><line style="stroke:#181818;stroke-width:0.5;" x1="1658" x2="1810" y1="269.532" y2="269.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1665" y="282.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128" x="1677" y="289.7719">client rest.Interface</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1665" y="302.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="1677" y="310.0438">ns string</text></g><!--MD5=[42b4dd137dc625be031528d4f0b5bc69]
+class v1.deployments--><g id="elem_v1.deployments"><rect codeLine="156" fill="#F1F1F1" height="80.5438" id="v1.deployments" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="154" x="1442" y="237.532"/><ellipse cx="1472.75" cy="253.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1472.9375,260.2351 C1475.2344,260.2351 1476.6875,258.6101 1476.6875,256.6101 C1476.6875,254.782 1475.8594,253.9382 1474.7188,253.1414 L1473.7031,252.4226 C1472.5781,251.6101 1472.1563,251.3132 1472.1563,250.4539 C1472.1563,249.7664 1472.6406,249.3601 1473.2188,249.3601 C1473.9531,249.3601 1474.4375,249.7507 1475.1406,250.3914 L1476.4531,248.8132 C1475.4844,247.7976 1474.4688,247.2039 1473.2031,247.2039 C1471.0625,247.2039 1469.6094,248.7195 1469.6094,250.6414 C1469.6094,252.4382 1470.5313,253.3445 1471.625,254.0945 L1472.7188,254.8445 C1473.6563,255.4539 1474.1094,256.032 1474.1094,256.9695 C1474.1094,257.6414 1473.6406,258.0632 1472.9375,258.0632 C1472.2344,258.0632 1471.4844,257.5476 1470.8281,256.7195 L1469.2813,258.407 C1470.3125,259.5945 1471.6094,260.2351 1472.9375,260.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="87" x="1490.25" y="259.636">deployments</text><line style="stroke:#181818;stroke-width:0.5;" x1="1443" x2="1595" y1="269.532" y2="269.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1450" y="282.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128" x="1462" y="289.7719">client rest.Interface</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1450" y="302.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="1462" y="310.0438">ns string</text></g><!--MD5=[943063986852e5ca98e8ff4a394d4012]
+class v1.replicaSets--><g id="elem_v1.replicaSets"><rect codeLine="176" fill="#F1F1F1" height="80.5438" id="v1.replicaSets" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="154" x="232" y="237.532"/><ellipse cx="269.05" cy="253.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M269.2375,260.2351 C271.5344,260.2351 272.9875,258.6101 272.9875,256.6101 C272.9875,254.782 272.1594,253.9382 271.0188,253.1414 L270.0031,252.4226 C268.8781,251.6101 268.4563,251.3132 268.4563,250.4539 C268.4563,249.7664 268.9406,249.3601 269.5188,249.3601 C270.2531,249.3601 270.7375,249.7507 271.4406,250.3914 L272.7531,248.8132 C271.7844,247.7976 270.7688,247.2039 269.5031,247.2039 C267.3625,247.2039 265.9094,248.7195 265.9094,250.6414 C265.9094,252.4382 266.8313,253.3445 267.925,254.0945 L269.0188,254.8445 C269.9563,255.4539 270.4094,256.032 270.4094,256.9695 C270.4094,257.6414 269.9406,258.0632 269.2375,258.0632 C268.5344,258.0632 267.7844,257.5476 267.1281,256.7195 L265.5813,258.407 C266.6125,259.5945 267.9094,260.2351 269.2375,260.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="73" x="287.95" y="259.636">replicaSets</text><line style="stroke:#181818;stroke-width:0.5;" x1="233" x2="385" y1="269.532" y2="269.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="240" y="282.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128" x="252" y="289.7719">client rest.Interface</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="240" y="302.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="252" y="310.0438">ns string</text></g><!--MD5=[9b11c4eecf4e55082d40ed78bfa52667]
+class v1.statefulSets--><g id="elem_v1.statefulSets"><rect codeLine="196" fill="#F1F1F1" height="80.5438" id="v1.statefulSets" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="154" x="24" y="237.532"/><ellipse cx="58.35" cy="253.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M58.5375,260.2351 C60.8344,260.2351 62.2875,258.6101 62.2875,256.6101 C62.2875,254.782 61.4594,253.9382 60.3188,253.1414 L59.3031,252.4226 C58.1781,251.6101 57.7563,251.3132 57.7563,250.4539 C57.7563,249.7664 58.2406,249.3601 58.8188,249.3601 C59.5531,249.3601 60.0375,249.7507 60.7406,250.3914 L62.0531,248.8132 C61.0844,247.7976 60.0688,247.2039 58.8031,247.2039 C56.6625,247.2039 55.2094,248.7195 55.2094,250.6414 C55.2094,252.4382 56.1313,253.3445 57.225,254.0945 L58.3188,254.8445 C59.2563,255.4539 59.7094,256.032 59.7094,256.9695 C59.7094,257.6414 59.2406,258.0632 58.5375,258.0632 C57.8344,258.0632 57.0844,257.5476 56.4281,256.7195 L54.8813,258.407 C55.9125,259.5945 57.2094,260.2351 58.5375,260.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79" x="76.65" y="259.636">statefulSets</text><line style="stroke:#181818;stroke-width:0.5;" x1="25" x2="177" y1="269.532" y2="269.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="32" y="282.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128" x="44" y="289.7719">client rest.Interface</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="32" y="302.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="57" x="44" y="310.0438">ns string</text></g><!--MD5=[9747392335c2b39f023da869b3611208]
+reverse link v1.ControllerRevisionsGetter to v1.AppsV1Interface--><g id="link_v1.ControllerRevisionsGetter_v1.AppsV1Interface"><path codeLine="217" d="M775.7171,82.7291 C815.8612,99.6675 868.0587,121.6918 905.4008,137.4479 " fill="none" id="v1.ControllerRevisionsGetter-backto-v1.AppsV1Interface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="763.6754,77.6482,767.6484,83.6661,774.7315,82.3133,770.7585,76.2954,763.6754,77.6482" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[2c69532cbbedfbf45abb31a2d79baffa]
+reverse link v1.DaemonSetsGetter to v1.AppsV1Interface--><g id="link_v1.DaemonSetsGetter_v1.AppsV1Interface"><path codeLine="218" d="M1228.784,81.1375 C1166.2921,98.4483 1082.4384,121.6765 1023.6594,137.9587 " fill="none" id="v1.DaemonSetsGetter-backto-v1.AppsV1Interface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="1241.3805,77.6482,1234.5304,75.3951,1229.816,80.8518,1236.6661,83.1048,1241.3805,77.6482" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[c0f99cc2a76a53c951f0d4e5777ed6b9]
+reverse link v1.DeploymentsGetter to v1.AppsV1Interface--><g id="link_v1.DeploymentsGetter_v1.AppsV1Interface"><path codeLine="219" d="M938.9324,90.5434 C942.1782,105.9995 945.9401,123.9135 948.7567,137.3256 " fill="none" id="v1.DeploymentsGetter-backto-v1.AppsV1Interface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="936.2497,77.7685,933.5682,84.4625,938.7159,89.5123,941.3974,82.8183,936.2497,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[adbee67b0d3e6c5d8370e4159c1276ce]
+reverse link v1.ReplicaSetsGetter to v1.AppsV1Interface--><g id="link_v1.ReplicaSetsGetter_v1.AppsV1Interface"><path codeLine="220" d="M592.9317,77.1596 C677.5802,96.0544 803.9674,124.2658 882.2941,141.7494 " fill="none" id="v1.ReplicaSetsGetter-backto-v1.AppsV1Interface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="580.2377,74.3261,585.2222,79.5372,591.9495,76.9404,586.965,71.7293,580.2377,74.3261" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[71d893b0631cfbaf7dedbd44da4d899f]
+reverse link v1.StatefulSetsGetter to v1.AppsV1Interface--><g id="link_v1.StatefulSetsGetter_v1.AppsV1Interface"><path codeLine="221" d="M1078.0593,84.3979 C1049.479,101.1115 1013.3336,122.2492 987.2607,137.4965 " fill="none" id="v1.StatefulSetsGetter-backto-v1.AppsV1Interface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="1089.3956,77.7685,1082.197,77.3444,1079.0369,83.8262,1086.2355,84.2503,1089.3956,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[ae2f5288fef84fb40e9abfe363f97546]
+reverse link v1.ControllerRevisionExpansion to v1.ControllerRevisionInterface--><g id="link_v1.ControllerRevisionExpansion_v1.ControllerRevisionInterface"><path codeLine="222" d="M1969,91.0125 C1969,106.3609 1969,124.049 1969,137.3256 " fill="none" id="v1.ControllerRevisionExpansion-backto-v1.ControllerRevisionInterface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="1969,77.7685,1965,83.7685,1969,89.7685,1973,83.7685,1969,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[3f530ae327a83b6c310bbfe0cd33577f]
+reverse link v1.DaemonSetExpansion to v1.DaemonSetInterface--><g id="link_v1.DaemonSetExpansion_v1.DaemonSetInterface"><path codeLine="223" d="M1734,91.0125 C1734,106.3609 1734,124.049 1734,137.3256 " fill="none" id="v1.DaemonSetExpansion-backto-v1.DaemonSetInterface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="1734,77.7685,1730,83.7685,1734,89.7685,1738,83.7685,1734,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[f3f9bee0a4ce450bf19b06e8e2e691a8]
+reverse link v1.DeploymentExpansion to v1.DeploymentInterface--><g id="link_v1.DeploymentExpansion_v1.DeploymentInterface"><path codeLine="224" d="M1519,91.0125 C1519,106.3609 1519,124.049 1519,137.3256 " fill="none" id="v1.DeploymentExpansion-backto-v1.DeploymentInterface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="1519,77.7685,1515,83.7685,1519,89.7685,1523,83.7685,1519,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[e7d1db0cf477a222bbe2565662054a5d]
+reverse link v1.ReplicaSetExpansion to v1.ReplicaSetInterface--><g id="link_v1.ReplicaSetExpansion_v1.ReplicaSetInterface"><path codeLine="225" d="M309,91.0125 C309,106.3609 309,124.049 309,137.3256 " fill="none" id="v1.ReplicaSetExpansion-backto-v1.ReplicaSetInterface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="309,77.7685,305,83.7685,309,89.7685,313,83.7685,309,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[5d8453fa546384cf34789d161d599d59]
+reverse link v1.StatefulSetExpansion to v1.StatefulSetInterface--><g id="link_v1.StatefulSetExpansion_v1.StatefulSetInterface"><path codeLine="226" d="M101,91.0125 C101,106.3609 101,124.049 101,137.3256 " fill="none" id="v1.StatefulSetExpansion-backto-v1.StatefulSetInterface" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="101,77.7685,97,83.7685,101,89.7685,105,83.7685,101,77.7685" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[83da1a7bb04f0f4c401d5205fbc6fb07]
+reverse link v1.AppsV1Interface to v1.AppsV1Client--><g id="link_v1.AppsV1Interface_v1.AppsV1Client"><path codeLine="228" d="M935.7106,196.1129 C928.2076,212.8557 919.5504,232.1742 912.5279,247.8446 " fill="none" id="v1.AppsV1Interface-backto-v1.AppsV1Client" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="929.3947,193.0895,943.9616,177.701,942.1705,198.8148,929.3947,193.0895" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[7d643e601f631d664158e37ff62ae773]
+reverse link v1.ControllerRevisionsGetter to v1.AppsV1Client--><g id="link_v1.ControllerRevisionsGetter_v1.AppsV1Client"><path codeLine="229" d="M745.7476,93.3754 C781.4511,136.3952 840.6755,207.7557 874.0817,248.0074 " fill="none" id="v1.ControllerRevisionsGetter-backto-v1.AppsV1Client" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="740.2744,97.7415,732.8882,77.8809,751.0475,88.8006,740.2744,97.7415" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[d27b80ac932a48072b47f41ad6097d2f]
+reverse link v1.DaemonSetsGetter to v1.AppsV1Client--><g id="link_v1.DaemonSetsGetter_v1.AppsV1Client"><path codeLine="230" d="M1258.3781,87.0853 C1179.3212,129.0903 1035.2391,205.6447 955.6323,247.9418 " fill="none" id="v1.DaemonSetsGetter-backto-v1.AppsV1Client" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1255.1251,80.887,1276.0714,77.6844,1261.6941,93.2503,1255.1251,80.887" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[259ae1f9e0a990cf864c9cc2a29374ff]
+reverse link v1.DeploymentsGetter to v1.AppsV1Client--><g id="link_v1.DeploymentsGetter_v1.AppsV1Client"><path codeLine="231" d="M894.1589,91.9442 C882.4928,104.9497 871.1152,120.7061 865,137.532 C851.5413,174.5635 867.3784,219.0176 881.6402,247.8619 " fill="none" id="v1.DeploymentsGetter-backto-v1.AppsV1Client" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="889.2196,86.983,908.1977,77.5578,899.2395,96.7607,889.2196,86.983" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[6625bc3c1f9c425e5931ee52a8439e33]
+reverse link v1.ReplicaSetsGetter to v1.AppsV1Client--><g id="link_v1.ReplicaSetsGetter_v1.AppsV1Client"><path codeLine="232" d="M558.7606,87.6188 C634.017,129.7357 769.9739,205.8232 845.2334,247.9418 " fill="none" id="v1.ReplicaSetsGetter-backto-v1.AppsV1Client" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="555.0435,93.5603,541.0094,77.6844,561.8807,81.3434,555.0435,93.5603" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[c015fd45f7a8f35966ad046d2a0a661a]
+reverse link v1.StatefulSetsGetter to v1.AppsV1Client--><g id="link_v1.StatefulSetsGetter_v1.AppsV1Client"><path codeLine="233" d="M1102.7118,95.1872 C1087.481,120.1986 1065.4175,152.8494 1041,177.532 C1014.0242,204.8006 978.866,229.7476 950.2828,247.9654 " fill="none" id="v1.StatefulSetsGetter-backto-v1.AppsV1Client" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1096.7681,91.4854,1112.9528,77.8085,1108.8297,98.5931,1096.7681,91.4854" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[375760a48d4e47b8d51c7c6e06faba72]
+reverse link v1.ControllerRevisionInterface to v1.controllerRevisions--><g id="link_v1.ControllerRevisionInterface_v1.controllerRevisions"><path codeLine="234" d="M1969,197.9171 C1969,210.5903 1969,224.5839 1969,237.2821 " fill="none" id="v1.ControllerRevisionInterface-backto-v1.controllerRevisions" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1962.0001,197.701,1969,177.701,1976.0001,197.701,1962.0001,197.701" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[71c436cb34d1e49fc4a80869d72097d4]
+reverse link v1.DaemonSetInterface to v1.daemonSets--><g id="link_v1.DaemonSetInterface_v1.daemonSets"><path codeLine="235" d="M1734,197.9171 C1734,210.5903 1734,224.5839 1734,237.2821 " fill="none" id="v1.DaemonSetInterface-backto-v1.daemonSets" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1727.0001,197.701,1734,177.701,1741.0001,197.701,1727.0001,197.701" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[ae8a77fdc1fbf4389e9bd07c7eea71a4]
+reverse link v1.DeploymentInterface to v1.deployments--><g id="link_v1.DeploymentInterface_v1.deployments"><path codeLine="236" d="M1519,197.9171 C1519,210.5903 1519,224.5839 1519,237.2821 " fill="none" id="v1.DeploymentInterface-backto-v1.deployments" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1512.0001,197.701,1519,177.701,1526.0001,197.701,1512.0001,197.701" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[03a6162605fe2aa2649be1bc0853f5bc]
+reverse link v1.ReplicaSetInterface to v1.replicaSets--><g id="link_v1.ReplicaSetInterface_v1.replicaSets"><path codeLine="237" d="M309,197.9171 C309,210.5903 309,224.5839 309,237.2821 " fill="none" id="v1.ReplicaSetInterface-backto-v1.replicaSets" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="302.0001,197.701,309,177.701,316.0001,197.701,302.0001,197.701" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[3ef5e6edd18ce88698128c08cf0630a4]
+reverse link v1.StatefulSetInterface to v1.statefulSets--><g id="link_v1.StatefulSetInterface_v1.statefulSets"><path codeLine="238" d="M101,197.9171 C101,210.5903 101,224.5839 101,237.2821 " fill="none" id="v1.StatefulSetInterface-backto-v1.statefulSets" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="94.0001,197.701,101,177.701,108.0001,197.701,94.0001,197.701" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[0ad6c7bc406d4cd36804dd6315128e4b]
+@startuml
+namespace v1 {
+    class AppsV1Client << (S,Aquamarine) >> {
+        - restClient rest.Interface
+
+        + ControllerRevisions(namespace string) ControllerRevisionInterface
+        + DaemonSets(namespace string) DaemonSetInterface
+        + Deployments(namespace string) DeploymentInterface
+        + ReplicaSets(namespace string) ReplicaSetInterface
+        + StatefulSets(namespace string) StatefulSetInterface
+        + RESTClient() rest.Interface
+
+    }
+    interface AppsV1Interface  {
+        + RESTClient() rest.Interface
+
+    }
+    interface ControllerRevisionExpansion  {
+    }
+    interface ControllerRevisionInterface  {
+        + Create(ctx context.Context, controllerRevision *v1.ControllerRevision, opts v1.CreateOptions) (*v1.ControllerRevision, error)
+        + Update(ctx context.Context, controllerRevision *v1.ControllerRevision, opts v1.UpdateOptions) (*v1.ControllerRevision, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Get(ctx context.Context, name string, opts v1.GetOptions) (*v1.ControllerRevision, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.ControllerRevisionList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.ControllerRevision, error)
+        + Apply(ctx context.Context, controllerRevision *v1.ControllerRevisionApplyConfiguration, opts v1.ApplyOptions) (*v1.ControllerRevision, error)
+
+    }
+    interface ControllerRevisionsGetter  {
+        + ControllerRevisions(namespace string) ControllerRevisionInterface
+
+    }
+    interface DaemonSetExpansion  {
+    }
+    interface DaemonSetInterface  {
+        + Create(ctx context.Context, daemonSet *v1.DaemonSet, opts v1.CreateOptions) (*v1.DaemonSet, error)
+        + Update(ctx context.Context, daemonSet *v1.DaemonSet, opts v1.UpdateOptions) (*v1.DaemonSet, error)
+        + UpdateStatus(ctx context.Context, daemonSet *v1.DaemonSet, opts v1.UpdateOptions) (*v1.DaemonSet, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Get(ctx context.Context, name string, opts v1.GetOptions) (*v1.DaemonSet, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.DaemonSetList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.DaemonSet, error)
+        + Apply(ctx context.Context, daemonSet *v1.DaemonSetApplyConfiguration, opts v1.ApplyOptions) (*v1.DaemonSet, error)
+        + ApplyStatus(ctx context.Context, daemonSet *v1.DaemonSetApplyConfiguration, opts v1.ApplyOptions) (*v1.DaemonSet, error)
+
+    }
+    interface DaemonSetsGetter  {
+        + DaemonSets(namespace string) DaemonSetInterface
+
+    }
+    interface DeploymentExpansion  {
+    }
+    interface DeploymentInterface  {
+        + Create(ctx context.Context, deployment *v1.Deployment, opts v1.CreateOptions) (*v1.Deployment, error)
+        + Update(ctx context.Context, deployment *v1.Deployment, opts v1.UpdateOptions) (*v1.Deployment, error)
+        + UpdateStatus(ctx context.Context, deployment *v1.Deployment, opts v1.UpdateOptions) (*v1.Deployment, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Get(ctx context.Context, name string, opts v1.GetOptions) (*v1.Deployment, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.DeploymentList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.Deployment, error)
+        + Apply(ctx context.Context, deployment *v1.DeploymentApplyConfiguration, opts v1.ApplyOptions) (*v1.Deployment, error)
+        + ApplyStatus(ctx context.Context, deployment *v1.DeploymentApplyConfiguration, opts v1.ApplyOptions) (*v1.Deployment, error)
+        + GetScale(ctx context.Context, deploymentName string, options v1.GetOptions) (*v1.Scale, error)
+        + UpdateScale(ctx context.Context, deploymentName string, scale *v1.Scale, opts v1.UpdateOptions) (*v1.Scale, error)
+        + ApplyScale(ctx context.Context, deploymentName string, scale *v1.ScaleApplyConfiguration, opts v1.ApplyOptions) (*v1.Scale, error)
+
+    }
+    interface DeploymentsGetter  {
+        + Deployments(namespace string) DeploymentInterface
+
+    }
+    interface ReplicaSetExpansion  {
+    }
+    interface ReplicaSetInterface  {
+        + Create(ctx context.Context, replicaSet *v1.ReplicaSet, opts v1.CreateOptions) (*v1.ReplicaSet, error)
+        + Update(ctx context.Context, replicaSet *v1.ReplicaSet, opts v1.UpdateOptions) (*v1.ReplicaSet, error)
+        + UpdateStatus(ctx context.Context, replicaSet *v1.ReplicaSet, opts v1.UpdateOptions) (*v1.ReplicaSet, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Get(ctx context.Context, name string, opts v1.GetOptions) (*v1.ReplicaSet, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.ReplicaSetList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.ReplicaSet, error)
+        + Apply(ctx context.Context, replicaSet *v1.ReplicaSetApplyConfiguration, opts v1.ApplyOptions) (*v1.ReplicaSet, error)
+        + ApplyStatus(ctx context.Context, replicaSet *v1.ReplicaSetApplyConfiguration, opts v1.ApplyOptions) (*v1.ReplicaSet, error)
+        + GetScale(ctx context.Context, replicaSetName string, options v1.GetOptions) (*v1.Scale, error)
+        + UpdateScale(ctx context.Context, replicaSetName string, scale *v1.Scale, opts v1.UpdateOptions) (*v1.Scale, error)
+        + ApplyScale(ctx context.Context, replicaSetName string, scale *v1.ScaleApplyConfiguration, opts v1.ApplyOptions) (*v1.Scale, error)
+
+    }
+    interface ReplicaSetsGetter  {
+        + ReplicaSets(namespace string) ReplicaSetInterface
+
+    }
+    interface StatefulSetExpansion  {
+    }
+    interface StatefulSetInterface  {
+        + Create(ctx context.Context, statefulSet *v1.StatefulSet, opts v1.CreateOptions) (*v1.StatefulSet, error)
+        + Update(ctx context.Context, statefulSet *v1.StatefulSet, opts v1.UpdateOptions) (*v1.StatefulSet, error)
+        + UpdateStatus(ctx context.Context, statefulSet *v1.StatefulSet, opts v1.UpdateOptions) (*v1.StatefulSet, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Get(ctx context.Context, name string, opts v1.GetOptions) (*v1.StatefulSet, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.StatefulSetList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.StatefulSet, error)
+        + Apply(ctx context.Context, statefulSet *v1.StatefulSetApplyConfiguration, opts v1.ApplyOptions) (*v1.StatefulSet, error)
+        + ApplyStatus(ctx context.Context, statefulSet *v1.StatefulSetApplyConfiguration, opts v1.ApplyOptions) (*v1.StatefulSet, error)
+        + GetScale(ctx context.Context, statefulSetName string, options v1.GetOptions) (*v1.Scale, error)
+        + UpdateScale(ctx context.Context, statefulSetName string, scale *v1.Scale, opts v1.UpdateOptions) (*v1.Scale, error)
+        + ApplyScale(ctx context.Context, statefulSetName string, scale *v1.ScaleApplyConfiguration, opts v1.ApplyOptions) (*v1.Scale, error)
+
+    }
+    interface StatefulSetsGetter  {
+        + StatefulSets(namespace string) StatefulSetInterface
+
+    }
+    class controllerRevisions << (S,Aquamarine) >> {
+        - client rest.Interface
+        - ns string
+
+        + Get(ctx context.Context, name string, options v1.GetOptions) (*v1.ControllerRevision, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.ControllerRevisionList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Create(ctx context.Context, controllerRevision *v1.ControllerRevision, opts v1.CreateOptions) (*v1.ControllerRevision, error)
+        + Update(ctx context.Context, controllerRevision *v1.ControllerRevision, opts v1.UpdateOptions) (*v1.ControllerRevision, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.ControllerRevision, error)
+        + Apply(ctx context.Context, controllerRevision *v1.ControllerRevisionApplyConfiguration, opts v1.ApplyOptions) (*v1.ControllerRevision, error)
+
+    }
+    class daemonSets << (S,Aquamarine) >> {
+        - client rest.Interface
+        - ns string
+
+        + Get(ctx context.Context, name string, options v1.GetOptions) (*v1.DaemonSet, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.DaemonSetList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Create(ctx context.Context, daemonSet *v1.DaemonSet, opts v1.CreateOptions) (*v1.DaemonSet, error)
+        + Update(ctx context.Context, daemonSet *v1.DaemonSet, opts v1.UpdateOptions) (*v1.DaemonSet, error)
+        + UpdateStatus(ctx context.Context, daemonSet *v1.DaemonSet, opts v1.UpdateOptions) (*v1.DaemonSet, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.DaemonSet, error)
+        + Apply(ctx context.Context, daemonSet *v1.DaemonSetApplyConfiguration, opts v1.ApplyOptions) (*v1.DaemonSet, error)
+        + ApplyStatus(ctx context.Context, daemonSet *v1.DaemonSetApplyConfiguration, opts v1.ApplyOptions) (*v1.DaemonSet, error)
+
+    }
+    class deployments << (S,Aquamarine) >> {
+        - client rest.Interface
+        - ns string
+
+        + Get(ctx context.Context, name string, options v1.GetOptions) (*v1.Deployment, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.DeploymentList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Create(ctx context.Context, deployment *v1.Deployment, opts v1.CreateOptions) (*v1.Deployment, error)
+        + Update(ctx context.Context, deployment *v1.Deployment, opts v1.UpdateOptions) (*v1.Deployment, error)
+        + UpdateStatus(ctx context.Context, deployment *v1.Deployment, opts v1.UpdateOptions) (*v1.Deployment, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.Deployment, error)
+        + Apply(ctx context.Context, deployment *v1.DeploymentApplyConfiguration, opts v1.ApplyOptions) (*v1.Deployment, error)
+        + ApplyStatus(ctx context.Context, deployment *v1.DeploymentApplyConfiguration, opts v1.ApplyOptions) (*v1.Deployment, error)
+        + GetScale(ctx context.Context, deploymentName string, options v1.GetOptions) (*v1.Scale, error)
+        + UpdateScale(ctx context.Context, deploymentName string, scale *v1.Scale, opts v1.UpdateOptions) (*v1.Scale, error)
+        + ApplyScale(ctx context.Context, deploymentName string, scale *v1.ScaleApplyConfiguration, opts v1.ApplyOptions) (*v1.Scale, error)
+
+    }
+    class replicaSets << (S,Aquamarine) >> {
+        - client rest.Interface
+        - ns string
+
+        + Get(ctx context.Context, name string, options v1.GetOptions) (*v1.ReplicaSet, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.ReplicaSetList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Create(ctx context.Context, replicaSet *v1.ReplicaSet, opts v1.CreateOptions) (*v1.ReplicaSet, error)
+        + Update(ctx context.Context, replicaSet *v1.ReplicaSet, opts v1.UpdateOptions) (*v1.ReplicaSet, error)
+        + UpdateStatus(ctx context.Context, replicaSet *v1.ReplicaSet, opts v1.UpdateOptions) (*v1.ReplicaSet, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.ReplicaSet, error)
+        + Apply(ctx context.Context, replicaSet *v1.ReplicaSetApplyConfiguration, opts v1.ApplyOptions) (*v1.ReplicaSet, error)
+        + ApplyStatus(ctx context.Context, replicaSet *v1.ReplicaSetApplyConfiguration, opts v1.ApplyOptions) (*v1.ReplicaSet, error)
+        + GetScale(ctx context.Context, replicaSetName string, options v1.GetOptions) (*v1.Scale, error)
+        + UpdateScale(ctx context.Context, replicaSetName string, scale *v1.Scale, opts v1.UpdateOptions) (*v1.Scale, error)
+        + ApplyScale(ctx context.Context, replicaSetName string, scale *v1.ScaleApplyConfiguration, opts v1.ApplyOptions) (*v1.Scale, error)
+
+    }
+    class statefulSets << (S,Aquamarine) >> {
+        - client rest.Interface
+        - ns string
+
+        + Get(ctx context.Context, name string, options v1.GetOptions) (*v1.StatefulSet, error)
+        + List(ctx context.Context, opts v1.ListOptions) (*v1.StatefulSetList, error)
+        + Watch(ctx context.Context, opts v1.ListOptions) (watch.Interface, error)
+        + Create(ctx context.Context, statefulSet *v1.StatefulSet, opts v1.CreateOptions) (*v1.StatefulSet, error)
+        + Update(ctx context.Context, statefulSet *v1.StatefulSet, opts v1.UpdateOptions) (*v1.StatefulSet, error)
+        + UpdateStatus(ctx context.Context, statefulSet *v1.StatefulSet, opts v1.UpdateOptions) (*v1.StatefulSet, error)
+        + Delete(ctx context.Context, name string, opts v1.DeleteOptions) error
+        + DeleteCollection(ctx context.Context, opts v1.DeleteOptions, listOpts v1.ListOptions) error
+        + Patch(ctx context.Context, name string, pt types.PatchType, data []byte, opts v1.PatchOptions, subresources ...string) (*v1.StatefulSet, error)
+        + Apply(ctx context.Context, statefulSet *v1.StatefulSetApplyConfiguration, opts v1.ApplyOptions) (*v1.StatefulSet, error)
+        + ApplyStatus(ctx context.Context, statefulSet *v1.StatefulSetApplyConfiguration, opts v1.ApplyOptions) (*v1.StatefulSet, error)
+        + GetScale(ctx context.Context, statefulSetName string, options v1.GetOptions) (*v1.Scale, error)
+        + UpdateScale(ctx context.Context, statefulSetName string, scale *v1.Scale, opts v1.UpdateOptions) (*v1.Scale, error)
+        + ApplyScale(ctx context.Context, statefulSetName string, scale *v1.ScaleApplyConfiguration, opts v1.ApplyOptions) (*v1.Scale, error)
+
+    }
+}
+"v1.ControllerRevisionsGetter" *- - "v1.AppsV1Interface"
+"v1.DaemonSetsGetter" *- - "v1.AppsV1Interface"
+"v1.DeploymentsGetter" *- - "v1.AppsV1Interface"
+"v1.ReplicaSetsGetter" *- - "v1.AppsV1Interface"
+"v1.StatefulSetsGetter" *- - "v1.AppsV1Interface"
+"v1.ControllerRevisionExpansion" *- - "v1.ControllerRevisionInterface"
+"v1.DaemonSetExpansion" *- - "v1.DaemonSetInterface"
+"v1.DeploymentExpansion" *- - "v1.DeploymentInterface"
+"v1.ReplicaSetExpansion" *- - "v1.ReplicaSetInterface"
+"v1.StatefulSetExpansion" *- - "v1.StatefulSetInterface"
+
+"v1.AppsV1Interface" <|- - "v1.AppsV1Client"
+"v1.ControllerRevisionsGetter" <|- - "v1.AppsV1Client"
+"v1.DaemonSetsGetter" <|- - "v1.AppsV1Client"
+"v1.DeploymentsGetter" <|- - "v1.AppsV1Client"
+"v1.ReplicaSetsGetter" <|- - "v1.AppsV1Client"
+"v1.StatefulSetsGetter" <|- - "v1.AppsV1Client"
+"v1.ControllerRevisionInterface" <|- - "v1.controllerRevisions"
+"v1.DaemonSetInterface" <|- - "v1.daemonSets"
+"v1.DeploymentInterface" <|- - "v1.deployments"
+"v1.ReplicaSetInterface" <|- - "v1.replicaSets"
+"v1.StatefulSetInterface" <|- - "v1.statefulSets"
+
+hide methods
+@enduml
+
+PlantUML version 1.2022.7(Tue Aug 23 01:01:30 CST 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: zh
+Country: CN
+--></g></svg>

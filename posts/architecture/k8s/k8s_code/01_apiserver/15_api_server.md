@@ -305,5 +305,4 @@ func Run(completeOptions completedServerRunOptions, stopCh <-chan struct{}) erro
 
 apiExtensionsServer、kubeAPIServer、aggregatorServer 各个对象之间的关系如下图所示:
 
-![API Server 核心对象之间的关系](/images/k8s/k8s_use/kube_apiserver_uml.png
-)
+![API Server 核心对象之间的关系](/images/k8s/k8s_use/kube_apiserver.png)
