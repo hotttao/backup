@@ -1,0 +1,618 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="2626px" preserveAspectRatio="none" style="width:2494px;height:2626px;background:#FFFFFF;" version="1.1" viewBox="0 0 2494 2626" width="2494px" zoomAndPan="magnify"><defs/><g><!--MD5=[56f96bbb6f27971b0af366443adff50a]
+cluster client-go--><g id="cluster_client-go"><path d="M8.5,114.532 L69.5,114.532 A3.75,3.75 0 0 1 72,117.032 L79,140.8039 L2484.5,140.8039 A2.5,2.5 0 0 1 2487,143.3039 L2487,2617.032 A2.5,2.5 0 0 1 2484.5,2619.532 L8.5,2619.532 A2.5,2.5 0 0 1 6,2617.032 L6,117.032 A2.5,2.5 0 0 1 8.5,114.532 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="6" x2="79" y1="140.8039" y2="140.8039"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="60" x="10" y="132.7719">client-go</text></g><!--MD5=[58f92eeca1b9b283e19d96b306260adc]
+cluster runtime--><g id="cluster_runtime"><path d="M40.5,6.532 L97.5,6.532 A3.75,3.75 0 0 1 100,9.032 L107,32.8039 L127.5,32.8039 A2.5,2.5 0 0 1 130,35.3039 L130,91.032 A2.5,2.5 0 0 1 127.5,93.532 L40.5,93.532 A2.5,2.5 0 0 1 38,91.032 L38,9.032 A2.5,2.5 0 0 1 40.5,6.532 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="38" x2="107" y1="32.8039" y2="32.8039"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="56" x="42" y="24.7719">runtime</text></g><!--MD5=[cd33d2fc8a811f409b15bd1604014909]
+class client-go.GenericLister--><g id="elem_client-go.GenericLister"><rect codeLine="2" fill="#F1F1F1" height="108.8157" id="client-go.GenericLister" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="417" x="1538.5" y="226.532"/><ellipse cx="1698.75" cy="242.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1695.1094,249.032 L1701.8906,249.032 L1701.8906,246.9539 L1699.7344,246.9539 L1699.7344,238.5164 L1701.8906,238.5164 L1701.8906,236.407 L1695.1094,236.407 L1695.1094,238.5164 L1697.2031,238.5164 L1697.2031,246.9539 L1695.1094,246.9539 L1695.1094,249.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="88" x="1719.25" y="248.636">GenericLister</text><line style="stroke:#181818;stroke-width:0.5;" x1="1539.5" x2="1954.5" y1="258.532" y2="258.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="1539.5" x2="1954.5" y1="266.532" y2="266.532"/><ellipse cx="1549.5" cy="282.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="347" x="1558.5" y="286.7719">List(selector labels.Selector) ([]runtime.Object, error)</text><ellipse cx="1549.5" cy="302.4398" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="263" x="1558.5" y="307.0438">Get(name string) (runtime.Object, error)</text><ellipse cx="1549.5" cy="322.7118" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="391" x="1558.5" y="327.3157">ByNamespace(namespace string) GenericNamespaceLister</text></g><!--MD5=[3b513c566cc345cc3d6ed652686817ce]
+class client-go.GenericNamespaceLister--><g id="elem_client-go.GenericNamespaceLister"><rect codeLine="8" fill="#F1F1F1" height="88.5438" id="client-go.GenericNamespaceLister" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="373" x="1130.5" y="236.532"/><ellipse cx="1229.75" cy="252.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1226.1094,259.032 L1232.8906,259.032 L1232.8906,256.9539 L1230.7344,256.9539 L1230.7344,248.5164 L1232.8906,248.5164 L1232.8906,246.407 L1226.1094,246.407 L1226.1094,248.5164 L1228.2031,248.5164 L1228.2031,256.9539 L1226.1094,256.9539 L1226.1094,259.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="166" x="1250.25" y="258.636">GenericNamespaceLister</text><line style="stroke:#181818;stroke-width:0.5;" x1="1131.5" x2="1502.5" y1="268.532" y2="268.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="1131.5" x2="1502.5" y1="276.532" y2="276.532"/><ellipse cx="1141.5" cy="292.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="347" x="1150.5" y="296.7719">List(selector labels.Selector) ([]runtime.Object, error)</text><ellipse cx="1141.5" cy="312.4398" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="263" x="1150.5" y="317.0438">Get(name string) (runtime.Object, error)</text></g><!--MD5=[bd9d2a733aebe734486d232d94c1f7be]
+class client-go.Getter--><g id="elem_client-go.Getter"><rect codeLine="13" fill="#F1F1F1" height="68.2719" id="client-go.Getter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="186" x="343" y="1831.532"/><ellipse cx="411.25" cy="1847.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M407.6094,1854.032 L414.3906,1854.032 L414.3906,1851.9539 L412.2344,1851.9539 L412.2344,1843.5164 L414.3906,1843.5164 L414.3906,1841.407 L407.6094,1841.407 L407.6094,1843.5164 L409.7031,1843.5164 L409.7031,1851.9539 L407.6094,1851.9539 L407.6094,1854.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="41" x="431.75" y="1853.636">Getter</text><line style="stroke:#181818;stroke-width:0.5;" x1="344" x2="528" y1="1863.532" y2="1863.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="344" x2="528" y1="1871.532" y2="1871.532"/><ellipse cx="354" cy="1887.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="160" x="363" y="1891.7719">Get() *client-go.Request</text></g><!--MD5=[57c15ad8662628f399118c7c73e694ed]
+class client-go.ListWatch--><g id="elem_client-go.ListWatch"><rect codeLine="17" fill="#F1F1F1" height="149.3596" id="client-go.ListWatch" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="379" x="564.5" y="2462.532"/><ellipse cx="717.25" cy="2478.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M717.4375,2485.2351 C719.7344,2485.2351 721.1875,2483.6101 721.1875,2481.6101 C721.1875,2479.782 720.3594,2478.9382 719.2188,2478.1414 L718.2031,2477.4226 C717.0781,2476.6101 716.6563,2476.3132 716.6563,2475.4539 C716.6563,2474.7664 717.1406,2474.3601 717.7188,2474.3601 C718.4531,2474.3601 718.9375,2474.7507 719.6406,2475.3914 L720.9531,2473.8132 C719.9844,2472.7976 718.9688,2472.2039 717.7031,2472.2039 C715.5625,2472.2039 714.1094,2473.7195 714.1094,2475.6414 C714.1094,2477.4382 715.0313,2478.3445 716.125,2479.0945 L717.2188,2479.8445 C718.1563,2480.4539 718.6094,2481.032 718.6094,2481.9695 C718.6094,2482.6414 718.1406,2483.0632 717.4375,2483.0632 C716.7344,2483.0632 715.9844,2482.5476 715.3281,2481.7195 L713.7813,2483.407 C714.8125,2484.5945 716.1094,2485.2351 717.4375,2485.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65" x="737.75" y="2484.636">ListWatch</text><line style="stroke:#181818;stroke-width:0.5;" x1="565.5" x2="942.5" y1="2494.532" y2="2494.532"/><ellipse cx="575.5" cy="2510.1679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="584.5" y="2514.7719">ListFunc ListFunc</text><ellipse cx="575.5" cy="2530.4398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="151" x="584.5" y="2535.0438">WatchFunc WatchFunc</text><ellipse cx="575.5" cy="2550.7118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147" x="584.5" y="2555.3157">DisableChunking bool</text><line style="stroke:#181818;stroke-width:0.5;" x1="565.5" x2="942.5" y1="2563.3477" y2="2563.3477"/><ellipse cx="575.5" cy="2578.9837" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="333" x="584.5" y="2583.5876">List(options v1.ListOptions) (runtime.Object, error)</text><ellipse cx="575.5" cy="2599.2556" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="353" x="584.5" y="2603.8596">Watch(options v1.ListOptions) (watch.Interface, error)</text></g><!--MD5=[ddce4cd5fdc64ddbd1e233406cbd56b3]
+class client-go.Lister--><g id="elem_client-go.Lister"><rect codeLine="26" fill="#F1F1F1" height="68.2719" id="client-go.Lister" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="359" x="978.5" y="1831.532"/><ellipse cx="1135.25" cy="1847.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1131.6094,1854.032 L1138.3906,1854.032 L1138.3906,1851.9539 L1136.2344,1851.9539 L1136.2344,1843.5164 L1138.3906,1843.5164 L1138.3906,1841.407 L1131.6094,1841.407 L1131.6094,1843.5164 L1133.7031,1843.5164 L1133.7031,1851.9539 L1131.6094,1851.9539 L1131.6094,1854.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="37" x="1155.75" y="1853.636">Lister</text><line style="stroke:#181818;stroke-width:0.5;" x1="979.5" x2="1336.5" y1="1863.532" y2="1863.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="979.5" x2="1336.5" y1="1871.532" y2="1871.532"/><ellipse cx="989.5" cy="1887.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="333" x="998.5" y="1891.7719">List(options v1.ListOptions) (runtime.Object, error)</text></g><!--MD5=[853ddc1a8e2939e418eda328c59f106e]
+class client-go.ListerWatcher--><g id="elem_client-go.ListerWatcher"><rect codeLine="30" fill="#F1F1F1" height="48" id="client-go.ListerWatcher" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="123" x="692.5" y="2192.532"/><ellipse cx="707.5" cy="2208.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M703.8594,2215.032 L710.6406,2215.032 L710.6406,2212.9539 L708.4844,2212.9539 L708.4844,2204.5164 L710.6406,2204.5164 L710.6406,2202.407 L703.8594,2202.407 L703.8594,2204.5164 L705.9531,2204.5164 L705.9531,2212.9539 L703.8594,2212.9539 L703.8594,2215.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="91" x="721.5" y="2214.636">ListerWatcher</text><line style="stroke:#181818;stroke-width:0.5;" x1="693.5" x2="814.5" y1="2224.532" y2="2224.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="693.5" x2="814.5" y1="2232.532" y2="2232.532"/></g><!--MD5=[7c82bd300254a6efef17c99269c1510e]
+class client-go.Watcher--><g id="elem_client-go.Watcher"><rect codeLine="32" fill="#F1F1F1" height="68.2719" id="client-go.Watcher" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="379" x="564.5" y="1831.532"/><ellipse cx="722.75" cy="1847.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M719.1094,1854.032 L725.8906,1854.032 L725.8906,1851.9539 L723.7344,1851.9539 L723.7344,1843.5164 L725.8906,1843.5164 L725.8906,1841.407 L719.1094,1841.407 L719.1094,1843.5164 L721.2031,1843.5164 L721.2031,1851.9539 L719.1094,1851.9539 L719.1094,1854.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="54" x="743.25" y="1853.636">Watcher</text><line style="stroke:#181818;stroke-width:0.5;" x1="565.5" x2="942.5" y1="1863.532" y2="1863.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="565.5" x2="942.5" y1="1871.532" y2="1871.532"/><ellipse cx="575.5" cy="1887.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="353" x="584.5" y="1891.7719">Watch(options v1.ListOptions) (watch.Interface, error)</text></g><!--MD5=[3be661dbe9df9258570eeaf415cec4b3]
+class client-go.genericLister--><g id="elem_client-go.genericLister"><rect codeLine="42" fill="#F1F1F1" height="149.3596" id="client-go.genericLister" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="417" x="1729.5" y="1014.032"/><ellipse cx="1890.75" cy="1030.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1890.9375,1036.7351 C1893.2344,1036.7351 1894.6875,1035.1101 1894.6875,1033.1101 C1894.6875,1031.282 1893.8594,1030.4382 1892.7188,1029.6414 L1891.7031,1028.9226 C1890.5781,1028.1101 1890.1563,1027.8132 1890.1563,1026.9539 C1890.1563,1026.2664 1890.6406,1025.8601 1891.2188,1025.8601 C1891.9531,1025.8601 1892.4375,1026.2507 1893.1406,1026.8914 L1894.4531,1025.3132 C1893.4844,1024.2976 1892.4688,1023.7039 1891.2031,1023.7039 C1889.0625,1023.7039 1887.6094,1025.2195 1887.6094,1027.1414 C1887.6094,1028.9382 1888.5313,1029.8445 1889.625,1030.5945 L1890.7188,1031.3445 C1891.6563,1031.9539 1892.1094,1032.532 1892.1094,1033.4695 C1892.1094,1034.1414 1891.6406,1034.5632 1890.9375,1034.5632 C1890.2344,1034.5632 1889.4844,1034.0476 1888.8281,1033.2195 L1887.2813,1034.907 C1888.3125,1036.0945 1889.6094,1036.7351 1890.9375,1036.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="86" x="1911.25" y="1036.136">genericLister</text><line style="stroke:#181818;stroke-width:0.5;" x1="1730.5" x2="2145.5" y1="1046.032" y2="1046.032"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1737.5" y="1058.6679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="103" x="1749.5" y="1066.2719">indexer Indexer</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1737.5" y="1078.9398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="218" x="1749.5" y="1086.5438">resource schema.GroupResource</text><line style="stroke:#181818;stroke-width:0.5;" x1="1730.5" x2="2145.5" y1="1094.5758" y2="1094.5758"/><ellipse cx="1740.5" cy="1110.2118" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="347" x="1749.5" y="1114.8157">List(selector labels.Selector) ([]runtime.Object, error)</text><ellipse cx="1740.5" cy="1130.4837" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="391" x="1749.5" y="1135.0876">ByNamespace(namespace string) GenericNamespaceLister</text><ellipse cx="1740.5" cy="1150.7556" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="263" x="1749.5" y="1155.3596">Get(name string) (runtime.Object, error)</text></g><!--MD5=[0c712a2b50d8c6787b468a868754d0b3]
+class client-go.genericNamespaceLister--><g id="elem_client-go.genericNamespaceLister"><rect codeLine="51" fill="#F1F1F1" height="149.3596" id="client-go.genericNamespaceLister" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="373" x="1321.5" y="1014.032"/><ellipse cx="1421.75" cy="1030.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1421.9375,1036.7351 C1424.2344,1036.7351 1425.6875,1035.1101 1425.6875,1033.1101 C1425.6875,1031.282 1424.8594,1030.4382 1423.7188,1029.6414 L1422.7031,1028.9226 C1421.5781,1028.1101 1421.1563,1027.8132 1421.1563,1026.9539 C1421.1563,1026.2664 1421.6406,1025.8601 1422.2188,1025.8601 C1422.9531,1025.8601 1423.4375,1026.2507 1424.1406,1026.8914 L1425.4531,1025.3132 C1424.4844,1024.2976 1423.4688,1023.7039 1422.2031,1023.7039 C1420.0625,1023.7039 1418.6094,1025.2195 1418.6094,1027.1414 C1418.6094,1028.9382 1419.5313,1029.8445 1420.625,1030.5945 L1421.7188,1031.3445 C1422.6563,1031.9539 1423.1094,1032.532 1423.1094,1033.4695 C1423.1094,1034.1414 1422.6406,1034.5632 1421.9375,1034.5632 C1421.2344,1034.5632 1420.4844,1034.0476 1419.8281,1033.2195 L1418.2813,1034.907 C1419.3125,1036.0945 1420.6094,1036.7351 1421.9375,1036.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="164" x="1442.25" y="1036.136">genericNamespaceLister</text><line style="stroke:#181818;stroke-width:0.5;" x1="1322.5" x2="1693.5" y1="1046.032" y2="1046.032"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1329.5" y="1058.6679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="103" x="1341.5" y="1066.2719">indexer Indexer</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1329.5" y="1078.9398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118" x="1341.5" y="1086.5438">namespace string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1329.5" y="1099.2118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="218" x="1341.5" y="1106.8157">resource schema.GroupResource</text><line style="stroke:#181818;stroke-width:0.5;" x1="1322.5" x2="1693.5" y1="1114.8477" y2="1114.8477"/><ellipse cx="1332.5" cy="1130.4837" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="347" x="1341.5" y="1135.0876">List(selector labels.Selector) ([]runtime.Object, error)</text><ellipse cx="1332.5" cy="1150.7556" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="263" x="1341.5" y="1155.3596">Get(name string) (runtime.Object, error)</text></g><!--MD5=[0beb3fcc0d9d3e5d5e91230b082322ea]
+class client-go.ClientContentConfig--><g id="elem_client-go.ClientContentConfig"><rect codeLine="77" fill="#F1F1F1" height="129.0876" id="client-go.ClientContentConfig" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="265" x="1990.5" y="216.532"/><ellipse cx="2051.25" cy="232.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M2051.4375,239.2351 C2053.7344,239.2351 2055.1875,237.6101 2055.1875,235.6101 C2055.1875,233.782 2054.3594,232.9382 2053.2188,232.1414 L2052.2031,231.4226 C2051.0781,230.6101 2050.6563,230.3132 2050.6563,229.4539 C2050.6563,228.7664 2051.1406,228.3601 2051.7188,228.3601 C2052.4531,228.3601 2052.9375,228.7507 2053.6406,229.3914 L2054.9531,227.8132 C2053.9844,226.7976 2052.9688,226.2039 2051.7031,226.2039 C2049.5625,226.2039 2048.1094,227.7195 2048.1094,229.6414 C2048.1094,231.4382 2049.0313,232.3445 2050.125,233.0945 L2051.2188,233.8445 C2052.1563,234.4539 2052.6094,235.032 2052.6094,235.9695 C2052.6094,236.6414 2052.1406,237.0632 2051.4375,237.0632 C2050.7344,237.0632 2049.9844,236.5476 2049.3281,235.7195 L2047.7813,237.407 C2048.8125,238.5945 2050.1094,239.2351 2051.4375,239.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="135" x="2071.75" y="238.636">ClientContentConfig</text><line style="stroke:#181818;stroke-width:0.5;" x1="1991.5" x2="2254.5" y1="248.532" y2="248.532"/><ellipse cx="2001.5" cy="264.1679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="178" x="2010.5" y="268.7719">AcceptContentTypes string</text><ellipse cx="2001.5" cy="284.4398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="126" x="2010.5" y="289.0438">ContentType string</text><ellipse cx="2001.5" cy="304.7118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="239" x="2010.5" y="309.3157">GroupVersion schema.GroupVersion</text><ellipse cx="2001.5" cy="324.9837" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="237" x="2010.5" y="329.5876">Negotiator runtime.ClientNegotiator</text><line style="stroke:#181818;stroke-width:0.5;" x1="1991.5" x2="2254.5" y1="337.6196" y2="337.6196"/></g><!--MD5=[a2ff1b05a437daed6e219d7bedf54162]
+class client-go.Config--><g id="elem_client-go.Config"><rect codeLine="84" fill="#F1F1F1" height="534.5259" id="client-go.Config" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="401" x="885.5" y="821.032"/><ellipse cx="1060.25" cy="837.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1060.4375,843.7351 C1062.7344,843.7351 1064.1875,842.1101 1064.1875,840.1101 C1064.1875,838.282 1063.3594,837.4382 1062.2188,836.6414 L1061.2031,835.9226 C1060.0781,835.1101 1059.6563,834.8132 1059.6563,833.9539 C1059.6563,833.2664 1060.1406,832.8601 1060.7188,832.8601 C1061.4531,832.8601 1061.9375,833.2507 1062.6406,833.8914 L1063.9531,832.3132 C1062.9844,831.2976 1061.9688,830.7039 1060.7031,830.7039 C1058.5625,830.7039 1057.1094,832.2195 1057.1094,834.1414 C1057.1094,835.9382 1058.0313,836.8445 1059.125,837.5945 L1060.2188,838.3445 C1061.1563,838.9539 1061.6094,839.532 1061.6094,840.4695 C1061.6094,841.1414 1061.1406,841.5632 1060.4375,841.5632 C1059.7344,841.5632 1058.9844,841.0476 1058.3281,840.2195 L1056.7813,841.907 C1057.8125,843.0945 1059.1094,843.7351 1060.4375,843.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="43" x="1080.75" y="843.136">Config</text><line style="stroke:#181818;stroke-width:0.5;" x1="886.5" x2="1285.5" y1="853.032" y2="853.032"/><ellipse cx="896.5" cy="868.6679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="71" x="905.5" y="873.2719">Host string</text><ellipse cx="896.5" cy="888.9398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="94" x="905.5" y="893.5438">APIPath string</text><ellipse cx="896.5" cy="909.2118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="905.5" y="913.8157">Username string</text><ellipse cx="896.5" cy="929.4837" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="105" x="905.5" y="934.0876">Password string</text><ellipse cx="896.5" cy="949.7556" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="125" x="905.5" y="954.3596">BearerToken string</text><ellipse cx="896.5" cy="970.0275" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="149" x="905.5" y="974.6315">BearerTokenFile string</text><ellipse cx="896.5" cy="990.2994" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="227" x="905.5" y="994.9034">Impersonate ImpersonationConfig</text><ellipse cx="896.5" cy="1010.5713" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="252" x="905.5" y="1015.1753">AuthProvider *api.AuthProviderConfig</text><ellipse cx="896.5" cy="1030.8432" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="324" x="905.5" y="1035.4472">AuthConfigPersister AuthProviderConfigPersister</text><ellipse cx="896.5" cy="1051.1151" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193" x="905.5" y="1055.7191">ExecProvider *api.ExecConfig</text><ellipse cx="896.5" cy="1071.3871" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="110" x="905.5" y="1075.991">UserAgent string</text><ellipse cx="896.5" cy="1091.659" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169" x="905.5" y="1096.2629">DisableCompression bool</text><ellipse cx="896.5" cy="1111.9309" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="191" x="905.5" y="1116.5349">Transport http.RoundTripper</text><ellipse cx="896.5" cy="1132.2028" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="255" x="905.5" y="1136.8068">WrapTransport transport.WrapperFunc</text><ellipse cx="896.5" cy="1152.4747" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76" x="905.5" y="1157.0787">QPS float32</text><ellipse cx="896.5" cy="1172.7466" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="56" x="905.5" y="1177.3506">Burst int</text><ellipse cx="896.5" cy="1193.0185" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="235" x="905.5" y="1197.6225">RateLimiter flowcontrol.RateLimiter</text><ellipse cx="896.5" cy="1213.2904" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="219" x="905.5" y="1217.8944">WarningHandler WarningHandler</text><ellipse cx="896.5" cy="1233.5623" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="150" x="905.5" y="1238.1663">Timeout time.Duration</text><line style="stroke:#181818;stroke-width:0.5;" x1="886.5" x2="1285.5" y1="1246.1983" y2="1246.1983"/><ellipse cx="896.5" cy="1261.8343" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="26" x="905.5" y="1266.4382">Dial</text><text fill="#0000FF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="934.5" y="1266.4382">func</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="316" x="964.5" y="1266.4382">(context.Context, string, string) (net.Conn, error)</text><ellipse cx="896.5" cy="1282.1062" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="36" x="905.5" y="1286.7101">Proxy</text><text fill="#0000FF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="944.5" y="1286.7101">func</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="211" x="974.5" y="1286.7101">(*http.Request) (*url.URL, error)</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="3" x="905.5" y="1306.9821"> </text><ellipse cx="896.5" cy="1322.65" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="108" x="905.5" y="1327.254">GoString() string</text><ellipse cx="896.5" cy="1342.9219" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90" x="905.5" y="1347.5259">String() string</text></g><!--MD5=[c6718daf57d0260738c8e46e79789c72]
+class client-go.ContentConfig--><g id="elem_client-go.ContentConfig"><rect codeLine="111" fill="#F1F1F1" height="129.0876" id="client-go.ContentConfig" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="354" x="741" y="216.532"/><ellipse cx="865.75" cy="232.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M865.9375,239.2351 C868.2344,239.2351 869.6875,237.6101 869.6875,235.6101 C869.6875,233.782 868.8594,232.9382 867.7188,232.1414 L866.7031,231.4226 C865.5781,230.6101 865.1563,230.3132 865.1563,229.4539 C865.1563,228.7664 865.6406,228.3601 866.2188,228.3601 C866.9531,228.3601 867.4375,228.7507 868.1406,229.3914 L869.4531,227.8132 C868.4844,226.7976 867.4688,226.2039 866.2031,226.2039 C864.0625,226.2039 862.6094,227.7195 862.6094,229.6414 C862.6094,231.4382 863.5313,232.3445 864.625,233.0945 L865.7188,233.8445 C866.6563,234.4539 867.1094,235.032 867.1094,235.9695 C867.1094,236.6414 866.6406,237.0632 865.9375,237.0632 C865.2344,237.0632 864.4844,236.5476 863.8281,235.7195 L862.2813,237.407 C863.3125,238.5945 864.6094,239.2351 865.9375,239.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="886.25" y="238.636">ContentConfig</text><line style="stroke:#181818;stroke-width:0.5;" x1="742" x2="1094" y1="248.532" y2="248.532"/><ellipse cx="752" cy="264.1679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="178" x="761" y="268.7719">AcceptContentTypes string</text><ellipse cx="752" cy="284.4398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="126" x="761" y="289.0438">ContentType string</text><ellipse cx="752" cy="304.7118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="246" x="761" y="309.3157">GroupVersion *schema.GroupVersion</text><ellipse cx="752" cy="324.9837" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="328" x="761" y="329.5876">NegotiatedSerializer runtime.NegotiatedSerializer</text><line style="stroke:#181818;stroke-width:0.5;" x1="742" x2="1094" y1="337.6196" y2="337.6196"/></g><!--MD5=[a14512ebf378de1a137021057c9704b5]
+class client-go.ImpersonationConfig--><g id="elem_client-go.ImpersonationConfig"><rect codeLine="122" fill="#F1F1F1" height="129.0876" id="client-go.ImpersonationConfig" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="188" x="2291" y="216.532"/><ellipse cx="2313.2" cy="232.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M2313.3875,239.2351 C2315.6844,239.2351 2317.1375,237.6101 2317.1375,235.6101 C2317.1375,233.782 2316.3094,232.9382 2315.1688,232.1414 L2314.1531,231.4226 C2313.0281,230.6101 2312.6063,230.3132 2312.6063,229.4539 C2312.6063,228.7664 2313.0906,228.3601 2313.6688,228.3601 C2314.4031,228.3601 2314.8875,228.7507 2315.5906,229.3914 L2316.9031,227.8132 C2315.9344,226.7976 2314.9188,226.2039 2313.6531,226.2039 C2311.5125,226.2039 2310.0594,227.7195 2310.0594,229.6414 C2310.0594,231.4382 2310.9813,232.3445 2312.075,233.0945 L2313.1688,233.8445 C2314.1063,234.4539 2314.5594,235.032 2314.5594,235.9695 C2314.5594,236.6414 2314.0906,237.0632 2313.3875,237.0632 C2312.6844,237.0632 2311.9344,236.5476 2311.2781,235.7195 L2309.7313,237.407 C2310.7625,238.5945 2312.0594,239.2351 2313.3875,239.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="140" x="2328.8" y="238.636">ImpersonationConfig</text><line style="stroke:#181818;stroke-width:0.5;" x1="2292" x2="2478" y1="248.532" y2="248.532"/><ellipse cx="2302" cy="264.1679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="110" x="2311" y="268.7719">UserName string</text><ellipse cx="2302" cy="284.4398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="65" x="2311" y="289.0438">UID string</text><ellipse cx="2302" cy="304.7118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="99" x="2311" y="309.3157">Groups []string</text><ellipse cx="2302" cy="324.9837" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="33" x="2311" y="329.5876">Extra</text><text fill="#0000FF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="2347" y="329.5876">map</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="2377" y="329.5876">[string][]string</text><line style="stroke:#181818;stroke-width:0.5;" x1="2292" x2="2478" y1="337.6196" y2="337.6196"/></g><!--MD5=[be2103cb363e1e4d73e328e7b1e5f4b4]
+class client-go.Interface--><g id="elem_client-go.Interface"><rect codeLine="129" fill="#F1F1F1" height="210.1753" id="client-go.Interface" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="294" x="14" y="1760.532"/><ellipse cx="127.25" cy="1776.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M123.6094,1783.032 L130.3906,1783.032 L130.3906,1780.9539 L128.2344,1780.9539 L128.2344,1772.5164 L130.3906,1772.5164 L130.3906,1770.407 L123.6094,1770.407 L123.6094,1772.5164 L125.7031,1772.5164 L125.7031,1780.9539 L123.6094,1780.9539 L123.6094,1783.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="59" x="147.75" y="1782.636">Interface</text><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="307" y1="1792.532" y2="1792.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="307" y1="1800.532" y2="1800.532"/><ellipse cx="25" cy="1816.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="268" x="34" y="1820.7719">GetRateLimiter() flowcontrol.RateLimiter</text><ellipse cx="25" cy="1836.4398" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="175" x="34" y="1841.0438">Verb(verb string) *Request</text><ellipse cx="25" cy="1856.7118" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104" x="34" y="1861.3157">Post() *Request</text><ellipse cx="25" cy="1876.9837" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="34" y="1881.5876">Put() *Request</text><ellipse cx="25" cy="1897.2556" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240" x="34" y="1901.8596">Patch(pt types.PatchType) *Request</text><ellipse cx="25" cy="1917.5275" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="34" y="1922.1315">Get() *Request</text><ellipse cx="25" cy="1937.7994" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118" x="34" y="1942.4034">Delete() *Request</text><ellipse cx="25" cy="1958.0713" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="230" x="34" y="1962.6753">APIVersion() schema.GroupVersion</text></g><!--MD5=[41f56834c04139fdb2b885367e3e216c]
+class client-go.RESTClient--><g id="elem_client-go.RESTClient"><rect codeLine="140" fill="#F1F1F1" height="372.3506" id="client-go.RESTClient" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="294" x="152" y="2030.532"/><ellipse cx="258.75" cy="2046.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M258.9375,2053.2351 C261.2344,2053.2351 262.6875,2051.6101 262.6875,2049.6101 C262.6875,2047.782 261.8594,2046.9382 260.7188,2046.1414 L259.7031,2045.4226 C258.5781,2044.6101 258.1563,2044.3132 258.1563,2043.4539 C258.1563,2042.7664 258.6406,2042.3601 259.2188,2042.3601 C259.9531,2042.3601 260.4375,2042.7507 261.1406,2043.3914 L262.4531,2041.8132 C261.4844,2040.7976 260.4688,2040.2039 259.2031,2040.2039 C257.0625,2040.2039 255.6094,2041.7195 255.6094,2043.6414 C255.6094,2045.4382 256.5313,2046.3445 257.625,2047.0945 L258.7188,2047.8445 C259.6563,2048.4539 260.1094,2049.032 260.1094,2049.9695 C260.1094,2050.6414 259.6406,2051.0632 258.9375,2051.0632 C258.2344,2051.0632 257.4844,2050.5476 256.8281,2049.7195 L255.2813,2051.407 C256.3125,2052.5945 257.6094,2053.2351 258.9375,2053.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="72" x="279.25" y="2052.636">RESTClient</text><line style="stroke:#181818;stroke-width:0.5;" x1="153" x2="445" y1="2062.532" y2="2062.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="160" y="2075.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91" x="172" y="2082.7719">base *url.URL</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="160" y="2095.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="159" x="172" y="2103.0438">versionedAPIPath string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="160" y="2115.7118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="189" x="172" y="2123.3157">content ClientContentConfig</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="160" y="2135.9837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231" x="172" y="2143.5876">rateLimiter flowcontrol.RateLimiter</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="160" y="2156.2556"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="218" x="172" y="2163.8596">warningHandler WarningHandler</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="3" x="172" y="2184.1315"> </text><ellipse cx="163" cy="2199.7994" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120" x="172" y="2204.4034">Client *http.Client</text><line style="stroke:#181818;stroke-width:0.5;" x1="153" x2="445" y1="2212.4354" y2="2212.4354"/><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="160" y="2225.0713"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="115" x="172" y="2232.6753">createBackoffMgr</text><text fill="#0000FF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="290" y="2232.6753">func</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="120" x="320" y="2232.6753">() BackoffManager</text><ellipse cx="163" cy="2248.3432" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="268" x="172" y="2252.9472">GetRateLimiter() flowcontrol.RateLimiter</text><ellipse cx="163" cy="2268.6151" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="175" x="172" y="2273.2191">Verb(verb string) *Request</text><ellipse cx="163" cy="2288.8871" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104" x="172" y="2293.491">Post() *Request</text><ellipse cx="163" cy="2309.159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="172" y="2313.7629">Put() *Request</text><ellipse cx="163" cy="2329.4309" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="240" x="172" y="2334.0349">Patch(pt types.PatchType) *Request</text><ellipse cx="163" cy="2349.7028" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="172" y="2354.3068">Get() *Request</text><ellipse cx="163" cy="2369.9747" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118" x="172" y="2374.5787">Delete() *Request</text><ellipse cx="163" cy="2390.2466" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="230" x="172" y="2394.8506">APIVersion() schema.GroupVersion</text></g><!--MD5=[ba2d285c8452f18da789a6d089492f5e]
+class client-go.Request--><g id="elem_client-go.Request"><rect codeLine="160" fill="#F1F1F1" height="1223.7709" id="client-go.Request" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="836" x="14" y="476.532"/><ellipse cx="400.25" cy="492.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M400.4375,499.2351 C402.7344,499.2351 404.1875,497.6101 404.1875,495.6101 C404.1875,493.782 403.3594,492.9382 402.2188,492.1414 L401.2031,491.4226 C400.0781,490.6101 399.6563,490.3132 399.6563,489.4539 C399.6563,488.7664 400.1406,488.3601 400.7188,488.3601 C401.4531,488.3601 401.9375,488.7507 402.6406,489.3914 L403.9531,487.8132 C402.9844,486.7976 401.9688,486.2039 400.7031,486.2039 C398.5625,486.2039 397.1094,487.7195 397.1094,489.6414 C397.1094,491.4382 398.0313,492.3445 399.125,493.0945 L400.2188,493.8445 C401.1563,494.4539 401.6094,495.032 401.6094,495.9695 C401.6094,496.6414 401.1406,497.0632 400.4375,497.0632 C399.7344,497.0632 398.9844,496.5476 398.3281,495.7195 L396.7813,497.407 C397.8125,498.5945 399.1094,499.2351 400.4375,499.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="55" x="420.75" y="498.636">Request</text><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="849" y1="508.532" y2="508.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="521.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89" x="34" y="528.7719">c *RESTClient</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="541.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="218" x="34" y="549.0438">warningHandler WarningHandler</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="561.7118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231" x="34" y="569.3157">rateLimiter flowcontrol.RateLimiter</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="581.9837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="160" x="34" y="589.5876">backoff BackoffManager</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="602.2556"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147" x="34" y="609.8596">timeout time.Duration</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="622.5275"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="95" x="34" y="630.1315">maxRetries int</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="642.7994"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="70" x="34" y="650.4034">verb string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="663.0713"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="110" x="34" y="670.6753">pathPrefix string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="683.3432"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="97" x="34" y="690.9472">subpath string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="703.6151"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="119" x="34" y="711.2191">params url.Values</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="723.8871"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="137" x="34" y="731.491">headers http.Header</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="744.159"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="118" x="34" y="751.7629">namespace string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="764.4309"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="130" x="34" y="772.0349">namespaceSet bool</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="784.7028"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="98" x="34" y="792.3068">resource string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="804.9747"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="137" x="34" y="812.5787">resourceName string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="825.2466"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123" x="34" y="832.8506">subresource string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="845.5185"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52" x="34" y="853.1225">err error</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="865.7904"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="99" x="34" y="873.3944">body io.Reader</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="886.0623"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="111" x="34" y="893.6663">bodyBytes []byte</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="906.3343"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="168" x="34" y="913.9382">retryFn requestRetryFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="849" y1="921.9702" y2="921.9702"/><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="934.6062"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="345" x="34" y="942.2101">setParam(paramName string, value string) *Request</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="954.8781"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="182" x="34" y="962.4821">finalURLTemplate() url.URL</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="975.15"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="399" x="34" y="982.754">tryThrottleWithInfo(ctx context.Context, retryInfo string) error</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="995.4219"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="239" x="34" y="1003.0259">tryThrottle(ctx context.Context) error</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1015.6938"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="429" x="34" y="1023.2978">newStreamWatcher(resp *http.Response) (watch.Interface, error)</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1035.9657"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="193" x="34" y="1043.5697">requestPreflightCheck() error</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1056.2376"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="399" x="34" y="1063.8416">newHTTPRequest(ctx context.Context) (*http.Request, error)</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1076.5096"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="203" x="34" y="1084.1135">request(ctx context.Context, fn</text><text fill="#0000FF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="30" x="240" y="1084.1135">func</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="257" x="270" y="1084.1135">(*http.Request, *http.Response) ) error</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1096.7815"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="447" x="34" y="1104.3854">transformResponse(resp *http.Response, req *http.Request) Result</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1117.0534"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="637" x="34" y="1124.6573">transformUnstructuredResponseError(resp *http.Response, req *http.Request, body []byte) error</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="22" y="1137.3253"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="767" x="34" y="1144.9293">newUnstructuredResponseError(body []byte, isTextResponse bool, statusCode int, method string, retryAfter int) error</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="3" x="34" y="1165.2012"> </text><ellipse cx="25" cy="1180.8691" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="175" x="34" y="1185.4731">Verb(verb string) *Request</text><ellipse cx="25" cy="1201.141" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231" x="34" y="1205.745">Prefix(segments ...string) *Request</text><ellipse cx="25" cy="1221.4129" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="231" x="34" y="1226.0169">Suffix(segments ...string) *Request</text><ellipse cx="25" cy="1241.6848" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="234" x="34" y="1246.2888">Resource(resource string) *Request</text><ellipse cx="25" cy="1261.9568" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="296" x="34" y="1266.5607">BackOff(manager BackoffManager) *Request</text><ellipse cx="25" cy="1282.2287" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="346" x="34" y="1286.8326">WarningHandler(handler WarningHandler) *Request</text><ellipse cx="25" cy="1302.5006" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="328" x="34" y="1307.1046">Throttle(limiter flowcontrol.RateLimiter) *Request</text><ellipse cx="25" cy="1322.7725" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="304" x="34" y="1327.3765">SubResource(subresources ...string) *Request</text><ellipse cx="25" cy="1343.0444" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="251" x="34" y="1347.6484">Name(resourceName string) *Request</text><ellipse cx="25" cy="1363.3163" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="271" x="34" y="1367.9203">Namespace(namespace string) *Request</text><ellipse cx="25" cy="1383.5882" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="416" x="34" y="1388.1922">NamespaceIfScoped(namespace string, scoped bool) *Request</text><ellipse cx="25" cy="1403.8601" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="249" x="34" y="1408.4641">AbsPath(segments ...string) *Request</text><ellipse cx="25" cy="1424.132" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="212" x="34" y="1428.736">RequestURI(uri string) *Request</text><ellipse cx="25" cy="1444.404" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="296" x="34" y="1449.0079">Param(paramName string, s string) *Request</text><ellipse cx="25" cy="1464.6759" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="531" x="34" y="1469.2798">VersionedParams(obj runtime.Object, codec runtime.ParameterCodec) *Request</text><ellipse cx="25" cy="1484.9478" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="810" x="34" y="1489.5518">SpecificallyVersionedParams(obj runtime.Object, codec runtime.ParameterCodec, version schema.GroupVersion) *Request</text><ellipse cx="25" cy="1505.2197" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="311" x="34" y="1509.8237">SetHeader(key string, values ...string) *Request</text><ellipse cx="25" cy="1525.4916" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="234" x="34" y="1530.0956">Timeout(d time.Duration) *Request</text><ellipse cx="25" cy="1545.7635" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="242" x="34" y="1550.3675">MaxRetries(maxRetries int) *Request</text><ellipse cx="25" cy="1566.0354" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59" x="34" y="1570.6394">Body(obj</text><text fill="#0000FF" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="59" x="96" y="1570.6394">interface</text><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80" x="155" y="1570.6394">{}) *Request</text><ellipse cx="25" cy="1586.3073" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="34" y="1590.9113">Error() error</text><ellipse cx="25" cy="1606.5793" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="34" y="1611.1832">URL() *url.URL</text><ellipse cx="25" cy="1626.8512" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="331" x="34" y="1631.4551">Watch(ctx context.Context) (watch.Interface, error)</text><ellipse cx="25" cy="1647.1231" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="325" x="34" y="1651.7271">Stream(ctx context.Context) (io.ReadCloser, error)</text><ellipse cx="25" cy="1667.395" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="199" x="34" y="1671.999">Do(ctx context.Context) Result</text><ellipse cx="25" cy="1687.6669" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="272" x="34" y="1692.2709">DoRaw(ctx context.Context) ([]byte, error)</text></g><!--MD5=[f328864b4efc99ae2ab1e2273611f017]
+class client-go.ResponseWrapper--><g id="elem_client-go.ResponseWrapper"><rect codeLine="228" fill="#F1F1F1" height="88.5438" id="client-go.ResponseWrapper" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="332" x="189" y="236.532"/><ellipse cx="290.25" cy="252.532" fill="#B4A7E5" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M286.6094,259.032 L293.3906,259.032 L293.3906,256.9539 L291.2344,256.9539 L291.2344,248.5164 L293.3906,248.5164 L293.3906,246.407 L286.6094,246.407 L286.6094,248.5164 L288.7031,248.5164 L288.7031,256.9539 L286.6094,256.9539 L286.6094,259.032 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" font-style="italic" lengthAdjust="spacing" textLength="121" x="310.75" y="258.636">ResponseWrapper</text><line style="stroke:#181818;stroke-width:0.5;" x1="190" x2="520" y1="268.532" y2="268.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="190" x2="520" y1="276.532" y2="276.532"/><ellipse cx="200" cy="292.1679" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="253" x="209" y="296.7719">DoRaw( context.Context) ([]byte, error)</text><ellipse cx="200" cy="312.4398" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="306" x="209" y="317.0438">Stream( context.Context) (io.ReadCloser, error)</text></g><!--MD5=[c7bf48dc0c4fdfb7cf08c77b09a83c9b]
+class client-go.Result--><g id="elem_client-go.Result"><rect codeLine="233" fill="#F1F1F1" height="331.8068" id="client-go.Result" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="297" x="2181.5" y="922.532"/><ellipse cx="2304.75" cy="938.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M2304.9375,945.2351 C2307.2344,945.2351 2308.6875,943.6101 2308.6875,941.6101 C2308.6875,939.782 2307.8594,938.9382 2306.7188,938.1414 L2305.7031,937.4226 C2304.5781,936.6101 2304.1563,936.3132 2304.1563,935.4539 C2304.1563,934.7664 2304.6406,934.3601 2305.2188,934.3601 C2305.9531,934.3601 2306.4375,934.7507 2307.1406,935.3914 L2308.4531,933.8132 C2307.4844,932.7976 2306.4688,932.2039 2305.2031,932.2039 C2303.0625,932.2039 2301.6094,933.7195 2301.6094,935.6414 C2301.6094,937.4382 2302.5313,938.3445 2303.625,939.0945 L2304.7188,939.8445 C2305.6563,940.4539 2306.1094,941.032 2306.1094,941.9695 C2306.1094,942.6414 2305.6406,943.0632 2304.9375,943.0632 C2304.2344,943.0632 2303.4844,942.5476 2302.8281,941.7195 L2301.2813,943.407 C2302.3125,944.5945 2303.6094,945.2351 2304.9375,945.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="42" x="2325.25" y="944.636">Result</text><line style="stroke:#181818;stroke-width:0.5;" x1="2182.5" x2="2477.5" y1="954.532" y2="954.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="2189.5" y="967.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="2201.5" y="974.7719">body []byte</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="2189.5" y="987.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="203" x="2201.5" y="995.0438">warnings []net.WarningHeader</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="2189.5" y="1007.7118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="124" x="2201.5" y="1015.3157">contentType string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="2189.5" y="1027.9837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="52" x="2201.5" y="1035.5876">err error</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="2189.5" y="1048.2556"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="96" x="2201.5" y="1055.8596">statusCode int</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="2189.5" y="1068.5275"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="169" x="2201.5" y="1076.1315">decoder runtime.Decoder</text><line style="stroke:#181818;stroke-width:0.5;" x1="2182.5" x2="2477.5" y1="1084.1635" y2="1084.1635"/><ellipse cx="2192.5" cy="1099.7994" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="128" x="2201.5" y="1104.4034">Raw() ([]byte, error)</text><ellipse cx="2192.5" cy="1120.0713" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="184" x="2201.5" y="1124.6753">Get() (runtime.Object, error)</text><ellipse cx="2192.5" cy="1140.3432" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="234" x="2201.5" y="1144.9472">StatusCode(statusCode *int) Result</text><ellipse cx="2192.5" cy="1160.6151" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="271" x="2201.5" y="1165.2191">ContentType(contentType *string) Result</text><ellipse cx="2192.5" cy="1180.8871" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="194" x="2201.5" y="1185.491">Into(obj runtime.Object) error</text><ellipse cx="2192.5" cy="1201.159" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="251" x="2201.5" y="1205.7629">WasCreated(wasCreated *bool) Result</text><ellipse cx="2192.5" cy="1221.4309" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="75" x="2201.5" y="1226.0349">Error() error</text><ellipse cx="2192.5" cy="1241.7028" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="214" x="2201.5" y="1246.3068">Warnings() []net.WarningHeader</text></g><!--MD5=[f86c328d42f11177e8b2379aed58a0f7]
+class client-go.TLSClientConfig--><g id="elem_client-go.TLSClientConfig"><rect codeLine="251" fill="#F1F1F1" height="270.991" id="client-go.TLSClientConfig" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="149" x="556.5" y="145.532"/><ellipse cx="576.45" cy="161.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M576.6375,168.2351 C578.9344,168.2351 580.3875,166.6101 580.3875,164.6101 C580.3875,162.782 579.5594,161.9382 578.4188,161.1414 L577.4031,160.4226 C576.2781,159.6101 575.8563,159.3132 575.8563,158.4539 C575.8563,157.7664 576.3406,157.3601 576.9188,157.3601 C577.6531,157.3601 578.1375,157.7507 578.8406,158.3914 L580.1531,156.8132 C579.1844,155.7976 578.1688,155.2039 576.9031,155.2039 C574.7625,155.2039 573.3094,156.7195 573.3094,158.6414 C573.3094,160.4382 574.2313,161.3445 575.325,162.0945 L576.4188,162.8445 C577.3563,163.4539 577.8094,164.032 577.8094,164.9695 C577.8094,165.6414 577.3406,166.0632 576.6375,166.0632 C575.9344,166.0632 575.1844,165.5476 574.5281,164.7195 L572.9813,166.407 C574.0125,167.5945 575.3094,168.2351 576.6375,168.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="106" x="591.55" y="167.636">TLSClientConfig</text><line style="stroke:#181818;stroke-width:0.5;" x1="557.5" x2="704.5" y1="177.532" y2="177.532"/><ellipse cx="567.5" cy="193.1679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89" x="576.5" y="197.7719">Insecure bool</text><ellipse cx="567.5" cy="213.4398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="121" x="576.5" y="218.0438">ServerName string</text><ellipse cx="567.5" cy="233.7118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="92" x="576.5" y="238.3157">CertFile string</text><ellipse cx="567.5" cy="253.9837" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="89" x="576.5" y="258.5876">KeyFile string</text><ellipse cx="567.5" cy="274.2556" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="576.5" y="278.8596">CAFile string</text><ellipse cx="567.5" cy="294.5275" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="100" x="576.5" y="299.1315">CertData []byte</text><ellipse cx="567.5" cy="314.7994" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="97" x="576.5" y="319.4034">KeyData []byte</text><ellipse cx="567.5" cy="335.0713" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91" x="576.5" y="339.6753">CAData []byte</text><ellipse cx="567.5" cy="355.3432" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="123" x="576.5" y="359.9472">NextProtos []string</text><line style="stroke:#181818;stroke-width:0.5;" x1="557.5" x2="704.5" y1="367.9792" y2="367.9792"/><ellipse cx="567.5" cy="383.6151" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="108" x="576.5" y="388.2191">GoString() string</text><ellipse cx="567.5" cy="403.8871" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="90" x="576.5" y="408.491">String() string</text></g><!--MD5=[ceedd14a6b1bfacef263d7d7d3029190]
+class client-go.sanitizedObject--><g id="elem_client-go.sanitizedObject"><rect fill="#F1F1F1" height="48" id="client-go.sanitizedObject" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="136" x="16" y="257.032"/><ellipse cx="31" cy="273.032" fill="#ADD1B2" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M31.2344,279.7351 C32.3906,279.7351 33.4844,279.2507 34.3125,278.2195 L32.8906,276.7039 C32.5,277.2507 32.0313,277.5632 31.4688,277.5632 C30.2813,277.5632 29.2656,276.4226 29.2656,273.1882 C29.2656,270.032 30.3281,268.8601 31.3594,268.8601 C31.9531,268.8601 32.3281,269.157 32.75,269.657 L34.1719,268.0945 C33.5,267.3445 32.5313,266.7039 31.25,266.7039 C28.8281,266.7039 26.6875,268.6726 26.6875,273.2976 C26.6875,277.9382 28.8281,279.7351 31.2344,279.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104" x="45" y="279.136">sanitizedObject</text><line style="stroke:#181818;stroke-width:0.5;" x1="17" x2="151" y1="289.032" y2="289.032"/><line style="stroke:#181818;stroke-width:0.5;" x1="17" x2="151" y1="297.032" y2="297.032"/></g><!--MD5=[b23bee5dd1db4caa59cf3be1bc5a836c]
+class runtime.Object--><g id="elem_runtime.Object"><rect fill="#F1F1F1" height="48" id="runtime.Object" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="75" x="46.5" y="37.532"/><ellipse cx="61.5" cy="53.532" fill="#ADD1B2" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M61.7344,60.2351 C62.8906,60.2351 63.9844,59.7507 64.8125,58.7195 L63.3906,57.2039 C63,57.7507 62.5313,58.0632 61.9688,58.0632 C60.7813,58.0632 59.7656,56.9226 59.7656,53.6882 C59.7656,50.532 60.8281,49.3601 61.8594,49.3601 C62.4531,49.3601 62.8281,49.657 63.25,50.157 L64.6719,48.5945 C64,47.8445 63.0313,47.2039 61.75,47.2039 C59.3281,47.2039 57.1875,49.1726 57.1875,53.7976 C57.1875,58.4382 59.3281,60.2351 61.7344,60.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="43" x="75.5" y="59.636">Object</text><line style="stroke:#181818;stroke-width:0.5;" x1="47.5" x2="120.5" y1="69.532" y2="69.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="47.5" x2="120.5" y1="77.532" y2="77.532"/></g><!--MD5=[3db0e121fd57469aab20e72bb3a90049]
+reverse link client-go.Lister to client-go.ListerWatcher--><g id="link_client-go.Lister_client-go.ListerWatcher"><path codeLine="67" d="M1108.5146,1908.5255 C1022.7347,1983.0521 849.1461,2133.8679 781.6884,2192.476 " fill="none" id="client-go.Lister-backto-client-go.ListerWatcher" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="1118.5272,1899.8264,1111.3745,1900.742,1109.4686,1907.6966,1116.6213,1906.7811,1118.5272,1899.8264" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[21fa856774357805fddad94283fda1c9]
+reverse link client-go.Watcher to client-go.ListerWatcher--><g id="link_client-go.Watcher_client-go.ListerWatcher"><path codeLine="68" d="M754,1913.1457 C754,1989.0243 754,2134.6773 754,2192.2527 " fill="none" id="client-go.Watcher-backto-client-go.ListerWatcher" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="754,1899.8264,750,1905.8264,754,1911.8264,758,1905.8264,754,1899.8264" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[599ef4851c9734382b0fb36d95f307d1]
+reverse link client-go.ListerWatcher to client-go.ListWatch--><g id="link_client-go.ListerWatcher_client-go.ListWatch"><path codeLine="71" d="M754,2260.8912 C754,2312.857 754,2399.7765 754,2462.2272 " fill="none" id="client-go.ListerWatcher-backto-client-go.ListWatch" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="747.0001,2260.6216,754,2240.6216,761.0001,2260.6216,747.0001,2260.6216" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[be44cab8344a216c7420fd6ba499da8a]
+reverse link client-go.GenericLister to client-go.genericLister--><g id="link_client-go.GenericLister_client-go.genericLister"><path codeLine="72" d="M1764.6113,355.488 C1800.9618,509.1691 1883.9344,859.9563 1920.3328,1013.8394 " fill="none" id="client-go.GenericLister-backto-client-go.genericLister" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1757.6949,356.6579,1759.9032,335.5837,1771.319,353.4353,1757.6949,356.6579" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[6031dd7acade874415a1caa641b8de24]
+reverse link client-go.GenericNamespaceLister to client-go.genericLister--><g id="link_client-go.GenericNamespaceLister_client-go.genericLister"><path codeLine="73" d="M1390.8525,337.4344 C1428.3363,364.1134 1475.4781,394.8035 1521,416.532 C1601.3003,454.8609 1647.5486,415.1867 1712,476.532 C1866.6485,623.7275 1916.0854,885.9683 1931.404,1014.0258 " fill="none" id="client-go.GenericNamespaceLister-backto-client-go.genericLister" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1386.7266,343.0894,1374.6169,325.701,1394.927,331.7424,1386.7266,343.0894" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[f6ca2492ee76708c3dc5310d5583effe]
+reverse link client-go.GenericNamespaceLister to client-go.genericNamespaceLister--><g id="link_client-go.GenericNamespaceLister_client-go.genericNamespaceLister"><path codeLine="74" d="M1332.2245,345.3975 C1367.2058,493.2897 1453.1601,856.6825 1490.3629,1013.9667 " fill="none" id="client-go.GenericNamespaceLister-backto-client-go.genericNamespaceLister" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="1325.3327,346.6712,1327.5411,325.5969,1338.9568,343.4486,1325.3327,346.6712" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[335f4943a0195eca5718aba57ef9fb8c]
+reverse link client-go.ContentConfig to client-go.Config--><g id="link_client-go.ContentConfig_client-go.Config"><path codeLine="294" d="M934.1179,358.5033 C956.114,464.2287 996.6486,659.0604 1030.3127,820.8685 " fill="none" id="client-go.ContentConfig-backto-client-go.Config" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="931.4642,345.7481,928.7702,352.4371,933.9085,357.4965,936.6025,350.8075,931.4642,345.7481" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[b96762855b2e32b4a2922f5a5ebdaf6e]
+reverse link client-go.TLSClientConfig to client-go.Config--><g id="link_client-go.TLSClientConfig_client-go.Config"><path codeLine="295" d="M714.8531,408.5824 C717.8389,411.3483 720.8887,414.0055 724,416.532 C777.8226,460.2383 820.28,426.2338 868,476.532 C957.0799,570.4248 1010.1018,703.1078 1041.4932,820.9413 " fill="none" id="client-go.TLSClientConfig-backto-client-go.Config" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="705.5389,399.406,707.0058,406.4663,714.0872,407.8277,712.6203,400.7674,705.5389,399.406" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[ae76ccf0f90b0567629fbc77146664e6]
+reverse link runtime.Object to client-go.sanitizedObject--><g id="link_runtime.Object_client-go.sanitizedObject"><path codeLine="296" d="M84,99.1467 C84,144.3369 84,218.8161 84,256.9286 " fill="none" id="runtime.Object-backto-client-go.sanitizedObject" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="84,85.861,80,91.861,84,97.861,88,91.861,84,85.861" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[41371aa3280882ff9059ede3f55a91d4]
+reverse link client-go.Getter to client-go.RESTClient--><g id="link_client-go.Getter_client-go.RESTClient"><path codeLine="298" d="M415.2287,1918.7491 C403.3688,1949.1347 387.7139,1989.2432 371.7499,2030.1434 " fill="none" id="client-go.Getter-backto-client-go.RESTClient" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="408.8215,1915.9123,422.6144,1899.8264,421.8633,1921.0028,408.8215,1915.9123" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[b609e24d1293ac6914177b44926b1d87]
+reverse link client-go.Interface to client-go.RESTClient--><g id="link_client-go.Interface_client-go.RESTClient"><path codeLine="299" d="M209.8612,1989.8094 C215.0422,2002.9871 220.3892,2016.5871 225.7707,2030.2748 " fill="none" id="client-go.Interface-backto-client-go.RESTClient" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="203.208,1992.018,202.4046,1970.8436,216.2372,1986.8954,203.208,1992.018" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[19b6c216793da3030ee67c7c4905365e]
+reverse link client-go.ResponseWrapper to client-go.Request--><g id="link_client-go.ResponseWrapper_client-go.Request"><path codeLine="300" d="M361.168,345.7157 C364.4031,379.6426 368.7137,424.8474 373.6173,476.2719 " fill="none" id="client-go.ResponseWrapper-backto-client-go.Request" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="354.1797,346.1711,359.2495,325.5969,368.1165,344.8421,354.1797,346.1711" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[3caa51afb14d0c31bdf7ab8860990423]
+reverse link client-go.Request to client-go.Getter--><g id="link_client-go.Request_client-go.Getter"><path codeLine="301" d="M435.1783,1705.9073 C435.4511,1758.9144 435.6785,1803.087 435.8244,1831.426 " fill="none" id="client-go.Request-backto-client-go.Getter" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="#181818" points="435.1517,1700.7503,431.1983,1709.7708,435.1776,1705.7502,439.1982,1709.7295,435.1517,1700.7503" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[c1be75903b52c05d9c603a4e2d865ed8]
+reverse link client-go.Getter to client-go.ListerWatcher--><g id="link_client-go.Getter_client-go.ListerWatcher"><path codeLine="302" d="M470.5237,1903.6383 C536.2319,1976.1653 677.5684,2132.1689 732.0034,2192.2527 " fill="none" id="client-go.Getter-backto-client-go.ListerWatcher" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="467.0702,1899.8264,470.1487,1909.1818,470.4273,1903.5318,476.0773,1903.8104,467.0702,1899.8264" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[7b0696164024d236c32b86750d4254b1]
+@startuml
+namespace client-go {
+    interface GenericLister  {
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + Get(name string) (runtime.Object, error)
+        + ByNamespace(namespace string) GenericNamespaceLister
+
+    }
+    interface GenericNamespaceLister  {
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + Get(name string) (runtime.Object, error)
+
+    }
+    interface Getter  {
+        + Get() *client-go.Request
+
+    }
+    class ListWatch << (S,Aquamarine) >> {
+        + ListFunc ListFunc
+        + WatchFunc WatchFunc
+        + DisableChunking bool
+
+        + List(options v1.ListOptions) (runtime.Object, error)
+        + Watch(options v1.ListOptions) (watch.Interface, error)
+
+    }
+    interface Lister  {
+        + List(options v1.ListOptions) (runtime.Object, error)
+
+    }
+    interface ListerWatcher  {
+    }
+    interface Watcher  {
+        + Watch(options v1.ListOptions) (watch.Interface, error)
+
+    }
+    ' class client-go.AppendFunc << (T, #FF7700) >>  {
+    ' }
+    ' class client-go.ListFunc << (T, #FF7700) >>  {
+    ' }
+    ' class client-go.WatchFunc << (T, #FF7700) >>  {
+    ' }
+    class genericLister << (S,Aquamarine) >> {
+        - indexer Indexer
+        - resource schema.GroupResource
+
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + ByNamespace(namespace string) GenericNamespaceLister
+        + Get(name string) (runtime.Object, error)
+
+    }
+    class genericNamespaceLister << (S,Aquamarine) >> {
+        - indexer Indexer
+        - namespace string
+        - resource schema.GroupResource
+
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + Get(name string) (runtime.Object, error)
+
+    }
+    ' class "<font color=blue>func</font>(v1.ListOptions) (runtime.Object, error)" as fontcolorbluefuncfontv1ListOptionsruntimeObjecterror {
+    '     'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    ' }
+    ' class "<font color=blue>func</font>(v1.ListOptions) (watch.Interface, error)" as fontcolorbluefuncfontv1ListOptionswatchInterfaceerror {
+    '     'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    ' }
+}
+"client-go.Lister" *- - "client-go.ListerWatcher"
+"client-go.Watcher" *- - "client-go.ListerWatcher"
+
+' "client-go.Lister" <|- - "client-go.ListWatch"
+"client-go.ListerWatcher" <|- - "client-go.ListWatch"
+"client-go.GenericLister" <|- - "client-go.genericLister"
+"client-go.GenericNamespaceLister" <|- - "client-go.genericLister"
+"client-go.GenericNamespaceLister" <|- - "client-go.genericNamespaceLister"
+
+namespace client-go {
+    class ClientContentConfig << (S,Aquamarine) >> {
+        + AcceptContentTypes string
+        + ContentType string
+        + GroupVersion schema.GroupVersion
+        + Negotiator runtime.ClientNegotiator
+
+    }
+    class Config << (S,Aquamarine) >> {
+        + Host string
+        + APIPath string
+        + Username string
+        + Password string
+        + BearerToken string
+        + BearerTokenFile string
+        + Impersonate ImpersonationConfig
+        + AuthProvider *api.AuthProviderConfig
+        + AuthConfigPersister AuthProviderConfigPersister
+        + ExecProvider *api.ExecConfig
+        + UserAgent string
+        + DisableCompression bool
+        + Transport http.RoundTripper
+        + WrapTransport transport.WrapperFunc
+        + QPS float32
+        + Burst int
+        + RateLimiter flowcontrol.RateLimiter
+        + WarningHandler WarningHandler
+        + Timeout time.Duration
+        + Dial <font color=blue>func</font>(context.Context, string, string) (net.Conn, error)
+        + Proxy <font color=blue>func</font>(*http.Request) (*url.URL, error)
+
+        + GoString() string
+        + String() string
+
+    }
+    class ContentConfig << (S,Aquamarine) >> {
+        + AcceptContentTypes string
+        + ContentType string
+        + GroupVersion *schema.GroupVersion
+        + NegotiatedSerializer runtime.NegotiatedSerializer
+
+    }
+    ' interface HTTPClient  {
+    '     + Do(req *http.Request) (*http.Response, error)
+
+    ' }
+    class ImpersonationConfig << (S,Aquamarine) >> {
+        + UserName string
+        + UID string
+        + Groups []string
+        + Extra <font color=blue>map</font>[string][]string
+
+    }
+    interface Interface  {
+        + GetRateLimiter() flowcontrol.RateLimiter
+        + Verb(verb string) *Request
+        + Post() *Request
+        + Put() *Request
+        + Patch(pt types.PatchType) *Request
+        + Get() *Request
+        + Delete() *Request
+        + APIVersion() schema.GroupVersion
+
+    }
+    class RESTClient << (S,Aquamarine) >> {
+        - base *url.URL
+        - versionedAPIPath string
+        - content ClientContentConfig
+        - createBackoffMgr <font color=blue>func</font>() BackoffManager
+        - rateLimiter flowcontrol.RateLimiter
+        - warningHandler WarningHandler
+
+        + Client *http.Client
+
+        + GetRateLimiter() flowcontrol.RateLimiter
+        + Verb(verb string) *Request
+        + Post() *Request
+        + Put() *Request
+        + Patch(pt types.PatchType) *Request
+        + Get() *Request
+        + Delete() *Request
+        + APIVersion() schema.GroupVersion
+
+    }
+    class Request << (S,Aquamarine) >> {
+        - c *RESTClient
+        - warningHandler WarningHandler
+        - rateLimiter flowcontrol.RateLimiter
+        - backoff BackoffManager
+        - timeout time.Duration
+        - maxRetries int
+        - verb string
+        - pathPrefix string
+        - subpath string
+        - params url.Values
+        - headers http.Header
+        - namespace string
+        - namespaceSet bool
+        - resource string
+        - resourceName string
+        - subresource string
+        - err error
+        - body io.Reader
+        - bodyBytes []byte
+        - retryFn requestRetryFunc
+
+        - setParam(paramName string, value string) *Request
+        - finalURLTemplate() url.URL
+        - tryThrottleWithInfo(ctx context.Context, retryInfo string) error
+        - tryThrottle(ctx context.Context) error
+        - newStreamWatcher(resp *http.Response) (watch.Interface, error)
+        - requestPreflightCheck() error
+        - newHTTPRequest(ctx context.Context) (*http.Request, error)
+        - request(ctx context.Context, fn <font color=blue>func</font>(*http.Request, *http.Response) ) error
+        - transformResponse(resp *http.Response, req *http.Request) Result
+        - transformUnstructuredResponseError(resp *http.Response, req *http.Request, body []byte) error
+        - newUnstructuredResponseError(body []byte, isTextResponse bool, statusCode int, method string, retryAfter int) error
+
+        + Verb(verb string) *Request
+        + Prefix(segments ...string) *Request
+        + Suffix(segments ...string) *Request
+        + Resource(resource string) *Request
+        + BackOff(manager BackoffManager) *Request
+        + WarningHandler(handler WarningHandler) *Request
+        + Throttle(limiter flowcontrol.RateLimiter) *Request
+        + SubResource(subresources ...string) *Request
+        + Name(resourceName string) *Request
+        + Namespace(namespace string) *Request
+        + NamespaceIfScoped(namespace string, scoped bool) *Request
+        + AbsPath(segments ...string) *Request
+        + RequestURI(uri string) *Request
+        + Param(paramName string, s string) *Request
+        + VersionedParams(obj runtime.Object, codec runtime.ParameterCodec) *Request
+        + SpecificallyVersionedParams(obj runtime.Object, codec runtime.ParameterCodec, version schema.GroupVersion) *Request
+        + SetHeader(key string, values ...string) *Request
+        + Timeout(d time.Duration) *Request
+        + MaxRetries(maxRetries int) *Request
+        + Body(obj <font color=blue>interface</font>{}) *Request
+        + Error() error
+        + URL() *url.URL
+        + Watch(ctx context.Context) (watch.Interface, error)
+        + Stream(ctx context.Context) (io.ReadCloser, error)
+        + Do(ctx context.Context) Result
+        + DoRaw(ctx context.Context) ([]byte, error)
+
+    }
+    ' class RequestConstructionError << (S,Aquamarine) >> {
+    '     + Err error
+
+    '     + Error() string
+
+    ' }
+    interface ResponseWrapper  {
+        + DoRaw( context.Context) ([]byte, error)
+        + Stream( context.Context) (io.ReadCloser, error)
+
+    }
+    class Result << (S,Aquamarine) >> {
+        - body []byte
+        - warnings []net.WarningHeader
+        - contentType string
+        - err error
+        - statusCode int
+        - decoder runtime.Decoder
+
+        + Raw() ([]byte, error)
+        + Get() (runtime.Object, error)
+        + StatusCode(statusCode *int) Result
+        + ContentType(contentType *string) Result
+        + Into(obj runtime.Object) error
+        + WasCreated(wasCreated *bool) Result
+        + Error() error
+        + Warnings() []net.WarningHeader
+
+    }
+    class TLSClientConfig << (S,Aquamarine) >> {
+        + Insecure bool
+        + ServerName string
+        + CertFile string
+        + KeyFile string
+        + CAFile string
+        + CertData []byte
+        + KeyData []byte
+        + CAData []byte
+        + NextProtos []string
+
+        + GoString() string
+        + String() string
+
+    }
+    
+    ' class sanitizedAuthConfigPersister << (S,Aquamarine) >> {
+    '     + GoString() string
+    '     + String() string
+
+    ' }
+    ' class sanitizedObject << (S,Aquamarine) >> {
+    '     + GoString() string
+    '     + String() string
+
+    ' }
+    ' class throttleSettings << (S,Aquamarine) >> {
+    '     - logLevel klog.Level
+    '     - minLogInterval time.Duration
+    '     - lastLogTime time.Time
+    '     - lock sync.RWMutex
+
+    ' }
+    ' class throttledLogger << (S,Aquamarine) >> {
+    '     - clock clock.PassiveClock
+    '     - settings []*throttleSettings
+
+    '     - attemptToLog() (klog.Level, bool)
+
+    '     + Infof(message string, args ...<font color=blue>interface</font>{}) 
+
+    ' }
+}
+"client-go.ContentConfig" *- - "client-go.Config"
+"client-go.TLSClientConfig" *- - "client-go.Config"
+"runtime.Object" *- - "client-go.sanitizedObject"
+
+"client-go.Getter" <|- - "client-go.RESTClient"
+"client-go.Interface" <|- - "client-go.RESTClient"
+"client-go.ResponseWrapper" <|- - "client-go.Request"
+"client-go.Request" <- - "client-go.Getter"
+"client-go.Getter" <.. "client-go.ListerWatcher"
+' "client-go.fontcolorbluefuncfontv1ListOptionsruntimeObjecterror" #.. "client-go.ListFunc"
+' "client-go.fontcolorbluefuncfontv1ListOptionswatchInterfaceerror" #.. "client-go.WatchFunc"
+@enduml
+
+@startuml
+namespace client-go {
+    interface GenericLister  {
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + Get(name string) (runtime.Object, error)
+        + ByNamespace(namespace string) GenericNamespaceLister
+
+    }
+    interface GenericNamespaceLister  {
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + Get(name string) (runtime.Object, error)
+
+    }
+    interface Getter  {
+        + Get() *client-go.Request
+
+    }
+    class ListWatch << (S,Aquamarine) >> {
+        + ListFunc ListFunc
+        + WatchFunc WatchFunc
+        + DisableChunking bool
+
+        + List(options v1.ListOptions) (runtime.Object, error)
+        + Watch(options v1.ListOptions) (watch.Interface, error)
+
+    }
+    interface Lister  {
+        + List(options v1.ListOptions) (runtime.Object, error)
+
+    }
+    interface ListerWatcher  {
+    }
+    interface Watcher  {
+        + Watch(options v1.ListOptions) (watch.Interface, error)
+
+    }
+    class genericLister << (S,Aquamarine) >> {
+        - indexer Indexer
+        - resource schema.GroupResource
+
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + ByNamespace(namespace string) GenericNamespaceLister
+        + Get(name string) (runtime.Object, error)
+
+    }
+    class genericNamespaceLister << (S,Aquamarine) >> {
+        - indexer Indexer
+        - namespace string
+        - resource schema.GroupResource
+
+        + List(selector labels.Selector) ([]runtime.Object, error)
+        + Get(name string) (runtime.Object, error)
+
+    }
+}
+"client-go.Lister" *- - "client-go.ListerWatcher"
+"client-go.Watcher" *- - "client-go.ListerWatcher"
+
+"client-go.ListerWatcher" <|- - "client-go.ListWatch"
+"client-go.GenericLister" <|- - "client-go.genericLister"
+"client-go.GenericNamespaceLister" <|- - "client-go.genericLister"
+"client-go.GenericNamespaceLister" <|- - "client-go.genericNamespaceLister"
+
+namespace client-go {
+    class ClientContentConfig << (S,Aquamarine) >> {
+        + AcceptContentTypes string
+        + ContentType string
+        + GroupVersion schema.GroupVersion
+        + Negotiator runtime.ClientNegotiator
+
+    }
+    class Config << (S,Aquamarine) >> {
+        + Host string
+        + APIPath string
+        + Username string
+        + Password string
+        + BearerToken string
+        + BearerTokenFile string
+        + Impersonate ImpersonationConfig
+        + AuthProvider *api.AuthProviderConfig
+        + AuthConfigPersister AuthProviderConfigPersister
+        + ExecProvider *api.ExecConfig
+        + UserAgent string
+        + DisableCompression bool
+        + Transport http.RoundTripper
+        + WrapTransport transport.WrapperFunc
+        + QPS float32
+        + Burst int
+        + RateLimiter flowcontrol.RateLimiter
+        + WarningHandler WarningHandler
+        + Timeout time.Duration
+        + Dial <font color=blue>func</font>(context.Context, string, string) (net.Conn, error)
+        + Proxy <font color=blue>func</font>(*http.Request) (*url.URL, error)
+
+        + GoString() string
+        + String() string
+
+    }
+    class ContentConfig << (S,Aquamarine) >> {
+        + AcceptContentTypes string
+        + ContentType string
+        + GroupVersion *schema.GroupVersion
+        + NegotiatedSerializer runtime.NegotiatedSerializer
+
+    }
+
+    class ImpersonationConfig << (S,Aquamarine) >> {
+        + UserName string
+        + UID string
+        + Groups []string
+        + Extra <font color=blue>map</font>[string][]string
+
+    }
+    interface Interface  {
+        + GetRateLimiter() flowcontrol.RateLimiter
+        + Verb(verb string) *Request
+        + Post() *Request
+        + Put() *Request
+        + Patch(pt types.PatchType) *Request
+        + Get() *Request
+        + Delete() *Request
+        + APIVersion() schema.GroupVersion
+
+    }
+    class RESTClient << (S,Aquamarine) >> {
+        - base *url.URL
+        - versionedAPIPath string
+        - content ClientContentConfig
+        - createBackoffMgr <font color=blue>func</font>() BackoffManager
+        - rateLimiter flowcontrol.RateLimiter
+        - warningHandler WarningHandler
+
+        + Client *http.Client
+
+        + GetRateLimiter() flowcontrol.RateLimiter
+        + Verb(verb string) *Request
+        + Post() *Request
+        + Put() *Request
+        + Patch(pt types.PatchType) *Request
+        + Get() *Request
+        + Delete() *Request
+        + APIVersion() schema.GroupVersion
+
+    }
+    class Request << (S,Aquamarine) >> {
+        - c *RESTClient
+        - warningHandler WarningHandler
+        - rateLimiter flowcontrol.RateLimiter
+        - backoff BackoffManager
+        - timeout time.Duration
+        - maxRetries int
+        - verb string
+        - pathPrefix string
+        - subpath string
+        - params url.Values
+        - headers http.Header
+        - namespace string
+        - namespaceSet bool
+        - resource string
+        - resourceName string
+        - subresource string
+        - err error
+        - body io.Reader
+        - bodyBytes []byte
+        - retryFn requestRetryFunc
+
+        - setParam(paramName string, value string) *Request
+        - finalURLTemplate() url.URL
+        - tryThrottleWithInfo(ctx context.Context, retryInfo string) error
+        - tryThrottle(ctx context.Context) error
+        - newStreamWatcher(resp *http.Response) (watch.Interface, error)
+        - requestPreflightCheck() error
+        - newHTTPRequest(ctx context.Context) (*http.Request, error)
+        - request(ctx context.Context, fn <font color=blue>func</font>(*http.Request, *http.Response) ) error
+        - transformResponse(resp *http.Response, req *http.Request) Result
+        - transformUnstructuredResponseError(resp *http.Response, req *http.Request, body []byte) error
+        - newUnstructuredResponseError(body []byte, isTextResponse bool, statusCode int, method string, retryAfter int) error
+
+        + Verb(verb string) *Request
+        + Prefix(segments ...string) *Request
+        + Suffix(segments ...string) *Request
+        + Resource(resource string) *Request
+        + BackOff(manager BackoffManager) *Request
+        + WarningHandler(handler WarningHandler) *Request
+        + Throttle(limiter flowcontrol.RateLimiter) *Request
+        + SubResource(subresources ...string) *Request
+        + Name(resourceName string) *Request
+        + Namespace(namespace string) *Request
+        + NamespaceIfScoped(namespace string, scoped bool) *Request
+        + AbsPath(segments ...string) *Request
+        + RequestURI(uri string) *Request
+        + Param(paramName string, s string) *Request
+        + VersionedParams(obj runtime.Object, codec runtime.ParameterCodec) *Request
+        + SpecificallyVersionedParams(obj runtime.Object, codec runtime.ParameterCodec, version schema.GroupVersion) *Request
+        + SetHeader(key string, values ...string) *Request
+        + Timeout(d time.Duration) *Request
+        + MaxRetries(maxRetries int) *Request
+        + Body(obj <font color=blue>interface</font>{}) *Request
+        + Error() error
+        + URL() *url.URL
+        + Watch(ctx context.Context) (watch.Interface, error)
+        + Stream(ctx context.Context) (io.ReadCloser, error)
+        + Do(ctx context.Context) Result
+        + DoRaw(ctx context.Context) ([]byte, error)
+
+    }
+
+
+    interface ResponseWrapper  {
+        + DoRaw( context.Context) ([]byte, error)
+        + Stream( context.Context) (io.ReadCloser, error)
+
+    }
+    class Result << (S,Aquamarine) >> {
+        - body []byte
+        - warnings []net.WarningHeader
+        - contentType string
+        - err error
+        - statusCode int
+        - decoder runtime.Decoder
+
+        + Raw() ([]byte, error)
+        + Get() (runtime.Object, error)
+        + StatusCode(statusCode *int) Result
+        + ContentType(contentType *string) Result
+        + Into(obj runtime.Object) error
+        + WasCreated(wasCreated *bool) Result
+        + Error() error
+        + Warnings() []net.WarningHeader
+
+    }
+    class TLSClientConfig << (S,Aquamarine) >> {
+        + Insecure bool
+        + ServerName string
+        + CertFile string
+        + KeyFile string
+        + CAFile string
+        + CertData []byte
+        + KeyData []byte
+        + CAData []byte
+        + NextProtos []string
+
+        + GoString() string
+        + String() string
+
+    }
+    
+
+
+
+
+
+
+}
+"client-go.ContentConfig" *- - "client-go.Config"
+"client-go.TLSClientConfig" *- - "client-go.Config"
+"runtime.Object" *- - "client-go.sanitizedObject"
+
+"client-go.Getter" <|- - "client-go.RESTClient"
+"client-go.Interface" <|- - "client-go.RESTClient"
+"client-go.ResponseWrapper" <|- - "client-go.Request"
+"client-go.Request" <- - "client-go.Getter"
+"client-go.Getter" <.. "client-go.ListerWatcher"
+@enduml
+
+PlantUML version 1.2022.7(Tue Aug 23 01:01:30 CST 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: zh
+Country: CN
+--></g></svg>

@@ -1,0 +1,417 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentStyleType="text/css" height="957px" preserveAspectRatio="none" style="width:1676px;height:957px;background:#FFFFFF;" version="1.1" viewBox="0 0 1676 957" width="1676px" zoomAndPan="magnify"><defs/><g><!--MD5=[2e31800f208179cab94650aeb782e4d8]
+cluster event--><g id="cluster_event"><path d="M8.5,6.532 L48.5,6.532 A3.75,3.75 0 0 1 51,9.032 L58,32.8039 L1666.5,32.8039 A2.5,2.5 0 0 1 1669,35.3039 L1669,948.032 A2.5,2.5 0 0 1 1666.5,950.532 L8.5,950.532 A2.5,2.5 0 0 1 6,948.032 L6,9.032 A2.5,2.5 0 0 1 8.5,6.532 " fill="none" style="stroke:#000000;stroke-width:1.5;"/><line style="stroke:#000000;stroke-width:1.5;" x1="6" x2="58" y1="32.8039" y2="32.8039"/><text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacing" textLength="39" x="10" y="24.7719">event</text></g><!--MD5=[31313bf68d0a0f3a3b46b8bb8825a387]
+class event.CorrelatorOptions--><g id="elem_event.CorrelatorOptions"><rect codeLine="2" fill="#F1F1F1" height="230.4472" id="event.CorrelatorOptions" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="318" x="14" y="246.532"/><ellipse cx="110.25" cy="262.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M110.4375,269.2351 C112.7344,269.2351 114.1875,267.6101 114.1875,265.6101 C114.1875,263.782 113.3594,262.9382 112.2188,262.1414 L111.2031,261.4226 C110.0781,260.6101 109.6563,260.3132 109.6563,259.4539 C109.6563,258.7664 110.1406,258.3601 110.7188,258.3601 C111.4531,258.3601 111.9375,258.7507 112.6406,259.3914 L113.9531,257.8132 C112.9844,256.7976 111.9688,256.2039 110.7031,256.2039 C108.5625,256.2039 107.1094,257.7195 107.1094,259.6414 C107.1094,261.4382 108.0313,262.3445 109.125,263.0945 L110.2188,263.8445 C111.1563,264.4539 111.6094,265.032 111.6094,265.9695 C111.6094,266.6414 111.1406,267.0632 110.4375,267.0632 C109.7344,267.0632 108.9844,266.5476 108.3281,265.7195 L106.7813,267.407 C107.8125,268.5945 109.1094,269.2351 110.4375,269.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="117" x="130.75" y="268.636">CorrelatorOptions</text><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="331" y1="278.532" y2="278.532"/><ellipse cx="25" cy="294.1679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="116" x="34" y="298.7719">LRUCacheSize int</text><ellipse cx="25" cy="314.4398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="34" y="319.0438">BurstSize int</text><ellipse cx="25" cy="334.7118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="76" x="34" y="339.3157">QPS float32</text><ellipse cx="25" cy="354.9837" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="226" x="34" y="359.5876">KeyFunc EventAggregatorKeyFunc</text><ellipse cx="25" cy="375.2556" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="292" x="34" y="379.8596">MessageFunc EventAggregatorMessageFunc</text><ellipse cx="25" cy="395.5275" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="91" x="34" y="400.1315">MaxEvents int</text><ellipse cx="25" cy="415.7994" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="166" x="34" y="420.4034">MaxIntervalInSeconds int</text><ellipse cx="25" cy="436.0713" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="163" x="34" y="440.6753">Clock clock.PassiveClock</text><ellipse cx="25" cy="456.3432" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="230" x="34" y="460.9472">SpamKeyFunc EventSpamKeyFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="15" x2="331" y1="468.9792" y2="468.9792"/></g><!--MD5=[5d9a57acebf55d4c442ce22ff691c83e]
+class event.EventAggregator--><g id="elem_event.EventAggregator"><rect codeLine="14" fill="#F1F1F1" height="189.9034" id="event.EventAggregator" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="392" x="367" y="266.532"/><ellipse cx="504.25" cy="282.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M504.4375,289.2351 C506.7344,289.2351 508.1875,287.6101 508.1875,285.6101 C508.1875,283.782 507.3594,282.9382 506.2188,282.1414 L505.2031,281.4226 C504.0781,280.6101 503.6563,280.3132 503.6563,279.4539 C503.6563,278.7664 504.1406,278.3601 504.7188,278.3601 C505.4531,278.3601 505.9375,278.7507 506.6406,279.3914 L507.9531,277.8132 C506.9844,276.7976 505.9688,276.2039 504.7031,276.2039 C502.5625,276.2039 501.1094,277.7195 501.1094,279.6414 C501.1094,281.4382 502.0313,282.3445 503.125,283.0945 L504.2188,283.8445 C505.1563,284.4539 505.6094,285.032 505.6094,285.9695 C505.6094,286.6414 505.1406,287.0632 504.4375,287.0632 C503.7344,287.0632 502.9844,286.5476 502.3281,285.7195 L500.7813,287.407 C501.8125,288.5945 503.1094,289.2351 504.4375,289.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="109" x="524.75" y="288.636">EventAggregator</text><line style="stroke:#181818;stroke-width:0.5;" x1="368" x2="758" y1="298.532" y2="298.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="375" y="311.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="112" x="387" y="318.7719">cache *lru.Cache</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="375" y="331.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="225" x="387" y="339.0438">keyFunc EventAggregatorKeyFunc</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="375" y="351.7118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="294" x="387" y="359.3157">messageFunc EventAggregatorMessageFunc</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="375" y="371.9837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="102" x="387" y="379.5876">maxEvents uint</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="375" y="392.2556"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="177" x="387" y="399.8596">maxIntervalInSeconds uint</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="375" y="412.5275"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161" x="387" y="420.1315">clock clock.PassiveClock</text><line style="stroke:#181818;stroke-width:0.5;" x1="368" x2="758" y1="428.1635" y2="428.1635"/><ellipse cx="378" cy="443.7994" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="366" x="387" y="448.4034">EventAggregate(newEvent *v1.Event) (*v1.Event, string)</text></g><!--MD5=[fbe23f81186ac5fcc3f9027b0af15863]
+class event.EventCorrelateResult--><g id="elem_event.EventCorrelateResult"><rect codeLine="34" fill="#F1F1F1" height="108.8157" id="event.EventCorrelateResult" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="171" x="794.5" y="307.032"/><ellipse cx="809.5" cy="323.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M809.6875,329.7351 C811.9844,329.7351 813.4375,328.1101 813.4375,326.1101 C813.4375,324.282 812.6094,323.4382 811.4688,322.6414 L810.4531,321.9226 C809.3281,321.1101 808.9063,320.8132 808.9063,319.9539 C808.9063,319.2664 809.3906,318.8601 809.9688,318.8601 C810.7031,318.8601 811.1875,319.2507 811.8906,319.8914 L813.2031,318.3132 C812.2344,317.2976 811.2188,316.7039 809.9531,316.7039 C807.8125,316.7039 806.3594,318.2195 806.3594,320.1414 C806.3594,321.9382 807.2813,322.8445 808.375,323.5945 L809.4688,324.3445 C810.4063,324.9539 810.8594,325.532 810.8594,326.4695 C810.8594,327.1414 810.3906,327.5632 809.6875,327.5632 C808.9844,327.5632 808.2344,327.0476 807.5781,326.2195 L806.0313,327.907 C807.0625,329.0945 808.3594,329.7351 809.6875,329.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="139" x="823.5" y="329.136">EventCorrelateResult</text><line style="stroke:#181818;stroke-width:0.5;" x1="795.5" x2="964.5" y1="339.032" y2="339.032"/><ellipse cx="805.5" cy="354.6679" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="103" x="814.5" y="359.2719">Event *v1.Event</text><ellipse cx="805.5" cy="374.9398" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="80" x="814.5" y="379.5438">Patch []byte</text><ellipse cx="805.5" cy="395.2118" fill="none" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61" x="814.5" y="399.8157">Skip bool</text><line style="stroke:#181818;stroke-width:0.5;" x1="795.5" x2="964.5" y1="407.8477" y2="407.8477"/></g><!--MD5=[ba238873bbbfe8d7904f233c7046adae]
+class event.EventCorrelator--><g id="elem_event.EventCorrelator"><rect codeLine="40" fill="#F1F1F1" height="149.3596" id="event.EventCorrelator" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="461" x="649.5" y="37.532"/><ellipse cx="824.75" cy="53.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M824.9375,60.2351 C827.2344,60.2351 828.6875,58.6101 828.6875,56.6101 C828.6875,54.782 827.8594,53.9382 826.7188,53.1414 L825.7031,52.4226 C824.5781,51.6101 824.1563,51.3132 824.1563,50.4539 C824.1563,49.7664 824.6406,49.3601 825.2188,49.3601 C825.9531,49.3601 826.4375,49.7507 827.1406,50.3914 L828.4531,48.8132 C827.4844,47.7976 826.4688,47.2039 825.2031,47.2039 C823.0625,47.2039 821.6094,48.7195 821.6094,50.6414 C821.6094,52.4382 822.5313,53.3445 823.625,54.0945 L824.7188,54.8445 C825.6563,55.4539 826.1094,56.032 826.1094,56.9695 C826.1094,57.6414 825.6406,58.0632 824.9375,58.0632 C824.2344,58.0632 823.4844,57.5476 822.8281,56.7195 L821.2813,58.407 C822.3125,59.5945 823.6094,60.2351 824.9375,60.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="102" x="845.25" y="59.636">EventCorrelator</text><line style="stroke:#181818;stroke-width:0.5;" x1="650.5" x2="1109.5" y1="69.532" y2="69.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="657.5" y="82.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="171" x="669.5" y="89.7719">filterFunc EventFilterFunc</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="657.5" y="102.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="190" x="669.5" y="110.0438">aggregator *EventAggregator</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="657.5" y="122.7118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="133" x="669.5" y="130.3157">logger *eventLogger</text><line style="stroke:#181818;stroke-width:0.5;" x1="650.5" x2="1109.5" y1="138.3477" y2="138.3477"/><ellipse cx="660.5" cy="153.9837" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="435" x="669.5" y="158.5876">EventCorrelate(newEvent *v1.Event) (*EventCorrelateResult, error)</text><ellipse cx="660.5" cy="174.2556" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="196" x="669.5" y="178.8596">UpdateState(event *v1.Event)</text></g><!--MD5=[017874f8d928e2b94e1ea17eb8609e57]
+class event.EventSourceObjectSpamFilter--><g id="elem_event.EventSourceObjectSpamFilter"><rect codeLine="67" fill="#F1F1F1" height="169.6315" id="event.EventSourceObjectSpamFilter" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="255" x="1379.5" y="536.532"/><ellipse cx="1406.2" cy="552.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1406.3875,559.2351 C1408.6844,559.2351 1410.1375,557.6101 1410.1375,555.6101 C1410.1375,553.782 1409.3094,552.9382 1408.1688,552.1414 L1407.1531,551.4226 C1406.0281,550.6101 1405.6063,550.3132 1405.6063,549.4539 C1405.6063,548.7664 1406.0906,548.3601 1406.6688,548.3601 C1407.4031,548.3601 1407.8875,548.7507 1408.5906,549.3914 L1409.9031,547.8132 C1408.9344,546.7976 1407.9188,546.2039 1406.6531,546.2039 C1404.5125,546.2039 1403.0594,547.7195 1403.0594,549.6414 C1403.0594,551.4382 1403.9813,552.3445 1405.075,553.0945 L1406.1688,553.8445 C1407.1063,554.4539 1407.5594,555.032 1407.5594,555.9695 C1407.5594,556.6414 1407.0906,557.0632 1406.3875,557.0632 C1405.6844,557.0632 1404.9344,556.5476 1404.2781,555.7195 L1402.7313,557.407 C1403.7625,558.5945 1405.0594,559.2351 1406.3875,559.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="197" x="1422.8" y="558.636">EventSourceObjectSpamFilter</text><line style="stroke:#181818;stroke-width:0.5;" x1="1380.5" x2="1633.5" y1="568.532" y2="568.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1387.5" y="581.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="112" x="1399.5" y="588.7719">cache *lru.Cache</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1387.5" y="601.4398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="56" x="1399.5" y="609.0438">burst int</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1387.5" y="621.7118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="74" x="1399.5" y="629.3157">qps float32</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1387.5" y="641.9837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161" x="1399.5" y="649.5876">clock clock.PassiveClock</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1387.5" y="662.2556"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="229" x="1399.5" y="669.8596">spamKeyFunc EventSpamKeyFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="1380.5" x2="1633.5" y1="677.8915" y2="677.8915"/><ellipse cx="1390.5" cy="693.5275" fill="#84BE84" rx="3" ry="3" style="stroke:#038048;stroke-width:1.0;"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="179" x="1399.5" y="698.1315">Filter(event *v1.Event) bool</text></g><!--MD5=[012d40d800104bfd417e1034ccf5feab]
+class event.eventLog--><g id="elem_event.eventLog"><rect codeLine="109" fill="#F1F1F1" height="129.0876" id="event.eventLog" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="182" x="1154" y="557.032"/><ellipse cx="1210.25" cy="573.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1210.4375,579.7351 C1212.7344,579.7351 1214.1875,578.1101 1214.1875,576.1101 C1214.1875,574.282 1213.3594,573.4382 1212.2188,572.6414 L1211.2031,571.9226 C1210.0781,571.1101 1209.6563,570.8132 1209.6563,569.9539 C1209.6563,569.2664 1210.1406,568.8601 1210.7188,568.8601 C1211.4531,568.8601 1211.9375,569.2507 1212.6406,569.8914 L1213.9531,568.3132 C1212.9844,567.2976 1211.9688,566.7039 1210.7031,566.7039 C1208.5625,566.7039 1207.1094,568.2195 1207.1094,570.1414 C1207.1094,571.9382 1208.0313,572.8445 1209.125,573.5945 L1210.2188,574.3445 C1211.1563,574.9539 1211.6094,575.532 1211.6094,576.4695 C1211.6094,577.1414 1211.1406,577.5632 1210.4375,577.5632 C1209.7344,577.5632 1208.9844,577.0476 1208.3281,576.2195 L1206.7813,577.907 C1207.8125,579.0945 1209.1094,579.7351 1210.4375,579.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="61" x="1230.75" y="579.136">eventLog</text><line style="stroke:#181818;stroke-width:0.5;" x1="1155" x2="1335" y1="589.032" y2="589.032"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1162" y="601.6679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="68" x="1174" y="609.2719">count uint</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1162" y="621.9398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="156" x="1174" y="629.5438">firstTimestamp v1.Time</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1162" y="642.2118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="79" x="1174" y="649.8157">name string</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1162" y="662.4837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="147" x="1174" y="670.0876">resourceVersion string</text><line style="stroke:#181818;stroke-width:0.5;" x1="1155" x2="1335" y1="678.1196" y2="678.1196"/></g><!--MD5=[94b386be1bd658936bebc4e64624fd1c]
+class event.eventLogger--><g id="elem_event.eventLogger"><rect codeLine="116" fill="#F1F1F1" height="149.3596" id="event.eventLogger" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="489" x="1000.5" y="287.032"/><ellipse cx="1199.75" cy="303.032" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1199.9375,309.7351 C1202.2344,309.7351 1203.6875,308.1101 1203.6875,306.1101 C1203.6875,304.282 1202.8594,303.4382 1201.7188,302.6414 L1200.7031,301.9226 C1199.5781,301.1101 1199.1563,300.8132 1199.1563,299.9539 C1199.1563,299.2664 1199.6406,298.8601 1200.2188,298.8601 C1200.9531,298.8601 1201.4375,299.2507 1202.1406,299.8914 L1203.4531,298.3132 C1202.4844,297.2976 1201.4688,296.7039 1200.2031,296.7039 C1198.0625,296.7039 1196.6094,298.2195 1196.6094,300.1414 C1196.6094,301.9382 1197.5313,302.8445 1198.625,303.5945 L1199.7188,304.3445 C1200.6563,304.9539 1201.1094,305.532 1201.1094,306.4695 C1201.1094,307.1414 1200.6406,307.5632 1199.9375,307.5632 C1199.2344,307.5632 1198.4844,307.0476 1197.8281,306.2195 L1196.2813,307.907 C1197.3125,309.0945 1198.6094,309.7351 1199.9375,309.7351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="82" x="1220.25" y="309.136">eventLogger</text><line style="stroke:#181818;stroke-width:0.5;" x1="1001.5" x2="1488.5" y1="319.032" y2="319.032"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1008.5" y="331.6679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="112" x="1020.5" y="339.2719">cache *lru.Cache</text><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1008.5" y="351.9398"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="161" x="1020.5" y="359.5438">clock clock.PassiveClock</text><line style="stroke:#181818;stroke-width:0.5;" x1="1001.5" x2="1488.5" y1="367.5758" y2="367.5758"/><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1008.5" y="380.2118"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="463" x="1020.5" y="387.8157">eventObserve(newEvent *v1.Event, key string) (*v1.Event, []byte, error)</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1008.5" y="400.4837"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="195" x="1020.5" y="408.0876">updateState(event *v1.Event)</text><rect fill="#F24D5C" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1008.5" y="420.7556"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="354" x="1020.5" y="428.3596">lastEventObservationFromCache(key string) eventLog</text></g><!--MD5=[e527ca2e588fc7bc2635563666d66daa]
+class event.EventAggregatorKeyFunc--><g id="elem_event.EventAggregatorKeyFunc"><rect codeLine="125" fill="#F1F1F1" height="48" id="event.EventAggregatorKeyFunc" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="198" x="326" y="597.532"/><ellipse cx="341" cy="613.532" fill="#FF7700" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M339.7344,620.532 L342.2813,620.532 L342.2813,610.0164 L344.9063,610.0164 L344.9063,607.907 L337.0938,607.907 L337.0938,610.0164 L339.7344,610.0164 L339.7344,620.532 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="166" x="355" y="619.636">EventAggregatorKeyFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="327" x2="523" y1="629.532" y2="629.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="327" x2="523" y1="637.532" y2="637.532"/></g><!--MD5=[46f74256e0803dc56efef480340f7a47]
+class event.EventAggregatorMessageFunc--><g id="elem_event.EventAggregatorMessageFunc"><rect codeLine="127" fill="#F1F1F1" height="48" id="event.EventAggregatorMessageFunc" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="231" x="585.5" y="597.532"/><ellipse cx="600.5" cy="613.532" fill="#FF7700" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M599.2344,620.532 L601.7813,620.532 L601.7813,610.0164 L604.4063,610.0164 L604.4063,607.907 L596.5938,607.907 L596.5938,610.0164 L599.2344,610.0164 L599.2344,620.532 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="199" x="614.5" y="619.636">EventAggregatorMessageFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="586.5" x2="815.5" y1="629.532" y2="629.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="586.5" x2="815.5" y1="637.532" y2="637.532"/></g><!--MD5=[4fe2d164bfd85e03e5555d5c7d1b5049]
+class event.EventFilterFunc--><g id="elem_event.EventFilterFunc"><rect codeLine="129" fill="#F1F1F1" height="48" id="event.EventFilterFunc" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="136" x="1525" y="337.532"/><ellipse cx="1540" cy="353.532" fill="#FF7700" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1538.7344,360.532 L1541.2813,360.532 L1541.2813,350.0164 L1543.9063,350.0164 L1543.9063,347.907 L1536.0938,347.907 L1536.0938,350.0164 L1538.7344,350.0164 L1538.7344,360.532 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="104" x="1554" y="359.636">EventFilterFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="1526" x2="1660" y1="369.532" y2="369.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="1526" x2="1660" y1="377.532" y2="377.532"/></g><!--MD5=[40005d1e39293910c8d2e4d06fdb16a8]
+class event.EventSpamKeyFunc--><g id="elem_event.EventSpamKeyFunc"><rect codeLine="131" fill="#F1F1F1" height="48" id="event.EventSpamKeyFunc" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="164" x="1154" y="776.532"/><ellipse cx="1169" cy="792.532" fill="#FF7700" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1167.7344,799.532 L1170.2813,799.532 L1170.2813,789.0164 L1172.9063,789.0164 L1172.9063,786.907 L1165.0938,786.907 L1165.0938,789.0164 L1167.7344,789.0164 L1167.7344,799.532 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="132" x="1183" y="798.636">EventSpamKeyFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="1155" x2="1317" y1="808.532" y2="808.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="1155" x2="1317" y1="816.532" y2="816.532"/></g><!--MD5=[e3b32ed71b086a3928e2b976b475148d]
+class event.spamRecord--><g id="elem_event.spamRecord"><rect codeLine="146" fill="#F1F1F1" height="68.2719" id="event.spamRecord" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="307" x="1353.5" y="766.532"/><ellipse cx="1461.25" cy="782.532" fill="#7FFFD4" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1461.4375,789.2351 C1463.7344,789.2351 1465.1875,787.6101 1465.1875,785.6101 C1465.1875,783.782 1464.3594,782.9382 1463.2188,782.1414 L1462.2031,781.4226 C1461.0781,780.6101 1460.6563,780.3132 1460.6563,779.4539 C1460.6563,778.7664 1461.1406,778.3601 1461.7188,778.3601 C1462.4531,778.3601 1462.9375,778.7507 1463.6406,779.3914 L1464.9531,777.8132 C1463.9844,776.7976 1462.9688,776.2039 1461.7031,776.2039 C1459.5625,776.2039 1458.1094,777.7195 1458.1094,779.6414 C1458.1094,781.4382 1459.0313,782.3445 1460.125,783.0945 L1461.2188,783.8445 C1462.1563,784.4539 1462.6094,785.032 1462.6094,785.9695 C1462.6094,786.6414 1462.1406,787.0632 1461.4375,787.0632 C1460.7344,787.0632 1459.9844,786.5476 1459.3281,785.7195 L1457.7813,787.407 C1458.8125,788.5945 1460.1094,789.2351 1461.4375,789.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="1481.75" y="788.636">spamRecord</text><line style="stroke:#181818;stroke-width:0.5;" x1="1354.5" x2="1659.5" y1="798.532" y2="798.532"/><rect fill="none" height="6" style="stroke:#C82930;stroke-width:1.0;" width="6" x="1361.5" y="811.1679"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="281" x="1373.5" y="818.7719">rateLimiter flowcontrol.PassiveRateLimiter</text><line style="stroke:#181818;stroke-width:0.5;" x1="1354.5" x2="1659.5" y1="826.8039" y2="826.8039"/></g><!--MD5=[73122acc886be0490bbd1cb233cff4d7]
+class event.getSpamKey--><g id="elem_event.getSpamKey"><rect fill="#F1F1F1" height="48" id="event.getSpamKey" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="115" x="1178.5" y="894.532"/><ellipse cx="1193.5" cy="910.532" fill="#ADD1B2" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M1193.7344,917.2351 C1194.8906,917.2351 1195.9844,916.7507 1196.8125,915.7195 L1195.3906,914.2039 C1195,914.7507 1194.5313,915.0632 1193.9688,915.0632 C1192.7813,915.0632 1191.7656,913.9226 1191.7656,910.6882 C1191.7656,907.532 1192.8281,906.3601 1193.8594,906.3601 C1194.4531,906.3601 1194.8281,906.657 1195.25,907.157 L1196.6719,905.5945 C1196,904.8445 1195.0313,904.2039 1193.75,904.2039 C1191.3281,904.2039 1189.1875,906.1726 1189.1875,910.7976 C1189.1875,915.4382 1191.3281,917.2351 1193.7344,917.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="83" x="1207.5" y="916.636">getSpamKey</text><line style="stroke:#181818;stroke-width:0.5;" x1="1179.5" x2="1292.5" y1="926.532" y2="926.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="1179.5" x2="1292.5" y1="934.532" y2="934.532"/></g><!--MD5=[c4a96fc975ed11cca001e1daeb35f92a]
+class event.EventAggregatorByReasonFunc--><g id="elem_event.EventAggregatorByReasonFunc"><rect fill="#F1F1F1" height="48" id="event.EventAggregatorByReasonFunc" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="239" x="292.5" y="776.532"/><ellipse cx="307.5" cy="792.532" fill="#ADD1B2" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M307.7344,799.2351 C308.8906,799.2351 309.9844,798.7507 310.8125,797.7195 L309.3906,796.2039 C309,796.7507 308.5313,797.0632 307.9688,797.0632 C306.7813,797.0632 305.7656,795.9226 305.7656,792.6882 C305.7656,789.532 306.8281,788.3601 307.8594,788.3601 C308.4531,788.3601 308.8281,788.657 309.25,789.157 L310.6719,787.5945 C310,786.8445 309.0313,786.2039 307.75,786.2039 C305.3281,786.2039 303.1875,788.1726 303.1875,792.7976 C303.1875,797.4382 305.3281,799.2351 307.7344,799.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="207" x="321.5" y="798.636">EventAggregatorByReasonFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="293.5" x2="530.5" y1="808.532" y2="808.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="293.5" x2="530.5" y1="816.532" y2="816.532"/></g><!--MD5=[45ae82dc846da2299bbc469b56634426]
+class event.EventAggregatorByReasonMessageFunc--><g id="elem_event.EventAggregatorByReasonMessageFunc"><rect fill="#F1F1F1" height="48" id="event.EventAggregatorByReasonMessageFunc" rx="2.5" ry="2.5" style="stroke:#181818;stroke-width:0.5;" width="296" x="567" y="776.532"/><ellipse cx="582" cy="792.532" fill="#ADD1B2" rx="11" ry="11" style="stroke:#181818;stroke-width:1.0;"/><path d="M582.2344,799.2351 C583.3906,799.2351 584.4844,798.7507 585.3125,797.7195 L583.8906,796.2039 C583.5,796.7507 583.0313,797.0632 582.4688,797.0632 C581.2813,797.0632 580.2656,795.9226 580.2656,792.6882 C580.2656,789.532 581.3281,788.3601 582.3594,788.3601 C582.9531,788.3601 583.3281,788.657 583.75,789.157 L585.1719,787.5945 C584.5,786.8445 583.5313,786.2039 582.25,786.2039 C579.8281,786.2039 577.6875,788.1726 577.6875,792.7976 C577.6875,797.4382 579.8281,799.2351 582.2344,799.2351 Z " fill="#000000"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacing" textLength="264" x="596" y="798.636">EventAggregatorByReasonMessageFunc</text><line style="stroke:#181818;stroke-width:0.5;" x1="568" x2="862" y1="808.532" y2="808.532"/><line style="stroke:#181818;stroke-width:0.5;" x1="568" x2="862" y1="816.532" y2="816.532"/></g><!--MD5=[55d4c70077f97c75e7ade2f4918ace1c]
+reverse link event.EventCorrelator to event.eventLogger--><g id="link_event.EventCorrelator_event.eventLogger"><path codeLine="174" d="M993.3918,189.5423 C1038.812,220.5898 1090.933,256.2177 1135.9138,286.9649 " fill="none" id="event.EventCorrelator-backto-event.eventLogger" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="989.0176,186.5523,994.1903,194.9334,993.1454,189.3739,998.7049,188.329,989.0176,186.5523" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[fb6ce163a53199e4daa1f0b685a20313]
+reverse link event.EventCorrelator to event.EventFilterFunc--><g id="link_event.EventCorrelator_event.EventFilterFunc"><path codeLine="175" d="M1116.0527,145.0662 C1265.5263,169.303 1442.3899,205.119 1507,246.532 C1541.8419,268.8645 1567.6587,310.5887 1581.5049,337.1659 " fill="none" id="event.EventCorrelator-backto-event.EventFilterFunc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="1110.7472,144.2089,1118.9938,149.5935,1115.6832,145.0066,1120.2701,141.696,1110.7472,144.2089" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[3cb6f1b9aeaacd654f4b38bc3b966048]
+reverse link event.EventFilterFunc to event.EventSourceObjectSpamFilter--><g id="link_event.EventFilterFunc_event.EventSourceObjectSpamFilter"><path codeLine="176" d="M1583.2588,390.9822 C1571.6545,426.065 1551.7567,486.221 1535.1959,536.2886 " fill="none" id="event.EventFilterFunc-backto-event.EventSourceObjectSpamFilter" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="1584.9093,385.9922,1578.2852,393.2806,1583.3391,390.7392,1585.8805,395.793,1584.9093,385.9922" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[c47ddc0450e1f68c0d3f30048e2e4b60]
+reverse link event.EventCorrelator to event.EventAggregator--><g id="link_event.EventCorrelator_event.EventAggregator"><path codeLine="177" d="M781.1928,189.7998 C750.3973,214.0379 716.0811,241.047 683.9495,266.3367 " fill="none" id="event.EventCorrelator-backto-event.EventAggregator" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="785.3189,186.5523,775.7727,188.9753,781.3899,189.6446,780.7205,195.2617,785.3189,186.5523" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[37e95b579346b8d8db1a6448d35ffe84]
+reverse link event.EventCorrelator to event.EventCorrelateResult--><g id="link_event.EventCorrelator_event.EventCorrelateResult"><path codeLine="178" d="M880,191.5727 C880,229.1404 880,273.0338 880,306.8029 " fill="none" id="event.EventCorrelator-backto-event.EventCorrelateResult" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="880,186.5523,876,195.5523,880,191.5523,884,195.5523,880,186.5523" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[79acfc7fe4466842f89fa95c293a0b81]
+reverse link event.EventCorrelator to event.CorrelatorOptions--><g id="link_event.EventCorrelator_event.CorrelatorOptions"><path codeLine="179" d="M644.197,154.4829 C550.3462,175.809 442.8143,205.9322 350,246.532 C344.0406,249.1388 338.0567,251.937 332.0804,254.8875 " fill="none" id="event.EventCorrelator-backto-event.CorrelatorOptions" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="649.2214,153.3466,639.5607,151.4305,644.3446,154.4496,641.3255,159.2334,649.2214,153.3466" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[672504be7ee9dfe6717042a80b784fe0]
+reverse link event.EventSourceObjectSpamFilter to event.EventSpamKeyFunc--><g id="link_event.EventSourceObjectSpamFilter_event.EventSpamKeyFunc"><path codeLine="181" d="M1374.8471,708.8212 C1337.2025,733.6861 1299.2131,758.7787 1272.5109,776.416 " fill="none" id="event.EventSourceObjectSpamFilter-backto-event.EventSpamKeyFunc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="1379.4354,705.7905,1369.7212,707.4134,1375.2634,708.5463,1374.1305,714.0886,1379.4354,705.7905" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[d06921695a9298ea17f437bd52e2035d]
+reverse link event.EventSourceObjectSpamFilter to event.spamRecord--><g id="link_event.EventSourceObjectSpamFilter_event.spamRecord"><path codeLine="182" d="M1507,712.0224 C1507,731.3366 1507,750.5893 1507,766.182 " fill="none" id="event.EventSourceObjectSpamFilter-backto-event.spamRecord" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="1507,706.5761,1503,715.5761,1507,711.5761,1511,715.5761,1507,706.5761" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[6bb735eb6625b36412c2a566b41f629a]
+reverse link event.EventSpamKeyFunc to event.getSpamKey--><g id="link_event.EventSpamKeyFunc_event.getSpamKey"><path codeLine="183" d="M1236,829.8716 C1236,849.7564 1236,875.7164 1236,894.4005 " fill="none" id="event.EventSpamKeyFunc-backto-event.getSpamKey" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="1236,824.6958,1232,833.6958,1236,829.6958,1240,833.6958,1236,824.6958" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[52be1d135df5a33410a67c39cd11942a]
+reverse link event.EventAggregator to event.EventAggregatorKeyFunc--><g id="link_event.EventAggregator_event.EventAggregatorKeyFunc"><path codeLine="186" d="M510.0281,461.3342 C483.755,510.8341 454.2001,566.5173 437.771,597.4707 " fill="none" id="event.EventAggregator-backto-event.EventAggregatorKeyFunc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="512.3975,456.87,504.6449,462.9443,510.0533,461.2864,511.7112,466.6949,512.3975,456.87" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[bdf79ed06d90385feea5cd417ce7dfe7]
+reverse link event.EventAggregator to event.EventAggregatorMessageFunc--><g id="link_event.EventAggregator_event.EventAggregatorMessageFunc"><path codeLine="187" d="M615.9719,461.3342 C642.245,510.8341 671.7999,566.5173 688.229,597.4707 " fill="none" id="event.EventAggregator-backto-event.EventAggregatorMessageFunc" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="613.6025,456.87,614.2888,466.6949,615.9467,461.2864,621.3551,462.9443,613.6025,456.87" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[50da975c3e9616f8f21032d818d98f96]
+reverse link event.EventAggregatorKeyFunc to event.EventAggregatorByReasonFunc--><g id="link_event.EventAggregatorKeyFunc_event.EventAggregatorByReasonFunc"><path codeLine="189" d="M421.7678,666.0376 C419.2299,700.9823 415.7937,748.2957 413.7462,776.4886 " fill="none" id="event.EventAggregatorKeyFunc-backto-event.EventAggregatorByReasonFunc" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="414.8164,665.1131,423.2468,645.6727,428.7796,666.1273,414.8164,665.1131" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[5494c0caca74fd35e694d87448ad0e76]
+reverse link event.EventAggregatorMessageFunc to event.EventAggregatorByReasonMessageFunc--><g id="link_event.EventAggregatorMessageFunc_event.EventAggregatorByReasonMessageFunc"><path codeLine="190" d="M704.4809,666.0376 C707.214,700.9823 710.9145,748.2957 713.1195,776.4886 " fill="none" id="event.EventAggregatorMessageFunc-backto-event.EventAggregatorByReasonMessageFunc" style="stroke:#181818;stroke-width:1.0;"/><polygon fill="none" points="697.469,666.1577,702.8881,645.6727,711.4264,665.066,697.469,666.1577" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[896beabd9e4c6269353c23d30dbcc33e]
+reverse link event.eventLogger to event.eventLog--><g id="link_event.eventLogger_event.eventLog"><path codeLine="192" d="M1245,441.4473 C1245,478.4395 1245,521.8189 1245,556.7323 " fill="none" id="event.eventLogger-backto-event.eventLog" style="stroke:#181818;stroke-width:1.0;stroke-dasharray:7.0,7.0;"/><polygon fill="#181818" points="1245,436.0376,1241,445.0376,1245,441.0376,1249,445.0376,1245,436.0376" style="stroke:#181818;stroke-width:1.0;"/></g><!--MD5=[22a0f0739ab007c5aaab015979755064]
+@startuml
+namespace event {
+    class CorrelatorOptions << (S,Aquamarine) >> {
+        + LRUCacheSize int
+        + BurstSize int
+        + QPS float32
+        + KeyFunc EventAggregatorKeyFunc
+        + MessageFunc EventAggregatorMessageFunc
+        + MaxEvents int
+        + MaxIntervalInSeconds int
+        + Clock clock.PassiveClock
+        + SpamKeyFunc EventSpamKeyFunc
+
+    }
+    class EventAggregator << (S,Aquamarine) >> {
+        - cache *lru.Cache
+        - keyFunc EventAggregatorKeyFunc
+        - messageFunc EventAggregatorMessageFunc
+        - maxEvents uint
+        - maxIntervalInSeconds uint
+        - clock clock.PassiveClock
+
+        + EventAggregate(newEvent *v1.Event) (*v1.Event, string)
+
+    }
+    ' interface EventBroadcaster  {
+    '     + StartEventWatcher(eventHandler <font color=blue>func</font>(*v1.Event) ) event.Interface
+    '     + StartRecordingToSink(sink EventSink) event.Interface
+    '     + StartLogging(logf <font color=blue>func</font>(string, ...<font color=blue>interface</font>{}) ) event.Interface
+    '     + StartStructuredLogging(verbosity klog.Level) event.Interface
+    '     + NewRecorder(scheme *runtime.Scheme, source v1.EventSource) EventRecorder
+    '     + Shutdown() 
+
+    ' }
+    class EventCorrelateResult << (S,Aquamarine) >> {
+        + Event *v1.Event
+        + Patch []byte
+        + Skip bool
+
+    }
+    class EventCorrelator << (S,Aquamarine) >> {
+        - filterFunc EventFilterFunc
+        - aggregator *EventAggregator
+        - logger *eventLogger
+
+        + EventCorrelate(newEvent *v1.Event) (*EventCorrelateResult, error)
+        + UpdateState(event *v1.Event) 
+
+    }
+    ' interface EventRecorder  {
+    '     + Event(object runtime.Object, eventtype string, reason string, message string) 
+    '     + Eventf(object runtime.Object, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+    '     ' + AnnotatedEventf(object runtime.Object, annotations <font color=blue>map</font>[string]string, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+
+    ' }
+    ' class EventRecorderAdapter << (S,Aquamarine) >> {
+    '     - recorder EventRecorder
+
+    '     + Eventf(regarding runtime.Object, _ runtime.Object, eventtype string, reason string, action string, note string, args ...<font color=blue>interface</font>{}) 
+
+    ' }
+    ' interface EventSink  {
+    '     + Create(event *v1.Event) (*v1.Event, error)
+    '     + Update(event *v1.Event) (*v1.Event, error)
+    '     + Patch(oldEvent *v1.Event, data []byte) (*v1.Event, error)
+
+    ' }
+    class EventSourceObjectSpamFilter << (S,Aquamarine) >> {
+        - cache *lru.Cache
+        - burst int
+        - qps float32
+        - clock clock.PassiveClock
+        - spamKeyFunc EventSpamKeyFunc
+
+        + Filter(event *v1.Event) bool
+
+    }
+    ' class FakeRecorder << (S,Aquamarine) >> {
+    '     + Events <font color=blue>chan</font> string
+    '     + IncludeObject bool
+
+    '     - writeEvent(object runtime.Object, annotations <font color=blue>map</font>[string]string, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+
+    '     + Event(object runtime.Object, eventtype string, reason string, message string) 
+    '     + Eventf(object runtime.Object, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+    '     + AnnotatedEventf(object runtime.Object, annotations <font color=blue>map</font>[string]string, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+
+    ' }
+    ' class aggregateRecord << (S,Aquamarine) >> {
+    '     - localKeys sets.String
+    '     - lastTimestamp v1.Time
+
+    ' }
+    ' class eventBroadcasterImpl << (S,Aquamarine) >> {
+    '     - sleepDuration time.Duration
+    '     - options CorrelatorOptions
+    '     - cancelationCtx context.Context
+    '     - cancel <font color=blue>func</font>() 
+
+    '     - recordToSink(sink EventSink, event *v1.Event, eventCorrelator *EventCorrelator) 
+
+    '     + StartRecordingToSink(sink EventSink) event.Interface
+    '     + Shutdown() 
+    '     + StartLogging(logf <font color=blue>func</font>(string, ...<font color=blue>interface</font>{}) ) event.Interface
+    '     + StartStructuredLogging(verbosity klog.Level) event.Interface
+    '     + StartEventWatcher(eventHandler <font color=blue>func</font>(*v1.Event) ) event.Interface
+    '     + NewRecorder(scheme *runtime.Scheme, source v1.EventSource) EventRecorder
+
+    ' }
+    class eventLog << (S,Aquamarine) >> {
+        - count uint
+        - firstTimestamp v1.Time
+        - name string
+        - resourceVersion string
+
+    }
+    class eventLogger << (S,Aquamarine) >> {
+        - cache *lru.Cache
+        - clock clock.PassiveClock
+
+        - eventObserve(newEvent *v1.Event, key string) (*v1.Event, []byte, error)
+        - updateState(event *v1.Event) 
+        - lastEventObservationFromCache(key string) eventLog
+
+    }
+    class event.EventAggregatorKeyFunc << (T, #FF7700) >>  {
+    }
+    class event.EventAggregatorMessageFunc << (T, #FF7700) >>  {
+    }
+    class event.EventFilterFunc << (T, #FF7700) >>  {
+    }
+    class event.EventSpamKeyFunc << (T, #FF7700) >>  {
+    }
+    ' class recorderImpl << (S,Aquamarine) >> {
+    '     - scheme *runtime.Scheme
+    '     - source v1.EventSource
+    '     - clock clock.PassiveClock
+
+    '     ' - generateEvent(object runtime.Object, annotations <font color=blue>map</font>[string]string, eventtype string, reason string, message string) 
+    '     ' - makeEvent(ref *v1.ObjectReference, annotations <font color=blue>map</font>[string]string, eventtype string, reason string, message string) *v1.Event
+
+    '     ' + Event(object runtime.Object, eventtype string, reason string, message string) 
+    '     ' + Eventf(object runtime.Object, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+    '     ' + AnnotatedEventf(object runtime.Object, annotations <font color=blue>map</font>[string]string, eventtype string, reason string, messageFmt string, args ...<font color=blue>interface</font>{}) 
+
+    ' }
+    class spamRecord << (S,Aquamarine) >> {
+        - rateLimiter flowcontrol.PassiveRateLimiter
+
+    }
+    ' class "<font color=blue>func</font>(*v1.Event) bool" as fontcolorbluefuncfontv1Eventbool {
+    '     'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    ' }
+    ' class "<font color=blue>func</font>(*v1.Event) string" as fontcolorbluefuncfontv1Eventstring {
+    '     'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    ' }
+    ' class "<font color=blue>func</font>(*v1.Event) (string, string)" as fontcolorbluefuncfontv1Eventstringstring {
+    '     'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    ' }
+}
+' "sync.RWMutex" *- - "event.EventAggregator"
+' "sync.RWMutex" *- - "event.EventSourceObjectSpamFilter"
+' "sync.RWMutex" *- - "event.eventLogger"
+
+
+' "event.EventRecorder" <|- - "event.FakeRecorder"
+' "event.EventRecorder" <|- - "event.recorderImpl"
+' "event.EventBroadcaster" <|- - "event.eventBroadcasterImpl"
+' "event.Broadcaster" *- - "event.eventBroadcasterImpl"
+' "event.Broadcaster" *- - "event.recorderImpl"
+' "event.EventRecorder" <.. "event.EventBroadcaster"
+' "event.EventBroadcaster" <.. "event.EventSink"
+' "event.Broadcaster" <.. "event.broadcasterWatcher"
+
+"event.EventCorrelator" <.. "event.eventLogger"
+"event.EventCorrelator" <.. "event.EventFilterFunc"
+"event.EventFilterFunc" <.. "event.EventSourceObjectSpamFilter"
+"event.EventCorrelator" <.. "event.EventAggregator"
+"event.EventCorrelator" <.. "event.EventCorrelateResult"
+"event.EventCorrelator" <.. "event.CorrelatorOptions"
+
+"event.EventSourceObjectSpamFilter" <.. "event.EventSpamKeyFunc"
+"event.EventSourceObjectSpamFilter" <.. "event.spamRecord"
+"event.EventSpamKeyFunc" <.. "event.getSpamKey"
+
+
+"event.EventAggregator" <.. "event.EventAggregatorKeyFunc"
+"event.EventAggregator" <.. "event.EventAggregatorMessageFunc"
+
+"event.EventAggregatorKeyFunc" <|- - "event.EventAggregatorByReasonFunc"
+"event.EventAggregatorMessageFunc" <|- - "event.EventAggregatorByReasonMessageFunc"
+
+"event.eventLogger" <.. "event.eventLog"
+
+namespace event {
+    ' class Broadcaster << (S,Aquamarine) >> {
+    '     - watchers <font color=blue>map</font>[int64]*broadcasterWatcher
+    '     - nextWatcher int64
+    '     - distributing sync.WaitGroup
+    '     - incomingBlock sync.Mutex
+    '     - incoming <font color=blue>chan</font> Event
+    '     - stopped <font color=blue>chan</font> <font color=blue>struct</font>{}
+    '     - watchQueueLength int
+    '     - fullChannelBehavior FullChannelBehavior
+
+    '     - blockQueue(f <font color=blue>func</font>() ) 
+    '     - stopWatching(id int64) 
+    '     - closeAll() 
+    '     - loop() 
+    '     - distribute(event Event) 
+
+    '     + Watch() (Interface, error)
+    '     + WatchWithPrefix(queuedEvents []Event) (Interface, error)
+    '     + Action(action EventType, obj runtime.Object) error
+    '     + ActionOrDrop(action EventType, obj runtime.Object) (bool, error)
+    '     + Shutdown() 
+
+    ' }
+    ' class broadcasterWatcher << (S,Aquamarine) >> {
+    '     - result <font color=blue>chan</font> Event
+    '     - stopped <font color=blue>chan</font> <font color=blue>struct</font>{}
+    '     - stop sync.Once
+    '     - id int64
+    '     - m *Broadcaster
+
+    '     + ResultChan() <font color=blue>chan</font> Event
+    '     + Stop() 
+
+    ' }
+    ' class functionFakeRuntimeObject << (S,Aquamarine) >> {
+    '     + GetObjectKind() schema.ObjectKind
+    '     + DeepCopyObject() runtime.Object
+
+    ' }
+    ' class event.FullChannelBehavior << (T, #FF7700) >>  {
+    ' }
+    ' class event.functionFakeRuntimeObject << (T, #FF7700) >>  {
+    ' }
+}
+
+
+' "__builtin__.int" #.. "event.FullChannelBehavior"
+' "event.fontcolorbluefuncfontv1Eventstringstring" #.. "event.EventAggregatorKeyFunc"
+' "event.fontcolorbluefuncfontv1Eventbool" #.. "event.EventFilterFunc"
+' "event.fontcolorbluefuncfontv1Eventstring" #.. "event.EventAggregatorMessageFunc"
+' "event.fontcolorbluefuncfontv1Eventstring" #.. "event.EventSpamKeyFunc"
+' "event.<font color=blue>func</font>() " #.. "event.functionFakeRuntimeObject"
+@enduml
+
+@startuml
+namespace event {
+    class CorrelatorOptions << (S,Aquamarine) >> {
+        + LRUCacheSize int
+        + BurstSize int
+        + QPS float32
+        + KeyFunc EventAggregatorKeyFunc
+        + MessageFunc EventAggregatorMessageFunc
+        + MaxEvents int
+        + MaxIntervalInSeconds int
+        + Clock clock.PassiveClock
+        + SpamKeyFunc EventSpamKeyFunc
+
+    }
+    class EventAggregator << (S,Aquamarine) >> {
+        - cache *lru.Cache
+        - keyFunc EventAggregatorKeyFunc
+        - messageFunc EventAggregatorMessageFunc
+        - maxEvents uint
+        - maxIntervalInSeconds uint
+        - clock clock.PassiveClock
+
+        + EventAggregate(newEvent *v1.Event) (*v1.Event, string)
+
+    }
+
+    class EventCorrelateResult << (S,Aquamarine) >> {
+        + Event *v1.Event
+        + Patch []byte
+        + Skip bool
+
+    }
+    class EventCorrelator << (S,Aquamarine) >> {
+        - filterFunc EventFilterFunc
+        - aggregator *EventAggregator
+        - logger *eventLogger
+
+        + EventCorrelate(newEvent *v1.Event) (*EventCorrelateResult, error)
+        + UpdateState(event *v1.Event) 
+
+    }
+
+
+
+
+    class EventSourceObjectSpamFilter << (S,Aquamarine) >> {
+        - cache *lru.Cache
+        - burst int
+        - qps float32
+        - clock clock.PassiveClock
+        - spamKeyFunc EventSpamKeyFunc
+
+        + Filter(event *v1.Event) bool
+
+    }
+
+
+
+
+
+
+
+    class eventLog << (S,Aquamarine) >> {
+        - count uint
+        - firstTimestamp v1.Time
+        - name string
+        - resourceVersion string
+
+    }
+    class eventLogger << (S,Aquamarine) >> {
+        - cache *lru.Cache
+        - clock clock.PassiveClock
+
+        - eventObserve(newEvent *v1.Event, key string) (*v1.Event, []byte, error)
+        - updateState(event *v1.Event) 
+        - lastEventObservationFromCache(key string) eventLog
+
+    }
+    class event.EventAggregatorKeyFunc << (T, #FF7700) >>  {
+    }
+    class event.EventAggregatorMessageFunc << (T, #FF7700) >>  {
+    }
+    class event.EventFilterFunc << (T, #FF7700) >>  {
+    }
+    class event.EventSpamKeyFunc << (T, #FF7700) >>  {
+    }
+
+
+
+    class spamRecord << (S,Aquamarine) >> {
+        - rateLimiter flowcontrol.PassiveRateLimiter
+
+    }
+}
+
+
+
+"event.EventCorrelator" <.. "event.eventLogger"
+"event.EventCorrelator" <.. "event.EventFilterFunc"
+"event.EventFilterFunc" <.. "event.EventSourceObjectSpamFilter"
+"event.EventCorrelator" <.. "event.EventAggregator"
+"event.EventCorrelator" <.. "event.EventCorrelateResult"
+"event.EventCorrelator" <.. "event.CorrelatorOptions"
+
+"event.EventSourceObjectSpamFilter" <.. "event.EventSpamKeyFunc"
+"event.EventSourceObjectSpamFilter" <.. "event.spamRecord"
+"event.EventSpamKeyFunc" <.. "event.getSpamKey"
+
+
+"event.EventAggregator" <.. "event.EventAggregatorKeyFunc"
+"event.EventAggregator" <.. "event.EventAggregatorMessageFunc"
+
+"event.EventAggregatorKeyFunc" <|- - "event.EventAggregatorByReasonFunc"
+"event.EventAggregatorMessageFunc" <|- - "event.EventAggregatorByReasonMessageFunc"
+
+"event.eventLogger" <.. "event.eventLog"
+
+namespace event {
+
+
+
+
+
+
+}
+
+
+@enduml
+
+PlantUML version 1.2022.7(Tue Aug 23 01:01:30 CST 2022)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Default Encoding: UTF-8
+Language: zh
+Country: CN
+--></g></svg>
