@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "Java 变量、流程控制与数据类型"
+title: "Java 变量与数据类型"
 date: 2023-05-01T22:00:00+08:00
 lastmod: 2023-05-01T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "Java 变量、流程控制与数据类型"
+description: "Java 变量与数据类型"
 featuredImage: 
 
 tags: ["java 语法"]
@@ -24,7 +24,7 @@ toc:
 | 变量声明方式 | Java                                            | Go                                            |
 | ------------ | ----------------------------------------------- | --------------------------------------------- |
 | 声明变量     | `int x;`<br>`String name;`                      | `var x int;`<br>`var name string;`            |
-| 声明并初始化 | `int x = 10;`<br>`String name = "John";`        | `x := 10`<br>`name := "John"`                 |
+| 声明并初始化 | `int x = 10;`<br>`String name = "John";`        | `x := 10`<br>`var name string = "abc"`                 |
 | 声明多个变量 | `int x = 10, y = 20, z = 30;`<br>`String name1, name2;` | `x, y, z := 10, 20, 30`<br>`var name1, name2 string` <br>`var b, f, s = true, 2.3, "four"` |
 | 变量推导     | `var x = 10;`<br>`var name = "John";`           | `x := 10`<br>`name := "John"`                 |
 
@@ -32,36 +32,7 @@ toc:
 1. Java 变量声明的类型在前
 2. 使用 var 关键词才能完成类型推到
 
-## 2. 条件判断和循环
-问: 以表格的方式，对比 java 和go 中条件和循环，表格中加入 java 的 for-each 语法 和 go 的 for range 语法
-
-| 条件和循环语句 | Java                                                         | Go                                                            |
-| -------------- | ------------------------------------------------------------ | ------------------------------------------------------------- |
-| if语句         | `if (x > 0) {`<br>`    System.out.println("x is positive");`<br>`} else if (x < 0) {`<br>`    System.out.println("x is negative");`<br>`} else {`<br>`    System.out.println("x is zero");`<br>`}` | `if x > 0 {`<br>`    fmt.Println("x is positive")`<br>`} else if x < 0 {`<br>`    fmt.Println("x is negative")`<br>`} else {`<br>`    fmt.Println("x is zero")`<br>`}` |
-| for循环        | `for (int i = 0; i < 10; i++) {`<br>`    System.out.println(i);`<br>`}`<br>`for (int i : arr) {`<br>`    System.out.println(i);`<br>`}` | `for i := 0; i < 10; i++ {`<br>`    fmt.Println(i)`<br>`}`<br>`for _, num := range arr {`<br>`    fmt.Println(num)`<br>`}` |
-| while和do-while循环   | `while (condition) {`<br>`    // 循环体`<br>`}`<br>`do {`<br>`    // 循环体`<br>`} while (condition);` | Go中没有`while`和`do-while`循环 |
-
-需要注意的是，Java和Go中的条件和循环语句基本相同，但在语法上有一些差异。例如:
-1. 在Java中使用for循环时可以使用for-each循环来遍历数组,而Go中则使用range关键字来遍历数组。
-3. 在Java中有while和do-while循环，而在Go中则没有这两种循环语句。
-
-
-
-## 3. switch
-问: 对比一下 java 和 go 的 switch 语法，以表格形式展示
-
-| `switch`语法 | Java                                                         | Go                                                            |
-| ------------ | ------------------------------------------------------------ | ------------------------------------------------------------- |
-| 基本语法     | <pre lang="java">switch (expression) {<br>    case value1:<br>        // 当expression的值等于value1时执行的代码块<br>        break;<br>    case value2:<br>        // 当expression的值等于value2时执行的代码块<br>        break;<br>    default:<br>        // 当expression的值都不等于任何一个case语句的值时执行的代码块<br>}</pre> | <pre lang="go">switch expression {<br>    case value1:<br>        // 当expression的值等于value1时执行的代码块<br>    case value2:<br>        // 当expression的值等于value2时执行的代码块<br>    default:<br>        // 当expression的值都不等于任何一个case语句的值时执行的代码块<br>}</pre> |
-| 多个值的匹配 | <pre lang="java">switch (expression) {<br>    case value1:<br>    case value2:<br>        // 当expression的值等于value1或value2时执行的代码块<br>        break;<br>    default:<br>        // 当expression的值都不等于任何一个case语句的值时执行的代码块<br>}</pre> | <pre lang="go">switch expression {<br>    case value1, value2:<br>        // 当expression的值等于value1或value2时执行的代码块<br>    default:<br>        // 当expression的值都不等于任何一个case语句的值时执行的代码块<br>}</pre> |
-| 表达式匹配   | <pre lang="java">switch (day) {<br>    case MONDAY, FRIDAY, SUNDAY:<br>        // 当day的值等于MONDAY、FRIDAY或SUNDAY时执行的代码块<br>        break;<br>    case TUESDAY:<br>        // 当day的值等于TUESDAY时执行的代码块<br>        break;<br>    case THURSDAY:<br>        // 当day的值等于THURSDAY时执行的代码块<br>        break;<br>    case SATURDAY:<br>    case WEDNESDAY:<br>        // 当day的值等于SATURDAY或WEDNESDAY时执行的代码块<br>        break;<br>    default:<br>        // 当day的值都不等于任何一个case语句的值时执行的代码块<br>}</pre> | <pre lang="go">switch day {<br>    case MONDAY, FRIDAY, SUNDAY:<br>        // 当day的值等于MONDAY、FRIDAY或SUNDAY时执行的代码块<br>    case TUESDAY:<br>        // 当day的值等于TUESDAY时执行的代码块<br>    case THURSDAY:<br>        // 当day的值等于THURSDAY时执行的代码块<br>    case SATURDAY, WEDNESDAY:<br>        // 当day的值等于SATURDAY或WEDNESDAY时执行的代码块<br>    default:<br>        // 当day的值都不等于任何一个case语句的值时执行的代码块<br>}</pre> |
-
-需要注意的是，Java和Go中的`switch`语句有一些差异。在Java中，`switch`语句的每个`case`语句末尾必须使用`break`语句来结束该`case`语句，否则代码会继续执行下一个`case`语句的代码块。而在Go中，`case`语句的末尾不需要使用`break`语句，代码会自动跳出`switch`语句。此外，Go中的`switch`语句可以接受多个值的匹配，可以更加简洁地编写代码。
-
-## 4. 变量的生命周期与作用域
-由于 Java 并不像 Go 一样存在一些隐式作用域，所以在变量作用域上 Java 基本上就是所见即所得，不存在类似 Go 语言中 for "陷阱的问题"
-
-## 5. 常量以及类型转换
+## 2. 常量以及类型转换
 
 问: 以表格的形式对比 java 和 go 中的常量定义、类型重命名、类型转换
 
@@ -73,8 +44,8 @@ toc:
 
 总的来说，Java 和 Go 中常量定义、类型重命名和类型转换的使用方式有些不同。在常量定义方面，Java 使用 `final` 关键字，而 Go 使用 `const` 关键字。在类型重命名方面，Java 使用 `typedef` 关键字，而 Go 使用 `type` 关键字。在类型转换方面，Java 使用强制类型转换运算符，而 Go 使用类型转换函数。不同的语言在这些方面的设计和语法有所不同，但是它们都提供了类似的功能，使得开发人员能够方便地定义常量、重命名类型和执行类型转换。
 
-## 6. 基础类型
-### 6.1 基础类型的范围
+## 3. 基础类型
+### 3.1 数值类型的范围
 问: 以表格形式列举 java 中的中的基础数据类型，分为三列，分别是类型，长度，表示的含义，使用惯例的代码示例
 
 | 类型 | 长度 | 含义 | 代码示例 |
@@ -90,52 +61,8 @@ toc:
 
 需要注意的是，在 Java 中定义整型变量时，如果不加任何后缀，默认类型为 `int`；如果需要定义 `long` 类型的变量，需要在数值后面加上 `L` 或 `l` 后缀。在定义浮点型变量时，如果不加任何后缀，默认类型为 `double`；如果需要定义 `float` 类型的变量，需要在数值后面加上 `F` 或 `f` 后缀。
 
-### 6.2 数值运算的优先级
 
-问: Java 中数据运算的运算符和优先级，以表格形式展示，优先级从上到下优先级从高到低，并给出代码示例
-
-| 运算符 | 优先级 | 含义 | 代码示例 |
-| --- | --- | --- | --- |
-| () |  | 括号 | `(a + b) * c` |
-| ++ -- |  | 前缀自增自减 | `++a` |
-| ++ -- |  | 后缀自增自减 | `a++` |
-| + - |  | 正负号 | `+a` |
-| * |  | 乘法 | `a * b` |
-| / |  | 除法 | `a / b` |
-| % |  | 取模（求余） | `a % b` |
-| + |  | 加法 | `a + b` |
-| - |  | 减法 | `a - b` |
-| << >> >>> |  | 位运算 | `a << b` |
-| < <= > >= |  | 比较运算 | `a < b` |
-| == != |  | 相等性比较 | `a == b` |
-| & |  | 位与 | `a & b` |
-| ^ |  | 位异或 | `a ^ b` |
-| \| |  | 位或 | `a \| b` |
-| && |  | 逻辑与 | `a && b` |
-| \|\| |  | 逻辑或 | `a \|\| b` |
-| ?: |  | 条件运算 | `a > b ? a : b` |
-| = += -= *= /= %= <<= >>= &= ^= \|= |  | 赋值运算 | `a += b` |
-
-
-需要注意的是
-1. Java 中的 `==` 运算符比 `=` 运算符优先级高
-2. Java 中的位运算符包括左移运算符 `<<`、右移运算符 `>>` 和无符号右移运算符 `>>>` 都比比较运算符和相等性比较运算符的优先级要高。
-
-下面是一些示例代码：
-
-```java
-int a = 10, b = 5, c = 2;
-int result = (a + b) * c;  // 使用括号改变优先级
-int x = 5, y = ++x;        // 前缀自增运算符
-int m = 5, n = m++;        // 后缀自增运算符
-int p = +a, q = -b;        // 正负号运算符
-int r = a * b, s = a / b, t = a % b;  // 乘除取模运算符
-int u = a << 2, v = a >> 2, w = a >>> 2;  // 位运算符
-boolean flag =a > b && c < d;  // 逻辑运算符
-int max = a > b ? a : b;  // 条件运算符
-a += b;  // 赋值运算符
-```
-### 6.3 浮点数
+### 3.2 浮点数
 问: Java 中的浮点数，有哪些特殊表示和使用方法，给出代码示例，包括如何表示无限大，表示NaN
 
 Java 中的浮点数有一些特殊表示和使用方法:
@@ -178,7 +105,7 @@ public class BigDecimalExample {
 }
 ```
 
-### 6.4 隐式类型转换
+## 4. 隐式类型转换
 在 Java 中，隐式类型转换（implicit type conversion）是指将一个数据类型自动转换为另一个数据类型，而无需明确地进行类型转换操作。以下是 Java 中的一些常见隐式类型转换：
 
 1. byte → short → int → long → float → double
@@ -190,7 +117,7 @@ public class BigDecimalExample {
 4. 子类 → 父类
    将子类类型隐式转换为父类类型。例如，将子类对象赋给父类类型的变量时，编译器会自动将子类对象转换为父类类型。
 
-## 7. 包装数据类型
+## 5. 包装数据类型
 与 Go 明显不同，但与 Python 类似，Java 中所有的基础类型都有与之对应的包装类型。基础类型与基础类型的包装类型之间的区别是，包装类型是一个类，这个类上有很多方法；而基础类型仅仅表示数值。
 
 以下是 Java 中的包装类型和对应的基本类型的枚举和代码示例：
@@ -222,7 +149,7 @@ Integer l = k;
 
 这里的 k 是一个 int 类型的变量，但是可以直接将它赋给 Integer 类型的变量 l，这是因为 Java 中支持自动装箱的特性。在使用包装类型时，需要注意自动装箱和拆箱的操作可能会影响程序的性能，因此需要根据具体的情况进行选择和使用。
 
-## 8. 复合数据类型
+## 6. 复合数据类型
 以下是 Java 和 Go 中常见的复合数据类型的对比以及对应的代码示例：
 
 | 数据类型   | 描述                                                         | Java                                                         | Go                                                                 |
@@ -232,4 +159,152 @@ Integer l = k;
 | 映射       | 存储键值对的集合，每个键唯一，值可以重复                   | Map<Integer, String> map = new HashMap<>();<br>map.put(1, "Hello");<br>map.put(2, "World"); | var map map[int]string<br>map = make(map[int]string)<br>map[1] = "Hello"<br>map[2] = "World" |
 | 结构体     | 一种自定义的数据类型，包含多个字段，每个字段可以是不同的数据类型 | public class Person {<br>    private String name;<br>    private int age;<br>    public Person(String name, int age) {<br>        this.name = name;<br>        this.age = age;<br>    }<br>} | type Person struct {<br>    name string<br>    age int<br>}<br>func main() {<br>    p := Person{name: "Tom", age: 18}<br>} |
 
-需要注意的是，在 Java 中，数组和映射都是静态的，一旦创建之后，它们的大小和元素类型就不能再改变。而在 Go 中，切片和映射都是动态的，可以根据需要动态增长或缩小。此外，在 Java 中，结构体是通过定义类来实现的，而在 Go 中，结构体是一种基本类型，可以直接使用。在使用复合数据类型时，需要根据具体的语言特性和场景进行选择和使用。
+### 6.1 java 中的数组实现
+问: Java 中有哪些数组实现，以表格形式对比他们的特点
+
+在Java中，有多种数组实现，包括常见的数组类型和一些特殊的数组实现。下面以表格形式对比它们的特点：
+
+| 数组实现          | 描述                                                         | 特点                                                                             |
+| ----------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| 原生数组          | Java语言提供的基本数组类型。                                   | - 固定长度，创建后无法改变大小。<br>- 可以存储任意类型的元素。<br>- 直接访问元素的性能最佳。<br>- 不具备扩容和自动管理内存的能力。 |
+| ArrayList         | 基于动态数组实现的类，提供动态调整大小的功能。                   | - 动态调整大小，自动扩容。<br>- 支持快速的随机访问和插入/删除操作。<br>- 线程不安全。     |
+| LinkedList        | 基于双向链表实现的类，支持动态添加和删除元素。                   | - 动态调整大小，不需要连续的内存空间。<br>- 插入和删除元素效率高。<br>- 随机访问性能较差。<br>- 线程不安全。 |
+| CopyOnWriteArrayList | 基于数组实现的线程安全类，适用于读多写少的场景。                 | - 写操作会创建一个新的数组，不影响正在进行的读操作。<br>- 适用于并发读多写少的情况。 |
+| Vector            | 基于数组实现的线程安全类，类似于ArrayList。                       | - 动态调整大小，自动扩容。<br>- 所有方法都使用`synchronized`关键字进行同步。<br>- 线程安全，但性能相对较低。 |
+
+示例代码：
+
+1. 原生数组示例：
+```java
+int[] array = new int[5]; // 声明一个长度为5的整数数组
+array[0] = 1; // 设置数组元素的值
+int value = array[0]; // 获取数组元素的值
+```
+
+2. ArrayList示例：
+```java
+import java.util.ArrayList;
+
+public class ArrayListExample {
+    public static void main(String[] args) {
+        ArrayList<Integer> arrayList = new ArrayList<>();
+        arrayList.add(1); // 添加元素
+        int value = arrayList.get(0); // 获取元素
+        arrayList.remove(0); // 移除元素
+    }
+}
+```
+
+3. LinkedList示例：
+```java
+import java.util.LinkedList;
+
+public class LinkedListExample {
+    public static void main(String[] args) {
+        LinkedList<String> linkedList = new LinkedList<>();
+        linkedList.add("Apple");
+        linkedList.add("Banana");
+        linkedList.add("Orange");
+        String firstElement = linkedList.getFirst(); // 获取首个元素
+        linkedList.removeLast(); // 移除最后一个元素
+    }
+}
+```
+
+4. CopyOnWriteArrayList示例：
+```java
+import java.util.concurrent.CopyOnWriteArrayList;
+
+public class CopyOnWriteArrayListExample {
+    public static void main(String[] args) {
+        Copy
+
+OnWriteArrayList<String> list = new CopyOnWriteArrayList<>();
+        list.add("Apple");
+        list.add("Banana");
+        list.add("Orange");
+        String element = list.get(0);
+        list.remove(2);
+    }
+}
+```
+
+5. Vector示例：
+```java
+import java.util.Vector;
+
+public class VectorExample {
+    public static void main(String[] args) {
+        Vector<Integer> vector = new Vector<>();
+        vector.add(1);
+        vector.add(2);
+        vector.add(3);
+        int element = vector.get(0);
+        vector.remove(2);
+    }
+}
+```
+
+### 6.2 java 中的哈希实现
+问: Java 中有哪些 HashMap 实现，以表格形式对比他们的特点
+
+在Java中，有多个HashMap的实现，包括常见的HashMap、LinkedHashMap和ConcurrentHashMap。下面以表格形式对比它们的特点：
+
+| HashMap 实现        | 描述                                                                                         | 特点                                                                                   |
+| ------------------- | -------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| HashMap             | 基于哈希表的Map实现，不保证迭代顺序。                                                         | - 快速的插入和查找操作。<br>- 不保证元素的顺序。<br>- 可能存在哈希冲突。<br>- 非线程安全。 |
+| LinkedHashMap       | 基于哈希表和双向链表的Map实现，按插入顺序或访问顺序迭代元素。                                   | - 具有HashMap的所有特点。<br>- 迭代顺序可选择按插入顺序或访问顺序（LRU近似顺序）。            |
+| ConcurrentHashMap  | 线程安全的Map实现，支持高并发操作。                                                          | - 在读操作上提供并发访问性能。<br>- 使用分段锁机制来实现线程安全。<br>- 适用于多线程环境。    |
+
+示例代码：
+
+1. HashMap示例：
+```java
+import java.util.HashMap;
+
+public class HashMapExample {
+    public static void main(String[] args) {
+        HashMap<String, Integer> hashMap = new HashMap<>();
+        hashMap.put("Apple", 1);
+        hashMap.put("Banana", 2);
+        hashMap.put("Orange", 3);
+        
+        System.out.println(hashMap.get("Banana")); // 输出: 2
+        System.out.println(hashMap.containsKey("Orange")); // 输出: true
+    }
+}
+```
+
+2. LinkedHashMap示例：
+```java
+import java.util.LinkedHashMap;
+
+public class LinkedHashMapExample {
+    public static void main(String[] args) {
+        LinkedHashMap<String, Integer> linkedHashMap = new LinkedHashMap<>();
+        linkedHashMap.put("Apple", 1);
+        linkedHashMap.put("Banana", 2);
+        linkedHashMap.put("Orange", 3);
+        
+        System.out.println(linkedHashMap.get("Banana")); // 输出: 2
+        System.out.println(linkedHashMap.containsKey("Orange")); // 输出: true
+    }
+}
+```
+
+3. ConcurrentHashMap示例：
+```java
+import java.util.concurrent.ConcurrentHashMap;
+
+public class ConcurrentHashMapExample {
+    public static void main(String[] args) {
+        ConcurrentHashMap<String, Integer> concurrentHashMap = new ConcurrentHashMap<>();
+        concurrentHashMap.put("Apple", 1);
+        concurrentHashMap.put("Banana", 2);
+        concurrentHashMap.put("Orange", 3);
+        
+        System.out.println(concurrentHashMap.get("Banana")); // 输出: 2
+        System.out.println(concurrentHashMap.containsKey("Orange")); // 输出: true
+    }
+}
+```
