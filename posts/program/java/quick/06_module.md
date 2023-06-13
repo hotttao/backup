@@ -134,40 +134,33 @@ package com.example.myapp;
 在示例中，`com.example.myapp`是包的名称。包名通常使用小写字母，并以域名倒序的方式命名，以确保唯一性。
 
 ### 2.2 包的导入
-**导入单个类：**
+在Java中，导入类有几种方式
+1. 直接写出完整类名:
+  - `mr.jun.Arrays arrays = new mr.jun.Arrays();`
+  - 无需使用 import 导入，直接写出完整类名
+2. 导入单个类
+  - `import com.example.myapp.MyClass;`
+  - 导入单个类允许在代码中直接使用该类，而无需使用完全限定的类名。如上，在代码中直接使用`MyClass`
+3. 导入整个包
+  - `import com.example.myapp.*;`
+  - 导入整个包允许在代码中使用该包中的所有类，而无需逐个导入。如上，可以在代码中直接使用该包中的类
+4. 静态导入
+  - `import static com.example.myapp.MyClass.myStaticField;`
+  - `import static com.example.myapp.MyClass.myStaticMethod;`
+  - 静态导入用于导入类的静态成员（字段和方法），以便在代码中直接使用这些静态成员，而无需使用类名限定。如上，可以在代码中直接使用 myStaticMethod、myStaticField
+5. 默认导入:
+  - Java默认会自动导入一些常用的类，如`java.lang`包中的类
 
-导入单个类允许在代码中直接使用该类，而无需使用完全限定的类名。以下是导入单个类的示例：
+导入语句通常位于Java源文件的顶部，位于包的声明之后。可以根据需要导入多个类或包，每个导入语句占据一行。
 
-```java
-import com.example.myapp.MyClass;
-```
+如果类的完整路径未指定，只是使用类名来引用类，则编译器将按照下述优先级从高到低的顺序搜索类:
 
-在示例中，`com.example.myapp.MyClass`是要导入的类。可以在代码中直接使用`MyClass`，而无需使用完全限定的类名。
+1. 在当前包中的类具有最高优先级。如果当前包中存在相同名称的类，它将被优先使用。
+2. 导入的特定类具有次高优先级。如果已经导入了一个特定的类，它将被优先使用。
+3. 导入的整个包具有最低优先级。如果存在多个导入的包中都有相同名称的类，编译器将无法确定使用哪个类，此时需要使用完整的类路径来引用特定的类。
+4. 查找java.lang包是否包含这个class
 
-**导入整个包：**
-
-导入整个包允许在代码中使用该包中的所有类，而无需逐个导入。以下是导入整个包的示例：
-
-```java
-import com.example.myapp.*;
-```
-
-在示例中，`com.example.myapp.*`表示要导入`com.example.myapp`包中的所有类。可以在代码中直接使用该包中的类，而无需使用完全限定的类名。
-
-**静态导入：**
-
-静态导入用于导入类的静态成员（字段和方法），以便在代码中直接使用这些静态成员，而无需使用类名限定。以下是静态导入的示例：
-
-```java
-import static com.example.myapp.MyClass.myStaticField;
-import static com.example.myapp.MyClass.myStaticMethod;
-```
-
-在示例中，`com.example.myapp.MyClass.myStaticField`和`com.example.myapp.MyClass.myStaticMethod`是要导入的静态成员。可以在代码中直接使用这些静态成员，而无需使用类名限定。
-
-需要注意的是，导入语句通常位于Java源文件的顶部，位于包的声明之后。可以根据需要导入多个类或包，每个导入语句占据一行。
-
-通过包的声明和导入机制，可以更好地组织和管理Java代码，并提高代码的可读性和可维护性。
+如果按照上面的规则还无法确定类名，则编译报错。
 
 ## 3. 包的搜索路径
 问: Java 包的搜索路径
@@ -356,3 +349,5 @@ Maven通过依赖范围（Dependency Scope）来管理项目的依赖关系。�
 需要注意的是，父POM不一定需要是本地项目中的文件，它可以是一个远程仓库中的POM文件。在Maven的构建过程中，首先会尝试在本地仓库中查找父POM，如果没有找到则从远程仓库下载。
 
 希望以上信息对您有所帮助。如有任何进一步的问题，请随时提问。
+
+## 6. 模块
