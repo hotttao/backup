@@ -126,5 +126,3 @@ javac --release 11 Main.java
 // 如果使用Java 17的JDK编译，它会把源码视为Java 9兼容版本，并输出class为Java 11兼容版本
 javac --source 9 --target 11 Main.java
 ```
-
-### 1.6 模块
