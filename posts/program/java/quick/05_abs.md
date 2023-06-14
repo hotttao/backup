@@ -502,3 +502,70 @@ public class Main {
 在上述示例中，`OuterClass`是外部类，`InnerClass`是静态内部类。静态内部类可以直接访问外部类的静态字段`staticField`，但无法直接访问外部类的实例字段`instanceField`。
 
 静态内部类的创建方式与普通的类类似，可以直接通过`new InnerClass()`创建静态内部类的对象，无需外部类的实例。
+
+
+## 4. 枚举类型
+```java
+enum Weekday {
+    SUN, MON, TUE, WED, THU, FRI, SAT;
+}
+```
+
+### 4.1 枚举类型与 class 去呗
+通过enum定义的枚举类，和其他的class有什么区别？
+
+答案是没有任何区别。enum定义的类型就是class，只不过它有以下几个特点：
+
+定义的enum类型总是继承自java.lang.Enum，且无法被继承；
+只能定义出enum的实例，而无法通过new操作符创建enum的实例；
+定义的每个实例都是引用类型的唯一实例；
+可以将enum类型用于switch语句。
+例如，我们定义的Color枚举类：
+
+```java
+public enum Color {
+    RED, GREEN, BLUE;
+}
+```
+编译器编译出的class大概就像这样：
+
+```java
+public final class Color extends Enum { // 继承自Enum，标记为final class
+    // 每个实例均为全局唯一:
+    public static final Color RED = new Color();
+    public static final Color GREEN = new Color();
+    public static final Color BLUE = new Color();
+    // private构造方法，确保外部无法调用new操作符:
+    private Color() {}
+}
+```
+
+所以，编译后的enum类和普通class并没有任何区别。但是我们自己无法按定义普通class那样来定义enum，必须使用enum关键字，这是Java语法规定的。
+
+因为enum本身是class，所以我们可以定义private的构造方法，并且，给每个枚举常量添加字段：
+
+```java
+enum Weekday {
+    MON(1), TUE(2), WED(3), THU(4), FRI(5), SAT(6), SUN(0);
+
+    public final int dayValue;
+
+    private Weekday(int dayValue) {
+        this.dayValue = dayValue;
+    }
+}
+```
+
+### 4.2 枚举类型的方法
+因为enum是一个class，每个枚举的值都是class实例，因此，这些实例有一些方法：
+
+以下是Java中枚举类型常用的方法的表格列举：
+
+| 方法                   | 描述                                              |
+|-----------------------|--------------------------------------------------|
+| `values()`            | 返回枚举类型的所有枚举常量数组                      |
+| `valueOf(String name)` | 返回指定名称的枚举常量                            |
+| `name()`              | 返回枚举常量的名称                                |
+| `ordinal()`           | 返回枚举常量在枚举类型中的位置（从0开始计数）       |
+| `compareTo(E other)`  | 比较当前枚举常量与指定枚举常量的顺序               |
+| `toString()`          | 返回枚举常量的字符串表示                          |
