@@ -569,3 +569,135 @@ enum Weekday {
 | `ordinal()`           | 返回枚举常量在枚举类型中的位置（从0开始计数）       |
 | `compareTo(E other)`  | 比较当前枚举常量与指定枚举常量的顺序               |
 | `toString()`          | 返回枚举常量的字符串表示                          |
+
+### 4.3 用于 switch
+
+
+```java
+enum DayOfWeek {
+    MONDAY,
+    TUESDAY,
+    WEDNESDAY,
+    THURSDAY,
+    FRIDAY,
+    SATURDAY,
+    SUNDAY
+}
+
+public class Main {
+    public static void main(String[] args) {
+        DayOfWeek day = DayOfWeek.WEDNESDAY;
+        
+        switch (day) {
+            case MONDAY:
+                System.out.println("星期一");
+                break;
+            case TUESDAY:
+                System.out.println("星期二");
+                break;
+            case WEDNESDAY:
+                System.out.println("星期三");
+                break;
+            case THURSDAY:
+                System.out.println("星期四");
+                break;
+            case FRIDAY:
+                System.out.println("星期五");
+                break;
+            case SATURDAY:
+                System.out.println("星期六");
+                break;
+            case SUNDAY:
+                System.out.println("星期日");
+                break;
+            default:
+                System.out.println("无效的日期");
+                break;
+        }
+    }
+}
+
+```
+注，由于day的类型已经声明为DayOfWeek枚举类型，因此在case语句中可以直接使用枚举常量WEDNESDAY，而不需要显式添加DayOfWeek.WEDNESDAY。
+
+## 5. 记录类
+从Java 14开始，引入了新的Record类。定义Record类时，使用关键字record。借助 Record 类，我们可以快速顶一个不变类型。
+
+```java
+record Point(int x, int y) {}
+```
+
+上面的代码就相当于定义了一个如下类:
+
+```java
+final class Point extends Record {
+    private final int x;
+    private final int y;
+
+    public Point(int x, int y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    public int x() {
+        return this.x;
+    }
+
+    public int y() {
+        return this.y;
+    }
+
+    public String toString() {
+        return String.format("Point[x=%s, y=%s]", x, y);
+    }
+
+    public boolean equals(Object o) {
+        ...
+    }
+    public int hashCode() {
+        ...
+    }
+}
+```
+
+除了用final修饰class以及每个字段外，编译器还自动为我们创建了构造方法，和字段名同名的方法，以及覆写toString()、equals()和hashCode()方法。和enum类似，我们自己不能直接从Record派生，只能通过record关键字由编译器实现继承。
+
+### 5.1 构造方法
+编译器默认按照record声明的变量顺序自动创建一个构造方法，并在方法内给字段赋值。那我们如何自定义构造方法呢?
+
+```java
+public record Point(int x, int y) {
+    public Point {
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException();
+        }
+    }
+}
+
+// 方法public Point {...}被称为Compact Constructor，它的目的是让我们编写检查逻辑，编译器最终生成的构造方法如下：
+public final class Point extends Record {
+    public Point(int x, int y) {
+        // 这是我们编写的Compact Constructor:
+        if (x < 0 || y < 0) {
+            throw new IllegalArgumentException();
+        }
+        // 这是编译器继续生成的赋值代码:
+        this.x = x;
+        this.y = y;
+    }
+    ...
+}
+```
+
+作为record的Point仍然可以添加静态方法。一种常用的静态方法是of()方法，用来创建Point：
+
+```java
+public record Point(int x, int y) {
+    public static Point of() {
+        return new Point(0, 0);
+    }
+    public static Point of(int x, int y) {
+        return new Point(x, y);
+    }
+}
+```

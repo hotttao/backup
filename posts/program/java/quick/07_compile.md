@@ -126,3 +126,38 @@ javac --release 11 Main.java
 // 如果使用Java 17的JDK编译，它会把源码视为Java 9兼容版本，并输出class为Java 11兼容版本
 javac --source 9 --target 11 Main.java
 ```
+
+## 2. Java 虚拟机的参数
+下表列出了 Java 虚拟机（JVM）常用的一些 `-XX` 参数及其功能：
+
+| 参数                      | 功能                                               |
+|---------------------------|----------------------------------------------------|
+| `-XX:+UseSerialGC`        | 启用串行垃圾回收器                                 |
+| `-XX:+UseParallelGC`      | 启用并行垃圾回收器                                 |
+| `-XX:+UseConcMarkSweepGC` | 启用并发标记-清除垃圾回收器                         |
+| `-XX:+UseG1GC`            | 启用 G1 垃圾回收器                                 |
+| `-XX:MaxGCPauseMillis`    | 设置垃圾回收的最大停顿时间（毫秒）                   |
+| `-XX:ParallelGCThreads`   | 设置并行垃圾回收线程数                               |
+| `-XX:ConcGCThreads`       | 设置并发垃圾回收线程数                               |
+| `-XX:MaxHeapSize`         | 设置最大堆内存大小                                  |
+| `-XX:InitialHeapSize`     | 设置初始堆内存大小                                  |
+| `-XX:MetaspaceSize`       | 设置元空间大小                                     |
+| `-XX:MaxMetaspaceSize`    | 设置最大元空间大小                                 |
+| `-XX:SurvivorRatio`       | 设置 Eden 区与 Survivor 区的大小比例                |
+| `-XX:NewRatio`            | 设置年轻代与老年代的大小比例                        |
+| `-XX:MaxTenuringThreshold`| 设置对象进入老年代的年龄阈值                         |
+| `-XX:CompileThreshold`    | 设置方法即时编译的触发阈值                           |
+| `-XX:+HeapDumpOnOutOfMemoryError` | 内存溢出时生成堆转储文件                   |
+| `-XX:HeapDumpPath`        | 设置堆转储文件的路径                               |
+| `-XX:+PrintGCDetails`     | 打印详细的垃圾回收日志                             |
+| `-XX:+PrintGCDateStamps`  | 打印垃圾回收日志的时间戳                           |
+| `-XX:+PrintCommandLineFlags` | 打印命令行参数信息                               |
+| `-XX:+UnlockExperimentalVMOptions` | 解锁实验性的虚拟机选项                    |
+| `-XX:+UseCompressedOops`  | 启用压缩指针（适用于64位 JVM）                      |
+| `-XX:+UseStringDeduplication` | 启用字符串去重（JDK 8u20及更高版本）             |
+| `-XX:+ShowCodeDetailsInExceptionMessages` | 在异常信息中显示源代码详细信息                      |
+| `-XX:-OmitStackTraceInFastThrow`         | 在快速异常抛出时不省略堆栈跟踪信息                   |
+
+`-XX:+ShowCodeDetailsInExceptionMessages` 参数用于在异常信息中显示源代码的详细信息，包括源文件名、行号和方法名。这对于定位和调试异常非常有用，可以提供更多关于异常发生位置的上下文信息。
+
+`-XX:-OmitStackTraceInFastThrow` 参数用于禁止在快速异常抛出时省略堆栈跟踪信息。默认情况下，在某些情况下，当 JVM 认为异常的堆栈跟踪信息对性能没有影响时，会省略部分堆栈跟踪信息以提高性能。通过禁用此参数，可以确保在快速异常抛出时也会包含完整的堆栈跟踪信息。
