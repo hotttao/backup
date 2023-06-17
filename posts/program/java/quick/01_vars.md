@@ -184,6 +184,7 @@ Integer l = k;
 int[] array = new int[5]; // 声明一个长度为5的整数数组
 array[0] = 1; // 设置数组元素的值
 int value = array[0]; // 获取数组元素的值
+int[] array = {1, 2, 3, 4, 5};
 ```
 
 2. ArrayList示例：
