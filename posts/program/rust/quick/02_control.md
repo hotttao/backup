@@ -19,24 +19,119 @@ toc:
 ---
 
 ## 1. 条件判断和循环
-问: 以表格的方式，对比 java 和 rust 中条件和循环
+问: 以表格的方式，对比 java 和 rust 中条件和循环，并给出代码示例
 
-下面是Java和Rust中条件和循环的对比表格，包括语法和代码示例：
+下面是Java和Rust中条件和循环的对比表格，包括代码示例：
 
-| 功能       | Java                                   | Rust                                                          |
-|------------|----------------------------------------|---------------------------------------------------------------|
-| 条件语句   | ```if (condition) { ... } else { ... }``` | ```if condition { ... } else { ... }```                        |
-|            | ```switch (variable) { case value: ... }``` | ```match variable { value => ... }```                      |
-| 循环语句   | ```for (int i = 0; i < 5; i++) { ... }``` | ```for i in 0..5 { ... }```                                 |
-|            | ```while (condition) { ... }```         | ```while condition { ... }```                               |
-|            | ```do { ... } while (condition);```     | ```loop { ...; if condition { break; } }```                 |
-|            |                                        | ```for item in iterable { ... }```                           |
-|            |                                        | ```for (index, item) in iterable.enumerate() { ... }```      |
+|           | Java                                                      | Rust                                      |
+|-----------|-----------------------------------------------------------|-------------------------------------------|
+| 条件语句  | `if`、`else if`、`else`、`switch`                            | `if`、`else if`、`else`、`match`               |
+| 循环语句  | `for`、`while`、`do-while`                                 | `for`、`while`、`loop`                             |
+| 跳出循环  | `break`、`continue`                                         | `break`、`continue`                                 |
+| 循环控制  | `for-each`循环（遍历数组或集合）                              | `for-each`循环（遍历数组或迭代器）                    |
+| 迭代器    | 支持`Iterator`接口，使用`hasNext()`和`next()`方法来遍历元素       | 使用`Iterator` trait，通过`next()`方法来遍历元素         |
+| 范围循环  | 在Java 5之后引入`for-each`循环，使用迭代器或数组访问循环中的元素 | 在Rust中没有直接的范围循环，可以使用`for`和`Range`类型来实现 |
+| 条件表达式 | 三元运算符`condition ? trueValue : falseValue`                | `if`语句可以作为表达式使用                            |
 
+代码中的条件表达式必须产生一个bool类型的值，否则就会触发编译错误。Rust不会自动尝试将非布尔类型的值转换为布尔类型。
+
+下面是对应的代码示例：
+
+**Java 示例：**
+
+```java
+// 条件语句
+int x = 5;
+if (x > 0) {
+    System.out.println("x is positive");
+} else if (x < 0) {
+    System.out.println("x is negative");
+} else {
+    System.out.println("x is zero");
+}
+
+// 循环语句
+for (int i = 0; i < 5; i++) {
+    System.out.println(i);
+}
+
+int i = 0;
+while (i < 5) {
+    System.out.println(i);
+    i++;
+}
+
+int j = 0;
+do {
+    System.out.println(j);
+    j++;
+} while (j < 5);
+
+// 循环控制 - for-each循环
+int[] nums = {1, 2, 3, 4, 5};
+for (int num : nums) {
+    System.out.println(num);
+}
+
+// 条件表达式
+int a = 5;
+int b = (a > 0) ? 10 : -10;
+System.out.println(b);
+```
+
+**Rust 示例：**
+
+```rust
+// 条件语句
+let x = 5;
+if x > 0 {
+    println!("x is positive");
+} else if x < 0 {
+    println!("x is negative");
+} else {
+    println!("x is zero");
+}
+
+// 循环语句
+
+let mut i = 0;
+while i < 5 {
+    println!("{}", i);
+
+
+    i += 1;
+}
+
+let mut j = 0;
+loop {
+    println!("{}", j);
+    j += 1;
+    if j >= 5 {
+        break;
+    }
+}
+
+// 循环控制 - for-each循环
+let nums = [1, 2, 3, 4, 5];
+for num in &nums {
+    println!("{}", num);
+}
+
+for i in 0..5 {
+    println!("{}", i);
+}
+
+for element in nums.iter() {
+    println!("Array element: {}", element);
+}
+// 条件表达式
+let a = 5;
+let b = if a > 0 { 10 } else { -10 };
+println!("{}", b);
+```
 
 ## 2. switch
 问: 对比一下 Rust 和 java 的 switch 语法，以表格形式展示
-
 
 
 ## 3. 变量的生命周期与作用域
@@ -46,46 +141,49 @@ toc:
 
 问: Rust 中数据运算的运算符和优先级，以表格形式展示，优先级从上到下优先级从高到低，并给出代码示例
 
-| 运算符 | 优先级 | 含义 | 代码示例 |
-| --- | --- | --- | --- |
-| () |  | 括号 | `(a + b) * c` |
-| ++ -- |  | 前缀自增自减 | `++a` |
-| ++ -- |  | 后缀自增自减 | `a++` |
-| + - |  | 正负号 | `+a` |
-| * |  | 乘法 | `a * b` |
-| / |  | 除法 | `a / b` |
-| % |  | 取模（求余） | `a % b` |
-| + |  | 加法 | `a + b` |
-| - |  | 减法 | `a - b` |
-| << >> >>> |  | 位运算 | `a << b` |
-| < <= > >= |  | 比较运算 | `a < b` |
-| == != |  | 相等性比较 | `a == b` |
-| & |  | 位与 | `a & b` |
-| ^ |  | 位异或 | `a ^ b` |
-| \| |  | 位或 | `a \| b` |
-| && |  | 逻辑与 | `a && b` |
-| \|\| |  | 逻辑或 | `a \|\| b` |
-| ?: |  | 条件运算 | `a > b ? a : b` |
-| = += -= *= /= %= <<= >>= &= ^= \|= |  | 赋值运算 | `a += b` |
+以下是 Rust 中常见的数据运算符和它们的优先级，按照从高到低的顺序排列：
 
+| 运算符          | 描述                               | 代码示例                          |
+| --------------- | ---------------------------------- | --------------------------------- |
+| `()`            | 用于函数调用                         | `function_name(arg1, arg2)`       |
+| `.`             | 用于访问结构体和枚举成员             | `struct_instance.field_name`      |
+| `[]`            | 用于访问数组和切片元素               | `array_name[index]`               |
+| `()`            | 用于将值进行分组                     | `(a + b) * c`                     |
+| `!`             | 逻辑非                             | `!condition`                      |
+| `-`             | 一元负号                           | `-number`                         |
+| `*`             | 乘法                               | `a * b`                           |
+| `/`             | 除法                               | `a / b`                           |
+| `%`             | 取模（取余数）                      | `a % b`                           |
+| `+`             | 加法                               | `a + b`                           |
+| `-`             | 减法                               | `a - b`                           |
+| `<<`            | 左移                               | `a << b`                          |
+| `>>`            | 右移                               | `a >> b`                          |
+| `&`             | 按位与                             | `a & b`                           |
+| `^`             | 按位异或                           | `a ^ b`                           |
+| `|`             | 按位或                             | `a | b`                           |
+| `==`, `!=`      | 相等、不相等                       | `a == b`, `a != b`                |
+| `<`, `<=`       | 小于、小于等于                     | `a < b`, `a <= b`                 |
+| `>`, `>=`       | 大于、大于等于                     | `a > b`, `a >= b`                 |
+| `&&`            | 逻辑与                             | `condition1 && condition2`        |
+| `||`            | 逻辑或                             | `condition1 \|\| condition2`      |
+| `=`             | 赋值                               | `variable = value`                |
+| `+=`, `-=`, ... | 复合赋值运算符（加法赋值、减法赋值等） | `variable += value`               |
 
-需要注意的是
-1. Rust 中的 `==` 运算符比 `=` 运算符优先级高
-2. Rust 中的位运算符包括左移运算符 `<<`、右移运算符 `>>` 和无符号右移运算符 `>>>` 都比比较运算符和相等性比较运算符的优先级要高。
+下面是一些使用上述运算符的代码示例：
 
-下面是一些示例代码：
+```rust
+fn main() {
+    let a = 10;
+    let b = 5;
+    let c = 2;
 
-```Rust
-int a = 10, b = 5, c = 2;
-int result = (a + b) * c;  // 使用括号改变优先级
-int x = 5, y = ++x;        // 前缀自增运算符
-int m = 5, n = m++;        // 后缀自增运算符
-int p = +a, q = -b;        // 正负号运算符
-int r = a * b, s = a / b, t = a % b;  // 乘除取模运算符
-int u = a << 2, v = a >> 2, w = a >>> 2;  // 位运算符
-boolean flag =a > b && c < d;  // 逻辑运算符
-int max = a > b ? a : b;  // 条件运算符
-a += b;  // 赋值运算符
+    let result1 = a + b * c;         // 10 + (5 * 2) = 20
+    let result2 = (a + b) * c;       // (10 + 5) * 2 = 30
+    let result3 = a % b;             // 10 % 5 = 0
+    let result4 = a == b;            // 10 == 5 -> false
+    let result5 = !(a > b);          // !(10 > 5) -> false
+
+    println!("Result 1: {}", result1);
+    println!("Result 
 ```
-
 ## 5. 表达式的求值顺序
