@@ -139,95 +139,69 @@ Cargo 中:
 3. Cargo会在构建库和二进制程序时将这些单元包的根节点文件作为参数传递给rustc
 
 ### 1.3 模块
-问: 举例说明，rust 中的模块定义、嵌套、导入以及导入路径，最后列出导入路径的所有可用方式。使用一个更加复杂的目录结构，比如模块位于 src/lib/modules.rs 内
+为了演示 rust 如何定义和导入模块，我创建了一个如下结构的项目:
 
-在 Rust 中，模块用于组织代码，并提供命名空间和可见性控制。下面我将为你举例说明 Rust 中的模块定义、嵌套、导入和导入路径的概念，以及在复杂目录结构下的使用方式。
-
-假设我们有以下的目录结构：
+```bash
+$ tree src/
+src/
+├── a.rs
+├── lib.rs
+├── main.rs
+└── stock
+    ├── b.rs
+    ├── d
+    │   ├── c.rs
+    │   └── mod.rs
+    └── mod.rs
 ```
-- src
-  |- main.rs
-  |- lib
-     |- modules.rs
-     |- utilities.rs
-```
 
-首先，我们来定义一个模块。在 `modules.rs` 文件中，我们可以定义一个名为 `my_module` 的模块，其中包含一个函数 `my_function`：
+我们先看 lib.rs:
+1. `mod a;`: lib.rs 的同级目录下找 a.rs 并作为模块导入
+2. `pub mod stock;`: 类似，但是 stock 是一个目录，此时需要在 stock 下面创建一个 mod.rs 标识整个目录是一个模块
 
 ```rust
-// modules.rs
+mod a;
+pub mod stock;
 
-pub mod my_module {
-    pub fn my_function() {
-        println!("Hello from my_module!");
+pub mod foo {
+    pub fn hello() {
+        println!("Hello from foo module!");
     }
 }
+
 ```
 
-现在，我们可以在 `main.rs` 中导入并使用 `my_function` 函数。首先，我们需要使用 `mod` 关键字来声明我们将要导入的模块，然后使用 `use` 关键字来导入函数：
+我们再来看看 main.rs:
+前面我们说过 src/main.rs 和 src/lib.rs 都会被视为 crate 的根，所以
+- 在 main.rs 中 crate 就指向了 main.rs 自身
+- 而在 lib.rs 中 crate 就指向的 lib.rs 自己
+- lib.rs 和 main.rs 不在同一 crate 包内无法通过相对路径进行导入
+- main.rs 要想导入 lib.rs 中的 mod，需要像导入其他外部包一样通过当前项目名(`rust_algo::foo`)导入
 
 ```rust
-// main.rs
 
-// 在mod front_of_house后使用分号而不是代码块会让Rust前往与当前模块同名的文件中加载模块内容。
-mod my_module;
+mod a;
+mod stock;
+
+use crate::stock::b;
+use rust_algo::foo;
 
 fn main() {
-    my_module::my_function();
+    println!("Hello, world!");
+    a::greet();
+    stock::d::goodbye();
+    stock::d::c::hello();
+    b::b_goodbye();
+    foo::hello();
 }
+
+
 ```
 
-在复杂目录结构下，可以使用多级的模块嵌套和多级的导入路径。假设我们在 `modules.rs` 中还有另一个模块 `submodule`：
 
-```rust
-// modules.rs
-
-pub mod my_module {
-    pub fn my_function() {
-        println!("Hello from my_module!");
-    }
-
-    pub mod submodule {
-        pub fn sub_function() {
-            println!("Hello from submodule!");
-        }
-    }
-}
-```
-
-现在，我们可以在 `main.rs` 中导入并使用 `sub_function` 函数：
-
-```rust
-// main.rs
-
-mod my_module;
-
-fn main() {
-    my_module::my_function();
-    my_module::submodule::sub_function();
-}
-```
-
-导入路径的所有可用方式：
-- 相对路径导入：
-  - `use crate::lib::modules::my_module::my_function;`
-  - `use self::my_module::my_function;`
-  - `use super::my_module::my_function;`
-- 绝对路径导入：
-  - `use crate::lib::modules::my_module::my_function;`
-  - `use crate::lib::modules::my_module::submodule::sub_function;`
-  - `use crate::lib::modules::my_module::*;`
-  - `use crate::lib::modules::*;`
-  - `use crate::lib::modules::my_module::{my_function, submodule::sub_function};`
-  - `use crate::lib::modules::my_module::submodule::*;`
-
-这些是在 Rust 中定义、嵌套和导入模块的基本方法，以及如何使用不同的导入路径来
-
-访问模块和函数。在实际的项目中，目录结构和模块的层次可能更加复杂，但基本的概念和语法规则是相似的。
 
 ### 1.4 模块可见性规则
 问: rust 中模块的可见性规则
-
 
 在 Rust 中，模块的可见性规则遵循以下原则：
 
