@@ -119,4 +119,120 @@ public class GenericsExample {
 }
 ```
 
-在这个示例中，涵盖了泛型类的创建、泛型方法的使用、通配符的处理、类型参数限制、以及类型擦除的效果。这些都是Java泛型的核心概念和用法。通过这个示例，您可以更全面地了解Java中泛型的使用方法。
+### 1.1 通配符
+在Java泛型中,通配符可以用来表示某个类型的全部潜在子类型。主要有三种通配符语法:
+
+1. ? 无限制通配符
+2. ? extends 上界通配符
+3. ? super 下界通配符  
+4. 多界限<? extends T & Interface & ...>
+
+
+```java
+// 表示List内可以是任意泛型类型。
+List<?>
+
+// 表示只接受Number或其子类型,如Integer。
+List<? extends Number>
+
+// 表示只接受Integer或其父类型,如Number。
+List<? super Integer>
+
+// 类型参数被多个上下限界限。
+public static <T extends Number & Comparable> void sort(List<T> list) {}
+```
+
+
+通配符使用注意事项:
+- 通配符不能用于泛型类的定义,只用于方法。
+- 上下界不能混合使用。
+- 通配符泛型不能用于传参类型定义。
+- 使用时需注意类型安全问题。
+- 多界限合并多个约束条件  
+- 不变类型等价于Object类型
+
+总之,泛型通配符增强了泛型的表达力,通过扩展或限制泛型类型之间的关系,使代码更加明确和安全。需要谨慎使用以避免类型不兼容。
+
+### 1.2 类型擦除
+#### 类型擦除
+Java泛型的类型擦除(type erasure)是Java泛型实现的关键机制,主要特点是:
+
+1. 擦除类型参数: 编译时擦除泛型中的类型信息,替换为原始类型(通常是Object)。
+2. 添加类型转换: 需要时插入类型转换代码(强制转换或桥接方法)。
+3. 保留运行时权限: 不能在运行时获得泛型类型信息。
+
+以下代码演示类型擦除的效果:
+
+```java
+// 泛型类定义
+public class Cache<T> {
+  Map<String, T> storage = new HashMap<>();
+  // ...
+}
+
+// 擦除后代码等价为
+public class Cache {
+  Map storage = new HashMap();
+  // ... 
+}
+```
+
+#### 原始类型
+在Java泛型的类型擦除过程中,泛型类型会被擦除为原始类型(raw type)。
+
+原始类型(raw type)指的是擦除泛型信息后的类型,通常情况下是:
+- 类的原始类型是Object
+- 接口的原始类型是接口自己
+
+例如:
+
+```java
+List<String> list = new ArrayList<>();
+```
+
+类型擦除后:
+
+```java 
+List list = new ArrayList();
+```
+
+这里List和ArrayList变为原始类型,其中:
+- List的原始类型是List接口本身
+- ArrayList的原始类型是Object
+
+另外, primitive类型(int, boolean等)的原始类型是对应的包装类型(Integer, Boolean)。
+
+#### 类型转换
+类型T被擦除为原始类型,类中使用T的地方都替换为原始类型。在Java的类型擦除后,编译器需要通过自动添加类型转换的方式来保证类型安全,常见的两种方式:
+
+1. 强制类型转换: 编译器会根据泛型类型信息,添加强制类型转换代码。
+2. 桥接方法: 对于具有泛型的方法实现,编译器会生成桥接方法。
+
+```java
+// 泛型方法
+public <T> T method(T param) {}
+
+// 调用时 
+String s = method("str"); 
+
+// 编译后添加强制转换
+String s = (String)method("str");
+```
+
+
+```java  
+// 接口方法 
+<T> T execute(T t);
+
+// 泛型方法实现
+public <String> String execute(String s) {
+  return s; 
+}
+
+// 编译后添加桥接方法
+public Object execute(Object o) {
+  return execute((String) o);
+}
+```
+
+所以强制转换和桥接方法都是类型擦除后,编译器自动添加的保证类型安全的机制。这是Java泛型的重要实现原理之一。
