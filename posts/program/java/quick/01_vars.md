@@ -110,6 +110,108 @@ public class BigDecimalExample {
 }
 ```
 
+### 3.3 字符和字符串
+#### 字符
+java 中一个char保存一个Unicode字符：
+
+```java
+char c1 = 'A';
+char c2 = '中';
+```
+
+#### 字符串
+和char类型不同，字符串类型String是引用类型，并且是不可变的，我们用双引号"..."表示字符串。可以使用+连接任意字符串和其他数据类型，用+连接字符串和其他数据类型，会将其他数据类型先自动转型为字符串:
+
+```java
+int age = 25;
+String s = "age is " + age;
+```
+
+从Java 13开始，字符串可以用"""..."""表示多行字符串（Text Blocks）:
+```java
+String s = """
+SELECT * FROM
+    users
+WHERE id > 100
+ORDER BY name DESC
+""";
+```
+
+### 3.4 数组类型
+问: java 中的数组
+
+以下是关于Java数组的一些重要概念和用法：
+
+1. **数组声明和初始化：**
+   ```java
+   // 声明一个整数数组，但尚未初始化
+   int[] numbers;
+   
+   // 初始化数组并分配内存空间
+   numbers = new int[5];
+   
+   // 同时声明并初始化数组
+   int[] numbers = new int[5];
+   ```
+
+4. **数组长度：**
+   ```java
+   int length = numbers.length;
+   ```
+
+5. **循环遍历数组：**
+   ```java
+   for (int i = 0; i < numbers.length; i++) {
+       System.out.println(numbers[i]);
+   }
+   ```
+
+6. **数组初始化列表：**
+   ```java
+   int[] numbers = { 10, 20, 30, 40, 50 };
+   ```
+
+7. **多维数组：**
+   ```java
+   // 声明和初始化一个二维数组
+   int[][] matrix = new int[3][3];
+   matrix[0][0] = 1;
+   matrix[0][1] = 2;
+   // ...
+   ```
+9. **数组越界：**
+   在访问数组元素时要注意不越界，即确保索引在0到`length-1`范围内，否则会引发`ArrayIndexOutOfBoundsException`异常。
+
+10. **数组的特点：**
+    - 数组大小在创建时确定，无法改变。
+    - 数组中的元素必须是相同类型。
+    - 数组在内存中占用连续的存储空间，因此可以通过索引快速访问元素。
+
+需要注意的是，Java中的数组是一种相对基本的数据结构，有一些局限性，比如大小固定、不支持直接添加或移除元素。如果需要更灵活的数据结构，可以考虑使用集合类（如ArrayList）或其他数据结构。
+
+问: java 中数组与 Array 的关系
+
+在Java中，数组（array）是一种原生的数据结构，而`Array`则是Java标准库中提供的一个类，用于操作数组的工具类。下面来详细解释数组和`Array`之间的关系：
+
+**`Array`类：**
+   - `java.util.Array`类是Java标准库提供的一个工具类，用于操作数组。
+   - 该类提供了一系列静态方法，用于对数组进行排序、搜索、比较等操作，以及创建一个数组的视图。
+   - `Array`类的方法包括`sort()`用于排序，`binarySearch()`用于二分查找，`equals()`用于比较数组是否相等等等。
+   - `Array`类只能用于操作原生类型数组（例如`int[]`、`double[]`等），不能用于操作对象数组（例如`String[]`、`Object[]`等）。
+
+```java
+import java.util.Arrays;
+
+public class Main {
+    public static void main(String[] args) {
+        int[] ns = { 28, 12, 89, 73, 65, 18, 96, 50, 8, 36 };
+        Arrays.sort(ns);
+        // 排序前:
+        System.out.println(Arrays.toString(ns));
+    }
+}
+```
+
 ## 4. 隐式类型转换
 在 Java 中，隐式类型转换（implicit type conversion）是指将一个数据类型自动转换为另一个数据类型，而无需明确地进行类型转换操作。以下是 Java 中的一些常见隐式类型转换：
 

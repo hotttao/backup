@@ -90,4 +90,16 @@ int max = a > b ? a : b;  // 条件运算符
 a += b;  // 赋值运算符
 ```
 
+Java还提供一个三元运算符b ? x : y，它根据第一个布尔表达式的结果，分别返回后续两个表达式之一的计算结果。示例：
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        int n = -100;
+        int x = n >= 0 ? n : -n;
+        System.out.println(x);
+    }
+}
+```
+
 ## 4. 表达式的求值顺序
