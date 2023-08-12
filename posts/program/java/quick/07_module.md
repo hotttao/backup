@@ -131,7 +131,16 @@ package mypackage
 package com.example.myapp;
 ```
 
-在示例中，`com.example.myapp`是包的名称。包名通常使用小写字母，并以域名倒序的方式命名，以确保唯一性。
+在示例中，`com.example.myapp`是包的名称。包名通常使用小写字母，并以域名倒序的方式命名，以确保唯一性。因为Java文件对应的目录层次要和包的层次一致，所以 Java 项目的对应目录结构如下:
+
+```java
+package_sample
+└─ src
+    ├─ com
+    │  └─ example
+    │        └─ myapp
+    │             └─ Person.java
+```
 
 ### 2.2 包的导入
 在Java中，导入类有几种方式
@@ -160,7 +169,10 @@ package com.example.myapp;
 3. 导入的整个包具有最低优先级。如果存在多个导入的包中都有相同名称的类，编译器将无法确定使用哪个类，此时需要使用完整的类路径来引用特定的类。
 4. 查找java.lang包是否包含这个class
 
-如果按照上面的规则还无法确定类名，则编译报错。
+如果按照上面的规则还无法确定类名，则编译报错。因此，编写class的时候，编译器会自动帮我们做两个import动作：
+
+1. 默认自动import当前package的其他class；
+2. 默认自动import java.lang.*
 
 ## 3. 包的搜索路径
 问: Java 包的搜索路径
@@ -172,11 +184,73 @@ Java的包搜索路径是由类加载器（ClassLoader）来管理的。类加�
 3. 应用类加载器（Application ClassLoader）：也称为系统类加载器，负责加载应用程序的类，搜索路径包括`classpath`指定的路径、当前工作目录和`java.class.path`系统属性指定的路径。
 4. 自定义类加载器：开发人员可以自定义类加载器，通过继承`ClassLoader`类并重写相应方法来实现自定义的类加载逻辑。
 
-注意，类加载器按照委派模型（Delegation Model）进行工作，即先由父类加载器尝试加载类，只有在父类加载器找不到类的情况下，才由子类加载器尝试加载类。除了类加载器的搜索路径，Java包的搜索路径还可以通过设置`CLASSPATH`环境变量来指定。`CLASSPATH`可以包含一个或多个目录和JAR文件的路径，用于搜索Java类和资源文件。
+注意，类加载器按照委派模型（Delegation Model）进行工作，即先由父类加载器尝试加载类，只有在父类加载器找不到类的情况下，才由子类加载器尝试加载类。
 
-需要注意的是，具体的包搜索路径和类加载机制可能因为Java版本、开发工具或框架的不同而有所差异。在实际开发中，应根据具体情况配置正确的类路径和包搜索路径。
+### 3.1 classpath
+classpath的设定方法有两种：
+1. 在系统环境变量中设置 CLASSPATH 环境变量，不推荐；
+2. 在启动JVM时设置classpath变量，推荐。即给java命令传入`-classpath`或`-cp`参数
 
-### 4. 包的初始化顺序
+```shell
+java -classpath .;C:\work\project1\bin;C:\shared abc.xyz.Hello
+java -cp .;C:\work\project1\bin;C:\shared abc.xyz.Hello
+```
+
+### 4. 编译与运行
+假设我们创建了如下的目录结构：
+1. bin目录用于存放编译后的class文件
+2. src目录按包结构存放Java源码
+```
+work
+├── bin
+└── src
+    └── com
+        └── itranswarp
+            ├── sample
+            │   └── Main.java
+            └── world
+                └── Person.java
+```
+
+### 4.1 编译
+编译src目录下的所有Java文件：
+
+```shell
+cd work
+# -d指定输出的class文件存放bin目录，
+# src/**/*.java表示src目录下的所有.java文件，包括任意深度的子目录
+# Windows不支持**，必须依次列出所有.java文件
+javac -d ./bin src/**/*.java
+```
+
+编译后结果如下:
+
+```shell
+bin
+└── com
+    └── itranswarp
+        ├── sample
+        │   └── Main.class
+        └── world
+            └── Person.class
+```
+
+### 4.2 运行
+编译后，可以直接运行class文件:
+
+```shell
+cd work
+java -cp bin com.itranswarp.sample.Main 
+```
+
+## 5. jar 包
+jar包可以把 package 组织的目录层级，以及各个目录下的所有文件（包括.class文件和其他文件）都打成一个jar文件，jar包实际上就是一个 zip 格式的压缩文件，而**jar包相当于目录**。如果我们要执行一个jar包的class，就可以把jar包放到classpath中。
+
+如何创建jar包？以上面编译结果为例，对bin目录，生成 zip 压缩包。然后，把后缀从.zip改为.jar，一个jar包就创建成功。压缩包内的目录结构，就是 java 搜索类的目录结构。
+
+jar包还可以包含一个特殊的/META-INF/MANIFEST.MF文件，MANIFEST.MF是纯文本，可以指定Main-Class和其它信息。JVM会自动读取这个MANIFEST.MF文件，如果存在Main-Class，我们就不必在命令行指定启动的类名，而是用更方便的命令：`java -jar hello.jar`。构建工具，例如Maven，可以非常方便地创建jar包和 MANIFEST.MF文件。
+
+### 5. 包的初始化顺序
 问: java 包的初始化顺序
 
 在Java中，包的初始化顺序是按照以下顺序进行的：
@@ -193,3 +267,4 @@ Java的包搜索路径是由类加载器（ClassLoader）来管理的。类加�
 
 
 ## 6. 模块
+
