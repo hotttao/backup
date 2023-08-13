@@ -267,4 +267,89 @@ jar包还可以包含一个特殊的/META-INF/MANIFEST.MF文件，MANIFEST.MF是
 
 
 ## 6. 模块
+从前面可知，jar 包只是 class 的压缩包，并不包含任何 jar 包之前的依赖关系。
 
+### 6.1 编写模块
+
+```shell
+oop-module
+├── bin
+├── build.sh
+└── src
+    ├── com
+    │   └── itranswarp
+    │       └── sample
+    │           ├── Greeting.java
+    │           └── Main.java
+    └── module-info.java
+```
+
+module-info.java这个文件，这就是模块的描述文件:
+
+```java
+module hello.world {
+	requires java.base; // 可不写，任何模块都会自动引入java.base
+	requires java.xml;
+}
+```
+
+当我们使用模块声明了依赖关系后，才能使用引入的模块。
+
+### 6.2 编译运行
+
+```shell
+cd oop-module
+javac -d bin src/module-info.java src/com/itranswarp/sample/*.java
+tree .
+  oop-module
+  ├── bin
+  │   ├── com
+  │   │   └── itranswarp
+  │   │       └── sample
+  │   │           ├── Greeting.class
+  │   │           └── Main.class
+  │   └── module-info.class
+  └── src
+      ├── com
+      │   └── itranswarp
+      │       └── sample
+      │           ├── Greeting.java
+      │           └── Main.java
+      └── module-info.java
+
+# 生成 jar 包
+jar --create --file hello.jar --main-class com.itranswarp.sample.Main -C bin .
+# 生成 jmod
+jmod create --class-path hello.jar hello.jmod
+# 运行 jmod
+java --module-path hello.jar --module hello.world
+```
+
+### 6.3 生成 jre
+为了表明Java模块化的决心，从Java 9开始，原有的Java标准库已经由一个单一巨大的rt.jar分拆成了几十个模块，这些模块以.jmod扩展名标识，可以在$JAVA_HOME/jmods目录下找到它们：
+- java.base.jmod
+- java.compiler.jmod
+- java.datatransfer.jmod
+- java.desktop.jmod
+- ...
+
+因为 jire 已经按照模块进行了拆分，所以我们发布一个 java  应用程序已经不需要下载一个完整的 jra。只需要“复制”一份JRE，但只带上用到的模块。为此，JDK提供了jlink命令:
+
+```shell
+jlink --module-path hello.jmod --add-modules java.base,java.xml,hello.world --output jre/
+
+# 运行程序
+jre/bin/java --module hello.world
+```
+
+### 6.4 访问权限
+Java的class访问权限分为public、protected、private和默认的包访问权限。引入模块后，这些访问权限的规则就要稍微做些调整。确切地说，class的这些访问权限只在一个模块内有效，模块和模块之间，例如，a模块要访问b模块的某个class，必要条件是b模块明确地导出了可以访问的包。
+
+```java
+module java.xml {
+    exports java.xml;
+    exports javax.xml.catalog;
+    exports javax.xml.datatype;
+    ...
+}
+```
