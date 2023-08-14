@@ -1,5 +1,24 @@
+---
+weight: 1
+title: "Java 异常"
+date: 2023-05-01T22:00:00+08:00
+lastmod: 2023-05-01T22:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "Java 异常"
+featuredImage: 
 
-## 2. 异常
+tags: ["java 语法"]
+categories: ["Java"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+## 1. 异常
 Java的异常是class，它的继承关系如下：
 ```bash
 
@@ -31,7 +50,7 @@ Java的异常是class，它的继承关系如下：
          └─────────────────────┘ └─────────────────────────┘
 ```
 
-Throwable是异常体系的根，它继承自Object。Throwable有两个体系：Error和Exception
+Throwable 是异常体系的根，它继承自Object。Throwable有两个体系：Error和Exception
 1. Error表示严重的错误
 2. Exception则是运行时的错误
 
@@ -42,6 +61,40 @@ Exception又分为两大类：
 Java规定：
 1. 必须捕获的异常，包括Exception及其子类，但不包括RuntimeException及其子类，这种类型的异常称为Checked Exception。
 2. 不需要捕获的异常，包括Error及其子类，RuntimeException及其子类。
+
+#### 问: Throwable 初始的方法
+`java.lang.Throwable` 类的构造方法主要用于创建异常对象，并提供了多个不同参数的构造方法，以便传递异常信息和原因。以下是 `Throwable` 类中的主要构造方法及其描述：
+
+1. **`Throwable()`：**
+   - 无参数构造方法。
+   - 创建一个默认的异常对象，通常由子类调用。会自动调用 `fillInStackTrace()` 方法来填充栈轨迹信息。
+
+2. **`Throwable(String message)`：**
+   - 接受一个字符串参数，用于设置异常的详细信息。
+   - 创建一个带有自定义详细信息的异常对象。
+
+3. **`Throwable(String message, Throwable cause)`：**
+   - 接受两个参数：一个字符串参数用于设置异常的详细信息，一个 `Throwable` 参数用于设置导致异常的原因异常。
+   - 创建一个异常对象，并将指定的异常作为其原因异常。
+4. **`Throwable(Throwable cause)`**
+   - 构造一个带指定 cause 的详细消息的新 throwable。
+
+#### 问: java Throwable 上定义的方法
+
+| 方法签名                              | 描述                                     |
+|---------------------------------------|------------------------------------------|
+| String getMessage()                   | 获取异常的详细信息。                      |
+| String getLocalizedMessage()          | 获取本地化的异常信息。                    |
+| String toString()                     | 返回异常的字符串表示。                    |
+| void printStackTrace()                | 打印异常的栈轨迹到标准错误流。            |
+| Throwable fillInStackTrace()           | 填充当前异常的栈轨迹信息。                |
+| Throwable getCause()                  | 获取导致当前异常的原因异常。              |
+| StackTraceElement[] getStackTrace()    | 获取异常的栈轨迹信息。                    |
+| Throwable initCause(Throwable cause)   | 初始化当前异常的原因异常。                |
+| void printStackTrace(PrintStream s)   | 打印异常的栈轨迹到指定输出流。            |
+| void printStackTrace(PrintWriter s)   | 打印异常的栈轨迹到指定输出流。            |
+| void setStackTrace(StackTraceElement[] stackTrace) | 设置异常的栈轨迹信息。             |
+
 
 ### 2.1 编译器强制捕获异常
 ```java
@@ -100,6 +153,13 @@ static byte[] toGBK(String s) {
     } catch (UnsupportedEncodingException e) {
         // 先记下来再说:
         e.printStackTrace();
+    // 捕获多个异常
+    } catch (IOException | NumberFormatException e) { 
+        System.out.println("Bad input");
+    }
+    // finally语句不是必须的，可写可不写；
+    } finally {
+        System.out.println("END");
     }
     return null;
 ```
@@ -129,6 +189,9 @@ public class ExceptionExample {
             customException.initCause(e); // 设置原始异常
             customException.addSuppressed(new RuntimeException("附加的异常")); // 添加抑制的异常
             throw customException;
+        } catch (NullPointerException e) {
+            // 将 e 作为参数传入也可以设置原始异常
+            throw new IllegalArgumentException(e);
         }
     }
 
@@ -159,6 +222,40 @@ class CustomException extends Exception {
 这个示例演示了 Java 异常处理中如何包含原始异常信息、使用 `Throwable.getCause()` 方法获取原始异常、使用 `Throwable.addSuppressed()` 添加抑制异常、以及使用 `Throwable.getSuppressed()` 获取抑制异常的操作。
 
 ### 2.4 自定义异常
+Java标准库定义的常用异常包括：
+```bash
+Exception
+│
+├─ RuntimeException
+│  │
+│  ├─ NullPointerException
+│  │
+│  ├─ IndexOutOfBoundsException
+│  │
+│  ├─ SecurityException
+│  │
+│  └─ IllegalArgumentException
+│     │
+│     └─ NumberFormatException
+│
+├─ IOException
+│  │
+│  ├─ UnsupportedCharsetException
+│  │
+│  ├─ FileNotFoundException
+│  │
+│  └─ SocketException
+│
+├─ ParseException
+│
+├─ GeneralSecurityException
+│
+├─ SQLException
+│
+└─ TimeoutException
+```
+
+可以自定义新的异常类型，但是，保持一个合理的异常继承体系是非常重要的。
 
 ```java
 public class BaseException extends RuntimeException {
@@ -196,5 +293,6 @@ public static void main(String[] args) {
 ```
 
 断言失败时会抛出AssertionError，导致程序结束退出。因此，断言不能用于可恢复的程序错误，只应该用于开发和测试阶段。JVM默认关闭断言指令，即遇到assert语句就自动忽略了，不执行。要执行assert语句，必须给Java虚拟机传递-enableassertions（可简写为-ea）参数启用断言。
+1. -ea，对所有代码启动断言
 1. -ea:com.itranswarp.sample.Main，表示只对com.itranswarp.sample.Main这个类启用断言
 2. -ea:com.itranswarp.sample...（注意结尾有3个.），表示对com.itranswarp.sample这个包启动断言

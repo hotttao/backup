@@ -18,8 +18,10 @@ toc:
   auto: false
 ---
 
+所谓反射就会解决对象自省，即如何在运行时获得对象的所有信息。通常语言层面会维护所有类型的元数据信息，正是借助这个元数据信息，语言可以提供反射API。
+
 ## 1. Class 
-class是由JVM在执行过程中动态加载的。JVM在第一次读取到一种class类型时，将其加载进内存。每加载一种class，JVM就为其创建一个Class类型的实例，并关联起来。Class 实例会保存其关联 class 的所有信息。
+class是由JVM在执行过程中动态加载的。JVM在第一次读取到一种class类型时，将其加载进内存。每加载一种class(包括 interface)，JVM就为其创建一个Class类型的实例，并关联起来。Class 实例会保存其关联 class 的所有信息。
 
 Class 的定义如下:
 
@@ -61,31 +63,7 @@ String s = (String) cls.newInstance();
 
 通过Class.newInstance()可以创建类实例，它的局限是：只能调用public的无参数构造方法。带参数的构造方法，或者非public的构造方法都无法通过Class.newInstance()被调用。
 
-### 1.2 动态加载
-JVM在执行Java程序的时候，并不是一次性把所有用到的class全部加载到内存，而是第一次需要用到class时才加载。利用JVM动态加载class的特性，我们才能在运行期根据条件加载不同的实现类。例如，Commons Logging总是优先使用Log4j，只有当Log4j不存在时，才使用JDK的logging。利用JVM动态加载特性，大致的实现代码如下：
-
-```java
-// Commons Logging优先使用Log4j:
-LogFactory factory = null;
-if (isClassPresent("org.apache.logging.log4j.Logger")) {
-    factory = createLog4j();
-} else {
-    factory = createJdkLog();
-}
-
-boolean isClassPresent(String name) {
-    try {
-        Class.forName(name);
-        return true;
-    } catch (Exception e) {
-        return false;
-    }
-}
-```
-
-这就是为什么我们只需要把Log4j的jar包放到classpath中，Commons Logging就会自动使用Log4j的原因。
-
-### 1.3 反射 API 
+### 2. 反射 API 
 
 下表展示了Java反射API的常用类和接口以及它们的功能：
 
@@ -102,11 +80,11 @@ boolean isClassPresent(String name) {
 | `java.lang.reflect.AnnotatedElement` | 表示具有注解的元素，如类、字段、方法等，提供访问注解的能力  | `Annotation[] annotations = clazz.getAnnotations();`<br>`Annotation annotation = field.getAnnotation(MyAnnotation.class);` |
 | `java.lang.reflect.InvocationHandler` | 用于实现动态代理的接口，处理代理对象的方法调用            | `InvocationHandler handler = new MyInvocationHandler();`<br>`MyInterface proxy = (MyInterface) Proxy.newProxyInstance(classLoader, interfaces, handler);` |
 
-这些只是Java反射API的一小部分，还有许多其他的类和接口可供使用。在实际应用中，您可以根据需要选择适当的API来实现具体的反射操作。
 
 以下是Java反射API的使用示例：
 
-1. 使用`java.lang.Class`获取类的信息和操作类的方法：
+### 2.1 `java.lang.Class`
+使用`java.lang.Class`获取类的信息和操作类的方法：
 
 ```java
 Class<?> clazz = MyClass.class;
@@ -125,9 +103,35 @@ boolean isAssignable2 = class2.isAssignableFrom(class1);  // false，因为Objec
 boolean isAssignable3 = class1.isAssignableFrom(class3);  // false，因为String不是Integer的子类
 ```
 
-2. 使用`java.lang.reflect.Field`访问和修改类的字段：
+### 2.2 `java.lang.reflect.Field`
+Class类提供了以下几个方法来获取字段：
+1. `Field getField(name)`：根据字段名获取某个public的field（包括父类）
+2. `Field getDeclaredField(name)`：根据字段名获取当前类的某个field（不包括父类）
+3. `Field[] getFields()`：获取所有public的field（包括父类）
+4. `Field[] getDeclaredFields()`：获取当前类的所有field（不包括父类）
+
+一个Field对象包含了一个字段的所有信息：
+1. `getName()`：返回字段名称，例如，"name"；
+2. `getType()`：返回字段类型，也是一个Class实例，例如，String.class；
+3. `getModifiers()`：返回字段的修饰符，它是一个int，不同的bit表示不同的含义。
+4. `Field.get(Object)`: 获取指定实例的指定字段的值。
+5. `Field.set(Object, Object)`: 设置字段值，第一个Object参数是指定的实例，第二个Object参数是待修改的值
+
+使用`java.lang.reflect.Field`访问和修改类的字段：
 
 ```java
+// 获取字段的信息
+Field f = String.class.getDeclaredField("value");
+f.getName(); // "value"
+f.getType(); // class [B 表示byte[]类型
+int m = f.getModifiers();
+Modifier.isFinal(m); // true
+Modifier.isPublic(m); // false
+Modifier.isProtected(m); // false
+Modifier.isPrivate(m); // true
+Modifier.isStatic(m); // false
+
+// 访问和修改字段的值
 Field field = clazz.getDeclaredField("fieldName");
 field.setAccessible(true);
 Object instance = clazz.newInstance();
@@ -135,7 +139,9 @@ Object value = field.get(instance);
 field.set(instance, newValue);
 ```
 
-3. 使用`java.lang.reflect.Method`调用类的方法：
+### 2.3 `java.lang.reflect.Method`
+
+使用 `java.lang.reflect.Method` 调用类的方法：
 
 ```java
 Method method = clazz.getDeclaredMethod("methodName", parameterTypes);
@@ -269,3 +275,26 @@ Person p = new Student();
 p.hello();
 ```
 
+## 2. 动态加载
+JVM在执行Java程序的时候，并不是一次性把所有用到的class全部加载到内存，而是第一次需要用到class时才加载。利用JVM动态加载class的特性，我们才能在运行期根据条件加载不同的实现类。例如，Commons Logging总是优先使用Log4j，只有当Log4j不存在时，才使用JDK的logging。利用JVM动态加载特性，大致的实现代码如下：
+
+```java
+// Commons Logging优先使用Log4j:
+LogFactory factory = null;
+if (isClassPresent("org.apache.logging.log4j.Logger")) {
+    factory = createLog4j();
+} else {
+    factory = createJdkLog();
+}
+
+boolean isClassPresent(String name) {
+    try {
+        Class.forName(name);
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
+```
+
+这就是为什么我们只需要把Log4j的jar包放到classpath中，Commons Logging就会自动使用Log4j的原因。
