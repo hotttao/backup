@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "Java 抽象"
+title: "Java 类"
 date: 2023-05-01T22:00:00+08:00
 lastmod: 2023-05-01T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "Java 接口、类与继承"
+description: "Java 类"
 featuredImage: 
 
 tags: ["java 语法"]
@@ -460,68 +460,3 @@ public class Main {
 }
 ```
 
-## 3. 接口
-Java 中接口定义的所有方法默认都是public abstract的，所以这两个修饰符不需要写出来。
-
-问: 给出代码示例，说明 Java 的接口继承、default 方法、接口的静态字段
-
-下面是一个代码示例，展示了Java中接口继承、default方法和接口的静态字段的使用：
-
-```java
-// 接口A
-public interface A {
-    void methodA(); // 抽象方法
-
-    default void defaultMethod() {
-        System.out.println("This is a default method in interface A");
-    }
-
-    // 静态字段
-    String STATIC_FIELD_A = "Static Field A";
-}
-
-// 接口B继承自接口A
-public interface B extends A {
-    void methodB(); // 抽象方法
-
-    @Override
-    default void defaultMethod() {
-        System.out.println("This is a default method in interface B");
-    }
-
-    // 静态字段
-    String STATIC_FIELD_B = "Static Field B";
-}
-
-// 实现类C实现接口B
-public class C implements B {
-    @Override
-    public void methodA() {
-        System.out.println("Implementing methodA");
-    }
-
-    @Override
-    public void methodB() {
-        System.out.println("Implementing methodB");
-    }
-}
-
-public class Main {
-    public static void main(String[] args) {
-        C c = new C();
-
-        c.methodA(); // 调用接口A中的抽象方法
-        c.methodB(); // 调用接口B中的抽象方法
-
-        c.defaultMethod(); // 调用接口B中的default方法，覆盖了接口A中的default方法
-
-        // 访问接口的静态字段
-        System.out.println(A.STATIC_FIELD_A);
-        System.out.println(B.STATIC_FIELD_B);
-    }
-}
-```
-
-在上面的示例中，接口`A`定义了一个抽象方法`methodA`和一个默认方法`defaultMethod`，并且声明了一个静态字段`STATIC_FIELD_A`。接口`B`继承自接口`A`，添加了一个抽象方法`methodB`，重写了默认方法`defaultMethod`，并且声明了一个静态字段`STATIC_FIELD_B`。类`C`实现了接口`B`，必须实现接口`A`和接口`B`中的所有抽象方法。
-
-在`Main`类的`main`方法中，我们创建了一个`C`类的实例`c`。通过该实例，我们可以调用接口`A`和接口`B`中的抽象方法和默认方法。还可以通过接口名访问接口的静态字段。

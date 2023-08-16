@@ -176,7 +176,27 @@ public static <T extends Number & Comparable> void sort(List<T> list) {}
 - 多界限合并多个约束条件  
 - 不变类型等价于Object类型
 
-总之,泛型通配符增强了泛型的表达力,通过扩展或限制泛型类型之间的关系,使代码更加明确和安全。需要谨慎使用以避免类型不兼容。
+`<? extends T>`类型和`<? super T>`类型的区别在于：
+- `<? extends T>`允许调用读方法`T get()`获取T的引用，但不允许调用写方法`set(T)`传入T的引用（传入null除外）；
+- `<? super T>`允许调用写方法`set(T)`传入T的引用，但不允许调用读方法`T get()`获取T的引用（获取Object除外）。
+
+这个结论看起来比较难懂，我们直接来看Java标准库的Collections类定义的copy()方法：
+1. dest: 对应的 List 都是 T 或者 T的父类，因此把 T 赋值给 List 中的元素是可以的。反过来，由于 T 的超类不能赋值给类型 T，所以是不可以从这个 List 中读取值的
+2. src: 对应的 List 是 T 或者 T的子类，因此从 List 中读取的值是可以赋值给 T 的。但是反过来设置 List 中的值是不可以的。
+
+```java
+public class Collections {
+    // 把src的每个元素复制到dest中:
+    public static <T> void copy(List<? super T> dest, List<? extends T> src) {
+        for (int i=0; i<src.size(); i++) {
+            T t = src.get(i);
+            dest.add(t);
+        }
+    }
+}
+```
+
+何时使用extends，何时使用super？为了便于记忆，我们可以用PECS原则：Producer Extends Consumer Super。即：如果需要返回T，它是生产者（Producer），要使用extends通配符；如果需要写入T，它是消费者（Consumer），要使用super通配符。
 
 ### 2.2 泛型接口
 还可以在接口中使用泛型:
