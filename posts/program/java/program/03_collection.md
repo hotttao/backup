@@ -398,3 +398,248 @@ TreeMap map = new TreeMap(m);
 SortedMap m = new TreeMap();
 TreeMap map = new TreeMap(m); 
 ```
+
+## 4. Set
+### 4.1 Set 接口
+Java Set接口主要实现的方法如下:
+
+| 方法 | 描述 |
+|-|-|
+| add(E e) | 添加元素到Set中 |
+| clear() | 移除Set中的所有元素 |
+| contains(Object o) | 判断Set是否包含指定元素 |
+| isEmpty() | 判断Set是否为空 |
+| iterator() | 返回对Set的迭代器 |
+| remove(Object o) | 从Set中移除指定元素 | 
+| size() | 返回Set中的元素个数 | 
+| toArray() | 返回包含Set中所有元素的数组 |
+| equals(Object o) | 判断两个Set是否相等 |
+| hashCode() | 返回Set的哈希值 |
+
+### 4.2 Set接口实现类
+```shell
+       ┌───┐
+       │Set│
+       └───┘
+         ▲
+    ┌────┴─────┐
+    │          │
+┌───────┐ ┌─────────┐
+│HashSet│ │SortedSet│
+└───────┘ └─────────┘
+               ▲
+               │
+          ┌─────────┐
+          │ TreeSet │
+          └─────────┘
+```
+
+实现上:
+1. HashSet 仅仅是对 HashMap 的一个简单封装
+1. TreeSet 仅仅是对 TreeMap 的一个简单封装
+
+## 5. Queue
+### 5.1 Queue 接口
+Java Queue接口主要实现的方法如下:
+
+| 方法 | 描述 |
+|-|-|  
+| add(E e)   | 将元素插入队尾，失败触发异常 |
+| offer(E e) | 将元素插入队尾，失败返回false |
+| remove()   | 移除并返回队头元素，队列空触发异常 |
+| poll()     | 移除并返回队头元素，队列空返回null | 
+| element()  | 返回但不移除队头元素，队列空触发异常 |
+| peek()     | 返回但不移除队头元素，队列空返回null |
+| put(E e)   | 添加元素到队尾,可能会阻塞 |
+| take()     | 移除队头并返回元素,可能会阻塞 |
+| isEmpty()  | 判断队列是否为空 |
+| size()     | 返回队列元素个数 |
+
+### 5.2 Queue 接口实现类
+Java中常见的Queue接口实现类包括:
+
+| 实现类 | 说明 |
+|-|-|
+| LinkedList       | 基于双向链表的FIFO队列 |
+| ArrayDeque       | 基于数组的FIFO双端队列 |
+| PriorityQueue    | 基于优先级堆的优先级队列 |
+| DelayQueue       | 支持延时获取元素的阻塞队列 |
+| SynchronousQueue | 不存储元素的阻塞队列 |
+| LinkedBlockingQueue | 基于链表的有界阻塞队列 |
+| ArrayBlockingQueue  | 基于数组的有界阻塞队列 | 
+
+#### LinkedList
+LinkedList即实现了List接口，又实现了Queue接口:
+
+```java
+// 这是一个List:
+List<String> list = new LinkedList<>();
+// 这是一个Queue:
+Queue<String> queue = new LinkedList<>();
+```
+
+#### PriorityQueue
+要使用PriorityQueue，我们就必须给每个元素定义“优先级”。因此，放入PriorityQueue的元素，必须实现Comparable接口。
+
+在Java中,PriorityQueue主要有以下构造函数:
+
+- PriorityQueue():创建一个默认初始容量(11)、默认排序比较器的空优先级队列。
+
+```java
+Queue q = new PriorityQueue(); 
+```
+
+- PriorityQueue(int initialCapacity):指定优先级队列的初始容量。
+
+```java
+Queue q = new PriorityQueue(20);
+```
+
+- PriorityQueue(Comparator<? super E> comparator):使用指定的比较器构造优先级队列。
+
+```java  
+Queue q = new PriorityQueue(comparator);
+Queue<User> q = new PriorityQueue<>(new Comparator(){
+    public int compare(User u1, User u2) {
+        if (u1.number.charAt(0) == u2.number.charAt(0)) {
+            // 如果两人的号都是A开头或者都是V开头,比较号的大小:
+            return u1.number.compareTo(u2.number);
+        }
+        if (u1.number.charAt(0) == 'V') {
+            // u1的号码是V开头,优先级高:
+            return -1;
+        } else {
+            return 1;
+        }
+    }
+});
+```
+
+- PriorityQueue(Collection<? extends E> c):使用指定集合的元素构造优先级队列。
+
+```java
+Collection c = new ArrayList();
+Queue q = new PriorityQueue(c);
+```
+
+- PriorityQueue(PriorityQueue<? extends E> c):使用EXISTING优先级队列构造新队列。
+
+```java
+Queue q1 = new PriorityQueue();
+Queue q2 = new PriorityQueue(q1); 
+```
+
+## 6. Deque
+双端队列（Double Ended Queue）。
+
+### 6.1 Deque 接口
+Deque 接口实际上扩展自Queue：
+
+```java
+public interface Deque<E> extends Queue<E> {
+    ...
+}
+```
+
+它们出队和入队方法的对比如下:
+
+| 操作 | Queue | Deque |
+|-|-|-|  
+| 入队     | add(e)/offer(e) | addLast(e)/offerLast(e) | 
+| 入队头部 | 不支持           | addFirst(e)/offerFirst(e) |
+| 出队     | remove()/poll()  | removeFirst()/pollFirst() |
+| 出队尾部 | 不支持           | removeLast()/pollLast() |
+| 检查队头 | element()/peek() | getFirst()/peekFirst() |
+| 检查队尾 | 不支持           | getLast()/peekLast() |
+
+
+Deque 扩展自Queue，Queue提供的add()/offer()方法在Deque中也可以使用，但是使用Deque，最好不要调用offer()，这样更符合语义。
+
+#### 6.2 Deque 实现类
+
+Java中Deque接口的常见实现类可总结为:
+
+| 实现类 | 特点 |
+|-|-|  
+| ArrayDeque | 基于数组,无界限,高效 |
+| LinkedList | 基于双向链表,灵活多用途 |
+| ConcurrentLinkedDeque | 线程安全并发队列 |
+| LinkedBlockingDeque | 基于链表的双端阻塞队列 | 
+| ArrayBlockingQueue | 基于数组的有界阻塞队列 |
+| PriorityBlockingDeque | 支持优先级排序的阻塞队列 |
+
+- ArrayDeque、LinkedList用于非阻塞队列
+- ConcurrentLinkedDeque支持并发
+- LinkedBlockingDeque、ArrayBlockingQueue提供阻塞机制
+- PriorityBlockingDeque支持优先级
+
+LinkedList真是一个全能选手，它即是List，又是Queue，还是Deque。
+
+### 6.3 Stack
+Java的集合类没有单独的Stack接口，因为有个遗留类名字就叫Stack。所以没办法创建Stack接口，只能用Deque接口来“模拟”一个Stack了。
+
+## 7. Iterator(迭代器)
+集合类型都实现了 Iterable 接口。在Java中,Iterable接口定义如下:
+
+```java
+public interface Iterable<T> {
+
+    // 返回一个Iterator用于遍历该元素集合
+    Iterator<T> iterator();
+
+}
+```
+
+Iterable是一个表示可以被迭代的集合类型的泛型接口。其中的iterator()方法需要返回一个Iterator对象,用于遍历该集合中的元素。
+
+### 7.1 Iterator
+在Java中,Iterator对象表示一个可以遍历集合的迭代器,它的主要定义是:
+
+```java
+public interface Iterator<E> {
+
+  // 如果存在下一个元素,返回true
+  boolean hasNext();
+
+  // 返回下一个元素
+  E next();
+  
+  // 移除当前返回的元素
+  void remove(); (optional)
+
+  // 更多默认方法如forEachRemaining等
+}
+```
+
+### 7.2 for-each
+只要一个类实现了Iterable接口，就能使用 for-each循环，编译器会把for each循环通过 Iterator 改写为了普通的for循环:
+
+```java
+for (String s : list) {
+    System.out.println(s);
+}
+
+for (Iterator<String> it = list.iterator(); it.hasNext(); ) {
+     String s = it.next();
+     System.out.println(s);
+}
+```
+
+## 8. Collections 
+Collections是JDK提供的工具类，同样位于java.util包中。它提供了一系列静态方法，能更方便地操作各种集合。
+
+Java Collections工具类主要定义了以下 utility方法:
+
+| 方法 | 作用 |
+|-|-|  
+| sort(List) | 对List进行排序 |
+| reverse(List) | 反转List中的元素顺序 |
+| shuffle(List) | 随机重组List中的顺序 |
+| rotate(List, k) | 将List循环轮转k步 |
+| swap(List, i, j) | 交换List中两个元素位置 |
+| min(Collection) | 获取元素最小值 |
+| max(Collection) | 获取元素最大值 |
+| frequency(Collection, obj) | 获取obj在集合出现次数 |
+| disjoint(List1, List2) | 判断集合是否不包含相同元素 |
+| binarySearch(List, key) | 对有序List进行二分查找 |
+| copy(List dest, List src) | 复制一个List到另一个List |
