@@ -460,3 +460,11 @@ public class Main {
 }
 ```
 
+
+## 3. 序列化
+一个Java对象要能序列化，必须实现一个特殊的java.io.Serializable接口，它的定义如下：
+
+```java
+public interface Serializable {
+}
+```
