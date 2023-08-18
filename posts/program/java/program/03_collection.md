@@ -30,6 +30,28 @@ Java集合的设计有几个特点：
 2. 二是支持泛型，我们可以限制在一个集合中只能放入同一种数据类型的元素
 3. Java访问集合总是通过统一的方式——迭代器（Iterator）来实现
 
+### 1.1 Collection 接口
+Java Collection接口定义的主要方法如下:
+
+| 方法 | 描述 |
+|-|-|  
+| add(E e) | 将元素e添加到集合末尾 |
+| addAll(Collection c) | 将集合c的所有元素添加到末尾 |
+| clear() | 删除集合内所有元素 | 
+| contains(Object o) | 判断集合是否包含o |
+| containsAll(Collection c) | 判断是否包含集合c的所有元素 |
+| equals(Object o) | 判断与指定对象是否相等 |
+| hashCode() | 返回集合的哈希值 |
+| isEmpty() | 判断集合是否为空 |
+| iterator() | 返回在集合上的迭代器 | 
+| remove(Object o) | 删除集合中第一个出现的o |
+| removeAll(Collection c) | 删除集合中所有出现在c中的元素 |
+| retainAll(Collection c) | 保留集合中所有出现在c中的元素 |
+| size() | 返回集合中的元素个数 |
+| toArray() | 返回包含集合中所有元素的数组 |
+
+Collection定义了基础集合的通用方法,包括添加、删除、遍历等操作。具体Collection实现类扩展并优化了这些方法。
+
 ## 2. List
 ### 2.1 List 接口
 
