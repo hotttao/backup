@@ -87,7 +87,11 @@ bin目录下常见程序:
 ### 2.1 运行一个 java 程序
 
 ```shell
+# Java 11新增的一个功能，它可以直接运行一个单文件源码！
+# 需要注意的是，在实际项目中，单个不依赖第三方库的Java源码是非常罕见的
 $ javac Hello.java
+
+# 运行 Hello 
 $ ls
 Hello.class	Hello.java
 $ java Hello
