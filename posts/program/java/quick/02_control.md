@@ -31,7 +31,7 @@ toc:
 1. 在Java中使用for循环时可以使用for-each循环来遍历数组,而Go中则使用range关键字来遍历数组。
 3. 在Java中有while和do-while循环，而在Go中则没有这两种循环语句。
 
-
+另外 java 中判断引用类型的变量是否相等，==表示“引用是否相等”，要判断引用类型的变量内容是否相等，必须使用equals()方法。
 
 ## 2. switch
 问: 对比一下 java 和 go 的 switch 语法，以表格形式展示
