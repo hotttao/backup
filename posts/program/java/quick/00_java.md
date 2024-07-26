@@ -58,7 +58,21 @@ toc:
 # java 安装
 
 # jdk 的目录结构
-ll 
+$ ll $JAVA_HOME/
+总用量 44
+drwxr-xr-x  9 root  root  4096  8月 22 20:48 .
+drwxr-xr-x 18 root  root  4096  8月 23 21:49 ..
+drwxr-xr-x  2 root  root  4096  8月 22 20:48 bin
+drwxr-xr-x  5 root  root  4096  8月 22 20:48 conf
+drwxr-xr-x  3 root  root  4096  8月 22 20:48 include
+drwxr-xr-x  2 root  root  4096  8月 22 20:48 jmods
+drwxr-xr-x 72 root  root  4096  8月 22 20:48 legal
+drwxr-xr-x  5 root  root  4096  8月 22 20:48 lib
+lrwxrwxrwx  1 10668 10668   23  6月 14 18:22 LICENSE -> legal/java.base/LICENSE
+drwxr-xr-x  3 root  root  4096  8月 22 20:48 man
+-rw-r--r--  1 10668 10668  290  6月 14 18:22 README
+-rw-r--r--  1 10668 10668 1269  6月 14 18:22 release
+
 ```
 
 | 目录 | 作用 |
