@@ -18,7 +18,6 @@ toc:
   auto: false
 ---
 
-虽然 Solidity 的新版本中加入了 Lambda 表达式，但是从根本上 Solidity 中函数不是一等公民，函数编程的支持本质上是通过接口实现的。 
 
 ## 1. 函数
 问: 以表格的形式，对比 Go 和 Solidity 的函数充分考虑，有关函数的各种特性，包括不限于 定义、传参方式、闭包、匿名函数、异常处理、函数重载、匿名参数、函数回调、高阶函数、函数式编程、方法重写、函数指针和函数返回多个值，并给出代码示例
@@ -28,7 +27,7 @@ toc:
 | 特性                  | Go                                                  | Solidity                                            |
 |-----------------------|-----------------------------------------------------|-----------------------------------------------------|
 | **定义**              | `func add(a int, b int) int { return a + b }`       | `function add(uint a, uint b) public pure returns (uint) { return a + b; }` |
-| **传参方式**          | 值传递和引用传递                                      | 值传递                                                |
+| **传参方式**          | 值传递和引用传递                                      | 值传递和引用传递                                                |
 | **闭包**              | `func adder() func(int) int { sum := 0; return func(x int) int { sum += x; return sum; } }` | 不支持闭包                                            |
 | **匿名函数**          | `func(a int, b int) int { return a + b }`           | 不直接支持匿名函数，但可以用`function`类型变量来模拟    |
 | **异常处理**          | `defer`, `panic`, `recover`                        | `require`, `assert`, `revert`                        |
@@ -40,7 +39,6 @@ toc:
 | **方法重写**          | 支持通过结构体嵌套和接口实现                          | 支持通过继承和`override`关键字实现                    |
 | **函数指针**          | 函数类型变量可以存储函数                               | 不支持                                               |
 | **函数返回多个值**    | `func swap(a, b int) (int, int) { return b, a }`    | 不直接支持多个返回值，但可以通过元组模拟               |
-
 
 
 #### Solidity 示例
@@ -57,7 +55,6 @@ contract Example {
 }
 ```
 
-
 ## 2. Solidity 的函数
 Solidity 中函数的形式:
 
@@ -65,8 +62,7 @@ Solidity 中函数的形式:
 function <function name>(<parameter types>) {internal|external|public|private} [pure|view|payable] [returns (<return types>)]
 ```
 
-看着有一些复杂，让我们从前往后逐个解释(方括号中的是可写可不
-写的关键字)：
+Solidity 中函数
 
 1. `function`：声明函数时的固定用法。要编写函数，就需要以 `function` 关键字开头。
 2. `<function name>`：函数名。
@@ -85,6 +81,17 @@ function <function name>(<parameter types>) {internal|external|public|private} [
     - pure: 函数既不读取也不修改状态变量
     - payable: 函数可以接收以太币
 6. `[returns ()]`：函数返回的变量类型和名称。
+
+
+在以太坊中，以下语句被视为修改链上状态：
+1. 写入状态变量。
+2. 释放事件。
+3. 创建其他合约。
+4. 使用 selfdestruct.
+5. 通过调用发送以太币。
+6. 调用任何未标记 view 或 pure 的函数。
+7. 使用低级调用（low-level calls）。
+8. 使用包含某些操作码的内联汇编。
 
 
 ### 参数与返回值

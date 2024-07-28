@@ -42,24 +42,6 @@ toc:
 | **结构体变量声明**   | `MyStruct myStruct;`                                                     | `var myStruct MyStruct`                                            |
 | **结构体初始化声明** | `MyStruct memory myStruct = MyStruct(1, 2);`（内存分配）                    | `myStruct := MyStruct{a: 1, b: 2}`                                 |
 
-### 解释
-
-1. **基本变量声明**：两种语言都需要指定类型和变量名。
-2. **初始化声明**：在声明时初始化变量，两种语言语法相似。
-3. **类型推导**：Solidity 不支持类型推导，而 Go 支持使用 `:=` 来进行类型推导。
-4. **多变量声明**：Go 支持在一行中声明多个变量，而 Solidity 需要分开声明。
-5. **多变量初始化声明**：Go 支持在一行中初始化多个变量，而 Solidity 需要分开声明和初始化。
-6. **常量声明**：两种语言都支持声明常量，但语法略有不同。
-7. **状态变量**：Solidity 有状态变量的概念，Go 没有。
-8. **局部变量**：两种语言的局部变量声明语法相似。
-9. **全局变量**：Solidity 没有全局变量的概念，Go 支持在包级别声明全局变量。
-10. **数组声明**：两种语言的数组声明语法相似。
-11. **数组初始化声明**：两种语言的数组初始化语法相似。
-12. **映射声明**：Solidity 有映射类型，Go 使用 map 类型。
-13. **映射初始化声明**：Solidity 的映射在声明时自动初始化为空映射，Go 需要用 `make` 初始化映射。
-14. **结构体声明**：两种语言的结构体声明语法相似。
-15. **结构体变量声明**：两种语言的结构体变量声明语法相似。
-16. **结构体初始化声明**：两种语言的结构体初始化语法略有不同。
 
 ## 2. 常量以及类型转换
 
@@ -74,28 +56,6 @@ toc:
 | **类型转换**         | `uint8 a = uint8(b);`                                             | `a := int(b)`                                                   |
 | **枚举类型**         | `enum Status { Pending, Shipped, Delivered }`                     | `type Status int` <br> `const (Pending Status = iota, Shipped, Delivered)` |
 | **自定义类型**       | `struct MyStruct { uint a; uint b; }`                             | `type MyStruct struct { a int; b int }`                         |
-
-### 解释
-
-1. **常量定义**：
-    - **Solidity**：使用 `constant` 关键字定义常量。
-    - **Go**：使用 `const` 关键字定义常量。
-
-2. **类型重命名**：
-    - **Solidity**：使用 `type` 关键字进行类型重命名。
-    - **Go**：使用 `type` 关键字进行类型重命名。
-
-3. **类型转换**：
-    - **Solidity**：使用显式转换，例如 `uint8(a)`。
-    - **Go**：使用显式转换，例如 `int(a)`。
-
-4. **枚举类型**：
-    - **Solidity**：使用 `enum` 关键字定义枚举类型。
-    - **Go**：通过定义一个新的类型并使用 `iota` 实现枚举。
-
-5. **自定义类型**：
-    - **Solidity**：使用 `struct` 关键字定义结构体。
-    - **Go**：使用 `struct` 关键字定义结构体。
 
 
 ## 3. 隐式类型转换
@@ -128,7 +88,7 @@ contract ImplicitConversion {
 在上述示例中，`uint8` 类型的变量 `smallNumber` 可以隐式转换为 `uint256` 类型的变量 `largeNumber`。
 
 
-#### 示例 3：从有符号类型到无符号类型的转换
+#### 示例 2：从有符号类型到无符号类型的转换
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -144,6 +104,177 @@ contract ImplicitConversion {
 
 在上述示例中，从 `int8` 到 `uint8` 的隐式转换是不允许的，因为可能导致数据丢失或变化。
 
+
+## 4. 变量类型
+Solidity 中的值类型和值类型和引用类型包含的范围如下表所示：
+
+| 类型     | 范围                                                   |
+|----------|--------------------------------------------------------|
+| **值类型** |                                                        |
+| 布尔型   | `bool`，可以是 `true` 或 `false`                        |
+| 整数型   | 有符号整数 (`int8` 到 `int256`，步长为 8)              |
+|          | 无符号整数 (`uint8` 到 `uint256`，步长为 8)            |
+| 地址型   | `address`，用于存储以太坊地址                            |
+| 枚举型   | `enum`，定义一组有命名的常量                             |
+| 定长字节 | 固定大小的字节数组 (`bytes1` 到 `bytes32`)              |
+| 固定点数 | `fixed` 和 `ufixed`（当前尚未完全实现）                 |
+| **引用类型** |                                                      |
+| 字符串   | `string`，动态大小的 UTF-8 编码字符串                    |
+| 动态数组 | 可以存储相同类型元素的数组，例如 `uint[]`              |
+| 定长数组 | 固定大小的数组，例如 `uint[10]`                        |
+| 结构体   | `struct`，可以定义复杂的数据类型                         |
+| 映射     | `mapping`，键值对集合，例如 `mapping(address => uint)` |
+
+
+## 5. 变量可见性和存储
+在Solidity中，变量的可见性和存储位置是合约设计的重要部分。可见性控制谁可以访问变量或函数，而存储位置决定数据在内存、存储或调用数据中的位置。以下是对Solidity中变量可见性和存储位置的详细介绍：
+
+Solidity提供四种可见性修饰符，控制函数和状态变量的访问权限：
+
+### 5.1 `public`
+
+- 任何人都可以访问。
+- 自动生成一个getter函数。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract VisibilityExample {
+    uint public publicVar = 1;
+
+    function publicFunction() public view returns (uint) {
+        return publicVar;
+    }
+}
+```
+
+### 5.2. `private`
+
+- 只能在当前合约内访问。
+- 不能被派生合约访问。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract VisibilityExample {
+    uint private privateVar = 2;
+
+    function privateFunction() private view returns (uint) {
+        return privateVar;
+    }
+}
+```
+
+### 5.3 `internal`
+
+- 只能在当前合约和继承的合约内访问。
+- 默认可见性（如果未指定修饰符）。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract Parent {
+    uint internal internalVar = 3;
+}
+
+contract Child is Parent {
+    function internalFunction() internal view returns (uint) {
+        return internalVar;
+    }
+}
+```
+
+### 5.4 `external`
+
+- 只能通过外部合约和交易访问。
+- 不能在合约内部调用（除非使用`this`关键字）。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract VisibilityExample {
+    function externalFunction() external view returns (uint) {
+        return 42;
+    }
+
+    function callExternalFunction() public view returns (uint) {
+        return this.externalFunction();
+    }
+}
+```
+
+
+Solidity中有三种主要的存储位置：
+
+### 1. `storage`
+
+- 变量存储在区块链上
+- 数据持久化，默认用于状态变量。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract StorageExample {
+    uint public storedData = 123;
+
+    function setStoredData(uint _data) public {
+        storedData = _data;
+    }
+}
+```
+
+### 2. `memory`
+
+- 变量存储在内存中。尤其是如果返回数据类型是变长的情况下，必须加memory修饰
+- 函数调用时临时使用，函数执行完后即销毁。
+- 默认用于函数参数和局部变量。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract MemoryExample {
+    function getMemoryArray() public pure returns (uint[] memory) {
+        uint[] memory memArray = new uint[](3);
+        memArray[0] = 1;
+        memArray[1] = 2;
+        memArray[2] = 3;
+        return memArray;
+    }
+}
+```
+
+### 3. `calldata`
+
+- 只读数据存储位置。
+- 主要用于外部函数的参数。
+- 更省gas。
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract CalldataExample {
+    function getCalldataArray(uint[] calldata inputArray) public pure returns (uint) {
+        return inputArray[0];
+    }
+}
+```
+
+### 示例表格
+
+| 可见性修饰符 | 作用范围                           | 示例代码                                    |
+|--------------|------------------------------------|---------------------------------------------|
+| `public`     | 任何人都可以访问                    | `uint public publicVar;`                    |
+| `private`    | 仅当前合约内部访问                  | `uint private privateVar;`                  |
+| `internal`   | 当前合约和继承的合约访问            | `uint internal internalVar;`                |
+| `external`   | 通过外部合约和交易访问              | `function externalFunction() external;`     |
+
+| 存储位置   | 说明                                           | 示例代码                                    |
+|------------|------------------------------------------------|---------------------------------------------|
+| `storage`  | 数据持久化存储在区块链中                        | `uint storedData;`                          |
+| `memory`   | 数据存储在内存中，函数执行完后即销毁            | `uint[] memory memArray = new uint[](3);`   |
+| `calldata` | 只读数据存储位置，主要用于外部函数的参数        | `function example(uint[] calldata data);`   |
+
+通过以上表格和示例，可以全面了解Solidity中变量的可见性和存储位置及其用法。
 
 ## 3. 基础类型
 ### 3.1 数值类型的范围
@@ -201,19 +332,71 @@ contract ImplicitConversion {
 
 由于 Solidity 不支持浮点数，也没有内置的表示无限大或 NaN 的方法。
 
+
+### 3.3 地址类型
+在 Solidity 中，`address` 类型用于表示以太坊地址。以下是关于 `address` 类型的详细信息：
+
+#### 地址类型的特点
+- **长度**: `address` 类型的长度为 20 字节（160 位）。
+- **存储**: 地址类型用于存储以太坊地址，例如用户账户地址或合约地址。
+- **操作**: 可以对 `address` 类型进行一些特定的操作。
+
+#### 地址类型的分类
+Solidity 中有两种地址类型：
+1. **address**: 普通的地址类型。
+2. **address payable**: 可支付的地址类型，允许接收以太币。
+
+#### 地址类型的内置方法
+`address` 和 `address payable` 类型都包含一些内置的方法和属性：
+
+#### 公共方法和属性（适用于 `address` 和 `address payable`）
+- `balance`: 返回地址的以太币余额（单位为 wei）。
+- `code`: 返回该地址上存储的代码（如果地址是一个合约）。
+- `codehash`: 返回该地址上存储的代码的哈希值。
+- `transfer(uint256 amount)`: 向该地址发送指定数量的以太币（仅适用于 `address payable`）。
+- `send(uint256 amount) returns (bool)`: 向该地址发送指定数量的以太币，返回一个布尔值表示成功或失败（仅适用于 `address payable`）。
+- `call(bytes memory) returns (bool, bytes memory)`: 调用该地址上的合约函数，传递数据并返回布尔值和返回数据。
+- `delegatecall(bytes memory) returns (bool, bytes memory)`: 使用调用者的上下文调用该地址上的合约函数，传递数据并返回布尔值和返回数据。
+- `staticcall(bytes memory) returns (bool, bytes memory)`: 进行静态调用，不允许修改状态，传递数据并返回布尔值和返回数据。
+
+### 示例代码
+以下是一些使用 `address` 类型的示例代码：
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract AddressExample {
+    address public owner;
+    address payable public recipient;
+
+    constructor() {
+        owner = msg.sender;
+        recipient = payable(0x1234567890123456789012345678901234567890);
+    }
+
+    function transferToRecipient() public {
+        recipient.transfer(1 ether);
+    }
+
+    function getOwnerBalance() public view returns (uint256) {
+        return owner.balance;
+    }
+
+    function callAnotherContract(address _contract, bytes memory _data) public returns (bool, bytes memory) {
+        (bool success, bytes memory result) = _contract.call(_data);
+        return (success, result);
+    }
+}
+```
+
+
 ## 4. 字符和字符串
 在 Solidity 中，字符和字符串的使用和实现有其独特之处。Solidity 主要使用 `string` 和 `bytes` 类型来处理文本数据。
 
-### 字符类型
-
-Solidity 并没有单独的字符类型（如 `char`），但可以通过 `bytes1` 类型表示单个字节的字符。
-
-### 字符串类型
-
-Solidity 支持两种主要的字符串类型：
-
-1. `string`：用于动态长度的 UTF-8 编码字符串。
-2. `bytes`：用于动态长度的字节数组。
+1. Solidity 并没有单独的字符类型（如 `char`），但可以通过 `bytes1` 类型表示单个字节的字符。
+2. Solidity 支持两种主要的字符串类型：
+    1. `string`：用于动态长度的 UTF-8 编码字符串。
+    2. `bytes`：用于动态长度的字节数组。
 
 此外，还有 `bytes1` 到 `bytes32` 的固定长度字节数组类型。
 
@@ -221,7 +404,6 @@ Solidity 支持两种主要的字符串类型：
 
 `string` 类型适用于存储和操作文本数据。需要注意的是，`string` 类型在 Solidity 中是 UTF-8 编码的。
 
-#### 示例：存储和返回字符串
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -243,7 +425,6 @@ contract StringExample {
 
 `bytes` 类型用于存储任意长度的字节数组，适合需要直接操作字节数据的场景。
 
-#### 示例：存储和操作字节数组
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -317,8 +498,6 @@ contract StringConcatenation {
 1. **静态数组**：长度固定的数组。
 2. **动态数组**：长度可变的数组。
 
-### 声明数组
-
 #### 静态数组
 
 静态数组的长度在编译时确定，不能改变。
@@ -334,7 +513,33 @@ contract StaticArrayExample {
 
 #### 动态数组
 
-动态数组的长度可以在运行时改变。
+动态数组的长度可以在运行时改变。solidity 中动态数组无法直接初始化。可使用 new 关键字在 内存memory 中基于运行时创建动态长度数组。与存储storage 数组相反的是，不能通过修改成员变量 .push 改变 内存memory 数组的大小。必须提前计算所需的大小或者创建一个新的内存数组并复制每个元素。
+
+```solidity
+pragma solidity >=0.4.16 <0.9.0;
+
+contract TX {
+    function f(uint len) public pure {
+        uint[] memory a = new uint[](7);
+        bytes memory b = new bytes(len);
+
+        assert(a.length == 7);
+        assert(b.length == len);
+
+        a[6] = 8;
+    }
+}
+```
+
+
+### 数组的内置函数
+
+Solidity 提供了一些内置函数来操作数组：
+
+- `push()`: 向动态数组的末尾添加一个元素。
+- `pop()`: 从动态数组的末尾移除一个元素。
+- `length`: 获取数组的长度。
+
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -367,37 +572,28 @@ contract DynamicArrayExample {
 }
 ```
 
-### 多维数组
-
-Solidity 也支持多维数组的声明和使用。
+## 6. 结构体
+可以在声明结构体变量时直接初始化。
 
 ```solidity
 pragma solidity ^0.8.0;
 
-contract MultiDimensionalArrayExample {
-    // 声明一个二维 uint 类型静态数组
-    uint[2][3] public myArray = [[1, 2], [3, 4], [5, 6]];
-
-    // 声明一个二维 uint 类型动态数组
-    uint[][] public dynamicArray;
-
-    // 添加二维数组的一行
-    function addRow(uint[] memory row) public {
-        dynamicArray.push(row);
+contract StructExample {
+    // 声明结构体类型
+    struct Person {
+        string name;
+        uint age;
+        address wallet;
     }
-
-    // 获取二维数组的一行
-    function getRow(uint index) public view returns (uint[] memory) {
-        require(index < dynamicArray.length, "Index out of bounds");
-        return dynamicArray[index];
-    }
+    
+    // 结构体类型变量
+    Person public person = Person("Alice", 30, 0x1234567890123456789012345678901234567890);
 }
+
 ```
 
-### 数组的内置函数
 
-Solidity 提供了一些内置函数来操作数组：
 
-- `push()`: 向动态数组的末尾添加一个元素。
-- `pop()`: 从动态数组的末尾移除一个元素。
-- `length`: 获取数组的长度。
+## 全局变量
+全局变量是全局范围工作的变量，都是solidity预留关键字。他们可以在函数内不声明直接使用，完整的全局变量参见: [单位和全局变量](https://learnblockchain.cn/docs/solidity/units-and-global-variables.html#special-variables-and-functions)
+
