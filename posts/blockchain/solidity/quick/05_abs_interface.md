@@ -20,93 +20,18 @@ toc:
 
 ## 1. 接口和类定义
 问: 以表格的形式，对比 Solidity 和Go 中的接口、实现、类、抽象类、继承
+以下是对比 Solidity 和 Go 中的接口、实现、类、抽象类、继承的表格：
 
-以下是Solidity和Go中接口、实现、类、抽象类、继承的对比，包含各自的定义、用法以及示例代码。
-
-| 特性          | Solidity                                                | Go                                                    |
-|---------------|----------------------------------------------------------|-------------------------------------------------------|
-| **接口**      | 使用`interface`定义接口，只声明方法，不实现              | 使用`interface`定义接口，只声明方法，不实现           |
-| **实现**      | 合约通过实现接口中的方法来实现接口                        | 类型通过实现接口中的方法来实现接口                     |
-| **类**        | Solidity没有类的概念，但合约可以类比类                    | Go没有类的概念，但结构体可以类比类                     |
-| **抽象类**    | 使用`abstract`定义抽象合约，包含未实现的方法              | Go没有抽象类的概念                                     |
-| **继承**      | 使用`is`关键字实现继承，支持多重继承                      | 使用嵌套结构体模拟继承，不支持多重继承                 |
-
-### Solidity
-
-1. **接口**
-
-```solidity
-pragma solidity ^0.8.0;
-
-interface MyInterface {
-    function myFunction() external;
-}
-```
-
-2. **实现**
-
-```solidity
-pragma solidity ^0.8.0;
-
-contract MyContract is MyInterface {
-    function myFunction() external override {
-        // 实现方法
-    }
-}
-```
-
-3. **类（合约）**
-
-```solidity
-pragma solidity ^0.8.0;
-
-contract MyContract {
-    uint public value;
-
-    function setValue(uint _value) public {
-        value = _value;
-    }
-}
-```
-
-4. **抽象类**
-
-```solidity
-pragma solidity ^0.8.0;
-
-abstract contract AbstractContract {
-    function myFunction() public virtual;
-}
-
-contract ConcreteContract is AbstractContract {
-    function myFunction() public override {
-        // 实现抽象方法
-    }
-}
-```
-
-5. **继承**
-
-```solidity
-pragma solidity ^0.8.0;
-
-contract Base {
-    function baseFunction() public pure returns (string memory) {
-        return "Base";
-    }
-}
-
-contract Derived is Base {
-    function derivedFunction() public pure returns (string memory) {
-        return "Derived";
-    }
-}
-```
-
-
-## 2. 合约
-Solidity 合约大体相当于其他语言的类的概念。
-
+| 特性                   | Solidity                                      | Go                                        |
+|------------------------|-----------------------------------------------|-------------------------------------------|
+| **接口**               | `interface`                                   | `interface`                               |
+| **实现接口**           | 合约可以实现多个接口                           | 类型隐式实现接口，通过实现所有接口方法      |
+| **类**                 | Solidity 没有类的概念，但合约类似类            | Go 没有类的概念，通过结构体和方法模拟      |
+| **抽象类**             | `abstract contract`                           | Go 没有抽象类，使用接口和具体类型实现抽象   |
+| **继承**               | 单继承：`contract A is B`                      | 没有类继承，通过组合实现重用                |
+| **多继承**             | 支持接口和合约的多继承                         | 不支持多继承，使用组合和接口实现            |
+| **构造函数**           | `constructor`                                 | 没有构造函数概念，通过结构体初始化实现      |
+| **方法重写**           | `virtual` 和 `override` 关键字                 | 不支持方法重写，通过接口实现多态            |
 
 
 ## 2. 类与继承

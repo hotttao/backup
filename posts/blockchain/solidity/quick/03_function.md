@@ -41,20 +41,6 @@ toc:
 | **函数返回多个值**    | `func swap(a, b int) (int, int) { return b, a }`    | 不直接支持多个返回值，但可以通过元组模拟               |
 
 
-#### Solidity 示例
-
-1. **定义**
-
-```solidity
-pragma solidity ^0.8.0;
-
-contract Example {
-    function swap(uint a, uint b) public pure returns (uint, uint) {
-        return (b, a);
-    }
-}
-```
-
 ## 2. Solidity 的函数
 Solidity 中函数的形式:
 
@@ -94,7 +80,7 @@ Solidity 中函数
 8. 使用包含某些操作码的内联汇编。
 
 
-### 参数与返回值
+### 2.1 参数与返回值
 
 函数可以接受参数，并返回一个或多个值。
 
@@ -115,9 +101,9 @@ contract Example {
 ```
 
 
-### 修饰符（Modifiers）
+### 2.2 修饰符（Modifiers）
 
-修饰符用于更改函数的行为，通常用于访问控制和前置条件检查。
+修饰符有点类似于装饰器，用于更改函数的行为，通常用于访问控制和前置条件检查。
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -131,12 +117,12 @@ contract Example {
     
     modifier onlyOwner() {
         require(msg.sender == owner, "Not the contract owner");
-        _;
+        _; // 如果是的话，继续运行函数主体；否则报错并revert交易
     }
     
     modifier validAddress(address _address) {
         require(_address != address(0), "Invalid address");
-        _;
+        _; 
     }
     
     function restrictedFunction(address _address) public onlyOwner validAddress(_address) {
@@ -144,7 +130,6 @@ contract Example {
     }
 }
 ```
-
 
 
 ### 内联汇编（Inline Assembly）
@@ -166,11 +151,7 @@ contract Example {
 ```
 
 
-
-
 ## 3. 异常处理
-
-
 3. **异常处理**
 
 ```solidity

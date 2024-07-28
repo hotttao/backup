@@ -20,129 +20,69 @@ toc:
 
 ## 1. 条件判断和循环
 问: 以表格的方式，对比 Solidity 和go 中条件和循环，表格中加入 Solidity 的 for-each 语法 和 go 的 for range 语法
-以下是对比 Solidity 和 Go 语言中条件和循环语法的表格，包括 Solidity 的 `for-each` 语法和 Go 的 `for range` 语法。
+以下是 Solidity 和 Go 中条件和循环语法的对比表格，包括 Solidity 的 `for-each` 语法和 Go 的 `for range` 语法：
 
-| Feature        | Solidity                                                                 | Go                                                                       |
-|----------------|--------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| **If Statement** | ```solidity\nif (condition) {\n    // code\n} else if (condition) {\n    // code\n} else {\n    // code\n}\n``` | ```go\nif condition {\n    // code\n} else if condition {\n    // code\n} else {\n    // code\n}\n``` |
-| **For Loop**   | ```solidity\nfor (uint i = 0; i < n; i++) {\n    // code\n}\n```          | ```go\nfor i := 0; i < n; i++ {\n    // code\n}\n```                      |
-| **While Loop** | ```solidity\nwhile (condition) {\n    // code\n}\n```                    | ```go\nfor condition {\n    // code\n}\n```                              |
-| **Do-While Loop** | ```solidity\ndo {\n    // code\n} while (condition);\n```               | Not directly supported (can be simulated with `for` loop)                |
-| **For-Each Loop** | Solidity does not have a direct `for-each` syntax, but can iterate over arrays with a `for` loop | ```go\nfor index, value := range collection {\n    // code\n}\n```       |
+| 语言     | 结构       | 语法示例                                                        | 描述                                                         |
+| -------- | ---------- | -------------------------------------------------------------- | ------------------------------------------------------------ |
+| **Solidity** | `if`        | ```solidity<br>if (condition) {<br>    // code<br>}<br>else if (condition) {<br>    // code<br>}<br>else {<br>    // code<br>}<br>``` | 条件语句，支持 `if-else if-else` 结构                         |
+|            | `while`     | ```solidity<br>while (condition) {<br>    // code<br>}<br>``` | `while` 循环，直到条件为 `false` 时停止循环                  |
+|            | `do-while`  | ```solidity<br>do {<br>    // code<br>}<br>while (condition);<br>``` | 先执行代码块，再检查条件                                     |
+|            | `for`       | ```solidity<br>for (uint i = 0; i < n; i++) {<br>    // code<br>}<br>``` | `for` 循环，支持初始化语句、条件表达式和迭代语句             |
+|            | `for-each`  | ```solidity<br>uint[] memory arr = [1, 2, 3];<br>for (uint i = 0; i < arr.length; i++) {<br>    uint value = arr[i];<br>    // code<br>}<br>``` | Solidity 没有直接的 `for-each` 语法，可以通过 `for` 循环实现 |
+| **Go**      | `if`        | ```go<br>if condition {<br>    // code<br>} else if condition {<br>    // code<br>} else {<br>    // code<br>}<br>``` | 条件语句，支持 `if-else if-else` 结构                         |
+|            | `while`     | 无直接的 `while` 语法，使用 `for` 实现                        | ```go<br>for condition {<br>    // code<br>}<br>``` |
+|            | `do-while`  | 无直接的 `do-while` 语法，使用 `for` 实现                    | ```go<br>for {<br>    // code<br>    if !condition {<br>        break<br>    }<br>}<br>``` |
+|            | `for`       | ```go<br>for i := 0; i < n; i++ {<br>    // code<br>}<br>``` | `for` 循环，支持初始化语句、条件表达式和迭代语句             |
+|            | `for-each`  | ```go<br>arr := []int{1, 2, 3}<br>for _, value := range arr {<br>    // code<br>}<br>``` | `for range` 语法，用于遍历数组、切片、映射和通道            |
 
-### Solidity
+### 详细示例
+
+#### Solidity 示例
 
 ```solidity
 pragma solidity ^0.8.0;
 
-contract SolidityExamples {
-    // If statement
-    function ifStatement(uint x) public pure returns (string memory) {
-        if (x > 10) {
-            return "x is greater than 10";
+contract Example {
+    function conditionalAndLoops() public pure {
+        // if-else
+        uint x = 10;
+        if (x < 10) {
+            // code
         } else if (x == 10) {
-            return "x is 10";
+            // code
         } else {
-            return "x is less than 10";
+            // code
         }
-    }
 
-    // For loop
-    function forLoop(uint n) public pure returns (uint) {
-        uint sum = 0;
-        for (uint i = 0; i < n; i++) {
-            sum += i;
-        }
-        return sum;
-    }
-
-    // While loop
-    function whileLoop(uint n) public pure returns (uint) {
-        uint sum = 0;
+        // while
         uint i = 0;
-        while (i < n) {
-            sum += i;
+        while (i < 10) {
+            // code
             i++;
         }
-        return sum;
-    }
 
-    // Do-while loop
-    function doWhileLoop(uint n) public pure returns (uint) {
-        uint sum = 0;
-        uint i = 0;
+        // do-while
+        i = 0;
         do {
-            sum += i;
+            // code
             i++;
-        } while (i < n);
-        return sum;
-    }
+        } while (i < 10);
 
-    // For-each simulation using for loop
-    function forEachLoop(uint[] memory array) public pure returns (uint) {
-        uint sum = 0;
-        for (uint i = 0; i < array.length; i++) {
-            sum += array[i];
+        // for
+        for (uint j = 0; j < 10; j++) {
+            // code
         }
-        return sum;
-    }
-}
-```
 
-### Go
-
-```go
-package main
-
-import "fmt"
-
-func main() {
-    // If statement
-    x := 5
-    if x > 10 {
-        fmt.Println("x is greater than 10")
-    } else if x == 10 {
-        fmt.Println("x is 10")
-    } else {
-        fmt.Println("x is less than 10")
-    }
-
-    // For loop
-    sum := 0
-    n := 10
-    for i := 0; i < n; i++ {
-        sum += i
-    }
-    fmt.Println("Sum:", sum)
-
-    // While loop (using for)
-    sum = 0
-    i := 0
-    for i < n {
-        sum += i
-        i++
-    }
-    fmt.Println("Sum:", sum)
-
-    // Do-while loop simulation
-    sum = 0
-    i = 0
-    for {
-        sum += i
-        i++
-        if i >= n {
-            break
+        // for-each (simulated using for loop)
+        uint ;
+        arr[0] = 1;
+        arr[1] = 2;
+        arr[2] = 3;
+        for (uint k = 0; k < arr.length; k++) {
+            uint value = arr[k];
+            // code
         }
     }
-    fmt.Println("Sum:", sum)
-
-    // For-each using for range
-    array := []int{1, 2, 3, 4, 5}
-    sum = 0
-    for _, value := range array {
-        sum += value
-    }
-    fmt.Println("Sum:", sum)
 }
 ```
 
