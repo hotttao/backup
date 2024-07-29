@@ -125,7 +125,7 @@ contract Example {
         _; 
     }
     
-    function restrictedFunction(address _address) public onlyOwner validAddress(_address) {
+    function restrictedFunction(address _address) public onlyOwner validAddress(_address) pure returns(uint, uint){
         // 仅限所有者且地址有效时执行的代码
     }
 }
