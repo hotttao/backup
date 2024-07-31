@@ -152,12 +152,16 @@ contract Example {
 
 
 ## 3. 异常处理
-3. **异常处理**
+Solidity有 三种抛出异常的方法：error，require和assert，下面是他们使用的简单示例:
+
 
 ```solidity
 pragma solidity ^0.8.0;
 
 contract Example {
+
+    error ValueTooLow(uint256 value, uint256 minValue);
+
     function testRequire(uint a) public pure {
         require(a > 10, "Value must be greater than 10");
     }
@@ -171,5 +175,21 @@ contract Example {
             revert("Value must be greater than 10");
         }
     }
+
+    function check(uint _value) public pure {
+        uint minValue = 1;
+        if (_value < minValue) {
+            revert ValueTooLow(_value, minValue); // 使用自定义错误类型
+        }
+    }
 }
 ```
+
+### 3.1 error
+error 可以自定义异常，error 必须搭配 revert（回退）命令使用。
+
+### 3.2 require
+require 使用方法：require(检查条件，"异常的描述")，当检查条件不成立的时候，就会抛出异常。唯一的缺点就是gas随着描述异常的字符串长度增加，比error命令要高。
+
+### 3.3 assert
+`assert(检查条件）`，当检查条件不成立的时候，就会抛出异常。
