@@ -289,7 +289,7 @@ function setXTransferETH(address otherContract, uint256 x) payable external{
 ### 4.2 call
 `address.call{value: msg.value, gas: gasLimit}(bytes memory) returns (bool, bytes memory)`
 1. 参数:
-    - bytes: 函数签名
+    - bytes: 函数选择器和参数编码
     - value（可选）：指定发送的以太币数量。
     - gas（可选）：指定调用时的 gas 限制。
 2. 返回值:
@@ -302,11 +302,16 @@ function setXTransferETH(address otherContract, uint256 x) payable external{
     - 给call输入的函数不存在于目标合约，那么目标合约的fallback函数会被触发
 
 
-#### 函数签名
-函数签名可以通过 abi.encodeWithSignature 或 abi.encodeWithSelector 方法生成。
+### 4.3 函数选择器(selector)和函数签名
+selector和函数签名:
+1. 函数签名 = `函数名（逗号分隔的参数类型)`
+2. selector = `函数签名的Keccak哈希后的前4个字节`
+3. msg.data = calldata = 函数选择器和参数编码(调用 abi.encodeWithSignature 或 abi.encodeWithSelector 生成的值)
+
 
 ```solidity
 // 函数签名：functionName(paramType1, paramType2, ...)
+// 在函数签名中，uint和int要写为uint256和int256。
 bytes memory data = abi.encodeWithSignature("setValue(uint256)", 42);
 
 // 函数选择器：bytes4(keccak256(bytes("functionName(paramType1,paramType2,...)")))

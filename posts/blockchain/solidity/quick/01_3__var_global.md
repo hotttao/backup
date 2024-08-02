@@ -98,7 +98,7 @@ contract AbiEncodePackedExample {
 
 ### `abi.encodeWithSelector`
 
-`abi.encodeWithSelector` 用于将函数选择器和参数一起编码。函数选择器是前四个字节的哈希值，用于识别要调用的函数。
+`abi.encodeWithSelector` 用于将函数选择器和参数一起编码。等同于在 abi.encode 编码结果前加上了4字节的函数选择器。函数选择器是前四个字节的哈希值，用于识别要调用的函数。
 
 ```solidity
 pragma solidity ^0.8.0;
@@ -138,6 +138,18 @@ contract AbiDecodeExample {
         return abi.decode(data, (uint256, string));
     }
 }
+```
+
+### ABI 使用
+
+```solidity
+bytes4 selector = contract.getValue.selector;
+
+bytes memory data = abi.encodeWithSelector(selector, _x);
+(bool success, bytes memory returnedData) = address(contract).staticcall(data);
+require(success);
+
+return abi.decode(returnedData, (uint256));
 ```
 
 

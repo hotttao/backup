@@ -193,3 +193,96 @@ require 使用方法：require(检查条件，"异常的描述")，当检查条�
 
 ### 3.3 assert
 `assert(检查条件）`，当检查条件不成立的时候，就会抛出异常。
+
+### 3.4 try-catch
+Solidity中，try-catch只能被用于external函数或创建合约时constructor（被视为external函数）的调用。基本语法如下：
+
+```solidity
+// this.f() 可以替代 externalContract.f()，this.f()也被视作为外部调用
+try externalContract.f() {
+    // call成功的情况下 运行一些代码
+} catch {
+    // call失败的情况下 运行一些代码
+}
+```
+
+如果调用的函数有返回值，那么必须在try之后声明returns(returnType val)，并且在try模块中可以使用返回的变量；如果是创建合约，那么返回值是新创建的合约变量。
+
+```solidity
+try externalContract.f() returns(returnType){
+    // call成功的情况下 运行一些代码
+} catch Error(string memory /*reason*/) {
+    // 捕获revert("reasonString") 和 require(false, "reasonString")
+} catch Panic(uint /*errorCode*/) {
+    // 捕获Panic导致的错误 例如assert失败 溢出 除零 数组访问越界
+} catch (bytes memory /*lowLevelData*/) {
+    // 如果发生了revert且上面2个异常类型匹配都失败了 会进入该分支
+    // 例如revert() require(false) revert自定义类型的error
+}
+```
+
+
+#### 捕获函数调用异常
+```solidity
+pragma solidity ^0.8.0;
+
+contract CalledContract {
+    function mightFail(uint _value) public pure returns (uint) {
+        require(_value != 0, "Value cannot be zero");
+        return _value;
+    }
+}
+
+pragma solidity ^0.8.0;
+
+contract CallerContract {
+    function callMightFail(address calledContractAddress, uint _value) public returns (string memory) {
+        CalledContract calledContract = CalledContract(calledContractAddress);
+        try calledContract.mightFail(_value) returns (uint result) {
+            return "Success";
+        } catch Error(string memory reason) {
+            // This is executed in case revert was called with a reason string
+            return reason;
+        } catch (bytes memory lowLevelData) {
+            // This is executed in case revert() was used or there was a failing assertion
+            return "Low level error";
+        }
+    }
+}
+
+interface CalledContract {
+    function mightFail(uint _value) external returns (uint);
+}
+
+```
+
+#### 捕获合约创建异常
+
+```solidity
+pragma solidity ^0.8.0;
+
+contract DeployableContract {
+    constructor(uint _value) {
+        require(_value != 0, "Value cannot be zero");
+    }
+}
+
+pragma solidity ^0.8.0;
+
+contract DeployerContract {
+    event DeploymentResult(bool success, string reason);
+
+    function deployContract(uint _value) public {
+        try new DeployableContract(_value) returns (DeployableContract deployedContract) {
+            emit DeploymentResult(true, "Contract deployed successfully");
+        } catch Error(string memory reason) {
+            // This is executed in case revert was called with a reason string
+            emit DeploymentResult(false, reason);
+        } catch (bytes memory lowLevelData) {
+            // This is executed in case revert() was used or there was a failing assertion
+            emit DeploymentResult(false, "Low level error");
+        }
+    }
+}
+
+```
