@@ -445,7 +445,26 @@ class Parent {
 }
 ```
 
-### 2.7 instanceof
+### 2.7 sealed
+
+从Java 15开始，允许使用sealed修饰class，并通过permits明确写出能够从该class继承的子类名称。
+
+例如，定义一个Shape类：
+
+```java
+public sealed class Shape permits Rect, Circle, Triangle {
+    ...
+}
+
+// 允许
+public final class Rect extends Shape {...}
+
+// 不允许
+public final class Ellipse extends Shape {...}
+// Compile error: class is not allowed to extend sealed class: Shape
+```
+
+### 2.8 instanceof
 从Java 14开始，判断instanceof后，可以直接转型为指定变量，避免再次强制转型:
 
 ```java

@@ -44,6 +44,74 @@ toc:
 
 需要注意的是，Java和Go中的`switch`语句有一些差异。在Java中，`switch`语句的每个`case`语句末尾必须使用`break`语句来结束该`case`语句，否则代码会继续执行下一个`case`语句的代码块。而在Go中，`case`语句的末尾不需要使用`break`语句，代码会自动跳出`switch`语句。此外，Go中的`switch`语句可以接受多个值的匹配，可以更加简洁地编写代码。
 
+### 2.2 枚举 + switch
+```java
+public class EnumSwitchExample {
+    // 定义一个枚举类型
+    enum Day {
+        MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
+    }
+
+    public static void main(String[] args) {
+        // 选择一个星期几
+        Day day = Day.MONDAY;
+
+        // 使用 switch 语句匹配多个值的情况
+        switch (day) {
+            case MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY:
+                System.out.println("It's a weekday.");
+                break;
+            case SATURDAY, SUNDAY:
+                System.out.println("It's a weekend.");
+                break;
+            default:
+                System.out.println("Invalid day!");
+        }
+    }
+}
+
+```
+
+### 2.2 java switch 新语法
+从Java 12开始，switch语句升级为更简洁的表达式语法，使用类似模式匹配（Pattern Matching）的方法，保证只有一种路径会被执行，并且不需要break语句：
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String fruit = "apple";
+        switch (fruit) {
+        case "apple","test" -> System.out.println("Selected apple");
+        case "pear" -> System.out.println("Selected pear");
+        case "mango" -> {
+            System.out.println("Selected mango");
+            System.out.println("Good choice!");
+        }
+        default -> System.out.println("No fruit selected");
+        }
+    }
+}
+```
+
+### 2.3 yield
+yield 可以从 switch 内部返回一个值:
+
+```java
+public class Main {
+    public static void main(String[] args) {
+        String fruit = "orange";
+        int opt = switch (fruit) {
+            case "apple" -> 1;
+            case "pear", "mango" -> 2;
+            default -> {
+                int code = fruit.hashCode();
+                yield code; // switch语句返回值
+            }
+        };
+        System.out.println("opt = " + opt);
+    }
+}
+```
+
 ## 3. 数值运算的优先级
 
 问: Java 中数据运算的运算符和优先级，以表格形式展示，优先级从上到下优先级从高到低，并给出代码示例
