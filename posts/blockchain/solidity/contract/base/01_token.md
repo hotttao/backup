@@ -138,6 +138,57 @@ toc:
 
 ## 2. ERC20
 
+ERC20是以太坊上的代币标准，它实现了代币转账的基本逻辑。以下是以列表形式展示的 ERC20 包含的方法声明、方法的作用和事件：
+
+1. **name**
+   - **声明**: `function name() public view returns (string)`
+   - **作用**: 返回代币的名称。
+
+2. **symbol**
+   - **声明**: `function symbol() public view returns (string)`
+   - **作用**: 返回代币的符号。
+
+3. **decimals**
+   - **声明**: `function decimals() public view returns (uint8)`
+   - **作用**: 返回代币的小数位数。
+
+4. **totalSupply**
+   - **声明**: `function totalSupply() public view returns (uint256)`
+   - **作用**: 返回代币的总供应量。
+
+5. **balanceOf**
+   - **声明**: `function balanceOf(address account) public view returns (uint256)`
+   - **作用**: 返回指定账户的代币余额。
+
+6. **transfer**
+   - **声明**: `function transfer(address recipient, uint256 amount) public returns (bool)`
+   - **作用**: 将代币从调用者账户转移到指定的接收者账户。
+
+7. **allowance**
+   - **声明**: `function allowance(address owner, address spender) public view returns (uint256)`
+   - **作用**: 返回授权给指定花费者的剩余代币数量。
+
+8. **approve**
+   - **声明**: `function approve(address spender, uint256 amount) public returns (bool)`
+   - **作用**: 授权指定的花费者可以从调用者账户中花费的代币数量。
+
+9. **transferFrom**
+   - **声明**: `function transferFrom(address sender, address recipient, uint256 amount) public returns (bool)`
+   - **作用**: 从一个账户转移代币到另一个账户，调用者必须被授权可以从发送者账户中花费代币。
+
+### 事件
+
+1. **Transfer**
+   - **声明**: `event Transfer(address indexed from, address indexed to, uint256 value)`
+   - **作用**: 当代币转移时触发，包括零值转移。
+
+2. **Approval**
+   - **声明**: `event Approval(address indexed owner, address indexed spender, uint256 value)`
+   - **作用**: 当调用approve方法时触发，记录授权信息。
+
+
+### 2.1 ERC20 实现
+
 ```solidity
 pragma solidity ^0.8.21;
 
@@ -208,6 +259,56 @@ contract ERC20 is IERC20 {
 ```
 
 ## 3. ERC721
+ERC721 用于定义非同质化代币（NFT）的标准。以下是ERC721 包含的方法声明、方法的作用和事件：
+
+1. **balanceOf**
+   - **声明**: `function balanceOf(address owner) external view returns (uint256)`
+   - **作用**: 返回指定地址的代币余额。
+
+2. **ownerOf**
+   - **声明**: `function ownerOf(uint256 tokenId) external view returns (address)`
+   - **作用**: 返回指定 tokenId 的所有者地址。
+
+3. **safeTransferFrom (without data)**
+   - **声明**: `function safeTransferFrom(address from, address to, uint256 tokenId) external`
+   - **作用**: 安全地将 tokenId 的代币从一个地址转移到另一个地址。
+
+4. **transferFrom**
+   - **声明**: `function transferFrom(address from, address to, uint256 tokenId) external`
+   - **作用**: 将 tokenId 的代币从一个地址转移到另一个地址。
+
+5. **approve**
+   - **声明**: `function approve(address to, uint256 tokenId) external`
+   - **作用**: 授权地址对 tokenId 的代币进行操作。
+
+6. **getApproved**
+   - **声明**: `function getApproved(uint256 tokenId) external view returns (address)`
+   - **作用**: 返回被授权地址对 tokenId 的代币进行操作。
+
+7. **setApprovalForAll**
+   - **声明**: `function setApprovalForAll(address operator, bool _approved) external`
+   - **作用**: 批量授权/取消授权某个地址对调用者所有代币的操作权。
+
+8. **isApprovedForAll**
+   - **声明**: `function isApprovedForAll(address owner, address operator) external view returns (bool)`
+   - **作用**: 检查 operator 是否被授权管理 owner 的所有代币。
+
+9. **safeTransferFrom (with data)**
+   - **声明**: `function safeTransferFrom(address from, address to, uint256 tokenId, bytes data) external`
+   - **作用**: 安全地将 tokenId 的代币从一个地址转移到另一个地址，并附带额外数据。
+
+1. **Transfer**
+   - **声明**: `event Transfer(address indexed from, address indexed to, uint256 indexed tokenId)`
+   - **作用**: 当代币从一个地址转移到另一个地址时触发。
+
+2. **Approval**
+   - **声明**: `event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)`
+   - **作用**: 当 tokenId 的代币授权给某个地址时触发。
+
+3. **ApprovalForAll**
+   - **声明**: `event ApprovalForAll(address indexed owner, address indexed operator, bool approved)`
+   - **作用**: 当 owner 授权/取消授权 operator 操作其所有代币时触发。
+
 ### 3.1 检查合约是否实现某个接口
 通过ERC165标准，智能合约可以声明它支持的接口，供其他合约检查。
 
@@ -222,7 +323,7 @@ interface IERC165 {
 }
 ```
 
-那如何你想检查一个合约是否支持 ERC721，你首先要检查这个合约，那首先你需要检查这个合约是否实现了 ERC165，然后再检查它是否实现了 ERC721：
+那如何你想检查一个合约是否支持 ERC721，那首先你需要检查这个合约是否实现了 ERC165，然后再检查它是否实现了 ERC721：
 
 ```solidity
 // SPDX-License-Identifier: MIT
@@ -315,6 +416,160 @@ contract ERC721 is IERC721, IERC721Metadata{
     constructor(string memory name_, string memory symbol_) {
         name = name_;
         symbol = symbol_;
+    }
+}
+```
+
+## 4. ERC1155
+ERC1155 是多代币标准，允许一个合约包含多个同质化和非同质化代币。ERC1155在GameFi应用最多，Decentraland、Sandbox等知名链游都使用它。
+
+ERC1155 包含以下接口和事件:
+
+ERC-1155 标准定义了一个多代币标准，可以在同一个合约中管理多种类型的代币。以下是 ERC-1155 中包含的主要接口和事件：
+
+接口
+1. **`balanceOf(address account, uint256 id) external view returns (uint256)`**
+   - 返回指定账户在特定代币 ID 下的余额。
+2. **`balanceOfBatch(address[] calldata accounts, uint256[] calldata ids) external view returns (uint256[] memory)`**
+   - 批量查询多个账户在多个代币 ID 下的余额。
+3. **`setApprovalForAll(address operator, bool approved) external`**
+   - 批准或撤销第三方操作员的权限，允许其管理所有代币。
+4. **`isApprovedForAll(address account, address operator) external view returns (bool)`**
+   - 检查账户是否授予操作员管理所有代币的权限。
+5. **`safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external`**
+   - 安全地转移指定数量的某种类型的代币。
+6. **`safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external`**
+   - 安全地批量转移多种类型的代币。
+
+事件:
+1. **`event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)`**
+   - 在单次转移代币时触发。
+2. **`event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)`**
+   - 在批量转移代币时触发。
+3. **`event ApprovalForAll(address indexed account, address indexed operator, bool approved)`**
+   - 在账户批准或撤销操作员权限时触发。
+4. **`event URI(string value, uint256 indexed id)`**
+   - 当代币的 URI 被设置或更新时触发。
+
+### 4.1 ERC1155 实现
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "./IERC1155.sol";
+import "./IERC1155Receiver.sol";
+import "./IERC1155MetadataURI.sol";
+import "https://github.com/AmazingAng/WTF-Solidity/blob/main/34_ERC721/Address.sol";
+import "https://github.com/AmazingAng/WTF-Solidity/blob/main/34_ERC721/String.sol";
+import "https://github.com/AmazingAng/WTF-Solidity/blob/main/34_ERC721/IERC165.sol";
+
+/**
+ * @dev ERC1155多代币标准
+ * 见 https://eips.ethereum.org/EIPS/eip-1155
+ */
+contract ERC1155 is IERC165, IERC1155, IERC1155MetadataURI {
+    using Address for address; // 使用Address库，用isContract来判断地址是否为合约
+    using Strings for uint256; // 使用String库
+    // Token名称
+    string public name;
+    // Token代号
+    string public symbol;
+    // 代币种类id 到 账户account 到 余额balances 的映射
+    mapping(uint256 => mapping(address => uint256)) private _balances;
+    // address 到 授权地址 的批量授权映射
+    mapping(address => mapping(address => bool)) private _operatorApprovals;
+
+    /**
+     * 构造函数，初始化`name` 和`symbol`, uri_
+     */
+    constructor(string memory name_, string memory symbol_) {
+        name = name_;
+        symbol = symbol_;
+    }
+
+    /**
+     * @dev See {IERC165-supportsInterface}.
+     */
+    function supportsInterface(bytes4 interfaceId) public view virtual override returns (bool) {
+        return
+            interfaceId == type(IERC1155).interfaceId ||
+            interfaceId == type(IERC1155MetadataURI).interfaceId ||
+            interfaceId == type(IERC165).interfaceId;
+    }
+
+    // @dev ERC1155的批量安全转账检查
+    function _doSafeBatchTransferAcceptanceCheck(
+        address operator,
+        address from,
+        address to,
+        uint256[] memory ids,
+        uint256[] memory amounts,
+        bytes memory data
+    ) private {
+        if (to.isContract()) {
+            try IERC1155Receiver(to).onERC1155BatchReceived(operator, from, ids, amounts, data) returns (
+                bytes4 response
+            ) {
+                if (response != IERC1155Receiver.onERC1155BatchReceived.selector) {
+                    revert("ERC1155: ERC1155Receiver rejected tokens");
+                }
+            } catch Error(string memory reason) {
+                revert(reason);
+            } catch {
+                revert("ERC1155: transfer to non-ERC1155Receiver implementer");
+            }
+        }
+    }
+```
+
+
+## 5. WETH 简介
+WETH (Wrapped ETH)是ETH的带包装版本。我们常见的WETH，WBTC，WBNB，都是带包装的原生代币。就像是给原生代币穿了一件智能合约做的衣服：穿上衣服的时候，就变成了WETH，符合ERC20同质化代币标准，可以跨链，可以用于dApp；脱下衣服，它可1:1兑换ETH。
+
+WETH符合ERC20标准，它比普通的ERC20多了两个功能：
+1. 存款：包装，用户将ETH存入WETH合约，并获得等量的WETH。
+2. 取款：拆包装，用户销毁WETH，并获得等量的ETH。
+
+
+### 5.1 WETH 实现
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract WETH is ERC20{
+    // 事件：存款和取款
+    event  Deposit(address indexed dst, uint wad);
+    event  Withdrawal(address indexed src, uint wad);
+
+    // 构造函数，初始化ERC20的名字和代号
+    constructor() ERC20("WETH", "WETH"){
+    }
+
+    // 回调函数，当用户往WETH合约转ETH时，会触发deposit()函数
+    fallback() external payable {
+        deposit();
+    }
+    // 回调函数，当用户往WETH合约转ETH时，会触发deposit()函数
+    receive() external payable {
+        deposit();
+    }
+
+    // 存款函数，当用户存入ETH时，给他铸造等量的WETH
+    function deposit() public payable {
+        _mint(msg.sender, msg.value);
+        emit Deposit(msg.sender, msg.value);
+    }
+
+    // 提款函数，用户销毁WETH，取回等量的ETH
+    function withdraw(uint amount) public {
+        require(balanceOf(msg.sender) >= amount);
+        _burn(msg.sender, amount);
+        payable(msg.sender).transfer(amount);
+        emit Withdrawal(msg.sender, amount);
     }
 }
 ```
