@@ -22,6 +22,7 @@ toc:
 这一节我们来介绍一些工具合约:
 1. 获取随机数
 2. 代币锁
+3. 时间锁
 
 ## 2. 代币锁
 ### 2.1 LP 代币
@@ -159,3 +160,98 @@ contract TokenLocker {
     }
 }
 ```
+
+## 3. 时间锁
+时间锁，可以将智能合约的某些功能锁定一段时间。它的逻辑并不复杂：
+
+- 在创建`Timelock`合约时，项目方可以设定锁定期，并把合约的管理员设为自己。
+
+- 时间锁主要有三个功能：
+    - 创建交易，并加入到时间锁队列。
+    - 在交易的锁定期满后，执行交易。
+    - 后悔了，取消时间锁队列中的某些交易。
+
+- 项目方一般会把时间锁合约设为重要合约的管理员，例如金库合约，再通过时间锁操作他们。
+- 时间锁合约的管理员一般为项目的多签钱包，保证去中心化。
+
+要注意的是进入到时间锁队列的是交易参数的哈希，不包含所有实际的执行参数。合约也不自动在时间锁到期时自动执行。也是需要交易的发起方手动发起执行，所以有过期时间这个参数。
+
+### 3.1 时间锁的接口
+`Timelock`合约中共有`7`个函数。
+
+- 构造函数：初始化交易锁定时间（秒）和管理员地址。
+- `queueTransaction()`：创建交易并添加到时间锁队列中。参数比较复杂，因为要描述一个完整的交易：
+    - `target`：目标合约地址
+    - `value`：发送ETH数额
+    - `signature`：调用的函数签名（function signature）
+    - `data`：交易的call data
+    - `executeTime`：交易执行的区块链时间戳。
+    
+    调用这个函数时，要保证交易预计执行时间`executeTime`大于当前区块链时间戳+锁定时间`delay`。交易的唯一标识符为所有参数的哈希值，利用`getTxHash()`函数计算。进入队列的交易会更新在`queuedTransactions`变量中，并释放`QueueTransaction`事件。
+- `executeTransaction()`：执行交易。它的参数与`queueTransaction()`相同。要求被执行的交易在时间锁队列中，达到交易的执行时间，且没有过期。执行交易时用到了`solidity`的低级成员函数`call`，在[第22讲](https://github.com/AmazingAng/WTF-Solidity/blob/main/22_Call/readme.md)中有介绍。
+- `cancelTransaction()`：取消交易。它的参数与`queueTransaction()`相同。它要求被取消的交易在队列中，会更新`queuedTransactions`并释放`CancelTransaction`事件。
+- `changeAdmin()`：修改管理员地址，只能被`Timelock`合约调用。
+- `getBlockTimestamp()`：获取当前区块链时间戳。
+- `getTxHash()`：返回交易的标识符，为很多交易参数的`hash`。
+
+
+### 3.2 时间锁包含的事件
+`Timelock`合约中共有`4`个事件。
+- `QueueTransaction`：交易创建并进入时间锁队列的事件。
+- `ExecuteTransaction`：锁定期满后交易执行的事件。
+- `CancelTransaction`：交易取消事件。
+- `NewAdmin`：修改管理员地址的事件。
+
+```solidity
+    // 事件
+    // 交易取消事件
+    event CancelTransaction(bytes32 indexed txHash, address indexed target, uint value, string signature,  bytes data, uint executeTime);
+    // 交易执行事件
+    event ExecuteTransaction(bytes32 indexed txHash, address indexed target, uint value, string signature,  bytes data, uint executeTime);
+    // 交易创建并进入队列 事件
+    event QueueTransaction(bytes32 indexed txHash, address indexed target, uint value, string signature, bytes data, uint executeTime);
+    // 修改管理员地址的事件
+    event NewAdmin(address indexed newAdmin);
+```
+
+### 3. 时间锁的实现
+```solidity
+    /**
+     * @dev 构造函数，初始化交易锁定时间 （秒）和管理员地址
+     */
+contract Timelock{
+   // 状态变量
+    address public admin; // 管理员地址
+    uint public constant GRACE_PERIOD = 7 days; // 交易有效期，过期的交易作废
+    uint public delay; // 交易锁定时间 （秒）
+    mapping (bytes32 => bool) public queuedTransactions; // txHash到bool，记录所有在时间锁队列中的交易
+
+
+   function executeTransaction(address target, uint256 value, string memory signature, bytes memory data, uint256 executeTime) public payable onlyOwner returns (bytes memory) {
+        bytes32 txHash = getTxHash(target, value, signature, data, executeTime);
+        // 检查：交易是否在时间锁队列中
+        require(queuedTransactions[txHash], "Timelock::executeTransaction: Transaction hasn't been queued.");
+        // 检查：达到交易的执行时间
+        require(getBlockTimestamp() >= executeTime, "Timelock::executeTransaction: Transaction hasn't surpassed time lock.");
+        // 检查：交易没过期
+       require(getBlockTimestamp() <= executeTime + GRACE_PERIOD, "Timelock::executeTransaction: Transaction is stale.");
+        // 将交易移出队列
+        queuedTransactions[txHash] = false;
+
+        // 获取call data
+        bytes memory callData;
+        if (bytes(signature).length == 0) {
+            callData = data;
+        } else {
+// 这里如果采用encodeWithSignature的编码方式来实现调用管理员的函数，请将参数data的类型改为address。不然会导致管理员的值变为类似"0x0000000000000000000000000000000000000020"的值。其中的0x20是代表字节数组长度的意思.
+            callData = abi.encodePacked(bytes4(keccak256(bytes(signature))), data);
+        }
+        // 利用call执行交易
+        (bool success, bytes memory returnData) = target.call{value: value}(callData);
+        require(success, "Timelock::executeTransaction: Transaction execution reverted.");
+
+        emit ExecuteTransaction(txHash, target, value, signature, data, executeTime);
+
+        return returnData;
+    }
+}
