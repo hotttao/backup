@@ -421,35 +421,105 @@ contract ERC721 is IERC721, IERC721Metadata{
 ```
 
 ## 4. ERC1155
-ERC1155 是多代币标准，允许一个合约包含多个同质化和非同质化代币。ERC1155在GameFi应用最多，Decentraland、Sandbox等知名链游都使用它。
+ERC-1155 是以太坊上的一种多代币标准，它允许单个智能合约同时管理多种类型的代币。ERC-1155 可以同时支持同质化代币（如 ERC-20 代币）和非同质化代币（如 ERC-721 代币），从而大大提高了代币管理的效率和灵活性。
 
-ERC1155 包含以下接口和事件:
+### ERC-1155 的特点
 
-ERC-1155 标准定义了一个多代币标准，可以在同一个合约中管理多种类型的代币。以下是 ERC-1155 中包含的主要接口和事件：
+1. **多代币标准**：
+   - ERC-1155 合约可以管理多个代币类型，每种代币通过一个唯一的 `id` 进行标识。不同的 `id` 可以表示同质化代币或非同质化代币。
 
-接口
-1. **`balanceOf(address account, uint256 id) external view returns (uint256)`**
-   - 返回指定账户在特定代币 ID 下的余额。
-2. **`balanceOfBatch(address[] calldata accounts, uint256[] calldata ids) external view returns (uint256[] memory)`**
-   - 批量查询多个账户在多个代币 ID 下的余额。
-3. **`setApprovalForAll(address operator, bool approved) external`**
-   - 批准或撤销第三方操作员的权限，允许其管理所有代币。
-4. **`isApprovedForAll(address account, address operator) external view returns (bool)`**
-   - 检查账户是否授予操作员管理所有代币的权限。
-5. **`safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes calldata data) external`**
-   - 安全地转移指定数量的某种类型的代币。
-6. **`safeBatchTransferFrom(address from, address to, uint256[] calldata ids, uint256[] calldata amounts, bytes calldata data) external`**
-   - 安全地批量转移多种类型的代币。
+2. **批量操作**：
+   - ERC-1155 支持批量传输、批量铸造、批量销毁等操作，这使得管理多个代币类型的操作更加高效。
 
-事件:
-1. **`event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)`**
-   - 在单次转移代币时触发。
-2. **`event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)`**
-   - 在批量转移代币时触发。
-3. **`event ApprovalForAll(address indexed account, address indexed operator, bool approved)`**
-   - 在账户批准或撤销操作员权限时触发。
-4. **`event URI(string value, uint256 indexed id)`**
-   - 当代币的 URI 被设置或更新时触发。
+3. **节省 Gas**：
+   - 由于 ERC-1155 允许在单个智能合约中管理多个代币类型，因此相比于部署和操作多个 ERC-20 或 ERC-721 合约，它能够显著节省 Gas 费用。
+
+4. **灵活性**：
+   - ERC-1155 标准为代币设计者提供了极大的灵活性，使他们能够在一个合约中创建混合的资产类型（如游戏中的道具和货币）。
+
+### 主要接口和事件
+
+#### 主要接口
+
+1. **balanceOf(address account, uint256 id)**：
+   - 查询指定账户持有的某种类型的代币余额。
+   - `account`: 账户地址。
+   - `id`: 代币类型的唯一标识符。
+
+2. **balanceOfBatch(address[] accounts, uint256[] ids)**：
+   - 批量查询多个账户的多个代币类型的余额。
+   - `accounts`: 账户地址数组。
+   - `ids`: 代币类型的唯一标识符数组。
+
+3. **safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data)**：
+   - 将指定数量的某种代币类型从一个地址转移到另一个地址。
+   - `from`: 发送方地址。
+   - `to`: 接收方地址。
+   - `id`: 代币类型的唯一标识符。
+   - `amount`: 转移的代币数量。
+   - `data`: 附加数据（通常用于智能合约之间的通信）。
+
+4. **safeBatchTransferFrom(address from, address to, uint256[] ids, uint256[] amounts, bytes data)**：
+   - 批量将多种类型的代币从一个地址转移到另一个地址。
+   - `from`: 发送方地址。
+   - `to`: 接收方地址。
+   - `ids`: 代币类型的唯一标识符数组。
+   - `amounts`: 各种代币类型的转移数量数组。
+   - `data`: 附加数据。
+
+5. **setApprovalForAll(address operator, bool approved)**：
+   - 授权或取消授权某个地址管理调用者的所有代币。
+   - `operator`: 被授权的操作员地址。
+   - `approved`: 是否授权。
+
+6. **isApprovedForAll(address account, address operator)**：
+   - 查询某个操作员地址是否被授权管理某个账户的所有代币。
+   - `account`: 账户地址。
+   - `operator`: 操作员地址。
+
+#### 主要事件
+
+1. **TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)**：
+   - 当某个代币类型被转移时触发。
+   - `operator`: 执行转移操作的地址。
+   - `from`: 发送方地址。
+   - `to`: 接收方地址。
+   - `id`: 代币类型的唯一标识符。
+   - `value`: 转移的代币数量。
+
+2. **TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)**：
+   - 当多个代币类型被批量转移时触发。
+   - `operator`: 执行转移操作的地址。
+   - `from`: 发送方地址。
+   - `to`: 接收方地址。
+   - `ids`: 代币类型的唯一标识符数组。
+   - `values`: 各种代币类型的转移数量数组。
+
+3. **ApprovalForAll(address indexed account, address indexed operator, bool approved)**：
+   - 当某个账户授权或取消授权某个操作员管理其所有代币时触发。
+   - `account`: 账户地址。
+   - `operator`: 被授权的操作员地址。
+   - `approved`: 授权状态。
+
+4. **URI(string value, uint256 indexed id)**：
+   - 当代币类型的 URI 被设置时触发。
+   - `value`: 代币类型的 URI。
+   - `id`: 代币类型的唯一标识符。
+
+### ERC-1155 的应用场景
+
+1. **游戏中的物品和货币**：
+   - 在区块链游戏中，游戏道具（如武器、盔甲）和游戏货币可以使用同一合约进行管理，每种道具和货币都有自己的唯一 `id`。
+
+2. **数字收藏品**：
+   - 可以在一个合约中同时创建和管理多个不同系列的数字收藏品，显著减少创建和管理多个 ERC-721 合约的复杂性。
+
+3. **市场平台**：
+   - 在去中心化市场平台中，ERC-1155 可以有效管理不同类型的商品，使交易更高效。
+
+### 总结
+
+ERC-1155 是一个多功能的代币标准，它结合了 ERC-20 和 ERC-721 的优点，使开发者能够在同一个智能合约中高效地管理多种代币类型。其批量操作和多代币管理功能特别适合需要管理大量资产类型的应用场景，如区块链游戏、数字收藏品和去中心化市场。
 
 ### 4.1 ERC1155 实现
 
@@ -573,3 +643,72 @@ contract WETH is ERC20{
     }
 }
 ```
+
+
+## 6. ERC4626
+ERC-4626 是以太坊上一个标准化的代币化金库（Tokenized Vault）接口。它为可互操作的金库（Vaults）设计了统一的标准，使不同的去中心化金融（DeFi）协议可以轻松集成和互操作。
+
+### 核心概念
+
+1. **金库（Vault）**：
+   - 金库是一种智能合约，允许用户存入一种基础资产（如 ETH、DAI 等），并在金库中产生收益或执行其他策略。金库会发放代表用户在金库中份额的代币，通常称为“金库代币”。
+
+2. **标准化**：
+   - ERC-4626 提供了一个标准接口，使得不同的金库可以通过相同的方式进行交互。这样，开发者可以轻松地创建和集成金库，而不需要处理每个金库的自定义实现。
+
+### ERC-4626 的主要功能
+
+1. **存入和取出**：
+   - 用户可以将基础资产存入金库，并获得代表其份额的金库代币。
+   - 用户也可以赎回金库代币，换取相应的基础资产。
+
+2. **份额管理**：
+   - 金库代币代表了用户在金库中资产的份额。这些代币通常是 ERC-20 代币，可以转让、交易或用于其他 DeFi 操作。
+
+3. **收益分配**：
+   - 用户持有金库代币期间，金库会根据其内置策略产生收益，这些收益通常会自动分配给代币持有人。
+
+### 主要接口和函数
+
+ERC-4626 规范定义了一组函数，用于与金库进行交互：
+
+1. **资产相关接口**：
+   - `asset()`: 返回金库中管理的基础资产的地址。
+   - `totalAssets()`: 返回金库当前持有的总资产量。
+
+2. **存入和取出**：
+   - `deposit(uint256 assets, address receiver)`: 存入指定数量的基础资产，并将相应的金库代币分配给接收者。
+   - `mint(uint256 shares, address receiver)`: 根据指定的份额数量铸造金库代币，并扣除相应数量的基础资产。
+   - `withdraw(uint256 assets, address receiver, address owner)`: 提取指定数量的基础资产，并销毁相应数量的金库代币。
+   - `redeem(uint256 shares, address receiver, address owner)`: 赎回指定数量的金库代币，并将相应的基础资产转给接收者。
+
+3. **转换功能**：
+   - `convertToShares(uint256 assets)`: 将资产数量转换为相应的金库代币份额。
+   - `convertToAssets(uint256 shares)`: 将金库代币份额转换为相应的基础资产数量。
+
+4. **预览功能**：
+   - `previewDeposit(uint256 assets)`: 预览存入指定数量资产将获得的金库代币份额。
+   - `previewMint(uint256 shares)`: 预览铸造指定数量金库代币所需的资产数量。
+   - `previewWithdraw(uint256 assets)`: 预览提取指定数量资产需要的金库代币份额。
+   - `previewRedeem(uint256 shares)`: 预览赎回指定数量金库代币可以提取的资产数量。
+
+5. **限额管理**：
+   - `maxDeposit(address receiver)`: 返回给定地址最大允许存入的资产数量。
+   - `maxMint(address receiver)`: 返回给定地址最大允许铸造的金库代币数量。
+   - `maxWithdraw(address owner)`: 返回给定地址最大允许提取的资产数量。
+   - `maxRedeem(address owner)`: 返回给定地址最大允许赎回的金库代币数量。
+
+### ERC-4626 的应用场景
+
+1. **收益聚合器**：
+   - 用户可以将资产存入金库，由金库自动管理和投资这些资产，以获得最佳的收益。
+
+2. **策略金库**：
+   - 金库可以实施特定的投资策略，如流动性挖矿、借贷等，用户只需存入资产，即可参与这些复杂的 DeFi 操作。
+
+3. **DeFi 互操作性**：
+   - 通过标准化的接口，ERC-4626 金库可以轻松地与其他 DeFi 协议集成，如去中心化交易所、借贷协议等。
+
+### 总结
+
+ERC-4626 是一个强大的标准，简化了金库的实现和互操作性。通过提供统一的接口，它降低了开发者创建和集成 DeFi 金库的复杂性，同时为用户提供了更高效的资产管理和收益分配工具。
