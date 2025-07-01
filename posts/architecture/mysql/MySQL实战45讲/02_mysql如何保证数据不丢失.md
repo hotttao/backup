@@ -4,8 +4,8 @@ date: 2020-03-02
 categories:
     - 存储
 tags:
-	- 极客时间
-	- MySQL实战45讲
+    - 极客时间
+    - MySQL实战45讲
 ---
 
 redo log，bin log 的写入流程

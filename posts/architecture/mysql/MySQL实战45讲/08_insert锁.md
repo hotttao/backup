@@ -4,8 +4,8 @@ date: 2020-03-08
 categories:
     - 存储
 tags:
-	  - 极客时间
-	  - MySQL实战45讲
+    - 极客时间
+    - MySQL实战45讲
 ---
 
 insert select 为什么有这么多锁？
