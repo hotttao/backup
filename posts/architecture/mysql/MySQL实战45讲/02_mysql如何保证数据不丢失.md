@@ -141,3 +141,124 @@ InnoDB 有一个后台线程，每隔 1 秒，就会把 redo log buffer 中的�
 4. 批量导入数据的时候
 
 一般情况下，把生产库改成“非双 1”配置，是设置 innodb_flush_logs_at_trx_commit=2、sync_binlog=1000。
+
+## 7. redo log 更新的流程
+下面我将详细分析两个事务（TX1 和 TX2）并发操作时，在 redo log 中区分 prepare 和 commit 阶段的全过程。考虑以下交叉执行场景，使用 MySQL 标准的两阶段提交（2PC）流程：
+
+
+**场景设定**
+| 时间点 | 事务 TX1                     | 事务 TX2                     | 全局 LSN |
+|--------|-----------------------------|-----------------------------|----------|
+| t1     | BEGIN; UPDATE t1 SET a=10  | -                           | 1000     |
+| t2     | -                           | BEGIN; UPDATE t2 SET b=20   | 1010     |
+| t3     | UPDATE t1 SET a=20         | -                           | 1020     |
+| t4     | -                           | PREPARE (prepare阶段)       | 1030     |
+| t5     | PREPARE (prepare阶段)       | COMMIT (commit阶段)         | 1040/1050|
+| t6     | COMMIT (commit阶段)         | -                           | 1060     |
+
+---
+### 7.1 redo log 更新过程
+
+#### **1. 事务操作阶段 (t1-t3)**
+```mermaid
+graph LR
+    subgraph redo_log_buffer
+        A1[LSN=1000: TX1 UPDATE a=10]
+        A2[LSN=1010: TX2 UPDATE b=20]
+        A3[LSN=1020: TX1 UPDATE a=20]
+    end
+    D[磁盘: 空]
+```
+
+#### **2. TX2 prepare 阶段 (t4)**
+```mermaid
+graph LR
+    subgraph redo_log_buffer
+        A1[LSN=1000: TX1 U1]
+        A2[LSN=1010: TX2 U2]
+        A3[LSN=1020: TX1 U3]
+        A4[LSN=1030: TX2 PREPARE]  /* 添加 prepare 记录 */
+    end
+    
+    subgraph 磁盘(prepare刷盘后)
+        B1[LSN=1000: TX1 U1]
+        B2[LSN=1010: TX2 U2]
+        B3[LSN=1030: TX2 PREPARE]  /* 仅刷 prepare 记录 */
+    end
+```
+**关键操作：**
+1. 追加 prepare 记录：`LSN=1030 (Type=0x22, XID=TX2)`
+2. 刷盘策略：
+   - 默认 `innodb_flush_log_at_trx_commit=1` 时强制刷盘
+   - **刷盘内容**：仅新追加的 prepare 记录(LSN=1030)
+   - **不包含** TX2 的数据修改(1010) - 这些可能已提前刷入
+
+#### **3. TX1 prepare 和 TX2 commit (t5)**
+```mermaid
+graph LR
+    subgraph redo_log_buffer
+        A1[LSN=1000: TX1 U1]
+        A2[LSN=1010: TX2 U2]
+        A3[LSN=1020: TX1 U3]
+        A4[LSN=1030: TX2 PREPARE]
+        A5[LSN=1040: TX1 PREPARE]  /* TX1 prepare */
+        A6[LSN=1050: TX2 COMMIT]   /* TX2 commit */
+    end
+    
+    subgraph 磁盘(t5后)
+        B1[LSN=1000: TX1 U1]
+        B2[LSN=1010: TX2 U2]
+        B3[LSN=1030: TX2 PREPARE]
+        B4[LSN=1050: TX2 COMMIT]   /* 新刷 commit 记录 */
+    end
+```
+**关键操作：**
+1. TX1 prepare：
+   - 追加 `LSN=1040: MLOG_PREPARE(0x22, TX1)`
+2. TX2 commit：
+   - 追加 `LSN=1050: MLOG_COMMIT(0x23, TX2)`
+   - **强制刷盘范围**：LSN=1050（只刷 commit 记录）
+   - **不刷** TX1 的 prepare 记录(1040) - 它还在 buffer 中
+
+#### **4. TX1 commit (t6)**
+```mermaid
+graph LR
+    subgraph redo_log_buffer
+        A1[LSN=1000: TX1 U1]
+        A2[LSN=1010: TX2 U2]
+        A3[LSN=1020: TX1 U3]
+        A4[LSN=1030: TX2 PREPARE]
+        A5[LSN=1040: TX1 PREPARE] 
+        A6[LSN=1050: TX2 COMMIT]
+        A7[LSN=1060: TX1 COMMIT]  /* TX1 commit */
+    end
+    
+    subgraph 磁盘(最终)
+        B1[LSN=1000: TX1 U1]
+        B2[LSN=1010: TX2 U2]
+        B3[LSN=1020: TX1 U3]      /* U3在t6刷盘 */
+        B4[LSN=1030: TX2 PREPARE]
+        B5[LSN=1050: TX2 COMMIT]
+        B6[LSN=1060: TX1 COMMIT]  /* TX1的commit记录 */
+    end
+```
+**关键操作：**
+1. 追加 `LSN=1060: MLOG_COMMIT(0x23, TX1)`
+2. **刷盘范围**：LSN=1020(U3)+1040(prepare)+1060(commit)
+   - 因为 1020-1060 之间还有未刷盘记录
+
+---
+
+#### **磁盘最终物理结构**
+| LSN   | 类型 | 内容              | 事务 | 阶段       |
+|-------|------|------------------|------|------------|
+| 1000  | 0x1A | UPDATE t1 a=10   | TX1  | 操作记录   |
+| 1010  | 0x1A | UPDATE t2 b=20   | TX2  | 操作记录   |
+| 1020  | 0x1A | UPDATE t1 a=20   | TX1  | 操作记录   |
+| 1030  | 0x22 | PREPARE          | TX2  | prepare    |
+| 1050  | 0x23 | COMMIT           | TX2  | commit     |
+| 1060  | 0x23 | COMMIT           | TX1  | commit     |
+
+**注意：**
+- TX1 的 prepare 记录(1040) **未刷盘**，因为被后续操作覆盖
+- prepare 和 commit 记录都是独立写入，不修改已有日志
