@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="529pt" height="210pt" viewBox="0.00 0.00 529.03 210.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 206)">
+<title>runnables</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-206 525.03,-206 525.03,4 -4,4"/>
+<!-- beta.runnables.context.Context -->
+<g id="node1" class="node">
+<title>beta.runnables.context.Context</title>
+<polygon fill="none" stroke="black" points="294.64,-0.5 294.64,-36.5 503.93,-36.5 503.93,-0.5 294.64,-0.5"/>
+<text text-anchor="middle" x="389.53" y="-14.4" font-family="Times,serif" font-size="14.00">beta.runnables.context.Context</text>
+<polyline fill="none" stroke="black" points="484.43,-0.7 484.43,-36.5"/>
+<text text-anchor="middle" x="494.18" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- beta.runnables.context.ContextGet -->
+<g id="node2" class="node">
+<title>beta.runnables.context.ContextGet</title>
+<polygon fill="none" stroke="black" points="284.54,-110.5 284.54,-146.5 514.03,-146.5 514.03,-110.5 284.54,-110.5"/>
+<text text-anchor="middle" x="389.53" y="-124.4" font-family="Times,serif" font-size="14.00">beta.runnables.context.ContextGet</text>
+<polyline fill="none" stroke="black" points="494.53,-110.7 494.53,-146.5"/>
+<text text-anchor="middle" x="504.28" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- runnables.base.RunnableSerializable -->
+<g id="node5" class="node">
+<title>runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-82.5 0,-118.5 241.54,-118.5 241.54,-82.5 0,-82.5"/>
+<text text-anchor="middle" x="111.02" y="-96.4" font-family="Times,serif" font-size="14.00">runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="222.04,-82.7 222.04,-118.5"/>
+<text text-anchor="middle" x="231.79" y="-96.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- beta.runnables.context.ContextGet&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>beta.runnables.context.ContextGet-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M272.88,-114.5C272.88,-114.5 241.71,-114.5 241.71,-114.5"/>
+<polygon fill="#595959" stroke="#595959" points="272.88,-118 282.88,-114.5 272.88,-111 272.88,-118"/>
+</g>
+<!-- beta.runnables.context.ContextSet -->
+<g id="node3" class="node">
+<title>beta.runnables.context.ContextSet</title>
+<polygon fill="none" stroke="black" points="285.7,-55.5 285.7,-91.5 512.87,-91.5 512.87,-55.5 285.7,-55.5"/>
+<text text-anchor="middle" x="389.53" y="-69.4" font-family="Times,serif" font-size="14.00">beta.runnables.context.ContextSet</text>
+<polyline fill="none" stroke="black" points="493.37,-55.7 493.37,-91.5"/>
+<text text-anchor="middle" x="503.12" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- beta.runnables.context.ContextSet&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge2" class="edge">
+<title>beta.runnables.context.ContextSet-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M274.09,-87C274.09,-87 241.79,-87 241.79,-87"/>
+<polygon fill="#595959" stroke="#595959" points="274.09,-90.5 284.09,-87 274.09,-83.5 274.09,-90.5"/>
+</g>
+<!-- beta.runnables.context.PrefixContext -->
+<g id="node4" class="node">
+<title>beta.runnables.context.PrefixContext</title>
+<polygon fill="none" stroke="black" points="277.54,-165.5 277.54,-201.5 521.03,-201.5 521.03,-165.5 277.54,-165.5"/>
+<text text-anchor="middle" x="389.53" y="-179.4" font-family="Times,serif" font-size="14.00">beta.runnables.context.PrefixContext</text>
+<polyline fill="none" stroke="black" points="501.53,-165.7 501.53,-201.5"/>
+<text text-anchor="middle" x="511.28" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+</g>
+</svg>

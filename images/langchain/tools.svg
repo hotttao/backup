@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="680pt" height="100pt" viewBox="0.00 0.00 680.26 100.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 96)">
+<title>tools</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-96 676.26,-96 676.26,4 -4,4"/>
+<!-- runnables.base.RunnableSerializable -->
+<g id="node1" class="node">
+<title>runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-27.5 0,-63.5 241.54,-63.5 241.54,-27.5 0,-27.5"/>
+<text text-anchor="middle" x="111.02" y="-41.4" font-family="Times,serif" font-size="14.00">runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="222.04,-27.7 222.04,-63.5"/>
+<text text-anchor="middle" x="231.79" y="-41.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tools.base.BaseTool -->
+<g id="node2" class="node">
+<title>tools.base.BaseTool</title>
+<polygon fill="none" stroke="black" points="277.54,-27.5 277.54,-63.5 425.79,-63.5 425.79,-27.5 277.54,-27.5"/>
+<text text-anchor="middle" x="341.91" y="-41.4" font-family="Times,serif" font-size="14.00">tools.base.BaseTool</text>
+<polyline fill="none" stroke="black" points="406.29,-27.7 406.29,-63.5"/>
+<text text-anchor="middle" x="416.04" y="-41.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tools.base.BaseTool&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>tools.base.BaseTool-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M265.82,-45.5C265.82,-45.5 242.02,-45.5 242.02,-45.5"/>
+<polygon fill="#595959" stroke="#595959" points="265.82,-49 275.82,-45.5 265.82,-42 265.82,-49"/>
+</g>
+<!-- tools.simple.Tool -->
+<g id="node3" class="node">
+<title>tools.simple.Tool</title>
+<polygon fill="none" stroke="black" points="500.28,-55.5 500.28,-91.5 633.78,-91.5 633.78,-55.5 500.28,-55.5"/>
+<text text-anchor="middle" x="557.28" y="-69.4" font-family="Times,serif" font-size="14.00">tools.simple.Tool</text>
+<polyline fill="none" stroke="black" points="614.28,-55.7 614.28,-91.5"/>
+<text text-anchor="middle" x="624.03" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tools.simple.Tool&#45;&gt;tools.base.BaseTool -->
+<g id="edge2" class="edge">
+<title>tools.simple.Tool-&gt;tools.base.BaseTool</title>
+<path fill="none" stroke="#595959" d="M488.55,-59.5C488.55,-59.5 426.09,-59.5 426.09,-59.5"/>
+<polygon fill="#595959" stroke="#595959" points="488.55,-63 498.55,-59.5 488.55,-56 488.55,-63"/>
+</g>
+<!-- tools.structured.StructuredTool -->
+<g id="node4" class="node">
+<title>tools.structured.StructuredTool</title>
+<polygon fill="none" stroke="black" points="461.79,-0.5 461.79,-36.5 672.26,-36.5 672.26,-0.5 461.79,-0.5"/>
+<text text-anchor="middle" x="557.28" y="-14.4" font-family="Times,serif" font-size="14.00">tools.structured.StructuredTool</text>
+<polyline fill="none" stroke="black" points="652.76,-0.7 652.76,-36.5"/>
+<text text-anchor="middle" x="662.51" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tools.structured.StructuredTool&#45;&gt;tools.base.BaseTool -->
+<g id="edge3" class="edge">
+<title>tools.structured.StructuredTool-&gt;tools.base.BaseTool</title>
+<path fill="none" stroke="#595959" d="M450.04,-32C450.04,-32 426.22,-32 426.22,-32"/>
+<polygon fill="#595959" stroke="#595959" points="450.04,-35.5 460.04,-32 450.04,-28.5 450.04,-35.5"/>
+</g>
+</g>
+</svg>

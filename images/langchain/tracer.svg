@@ -1,0 +1,358 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1257pt" height="815pt" viewBox="0.00 0.00 1257.04 815.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 811)">
+<title>tracers</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-811 1253.04,-811 1253.04,4 -4,4"/>
+<!-- BaseModelV1 -->
+<g id="node1" class="node">
+<title>BaseModelV1</title>
+<polygon fill="none" stroke="black" points="62.57,-152.5 62.57,-188.5 178.95,-188.5 178.95,-152.5 62.57,-152.5"/>
+<text text-anchor="middle" x="111.01" y="-166.4" font-family="Times,serif" font-size="14.00">BaseModelV1</text>
+<polyline fill="none" stroke="black" points="159.45,-152.7 159.45,-188.5"/>
+<text text-anchor="middle" x="169.2" y="-166.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.core._TracerCore -->
+<g id="node2" class="node">
+<title>tracers.core._TracerCore</title>
+<polygon fill="none" stroke="black" points="33.45,-496.5 33.45,-532.5 208.07,-532.5 208.07,-496.5 33.45,-496.5"/>
+<text text-anchor="middle" x="111.01" y="-510.4" font-family="Times,serif" font-size="14.00">tracers.core._TracerCore</text>
+<polyline fill="none" stroke="black" points="188.57,-496.7 188.57,-532.5"/>
+<text text-anchor="middle" x="198.32" y="-510.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- callbacks.base.AsyncCallbackHandler -->
+<g id="node3" class="node">
+<title>callbacks.base.AsyncCallbackHandler</title>
+<polygon fill="none" stroke="black" points="277.91,-385.5 277.91,-421.5 527.99,-421.5 527.99,-385.5 277.91,-385.5"/>
+<text text-anchor="middle" x="393.2" y="-399.4" font-family="Times,serif" font-size="14.00">callbacks.base.AsyncCallbackHandler</text>
+<polyline fill="none" stroke="black" points="508.49,-385.7 508.49,-421.5"/>
+<text text-anchor="middle" x="518.24" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- callbacks.base.BaseCallbackHandler -->
+<g id="node4" class="node">
+<title>callbacks.base.BaseCallbackHandler</title>
+<polygon fill="none" stroke="black" points="0,-387.5 0,-423.5 241.52,-423.5 241.52,-387.5 0,-387.5"/>
+<text text-anchor="middle" x="111.01" y="-401.4" font-family="Times,serif" font-size="14.00">callbacks.base.BaseCallbackHandler</text>
+<polyline fill="none" stroke="black" points="222.02,-387.7 222.02,-423.5"/>
+<text text-anchor="middle" x="231.77" y="-401.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- callbacks.base.AsyncCallbackHandler&#45;&gt;callbacks.base.BaseCallbackHandler -->
+<g id="edge1" class="edge">
+<title>callbacks.base.AsyncCallbackHandler-&gt;callbacks.base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M266.02,-404.5C266.02,-404.5 241.66,-404.5 241.66,-404.5"/>
+<polygon fill="#595959" stroke="#595959" points="266.02,-408 276.02,-404.5 266.02,-401 266.02,-408"/>
+</g>
+<!-- tracers.base.AsyncBaseTracer -->
+<g id="node5" class="node">
+<title>tracers.base.AsyncBaseTracer</title>
+<polygon fill="none" stroke="black" points="633.2,-385.5 633.2,-421.5 837.38,-421.5 837.38,-385.5 633.2,-385.5"/>
+<text text-anchor="middle" x="725.54" y="-399.4" font-family="Times,serif" font-size="14.00">tracers.base.AsyncBaseTracer</text>
+<polyline fill="none" stroke="black" points="817.88,-385.7 817.88,-421.5"/>
+<text text-anchor="middle" x="827.63" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.base.AsyncBaseTracer&#45;&gt;tracers.core._TracerCore -->
+<g id="edge3" class="edge">
+<title>tracers.base.AsyncBaseTracer-&gt;tracers.core._TracerCore</title>
+<path fill="none" stroke="#595959" d="M621.5,-412.75C621.5,-412.75 570.08,-412.75 570.08,-412.75 570.08,-412.75 570.08,-509 570.08,-509 570.08,-509 339.22,-509 208.46,-509"/>
+<polygon fill="#595959" stroke="#595959" points="621.5,-416.25 631.5,-412.75 621.5,-409.25 621.5,-416.25"/>
+</g>
+<!-- tracers.base.AsyncBaseTracer&#45;&gt;callbacks.base.AsyncCallbackHandler -->
+<g id="edge2" class="edge">
+<title>tracers.base.AsyncBaseTracer-&gt;callbacks.base.AsyncCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M621.35,-403.5C621.35,-403.5 528.46,-403.5 528.46,-403.5"/>
+<polygon fill="#595959" stroke="#595959" points="621.35,-407 631.35,-403.5 621.35,-400 621.35,-407"/>
+</g>
+<!-- tracers.base.BaseTracer -->
+<g id="node6" class="node">
+<title>tracers.base.BaseTracer</title>
+<polygon fill="none" stroke="black" points="318.75,-522.5 318.75,-558.5 487.16,-558.5 487.16,-522.5 318.75,-522.5"/>
+<text text-anchor="middle" x="393.2" y="-536.4" font-family="Times,serif" font-size="14.00">tracers.base.BaseTracer</text>
+<polyline fill="none" stroke="black" points="467.66,-522.7 467.66,-558.5"/>
+<text text-anchor="middle" x="477.41" y="-536.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.base.BaseTracer&#45;&gt;tracers.core._TracerCore -->
+<g id="edge5" class="edge">
+<title>tracers.base.BaseTracer-&gt;tracers.core._TracerCore</title>
+<path fill="none" stroke="#595959" d="M306.77,-529.33C306.77,-529.33 208.3,-529.33 208.3,-529.33"/>
+<polygon fill="#595959" stroke="#595959" points="306.77,-532.83 316.77,-529.33 306.77,-525.83 306.77,-532.83"/>
+</g>
+<!-- tracers.base.BaseTracer&#45;&gt;callbacks.base.BaseCallbackHandler -->
+<g id="edge4" class="edge">
+<title>tracers.base.BaseTracer-&gt;callbacks.base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M306.8,-525.67C306.8,-525.67 224.8,-525.67 224.8,-525.67 224.8,-525.67 224.8,-457.37 224.8,-423.75"/>
+<polygon fill="#595959" stroke="#595959" points="306.8,-529.17 316.8,-525.67 306.8,-522.17 306.8,-529.17"/>
+</g>
+<!-- tracers.evaluation.EvaluatorCallbackHandler -->
+<g id="node7" class="node">
+<title>tracers.evaluation.EvaluatorCallbackHandler</title>
+<polygon fill="none" stroke="black" points="591.6,-660.5 591.6,-696.5 878.98,-696.5 878.98,-660.5 591.6,-660.5"/>
+<text text-anchor="middle" x="725.54" y="-674.4" font-family="Times,serif" font-size="14.00">tracers.evaluation.EvaluatorCallbackHandler</text>
+<polyline fill="none" stroke="black" points="859.48,-660.7 859.48,-696.5"/>
+<text text-anchor="middle" x="869.23" y="-674.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.evaluation.EvaluatorCallbackHandler&#45;&gt;tracers.base.BaseTracer -->
+<g id="edge6" class="edge">
+<title>tracers.evaluation.EvaluatorCallbackHandler-&gt;tracers.base.BaseTracer</title>
+<path fill="none" stroke="#595959" d="M579.94,-678.5C579.94,-678.5 402.95,-678.5 402.95,-678.5 402.95,-678.5 402.95,-596.36 402.95,-558.83"/>
+<polygon fill="#595959" stroke="#595959" points="579.94,-682 589.94,-678.5 579.94,-675 579.94,-682"/>
+</g>
+<!-- tracers.event_stream._AstreamEventsCallbackHandler -->
+<g id="node8" class="node">
+<title>tracers.event_stream._AstreamEventsCallbackHandler</title>
+<polygon fill="none" stroke="black" points="564.38,-330.5 564.38,-366.5 906.2,-366.5 906.2,-330.5 564.38,-330.5"/>
+<text text-anchor="middle" x="725.54" y="-344.4" font-family="Times,serif" font-size="14.00">tracers.event_stream._AstreamEventsCallbackHandler</text>
+<polyline fill="none" stroke="black" points="886.7,-330.7 886.7,-366.5"/>
+<text text-anchor="middle" x="896.45" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.event_stream._AstreamEventsCallbackHandler&#45;&gt;callbacks.base.AsyncCallbackHandler -->
+<g id="edge7" class="edge">
+<title>tracers.event_stream._AstreamEventsCallbackHandler-&gt;callbacks.base.AsyncCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M567.23,-378.36C567.23,-378.36 567.23,-394.25 567.23,-394.25 567.23,-394.25 550.78,-394.25 528.3,-394.25"/>
+<polygon fill="#595959" stroke="#595959" points="570.73,-378.36 567.23,-368.36 563.73,-378.36 570.73,-378.36"/>
+</g>
+<!-- tracers.langchain.LangChainTracer -->
+<g id="node9" class="node">
+<title>tracers.langchain.LangChainTracer</title>
+<polygon fill="none" stroke="black" points="618.82,-605.5 618.82,-641.5 851.76,-641.5 851.76,-605.5 618.82,-605.5"/>
+<text text-anchor="middle" x="725.54" y="-619.4" font-family="Times,serif" font-size="14.00">tracers.langchain.LangChainTracer</text>
+<polyline fill="none" stroke="black" points="832.26,-605.7 832.26,-641.5"/>
+<text text-anchor="middle" x="842.01" y="-619.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.langchain.LangChainTracer&#45;&gt;tracers.base.BaseTracer -->
+<g id="edge8" class="edge">
+<title>tracers.langchain.LangChainTracer-&gt;tracers.base.BaseTracer</title>
+<path fill="none" stroke="#595959" d="M606.98,-623.5C606.98,-623.5 445.05,-623.5 445.05,-623.5 445.05,-623.5 445.05,-583.37 445.05,-558.92"/>
+<polygon fill="#595959" stroke="#595959" points="606.98,-627 616.98,-623.5 606.98,-620 606.98,-627"/>
+</g>
+<!-- tracers.log_stream.LogStreamCallbackHandler -->
+<g id="node10" class="node">
+<title>tracers.log_stream.LogStreamCallbackHandler</title>
+<polygon fill="none" stroke="black" points="585.76,-550.5 585.76,-586.5 884.82,-586.5 884.82,-550.5 585.76,-550.5"/>
+<text text-anchor="middle" x="725.54" y="-564.4" font-family="Times,serif" font-size="14.00">tracers.log_stream.LogStreamCallbackHandler</text>
+<polyline fill="none" stroke="black" points="865.32,-550.7 865.32,-586.5"/>
+<text text-anchor="middle" x="875.07" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.log_stream.LogStreamCallbackHandler&#45;&gt;tracers.base.BaseTracer -->
+<g id="edge9" class="edge">
+<title>tracers.log_stream.LogStreamCallbackHandler-&gt;tracers.base.BaseTracer</title>
+<path fill="none" stroke="#595959" d="M574.13,-554.5C574.13,-554.5 487.24,-554.5 487.24,-554.5"/>
+<polygon fill="#595959" stroke="#595959" points="574.13,-558 584.13,-554.5 574.13,-551 574.13,-558"/>
+</g>
+<!-- tracers.log_stream.RunLog -->
+<g id="node11" class="node">
+<title>tracers.log_stream.RunLog</title>
+<polygon fill="none" stroke="black" points="1001.67,-770.5 1001.67,-806.5 1189.57,-806.5 1189.57,-770.5 1001.67,-770.5"/>
+<text text-anchor="middle" x="1085.87" y="-784.4" font-family="Times,serif" font-size="14.00">tracers.log_stream.RunLog</text>
+<polyline fill="none" stroke="black" points="1170.07,-770.7 1170.07,-806.5"/>
+<text text-anchor="middle" x="1179.82" y="-784.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.log_stream.RunLogPatch -->
+<g id="node12" class="node">
+<title>tracers.log_stream.RunLogPatch</title>
+<polygon fill="none" stroke="black" points="625.79,-770.5 625.79,-806.5 844.79,-806.5 844.79,-770.5 625.79,-770.5"/>
+<text text-anchor="middle" x="725.54" y="-784.4" font-family="Times,serif" font-size="14.00">tracers.log_stream.RunLogPatch</text>
+<polyline fill="none" stroke="black" points="825.29,-770.7 825.29,-806.5"/>
+<text text-anchor="middle" x="835.04" y="-784.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.log_stream.RunLog&#45;&gt;tracers.log_stream.RunLogPatch -->
+<g id="edge10" class="edge">
+<title>tracers.log_stream.RunLog-&gt;tracers.log_stream.RunLogPatch</title>
+<path fill="none" stroke="#595959" d="M989.91,-788.5C989.91,-788.5 845.24,-788.5 845.24,-788.5"/>
+<polygon fill="#595959" stroke="#595959" points="989.91,-792 999.91,-788.5 989.91,-785 989.91,-792"/>
+</g>
+<!-- tracers.root_listeners.AsyncRootListenersTracer -->
+<g id="node13" class="node">
+<title>tracers.root_listeners.AsyncRootListenersTracer</title>
+<polygon fill="none" stroke="black" points="942.2,-385.5 942.2,-421.5 1249.04,-421.5 1249.04,-385.5 942.2,-385.5"/>
+<text text-anchor="middle" x="1085.87" y="-399.4" font-family="Times,serif" font-size="14.00">tracers.root_listeners.AsyncRootListenersTracer</text>
+<polyline fill="none" stroke="black" points="1229.54,-385.7 1229.54,-421.5"/>
+<text text-anchor="middle" x="1239.29" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.root_listeners.AsyncRootListenersTracer&#45;&gt;tracers.base.AsyncBaseTracer -->
+<g id="edge11" class="edge">
+<title>tracers.root_listeners.AsyncRootListenersTracer-&gt;tracers.base.AsyncBaseTracer</title>
+<path fill="none" stroke="#595959" d="M930.25,-403.5C930.25,-403.5 837.86,-403.5 837.86,-403.5"/>
+<polygon fill="#595959" stroke="#595959" points="930.25,-407 940.25,-403.5 930.25,-400 930.25,-407"/>
+</g>
+<!-- tracers.root_listeners.RootListenersTracer -->
+<g id="node14" class="node">
+<title>tracers.root_listeners.RootListenersTracer</title>
+<polygon fill="none" stroke="black" points="599.75,-495.5 599.75,-531.5 870.83,-531.5 870.83,-495.5 599.75,-495.5"/>
+<text text-anchor="middle" x="725.54" y="-509.4" font-family="Times,serif" font-size="14.00">tracers.root_listeners.RootListenersTracer</text>
+<polyline fill="none" stroke="black" points="851.33,-495.7 851.33,-531.5"/>
+<text text-anchor="middle" x="861.08" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.root_listeners.RootListenersTracer&#45;&gt;tracers.base.BaseTracer -->
+<g id="edge12" class="edge">
+<title>tracers.root_listeners.RootListenersTracer-&gt;tracers.base.BaseTracer</title>
+<path fill="none" stroke="#595959" d="M588.12,-528.67C588.12,-528.67 487.21,-528.67 487.21,-528.67"/>
+<polygon fill="#595959" stroke="#595959" points="588.12,-532.17 598.12,-528.67 588.12,-525.17 588.12,-532.17"/>
+</g>
+<!-- tracers.run_collector.RunCollectorCallbackHandler -->
+<g id="node15" class="node">
+<title>tracers.run_collector.RunCollectorCallbackHandler</title>
+<polygon fill="none" stroke="black" points="572.93,-440.5 572.93,-476.5 897.65,-476.5 897.65,-440.5 572.93,-440.5"/>
+<text text-anchor="middle" x="725.54" y="-454.4" font-family="Times,serif" font-size="14.00">tracers.run_collector.RunCollectorCallbackHandler</text>
+<polyline fill="none" stroke="black" points="878.15,-440.7 878.15,-476.5"/>
+<text text-anchor="middle" x="887.9" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.run_collector.RunCollectorCallbackHandler&#45;&gt;tracers.base.BaseTracer -->
+<g id="edge13" class="edge">
+<title>tracers.run_collector.RunCollectorCallbackHandler-&gt;tracers.base.BaseTracer</title>
+<path fill="none" stroke="#595959" d="M579.34,-488.28C579.34,-488.28 579.34,-525.33 579.34,-525.33 579.34,-525.33 532.8,-525.33 487.53,-525.33"/>
+<polygon fill="#595959" stroke="#595959" points="582.84,-488.28 579.34,-478.28 575.84,-488.28 582.84,-488.28"/>
+</g>
+<!-- tracers.schemas.BaseRun -->
+<g id="node16" class="node">
+<title>tracers.schemas.BaseRun</title>
+<polygon fill="none" stroke="black" points="314.06,-179.5 314.06,-215.5 491.84,-215.5 491.84,-179.5 314.06,-179.5"/>
+<text text-anchor="middle" x="393.2" y="-193.4" font-family="Times,serif" font-size="14.00">tracers.schemas.BaseRun</text>
+<polyline fill="none" stroke="black" points="472.34,-179.7 472.34,-215.5"/>
+<text text-anchor="middle" x="482.09" y="-193.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.BaseRun&#45;&gt;BaseModelV1 -->
+<g id="edge14" class="edge">
+<title>tracers.schemas.BaseRun-&gt;BaseModelV1</title>
+<path fill="none" stroke="#595959" d="M302.15,-184C302.15,-184 179.23,-184 179.23,-184"/>
+<polygon fill="#595959" stroke="#595959" points="302.15,-187.5 312.15,-184 302.15,-180.5 302.15,-187.5"/>
+</g>
+<!-- tracers.schemas.ChainRun -->
+<g id="node17" class="node">
+<title>tracers.schemas.ChainRun</title>
+<polygon fill="none" stroke="black" points="643.28,-275.5 643.28,-311.5 827.3,-311.5 827.3,-275.5 643.28,-275.5"/>
+<text text-anchor="middle" x="725.54" y="-289.4" font-family="Times,serif" font-size="14.00">tracers.schemas.ChainRun</text>
+<polyline fill="none" stroke="black" points="807.8,-275.7 807.8,-311.5"/>
+<text text-anchor="middle" x="817.55" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.ChainRun&#45;&gt;tracers.schemas.BaseRun -->
+<g id="edge15" class="edge">
+<title>tracers.schemas.ChainRun-&gt;tracers.schemas.BaseRun</title>
+<path fill="none" stroke="#595959" d="M631.64,-293.5C631.64,-293.5 402.95,-293.5 402.95,-293.5 402.95,-293.5 402.95,-243.37 402.95,-215.56"/>
+<polygon fill="#595959" stroke="#595959" points="631.64,-297 641.64,-293.5 631.64,-290 631.64,-297"/>
+</g>
+<!-- tracers.schemas.LLMRun -->
+<g id="node18" class="node">
+<title>tracers.schemas.LLMRun</title>
+<polygon fill="none" stroke="black" points="645.23,-220.5 645.23,-256.5 825.35,-256.5 825.35,-220.5 645.23,-220.5"/>
+<text text-anchor="middle" x="725.54" y="-234.4" font-family="Times,serif" font-size="14.00">tracers.schemas.LLMRun</text>
+<polyline fill="none" stroke="black" points="805.85,-220.7 805.85,-256.5"/>
+<text text-anchor="middle" x="815.6" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.LLMRun&#45;&gt;tracers.schemas.BaseRun -->
+<g id="edge16" class="edge">
+<title>tracers.schemas.LLMRun-&gt;tracers.schemas.BaseRun</title>
+<path fill="none" stroke="#595959" d="M735.29,-210.13C735.29,-210.13 735.29,-209 735.29,-209 735.29,-209 590.45,-209 492.01,-209"/>
+<polygon fill="#595959" stroke="#595959" points="731.79,-208.81 735.29,-218.81 738.79,-208.81 731.79,-208.81"/>
+</g>
+<!-- tracers.schemas.ToolRun -->
+<g id="node19" class="node">
+<title>tracers.schemas.ToolRun</title>
+<polygon fill="none" stroke="black" points="646.78,-165.5 646.78,-201.5 823.8,-201.5 823.8,-165.5 646.78,-165.5"/>
+<text text-anchor="middle" x="725.54" y="-179.4" font-family="Times,serif" font-size="14.00">tracers.schemas.ToolRun</text>
+<polyline fill="none" stroke="black" points="804.3,-165.7 804.3,-201.5"/>
+<text text-anchor="middle" x="814.05" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.ToolRun&#45;&gt;tracers.schemas.BaseRun -->
+<g id="edge17" class="edge">
+<title>tracers.schemas.ToolRun-&gt;tracers.schemas.BaseRun</title>
+<path fill="none" stroke="#595959" d="M635.15,-190.5C635.15,-190.5 492.19,-190.5 492.19,-190.5"/>
+<polygon fill="#595959" stroke="#595959" points="635.15,-194 645.15,-190.5 635.15,-187 635.15,-194"/>
+</g>
+<!-- tracers.schemas.TracerSession -->
+<g id="node20" class="node">
+<title>tracers.schemas.TracerSession</title>
+<polygon fill="none" stroke="black" points="992.35,-110.5 992.35,-146.5 1198.89,-146.5 1198.89,-110.5 992.35,-110.5"/>
+<text text-anchor="middle" x="1085.87" y="-124.4" font-family="Times,serif" font-size="14.00">tracers.schemas.TracerSession</text>
+<polyline fill="none" stroke="black" points="1179.39,-110.7 1179.39,-146.5"/>
+<text text-anchor="middle" x="1189.14" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.TracerSessionBase -->
+<g id="node21" class="node">
+<title>tracers.schemas.TracerSessionBase</title>
+<polygon fill="none" stroke="black" points="618.42,-110.5 618.42,-146.5 852.16,-146.5 852.16,-110.5 618.42,-110.5"/>
+<text text-anchor="middle" x="725.54" y="-124.4" font-family="Times,serif" font-size="14.00">tracers.schemas.TracerSessionBase</text>
+<polyline fill="none" stroke="black" points="832.66,-110.7 832.66,-146.5"/>
+<text text-anchor="middle" x="842.41" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.TracerSession&#45;&gt;tracers.schemas.TracerSessionBase -->
+<g id="edge18" class="edge">
+<title>tracers.schemas.TracerSession-&gt;tracers.schemas.TracerSessionBase</title>
+<path fill="none" stroke="#595959" d="M980.37,-128.5C980.37,-128.5 852.54,-128.5 852.54,-128.5"/>
+<polygon fill="#595959" stroke="#595959" points="980.37,-132 990.37,-128.5 980.37,-125 980.37,-132"/>
+</g>
+<!-- tracers.schemas.TracerSessionV1Base -->
+<g id="node23" class="node">
+<title>tracers.schemas.TracerSessionV1Base</title>
+<polygon fill="none" stroke="black" points="277.52,-97.5 277.52,-133.5 528.38,-133.5 528.38,-97.5 277.52,-97.5"/>
+<text text-anchor="middle" x="393.2" y="-111.4" font-family="Times,serif" font-size="14.00">tracers.schemas.TracerSessionV1Base</text>
+<polyline fill="none" stroke="black" points="508.88,-97.7 508.88,-133.5"/>
+<text text-anchor="middle" x="518.63" y="-111.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.TracerSessionBase&#45;&gt;tracers.schemas.TracerSessionV1Base -->
+<g id="edge19" class="edge">
+<title>tracers.schemas.TracerSessionBase-&gt;tracers.schemas.TracerSessionV1Base</title>
+<path fill="none" stroke="#595959" d="M606.61,-122C606.61,-122 528.65,-122 528.65,-122"/>
+<polygon fill="#595959" stroke="#595959" points="606.61,-125.5 616.61,-122 606.61,-118.5 606.61,-125.5"/>
+</g>
+<!-- tracers.schemas.TracerSessionV1 -->
+<g id="node22" class="node">
+<title>tracers.schemas.TracerSessionV1</title>
+<polygon fill="none" stroke="black" points="623.47,-55.5 623.47,-91.5 847.11,-91.5 847.11,-55.5 623.47,-55.5"/>
+<text text-anchor="middle" x="725.54" y="-69.4" font-family="Times,serif" font-size="14.00">tracers.schemas.TracerSessionV1</text>
+<polyline fill="none" stroke="black" points="827.61,-55.7 827.61,-91.5"/>
+<text text-anchor="middle" x="837.36" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.TracerSessionV1&#45;&gt;tracers.schemas.TracerSessionV1Base -->
+<g id="edge20" class="edge">
+<title>tracers.schemas.TracerSessionV1-&gt;tracers.schemas.TracerSessionV1Base</title>
+<path fill="none" stroke="#595959" d="M735.29,-103.35C735.29,-103.35 735.29,-105.67 735.29,-105.67 735.29,-105.67 622.71,-105.67 528.59,-105.67"/>
+<polygon fill="#595959" stroke="#595959" points="738.79,-103.35 735.29,-93.35 731.79,-103.35 738.79,-103.35"/>
+</g>
+<!-- tracers.schemas.TracerSessionV1Base&#45;&gt;BaseModelV1 -->
+<g id="edge21" class="edge">
+<title>tracers.schemas.TracerSessionV1Base-&gt;BaseModelV1</title>
+<path fill="none" stroke="#595959" d="M295.99,-145.5C295.99,-145.5 295.99,-158.5 295.99,-158.5 295.99,-158.5 230.08,-158.5 179.11,-158.5"/>
+<polygon fill="#595959" stroke="#595959" points="299.49,-145.5 295.99,-135.5 292.49,-145.5 299.49,-145.5"/>
+</g>
+<!-- tracers.schemas.TracerSessionV1Create -->
+<g id="node24" class="node">
+<title>tracers.schemas.TracerSessionV1Create</title>
+<polygon fill="none" stroke="black" points="605.2,-0.5 605.2,-36.5 865.38,-36.5 865.38,-0.5 605.2,-0.5"/>
+<text text-anchor="middle" x="725.54" y="-14.4" font-family="Times,serif" font-size="14.00">tracers.schemas.TracerSessionV1Create</text>
+<polyline fill="none" stroke="black" points="845.88,-0.7 845.88,-36.5"/>
+<text text-anchor="middle" x="855.63" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.schemas.TracerSessionV1Create&#45;&gt;tracers.schemas.TracerSessionV1Base -->
+<g id="edge22" class="edge">
+<title>tracers.schemas.TracerSessionV1Create-&gt;tracers.schemas.TracerSessionV1Base</title>
+<path fill="none" stroke="#595959" d="M611.81,-48.4C611.81,-48.4 611.81,-101.33 611.81,-101.33 611.81,-101.33 572.9,-101.33 528.66,-101.33"/>
+<polygon fill="#595959" stroke="#595959" points="615.31,-48.4 611.81,-38.4 608.31,-48.4 615.31,-48.4"/>
+</g>
+<!-- tracers.stdout.ConsoleCallbackHandler -->
+<g id="node25" class="node">
+<title>tracers.stdout.ConsoleCallbackHandler</title>
+<polygon fill="none" stroke="black" points="968.24,-715.5 968.24,-751.5 1223.01,-751.5 1223.01,-715.5 968.24,-715.5"/>
+<text text-anchor="middle" x="1085.87" y="-729.4" font-family="Times,serif" font-size="14.00">tracers.stdout.ConsoleCallbackHandler</text>
+<polyline fill="none" stroke="black" points="1203.51,-715.7 1203.51,-751.5"/>
+<text text-anchor="middle" x="1213.26" y="-729.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.stdout.FunctionCallbackHandler -->
+<g id="node26" class="node">
+<title>tracers.stdout.FunctionCallbackHandler</title>
+<polygon fill="none" stroke="black" points="605.96,-715.5 605.96,-751.5 864.62,-751.5 864.62,-715.5 605.96,-715.5"/>
+<text text-anchor="middle" x="725.54" y="-729.4" font-family="Times,serif" font-size="14.00">tracers.stdout.FunctionCallbackHandler</text>
+<polyline fill="none" stroke="black" points="845.12,-715.7 845.12,-751.5"/>
+<text text-anchor="middle" x="854.87" y="-729.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tracers.stdout.ConsoleCallbackHandler&#45;&gt;tracers.stdout.FunctionCallbackHandler -->
+<g id="edge23" class="edge">
+<title>tracers.stdout.ConsoleCallbackHandler-&gt;tracers.stdout.FunctionCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M956.31,-733.5C956.31,-733.5 864.93,-733.5 864.93,-733.5"/>
+<polygon fill="#595959" stroke="#595959" points="956.31,-737 966.31,-733.5 956.31,-730 956.31,-737"/>
+</g>
+<!-- tracers.stdout.FunctionCallbackHandler&#45;&gt;tracers.base.BaseTracer -->
+<g id="edge24" class="edge">
+<title>tracers.stdout.FunctionCallbackHandler-&gt;tracers.base.BaseTracer</title>
+<path fill="none" stroke="#595959" d="M594.13,-733.5C594.13,-733.5 360.85,-733.5 360.85,-733.5 360.85,-733.5 360.85,-606.7 360.85,-558.66"/>
+<polygon fill="#595959" stroke="#595959" points="594.13,-737 604.13,-733.5 594.13,-730 594.13,-737"/>
+</g>
+</g>
+</svg>

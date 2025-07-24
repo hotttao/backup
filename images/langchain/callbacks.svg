@@ -1,0 +1,324 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1122pt" height="705pt" viewBox="0.00 0.00 1121.87 705.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 701)">
+<title>callbacks</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-701 1117.87,-701 1117.87,4 -4,4"/>
+<!-- base.AsyncCallbackHandler -->
+<g id="node1" class="node">
+<title>base.AsyncCallbackHandler</title>
+<polygon fill="none" stroke="black" points="852.87,-220.5 852.87,-256.5 1047.37,-256.5 1047.37,-220.5 852.87,-220.5"/>
+<text text-anchor="middle" x="940.37" y="-234.4" font-family="Times,serif" font-size="14.00">base.AsyncCallbackHandler</text>
+<polyline fill="none" stroke="black" points="1027.87,-220.7 1027.87,-256.5"/>
+<text text-anchor="middle" x="1037.62" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseCallbackHandler -->
+<g id="node2" class="node">
+<title>base.BaseCallbackHandler</title>
+<polygon fill="none" stroke="black" points="509.99,-110.5 509.99,-146.5 695.93,-146.5 695.93,-110.5 509.99,-110.5"/>
+<text text-anchor="middle" x="593.21" y="-124.4" font-family="Times,serif" font-size="14.00">base.BaseCallbackHandler</text>
+<polyline fill="none" stroke="black" points="676.43,-110.7 676.43,-146.5"/>
+<text text-anchor="middle" x="686.18" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.AsyncCallbackHandler&#45;&gt;base.BaseCallbackHandler -->
+<g id="edge1" class="edge">
+<title>base.AsyncCallbackHandler-&gt;base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M841.22,-238.5C841.22,-238.5 571.97,-238.5 571.97,-238.5 571.97,-238.5 571.97,-177.91 571.97,-146.66"/>
+<polygon fill="#595959" stroke="#595959" points="841.22,-242 851.22,-238.5 841.22,-235 841.22,-242"/>
+</g>
+<!-- base.BaseCallbackManager -->
+<g id="node3" class="node">
+<title>base.BaseCallbackManager</title>
+<polygon fill="none" stroke="black" points="226.22,-302.5 226.22,-338.5 416.83,-338.5 416.83,-302.5 226.22,-302.5"/>
+<text text-anchor="middle" x="311.77" y="-316.4" font-family="Times,serif" font-size="14.00">base.BaseCallbackManager</text>
+<polyline fill="none" stroke="black" points="397.33,-302.7 397.33,-338.5"/>
+<text text-anchor="middle" x="407.08" y="-316.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- file.FileCallbackHandler -->
+<g id="node4" class="node">
+<title>file.FileCallbackHandler</title>
+<polygon fill="none" stroke="black" points="862.98,-165.5 862.98,-201.5 1037.26,-201.5 1037.26,-165.5 862.98,-165.5"/>
+<text text-anchor="middle" x="940.37" y="-179.4" font-family="Times,serif" font-size="14.00">file.FileCallbackHandler</text>
+<polyline fill="none" stroke="black" points="1017.76,-165.7 1017.76,-201.5"/>
+<text text-anchor="middle" x="1027.51" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- file.FileCallbackHandler&#45;&gt;base.BaseCallbackHandler -->
+<g id="edge2" class="edge">
+<title>file.FileCallbackHandler-&gt;base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M851.37,-183.5C851.37,-183.5 633.95,-183.5 633.95,-183.5 633.95,-183.5 633.95,-162.81 633.95,-146.81"/>
+<polygon fill="#595959" stroke="#595959" points="851.37,-187 861.37,-183.5 851.37,-180 851.37,-187"/>
+</g>
+<!-- manager.AsyncCallbackManager -->
+<g id="node5" class="node">
+<title>manager.AsyncCallbackManager</title>
+<polygon fill="none" stroke="black" points="491.72,-330.5 491.72,-366.5 714.2,-366.5 714.2,-330.5 491.72,-330.5"/>
+<text text-anchor="middle" x="593.21" y="-344.4" font-family="Times,serif" font-size="14.00">manager.AsyncCallbackManager</text>
+<polyline fill="none" stroke="black" points="694.7,-330.7 694.7,-366.5"/>
+<text text-anchor="middle" x="704.45" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncCallbackManager&#45;&gt;base.BaseCallbackManager -->
+<g id="edge3" class="edge">
+<title>manager.AsyncCallbackManager-&gt;base.BaseCallbackManager</title>
+<path fill="none" stroke="#595959" d="M479.81,-334.5C479.81,-334.5 417.13,-334.5 417.13,-334.5"/>
+<polygon fill="#595959" stroke="#595959" points="479.81,-338 489.81,-334.5 479.81,-331 479.81,-338"/>
+</g>
+<!-- manager.AsyncCallbackManagerForChainGroup -->
+<g id="node6" class="node">
+<title>manager.AsyncCallbackManagerForChainGroup</title>
+<polygon fill="none" stroke="black" points="794.55,-330.5 794.55,-366.5 1105.69,-366.5 1105.69,-330.5 794.55,-330.5"/>
+<text text-anchor="middle" x="940.37" y="-344.4" font-family="Times,serif" font-size="14.00">manager.AsyncCallbackManagerForChainGroup</text>
+<polyline fill="none" stroke="black" points="1086.19,-330.7 1086.19,-366.5"/>
+<text text-anchor="middle" x="1095.94" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncCallbackManagerForChainGroup&#45;&gt;manager.AsyncCallbackManager -->
+<g id="edge4" class="edge">
+<title>manager.AsyncCallbackManagerForChainGroup-&gt;manager.AsyncCallbackManager</title>
+<path fill="none" stroke="#595959" d="M782.54,-348.5C782.54,-348.5 714.46,-348.5 714.46,-348.5"/>
+<polygon fill="#595959" stroke="#595959" points="782.54,-352 792.54,-348.5 782.54,-345 782.54,-352"/>
+</g>
+<!-- manager.AsyncCallbackManagerForChainRun -->
+<g id="node7" class="node">
+<title>manager.AsyncCallbackManagerForChainRun</title>
+<polygon fill="none" stroke="black" points="800.77,-660.5 800.77,-696.5 1099.47,-696.5 1099.47,-660.5 800.77,-660.5"/>
+<text text-anchor="middle" x="940.37" y="-674.4" font-family="Times,serif" font-size="14.00">manager.AsyncCallbackManagerForChainRun</text>
+<polyline fill="none" stroke="black" points="1079.97,-660.7 1079.97,-696.5"/>
+<text text-anchor="middle" x="1089.72" y="-674.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncParentRunManager -->
+<g id="node11" class="node">
+<title>manager.AsyncParentRunManager</title>
+<polygon fill="none" stroke="black" points="487.05,-605.5 487.05,-641.5 718.87,-641.5 718.87,-605.5 487.05,-605.5"/>
+<text text-anchor="middle" x="593.21" y="-619.4" font-family="Times,serif" font-size="14.00">manager.AsyncParentRunManager</text>
+<polyline fill="none" stroke="black" points="699.37,-605.7 699.37,-641.5"/>
+<text text-anchor="middle" x="709.12" y="-619.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncCallbackManagerForChainRun&#45;&gt;manager.AsyncParentRunManager -->
+<g id="edge5" class="edge">
+<title>manager.AsyncCallbackManagerForChainRun-&gt;manager.AsyncParentRunManager</title>
+<path fill="none" stroke="#595959" d="M788.86,-678.5C788.86,-678.5 602.96,-678.5 602.96,-678.5 602.96,-678.5 602.96,-657.81 602.96,-641.81"/>
+<polygon fill="#595959" stroke="#595959" points="788.86,-682 798.86,-678.5 788.86,-675 788.86,-682"/>
+</g>
+<!-- manager.AsyncCallbackManagerForLLMRun -->
+<g id="node8" class="node">
+<title>manager.AsyncCallbackManagerForLLMRun</title>
+<polygon fill="none" stroke="black" points="455.55,-550.5 455.55,-586.5 750.37,-586.5 750.37,-550.5 455.55,-550.5"/>
+<text text-anchor="middle" x="593.21" y="-564.4" font-family="Times,serif" font-size="14.00">manager.AsyncCallbackManagerForLLMRun</text>
+<polyline fill="none" stroke="black" points="730.87,-550.7 730.87,-586.5"/>
+<text text-anchor="middle" x="740.62" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncRunManager -->
+<g id="node12" class="node">
+<title>manager.AsyncRunManager</title>
+<polygon fill="none" stroke="black" points="223.5,-550.5 223.5,-586.5 419.55,-586.5 419.55,-550.5 223.5,-550.5"/>
+<text text-anchor="middle" x="311.77" y="-564.4" font-family="Times,serif" font-size="14.00">manager.AsyncRunManager</text>
+<polyline fill="none" stroke="black" points="400.05,-550.7 400.05,-586.5"/>
+<text text-anchor="middle" x="409.8" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncCallbackManagerForLLMRun&#45;&gt;manager.AsyncRunManager -->
+<g id="edge6" class="edge">
+<title>manager.AsyncCallbackManagerForLLMRun-&gt;manager.AsyncRunManager</title>
+<path fill="none" stroke="#595959" d="M443.72,-568.5C443.72,-568.5 419.95,-568.5 419.95,-568.5"/>
+<polygon fill="#595959" stroke="#595959" points="443.72,-572 453.72,-568.5 443.72,-565 443.72,-572"/>
+</g>
+<!-- manager.AsyncCallbackManagerForRetrieverRun -->
+<g id="node9" class="node">
+<title>manager.AsyncCallbackManagerForRetrieverRun</title>
+<polygon fill="none" stroke="black" points="791.45,-605.5 791.45,-641.5 1108.79,-641.5 1108.79,-605.5 791.45,-605.5"/>
+<text text-anchor="middle" x="940.37" y="-619.4" font-family="Times,serif" font-size="14.00">manager.AsyncCallbackManagerForRetrieverRun</text>
+<polyline fill="none" stroke="black" points="1089.29,-605.7 1089.29,-641.5"/>
+<text text-anchor="middle" x="1099.04" y="-619.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncCallbackManagerForRetrieverRun&#45;&gt;manager.AsyncParentRunManager -->
+<g id="edge7" class="edge">
+<title>manager.AsyncCallbackManagerForRetrieverRun-&gt;manager.AsyncParentRunManager</title>
+<path fill="none" stroke="#595959" d="M779.5,-629.67C779.5,-629.67 719.26,-629.67 719.26,-629.67"/>
+<polygon fill="#595959" stroke="#595959" points="779.5,-633.17 789.5,-629.67 779.5,-626.17 779.5,-633.17"/>
+</g>
+<!-- manager.AsyncCallbackManagerForToolRun -->
+<g id="node10" class="node">
+<title>manager.AsyncCallbackManagerForToolRun</title>
+<polygon fill="none" stroke="black" points="804.27,-550.5 804.27,-586.5 1095.97,-586.5 1095.97,-550.5 804.27,-550.5"/>
+<text text-anchor="middle" x="940.37" y="-564.4" font-family="Times,serif" font-size="14.00">manager.AsyncCallbackManagerForToolRun</text>
+<polyline fill="none" stroke="black" points="1076.47,-550.7 1076.47,-586.5"/>
+<text text-anchor="middle" x="1086.22" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncCallbackManagerForToolRun&#45;&gt;manager.AsyncParentRunManager -->
+<g id="edge8" class="edge">
+<title>manager.AsyncCallbackManagerForToolRun-&gt;manager.AsyncParentRunManager</title>
+<path fill="none" stroke="#595959" d="M792.27,-568.5C792.27,-568.5 774.37,-568.5 774.37,-568.5 774.37,-568.5 774.37,-617.33 774.37,-617.33 774.37,-617.33 749.76,-617.33 719.19,-617.33"/>
+<polygon fill="#595959" stroke="#595959" points="792.27,-572 802.27,-568.5 792.27,-565 792.27,-572"/>
+</g>
+<!-- manager.AsyncParentRunManager&#45;&gt;manager.AsyncRunManager -->
+<g id="edge9" class="edge">
+<title>manager.AsyncParentRunManager-&gt;manager.AsyncRunManager</title>
+<path fill="none" stroke="#595959" d="M475.35,-623.5C475.35,-623.5 321.52,-623.5 321.52,-623.5 321.52,-623.5 321.52,-602.81 321.52,-586.81"/>
+<polygon fill="#595959" stroke="#595959" points="475.35,-627 485.35,-623.5 475.35,-620 475.35,-627"/>
+</g>
+<!-- manager.BaseRunManager -->
+<g id="node13" class="node">
+<title>manager.BaseRunManager</title>
+<polygon fill="none" stroke="black" points="0,-522.5 0,-558.5 187.5,-558.5 187.5,-522.5 0,-522.5"/>
+<text text-anchor="middle" x="84" y="-536.4" font-family="Times,serif" font-size="14.00">manager.BaseRunManager</text>
+<polyline fill="none" stroke="black" points="168,-522.7 168,-558.5"/>
+<text text-anchor="middle" x="177.75" y="-536.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.AsyncRunManager&#45;&gt;manager.BaseRunManager -->
+<g id="edge10" class="edge">
+<title>manager.AsyncRunManager-&gt;manager.BaseRunManager</title>
+<path fill="none" stroke="#595959" d="M211.76,-554.5C211.76,-554.5 187.71,-554.5 187.71,-554.5"/>
+<polygon fill="#595959" stroke="#595959" points="211.76,-558 221.76,-554.5 211.76,-551 211.76,-558"/>
+</g>
+<!-- manager.CallbackManager -->
+<g id="node14" class="node">
+<title>manager.CallbackManager</title>
+<polygon fill="none" stroke="black" points="509.61,-275.5 509.61,-311.5 696.31,-311.5 696.31,-275.5 509.61,-275.5"/>
+<text text-anchor="middle" x="593.21" y="-289.4" font-family="Times,serif" font-size="14.00">manager.CallbackManager</text>
+<polyline fill="none" stroke="black" points="676.81,-275.7 676.81,-311.5"/>
+<text text-anchor="middle" x="686.56" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.CallbackManager&#45;&gt;base.BaseCallbackManager -->
+<g id="edge11" class="edge">
+<title>manager.CallbackManager-&gt;base.BaseCallbackManager</title>
+<path fill="none" stroke="#595959" d="M497.73,-307C497.73,-307 417.23,-307 417.23,-307"/>
+<polygon fill="#595959" stroke="#595959" points="497.73,-310.5 507.73,-307 497.73,-303.5 497.73,-310.5"/>
+</g>
+<!-- manager.CallbackManagerForChainGroup -->
+<g id="node15" class="node">
+<title>manager.CallbackManagerForChainGroup</title>
+<polygon fill="none" stroke="black" points="812.44,-275.5 812.44,-311.5 1087.8,-311.5 1087.8,-275.5 812.44,-275.5"/>
+<text text-anchor="middle" x="940.37" y="-289.4" font-family="Times,serif" font-size="14.00">manager.CallbackManagerForChainGroup</text>
+<polyline fill="none" stroke="black" points="1068.3,-275.7 1068.3,-311.5"/>
+<text text-anchor="middle" x="1078.05" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.CallbackManagerForChainGroup&#45;&gt;manager.CallbackManager -->
+<g id="edge12" class="edge">
+<title>manager.CallbackManagerForChainGroup-&gt;manager.CallbackManager</title>
+<path fill="none" stroke="#595959" d="M800.9,-293.5C800.9,-293.5 696.71,-293.5 696.71,-293.5"/>
+<polygon fill="#595959" stroke="#595959" points="800.9,-297 810.9,-293.5 800.9,-290 800.9,-297"/>
+</g>
+<!-- manager.CallbackManagerForChainRun -->
+<g id="node16" class="node">
+<title>manager.CallbackManagerForChainRun</title>
+<polygon fill="none" stroke="black" points="818.65,-495.5 818.65,-531.5 1081.58,-531.5 1081.58,-495.5 818.65,-495.5"/>
+<text text-anchor="middle" x="940.37" y="-509.4" font-family="Times,serif" font-size="14.00">manager.CallbackManagerForChainRun</text>
+<polyline fill="none" stroke="black" points="1062.08,-495.7 1062.08,-531.5"/>
+<text text-anchor="middle" x="1071.83" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.ParentRunManager -->
+<g id="node20" class="node">
+<title>manager.ParentRunManager</title>
+<polygon fill="none" stroke="black" points="504.94,-440.5 504.94,-476.5 700.98,-476.5 700.98,-440.5 504.94,-440.5"/>
+<text text-anchor="middle" x="593.21" y="-454.4" font-family="Times,serif" font-size="14.00">manager.ParentRunManager</text>
+<polyline fill="none" stroke="black" points="681.48,-440.7 681.48,-476.5"/>
+<text text-anchor="middle" x="691.23" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.CallbackManagerForChainRun&#45;&gt;manager.ParentRunManager -->
+<g id="edge13" class="edge">
+<title>manager.CallbackManagerForChainRun-&gt;manager.ParentRunManager</title>
+<path fill="none" stroke="#595959" d="M806.68,-513.5C806.68,-513.5 762.37,-513.5 762.37,-513.5 762.37,-513.5 762.37,-464.67 762.37,-464.67 762.37,-464.67 734,-464.67 701.19,-464.67"/>
+<polygon fill="#595959" stroke="#595959" points="806.68,-517 816.68,-513.5 806.68,-510 806.68,-517"/>
+</g>
+<!-- manager.CallbackManagerForLLMRun -->
+<g id="node17" class="node">
+<title>manager.CallbackManagerForLLMRun</title>
+<polygon fill="none" stroke="black" points="473.44,-495.5 473.44,-531.5 732.48,-531.5 732.48,-495.5 473.44,-495.5"/>
+<text text-anchor="middle" x="593.21" y="-509.4" font-family="Times,serif" font-size="14.00">manager.CallbackManagerForLLMRun</text>
+<polyline fill="none" stroke="black" points="712.98,-495.7 712.98,-531.5"/>
+<text text-anchor="middle" x="722.73" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.RunManager -->
+<g id="node21" class="node">
+<title>manager.RunManager</title>
+<polygon fill="none" stroke="black" points="241.38,-495.5 241.38,-531.5 401.67,-531.5 401.67,-495.5 241.38,-495.5"/>
+<text text-anchor="middle" x="311.77" y="-509.4" font-family="Times,serif" font-size="14.00">manager.RunManager</text>
+<polyline fill="none" stroke="black" points="382.17,-495.7 382.17,-531.5"/>
+<text text-anchor="middle" x="391.92" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.CallbackManagerForLLMRun&#45;&gt;manager.RunManager -->
+<g id="edge14" class="edge">
+<title>manager.CallbackManagerForLLMRun-&gt;manager.RunManager</title>
+<path fill="none" stroke="#595959" d="M461.44,-513.5C461.44,-513.5 401.97,-513.5 401.97,-513.5"/>
+<polygon fill="#595959" stroke="#595959" points="461.44,-517 471.44,-513.5 461.44,-510 461.44,-517"/>
+</g>
+<!-- manager.CallbackManagerForRetrieverRun -->
+<g id="node18" class="node">
+<title>manager.CallbackManagerForRetrieverRun</title>
+<polygon fill="none" stroke="black" points="809.33,-440.5 809.33,-476.5 1090.91,-476.5 1090.91,-440.5 809.33,-440.5"/>
+<text text-anchor="middle" x="940.37" y="-454.4" font-family="Times,serif" font-size="14.00">manager.CallbackManagerForRetrieverRun</text>
+<polyline fill="none" stroke="black" points="1071.41,-440.7 1071.41,-476.5"/>
+<text text-anchor="middle" x="1081.16" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.CallbackManagerForRetrieverRun&#45;&gt;manager.ParentRunManager -->
+<g id="edge15" class="edge">
+<title>manager.CallbackManagerForRetrieverRun-&gt;manager.ParentRunManager</title>
+<path fill="none" stroke="#595959" d="M797.4,-452.33C797.4,-452.33 701.25,-452.33 701.25,-452.33"/>
+<polygon fill="#595959" stroke="#595959" points="797.4,-455.83 807.4,-452.33 797.4,-448.83 797.4,-455.83"/>
+</g>
+<!-- manager.CallbackManagerForToolRun -->
+<g id="node19" class="node">
+<title>manager.CallbackManagerForToolRun</title>
+<polygon fill="none" stroke="black" points="822.15,-385.5 822.15,-421.5 1078.08,-421.5 1078.08,-385.5 822.15,-385.5"/>
+<text text-anchor="middle" x="940.37" y="-399.4" font-family="Times,serif" font-size="14.00">manager.CallbackManagerForToolRun</text>
+<polyline fill="none" stroke="black" points="1058.58,-385.7 1058.58,-421.5"/>
+<text text-anchor="middle" x="1068.33" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- manager.CallbackManagerForToolRun&#45;&gt;manager.ParentRunManager -->
+<g id="edge16" class="edge">
+<title>manager.CallbackManagerForToolRun-&gt;manager.ParentRunManager</title>
+<path fill="none" stroke="#595959" d="M810.32,-403.5C810.32,-403.5 602.96,-403.5 602.96,-403.5 602.96,-403.5 602.96,-424.19 602.96,-440.19"/>
+<polygon fill="#595959" stroke="#595959" points="810.32,-407 820.32,-403.5 810.32,-400 810.32,-407"/>
+</g>
+<!-- manager.ParentRunManager&#45;&gt;manager.RunManager -->
+<g id="edge17" class="edge">
+<title>manager.ParentRunManager-&gt;manager.RunManager</title>
+<path fill="none" stroke="#595959" d="M493.01,-458.5C493.01,-458.5 321.52,-458.5 321.52,-458.5 321.52,-458.5 321.52,-479.19 321.52,-495.19"/>
+<polygon fill="#595959" stroke="#595959" points="493.01,-462 503.01,-458.5 493.01,-455 493.01,-462"/>
+</g>
+<!-- manager.RunManager&#45;&gt;manager.BaseRunManager -->
+<g id="edge18" class="edge">
+<title>manager.RunManager-&gt;manager.BaseRunManager</title>
+<path fill="none" stroke="#595959" d="M229.39,-527C229.39,-527 187.9,-527 187.9,-527"/>
+<polygon fill="#595959" stroke="#595959" points="229.39,-530.5 239.39,-527 229.39,-523.5 229.39,-530.5"/>
+</g>
+<!-- stdout.StdOutCallbackHandler -->
+<g id="node22" class="node">
+<title>stdout.StdOutCallbackHandler</title>
+<polygon fill="none" stroke="black" points="846.24,-110.5 846.24,-146.5 1054,-146.5 1054,-110.5 846.24,-110.5"/>
+<text text-anchor="middle" x="940.37" y="-124.4" font-family="Times,serif" font-size="14.00">stdout.StdOutCallbackHandler</text>
+<polyline fill="none" stroke="black" points="1034.5,-110.7 1034.5,-146.5"/>
+<text text-anchor="middle" x="1044.25" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- stdout.StdOutCallbackHandler&#45;&gt;base.BaseCallbackHandler -->
+<g id="edge19" class="edge">
+<title>stdout.StdOutCallbackHandler-&gt;base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M834.45,-134.67C834.45,-134.67 696.41,-134.67 696.41,-134.67"/>
+<polygon fill="#595959" stroke="#595959" points="834.45,-138.17 844.45,-134.67 834.45,-131.17 834.45,-138.17"/>
+</g>
+<!-- streaming_stdout.StreamingStdOutCallbackHandler -->
+<g id="node23" class="node">
+<title>streaming_stdout.StreamingStdOutCallbackHandler</title>
+<polygon fill="none" stroke="black" points="786.37,-55.5 786.37,-91.5 1113.87,-91.5 1113.87,-55.5 786.37,-55.5"/>
+<text text-anchor="middle" x="940.37" y="-69.4" font-family="Times,serif" font-size="14.00">streaming_stdout.StreamingStdOutCallbackHandler</text>
+<polyline fill="none" stroke="black" points="1094.37,-55.7 1094.37,-91.5"/>
+<text text-anchor="middle" x="1104.12" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- streaming_stdout.StreamingStdOutCallbackHandler&#45;&gt;base.BaseCallbackHandler -->
+<g id="edge20" class="edge">
+<title>streaming_stdout.StreamingStdOutCallbackHandler-&gt;base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M803.49,-103.48C803.49,-103.48 803.49,-122.33 803.49,-122.33 803.49,-122.33 748.55,-122.33 696.18,-122.33"/>
+<polygon fill="#595959" stroke="#595959" points="806.99,-103.48 803.49,-93.48 799.99,-103.48 806.99,-103.48"/>
+</g>
+<!-- usage.UsageMetadataCallbackHandler -->
+<g id="node24" class="node">
+<title>usage.UsageMetadataCallbackHandler</title>
+<polygon fill="none" stroke="black" points="823.72,-0.5 823.72,-36.5 1076.52,-36.5 1076.52,-0.5 823.72,-0.5"/>
+<text text-anchor="middle" x="940.37" y="-14.4" font-family="Times,serif" font-size="14.00">usage.UsageMetadataCallbackHandler</text>
+<polyline fill="none" stroke="black" points="1057.02,-0.7 1057.02,-36.5"/>
+<text text-anchor="middle" x="1066.77" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- usage.UsageMetadataCallbackHandler&#45;&gt;base.BaseCallbackHandler -->
+<g id="edge21" class="edge">
+<title>usage.UsageMetadataCallbackHandler-&gt;base.BaseCallbackHandler</title>
+<path fill="none" stroke="#595959" d="M811.8,-18.5C811.8,-18.5 602.96,-18.5 602.96,-18.5 602.96,-18.5 602.96,-79.09 602.96,-110.34"/>
+<polygon fill="#595959" stroke="#595959" points="811.8,-22 821.8,-18.5 811.8,-15 811.8,-22"/>
+</g>
+</g>
+</svg>

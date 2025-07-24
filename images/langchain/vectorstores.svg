@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="747pt" height="45pt" viewBox="0.00 0.00 747.43 45.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 41)">
+<title>vectorstores</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-41 743.43,-41 743.43,4 -4,4"/>
+<!-- retrievers.BaseRetriever -->
+<g id="node1" class="node">
+<title>retrievers.BaseRetriever</title>
+<polygon fill="none" stroke="black" points="277.54,-0.5 277.54,-36.5 448.69,-36.5 448.69,-0.5 277.54,-0.5"/>
+<text text-anchor="middle" x="353.36" y="-14.4" font-family="Times,serif" font-size="14.00">retrievers.BaseRetriever</text>
+<polyline fill="none" stroke="black" points="429.19,-0.7 429.19,-36.5"/>
+<text text-anchor="middle" x="438.94" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- runnables.base.RunnableSerializable -->
+<g id="node2" class="node">
+<title>runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-0.5 0,-36.5 241.54,-36.5 241.54,-0.5 0,-0.5"/>
+<text text-anchor="middle" x="111.02" y="-14.4" font-family="Times,serif" font-size="14.00">runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="222.04,-0.7 222.04,-36.5"/>
+<text text-anchor="middle" x="231.79" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- retrievers.BaseRetriever&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>retrievers.BaseRetriever-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M265.82,-18.5C265.82,-18.5 241.67,-18.5 241.67,-18.5"/>
+<polygon fill="#595959" stroke="#595959" points="265.82,-22 275.82,-18.5 265.82,-15 265.82,-22"/>
+</g>
+<!-- vectorstores.base.VectorStoreRetriever -->
+<g id="node3" class="node">
+<title>vectorstores.base.VectorStoreRetriever</title>
+<polygon fill="none" stroke="black" points="484.69,-0.5 484.69,-36.5 739.43,-36.5 739.43,-0.5 484.69,-0.5"/>
+<text text-anchor="middle" x="602.31" y="-14.4" font-family="Times,serif" font-size="14.00">vectorstores.base.VectorStoreRetriever</text>
+<polyline fill="none" stroke="black" points="719.93,-0.7 719.93,-36.5"/>
+<text text-anchor="middle" x="729.68" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- vectorstores.base.VectorStoreRetriever&#45;&gt;retrievers.BaseRetriever -->
+<g id="edge2" class="edge">
+<title>vectorstores.base.VectorStoreRetriever-&gt;retrievers.BaseRetriever</title>
+<path fill="none" stroke="#595959" d="M472.79,-18.5C472.79,-18.5 449.05,-18.5 449.05,-18.5"/>
+<polygon fill="#595959" stroke="#595959" points="472.79,-22 482.79,-18.5 472.79,-15 472.79,-22"/>
+</g>
+</g>
+</svg>

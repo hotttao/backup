@@ -1,0 +1,252 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1119pt" height="608pt" viewBox="0.00 0.00 1119.49 608.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 604)">
+<title>runnables</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-604 1115.49,-604 1115.49,4 -4,4"/>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node1" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="0,-247.5 0,-283.5 285.43,-283.5 285.43,-247.5 0,-247.5"/>
+<text text-anchor="middle" x="132.96" y="-261.4" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="265.93,-247.7 265.93,-283.5"/>
+<text text-anchor="middle" x="275.68" y="-261.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableBinding -->
+<g id="node2" class="node">
+<title>base.RunnableBinding</title>
+<polygon fill="none" stroke="black" points="877.32,-563.5 877.32,-599.5 1039.97,-599.5 1039.97,-563.5 877.32,-563.5"/>
+<text text-anchor="middle" x="948.9" y="-577.4" font-family="Times,serif" font-size="14.00">base.RunnableBinding</text>
+<polyline fill="none" stroke="black" points="1020.47,-563.7 1020.47,-599.5"/>
+<text text-anchor="middle" x="1030.22" y="-577.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableBindingBase -->
+<g id="node3" class="node">
+<title>base.RunnableBindingBase</title>
+<polygon fill="none" stroke="black" points="560.49,-495.5 560.49,-531.5 750.35,-531.5 750.35,-495.5 560.49,-495.5"/>
+<text text-anchor="middle" x="645.67" y="-509.4" font-family="Times,serif" font-size="14.00">base.RunnableBindingBase</text>
+<polyline fill="none" stroke="black" points="730.85,-495.7 730.85,-531.5"/>
+<text text-anchor="middle" x="740.6" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableBinding&#45;&gt;base.RunnableBindingBase -->
+<g id="edge1" class="edge">
+<title>base.RunnableBinding-&gt;base.RunnableBindingBase</title>
+<path fill="none" stroke="#595959" d="M865.47,-581.5C865.47,-581.5 655.42,-581.5 655.42,-581.5 655.42,-581.5 655.42,-551.87 655.42,-531.72"/>
+<polygon fill="#595959" stroke="#595959" points="865.48,-585 875.47,-581.5 865.47,-578 865.48,-585"/>
+</g>
+<!-- base.RunnableSerializable -->
+<g id="node8" class="node">
+<title>base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="321.43,-247.5 321.43,-283.5 505.04,-283.5 505.04,-247.5 321.43,-247.5"/>
+<text text-anchor="middle" x="403.48" y="-261.4" font-family="Times,serif" font-size="14.00">base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="485.54,-247.7 485.54,-283.5"/>
+<text text-anchor="middle" x="495.29" y="-261.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableBindingBase&#45;&gt;base.RunnableSerializable -->
+<g id="edge2" class="edge">
+<title>base.RunnableBindingBase-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M548.62,-513.5C548.62,-513.5 358.15,-513.5 358.15,-513.5 358.15,-513.5 358.15,-341.01 358.15,-283.74"/>
+<polygon fill="#595959" stroke="#595959" points="548.62,-517 558.62,-513.5 548.62,-510 548.62,-517"/>
+</g>
+<!-- base.RunnableEach -->
+<g id="node4" class="node">
+<title>base.RunnableEach</title>
+<polygon fill="none" stroke="black" points="885.89,-398.5 885.89,-434.5 1031.4,-434.5 1031.4,-398.5 885.89,-398.5"/>
+<text text-anchor="middle" x="948.9" y="-412.4" font-family="Times,serif" font-size="14.00">base.RunnableEach</text>
+<polyline fill="none" stroke="black" points="1011.9,-398.7 1011.9,-434.5"/>
+<text text-anchor="middle" x="1021.65" y="-412.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableEachBase -->
+<g id="node5" class="node">
+<title>base.RunnableEachBase</title>
+<polygon fill="none" stroke="black" points="569.06,-440.5 569.06,-476.5 741.78,-476.5 741.78,-440.5 569.06,-440.5"/>
+<text text-anchor="middle" x="645.67" y="-454.4" font-family="Times,serif" font-size="14.00">base.RunnableEachBase</text>
+<polyline fill="none" stroke="black" points="722.28,-440.7 722.28,-476.5"/>
+<text text-anchor="middle" x="732.03" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableEach&#45;&gt;base.RunnableEachBase -->
+<g id="edge3" class="edge">
+<title>base.RunnableEach-&gt;base.RunnableEachBase</title>
+<path fill="none" stroke="#595959" d="M958.65,-445.35C958.65,-445.35 958.65,-446.5 958.65,-446.5 958.65,-446.5 831.53,-446.5 741.91,-446.5"/>
+<polygon fill="#595959" stroke="#595959" points="962.15,-446.5 958.65,-436.5 955.15,-446.5 962.15,-446.5"/>
+</g>
+<!-- base.RunnableEachBase&#45;&gt;base.RunnableSerializable -->
+<g id="edge4" class="edge">
+<title>base.RunnableEachBase-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M557.15,-458.5C557.15,-458.5 394.87,-458.5 394.87,-458.5 394.87,-458.5 394.87,-331.7 394.87,-283.66"/>
+<polygon fill="#595959" stroke="#595959" points="557.15,-462 567.15,-458.5 557.15,-455 557.15,-462"/>
+</g>
+<!-- base.RunnableParallel -->
+<g id="node6" class="node">
+<title>base.RunnableParallel</title>
+<polygon fill="none" stroke="black" points="575.27,-385.5 575.27,-421.5 735.56,-421.5 735.56,-385.5 575.27,-385.5"/>
+<text text-anchor="middle" x="645.67" y="-399.4" font-family="Times,serif" font-size="14.00">base.RunnableParallel</text>
+<polyline fill="none" stroke="black" points="716.06,-385.7 716.06,-421.5"/>
+<text text-anchor="middle" x="725.81" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableParallel&#45;&gt;base.RunnableSerializable -->
+<g id="edge5" class="edge">
+<title>base.RunnableParallel-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M563.42,-403.5C563.42,-403.5 431.59,-403.5 431.59,-403.5 431.59,-403.5 431.59,-321.36 431.59,-283.83"/>
+<polygon fill="#595959" stroke="#595959" points="563.42,-407 573.42,-403.5 563.42,-400 563.42,-407"/>
+</g>
+<!-- base.RunnableSequence -->
+<g id="node7" class="node">
+<title>base.RunnableSequence</title>
+<polygon fill="none" stroke="black" points="569.83,-330.5 569.83,-366.5 741.01,-366.5 741.01,-330.5 569.83,-330.5"/>
+<text text-anchor="middle" x="645.67" y="-344.4" font-family="Times,serif" font-size="14.00">base.RunnableSequence</text>
+<polyline fill="none" stroke="black" points="721.51,-330.7 721.51,-366.5"/>
+<text text-anchor="middle" x="731.26" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.RunnableSequence&#45;&gt;base.RunnableSerializable -->
+<g id="edge6" class="edge">
+<title>base.RunnableSequence-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M558.02,-348.5C558.02,-348.5 468.31,-348.5 468.31,-348.5 468.31,-348.5 468.31,-308.37 468.31,-283.92"/>
+<polygon fill="#595959" stroke="#595959" points="558.02,-352 568.02,-348.5 558.02,-345 558.02,-352"/>
+</g>
+<!-- base.RunnableSerializable&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge7" class="edge">
+<title>base.RunnableSerializable-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M309.76,-265.5C309.76,-265.5 285.79,-265.5 285.79,-265.5"/>
+<polygon fill="#595959" stroke="#595959" points="309.76,-269 319.76,-265.5 309.76,-262 309.76,-269"/>
+</g>
+<!-- configurable.DynamicRunnable -->
+<g id="node9" class="node">
+<title>configurable.DynamicRunnable</title>
+<polygon fill="none" stroke="black" points="548.06,-275.5 548.06,-311.5 762.78,-311.5 762.78,-275.5 548.06,-275.5"/>
+<text text-anchor="middle" x="645.67" y="-289.4" font-family="Times,serif" font-size="14.00">configurable.DynamicRunnable</text>
+<polyline fill="none" stroke="black" points="743.28,-275.7 743.28,-311.5"/>
+<text text-anchor="middle" x="753.03" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- configurable.DynamicRunnable&#45;&gt;base.RunnableSerializable -->
+<g id="edge8" class="edge">
+<title>configurable.DynamicRunnable-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M536.27,-279.5C536.27,-279.5 505.38,-279.5 505.38,-279.5"/>
+<polygon fill="#595959" stroke="#595959" points="536.27,-283 546.27,-279.5 536.27,-276 536.27,-283"/>
+</g>
+<!-- configurable.RunnableConfigurableAlternatives -->
+<g id="node10" class="node">
+<title>configurable.RunnableConfigurableAlternatives</title>
+<polygon fill="none" stroke="black" points="805.8,-316.5 805.8,-352.5 1111.49,-352.5 1111.49,-316.5 805.8,-316.5"/>
+<text text-anchor="middle" x="948.9" y="-330.4" font-family="Times,serif" font-size="14.00">configurable.RunnableConfigurableAlternatives</text>
+<polyline fill="none" stroke="black" points="1091.99,-316.7 1091.99,-352.5"/>
+<text text-anchor="middle" x="1101.74" y="-330.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- configurable.RunnableConfigurableAlternatives&#45;&gt;configurable.DynamicRunnable -->
+<g id="edge9" class="edge">
+<title>configurable.RunnableConfigurableAlternatives-&gt;configurable.DynamicRunnable</title>
+<path fill="none" stroke="#595959" d="M793.97,-323C793.97,-323 756.56,-323 756.56,-323 756.56,-323 756.56,-317.75 756.56,-311.68"/>
+<polygon fill="#595959" stroke="#595959" points="793.97,-326.5 803.97,-323 793.97,-319.5 793.97,-326.5"/>
+</g>
+<!-- configurable.RunnableConfigurableFields -->
+<g id="node11" class="node">
+<title>configurable.RunnableConfigurableFields</title>
+<polygon fill="none" stroke="black" points="822.9,-261.5 822.9,-297.5 1094.4,-297.5 1094.4,-261.5 822.9,-261.5"/>
+<text text-anchor="middle" x="948.9" y="-275.4" font-family="Times,serif" font-size="14.00">configurable.RunnableConfigurableFields</text>
+<polyline fill="none" stroke="black" points="1074.9,-261.7 1074.9,-297.5"/>
+<text text-anchor="middle" x="1084.65" y="-275.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- configurable.RunnableConfigurableFields&#45;&gt;configurable.DynamicRunnable -->
+<g id="edge10" class="edge">
+<title>configurable.RunnableConfigurableFields-&gt;configurable.DynamicRunnable</title>
+<path fill="none" stroke="#595959" d="M811.04,-286.5C811.04,-286.5 762.89,-286.5 762.89,-286.5"/>
+<polygon fill="#595959" stroke="#595959" points="811.04,-290 821.04,-286.5 811.04,-283 811.04,-290"/>
+</g>
+<!-- fallbacks.RunnableWithFallbacks -->
+<g id="node12" class="node">
+<title>fallbacks.RunnableWithFallbacks</title>
+<polygon fill="none" stroke="black" points="543,-220.5 543,-256.5 767.84,-256.5 767.84,-220.5 543,-220.5"/>
+<text text-anchor="middle" x="645.67" y="-234.4" font-family="Times,serif" font-size="14.00">fallbacks.RunnableWithFallbacks</text>
+<polyline fill="none" stroke="black" points="748.34,-220.7 748.34,-256.5"/>
+<text text-anchor="middle" x="758.09" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fallbacks.RunnableWithFallbacks&#45;&gt;base.RunnableSerializable -->
+<g id="edge11" class="edge">
+<title>fallbacks.RunnableWithFallbacks-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M531.32,-252C531.32,-252 505.21,-252 505.21,-252"/>
+<polygon fill="#595959" stroke="#595959" points="531.32,-255.5 541.32,-252 531.32,-248.5 531.32,-255.5"/>
+</g>
+<!-- history.RunnableWithMessageHistory -->
+<g id="node13" class="node">
+<title>history.RunnableWithMessageHistory</title>
+<polygon fill="none" stroke="black" points="833.38,-508.5 833.38,-544.5 1083.91,-544.5 1083.91,-508.5 833.38,-508.5"/>
+<text text-anchor="middle" x="948.9" y="-522.4" font-family="Times,serif" font-size="14.00">history.RunnableWithMessageHistory</text>
+<polyline fill="none" stroke="black" points="1064.41,-508.7 1064.41,-544.5"/>
+<text text-anchor="middle" x="1074.16" y="-522.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- history.RunnableWithMessageHistory&#45;&gt;base.RunnableBindingBase -->
+<g id="edge12" class="edge">
+<title>history.RunnableWithMessageHistory-&gt;base.RunnableBindingBase</title>
+<path fill="none" stroke="#595959" d="M821.61,-520C821.61,-520 750.75,-520 750.75,-520"/>
+<polygon fill="#595959" stroke="#595959" points="821.61,-523.5 831.61,-520 821.61,-516.5 821.61,-523.5"/>
+</g>
+<!-- passthrough.RunnableAssign -->
+<g id="node14" class="node">
+<title>passthrough.RunnableAssign</title>
+<polygon fill="none" stroke="black" points="555.81,-165.5 555.81,-201.5 755.03,-201.5 755.03,-165.5 555.81,-165.5"/>
+<text text-anchor="middle" x="645.67" y="-179.4" font-family="Times,serif" font-size="14.00">passthrough.RunnableAssign</text>
+<polyline fill="none" stroke="black" points="735.53,-165.7 735.53,-201.5"/>
+<text text-anchor="middle" x="745.28" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- passthrough.RunnableAssign&#45;&gt;base.RunnableSerializable -->
+<g id="edge13" class="edge">
+<title>passthrough.RunnableAssign-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M544.05,-183.5C544.05,-183.5 468.31,-183.5 468.31,-183.5 468.31,-183.5 468.31,-223.14 468.31,-247.3"/>
+<polygon fill="#595959" stroke="#595959" points="544.05,-187 554.05,-183.5 544.05,-180 544.05,-187"/>
+</g>
+<!-- passthrough.RunnablePassthrough -->
+<g id="node15" class="node">
+<title>passthrough.RunnablePassthrough</title>
+<polygon fill="none" stroke="black" points="541.04,-110.5 541.04,-146.5 769.8,-146.5 769.8,-110.5 541.04,-110.5"/>
+<text text-anchor="middle" x="645.67" y="-124.4" font-family="Times,serif" font-size="14.00">passthrough.RunnablePassthrough</text>
+<polyline fill="none" stroke="black" points="750.3,-110.7 750.3,-146.5"/>
+<text text-anchor="middle" x="760.05" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- passthrough.RunnablePassthrough&#45;&gt;base.RunnableSerializable -->
+<g id="edge14" class="edge">
+<title>passthrough.RunnablePassthrough-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M529.04,-128.5C529.04,-128.5 431.59,-128.5 431.59,-128.5 431.59,-128.5 431.59,-209.63 431.59,-247.02"/>
+<polygon fill="#595959" stroke="#595959" points="529.04,-132 539.04,-128.5 529.04,-125 529.04,-132"/>
+</g>
+<!-- passthrough.RunnablePick -->
+<g id="node16" class="node">
+<title>passthrough.RunnablePick</title>
+<polygon fill="none" stroke="black" points="562.82,-55.5 562.82,-91.5 748.02,-91.5 748.02,-55.5 562.82,-55.5"/>
+<text text-anchor="middle" x="645.67" y="-69.4" font-family="Times,serif" font-size="14.00">passthrough.RunnablePick</text>
+<polyline fill="none" stroke="black" points="728.52,-55.7 728.52,-91.5"/>
+<text text-anchor="middle" x="738.27" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- passthrough.RunnablePick&#45;&gt;base.RunnableSerializable -->
+<g id="edge15" class="edge">
+<title>passthrough.RunnablePick-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M550.95,-73.5C550.95,-73.5 394.87,-73.5 394.87,-73.5 394.87,-73.5 394.87,-199.03 394.87,-247.09"/>
+<polygon fill="#595959" stroke="#595959" points="550.95,-77 560.95,-73.5 550.95,-70 550.95,-77"/>
+</g>
+<!-- retry.RunnableRetry -->
+<g id="node17" class="node">
+<title>retry.RunnableRetry</title>
+<polygon fill="none" stroke="black" points="883.55,-453.5 883.55,-489.5 1033.74,-489.5 1033.74,-453.5 883.55,-453.5"/>
+<text text-anchor="middle" x="948.9" y="-467.4" font-family="Times,serif" font-size="14.00">retry.RunnableRetry</text>
+<polyline fill="none" stroke="black" points="1014.24,-453.7 1014.24,-489.5"/>
+<text text-anchor="middle" x="1023.99" y="-467.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- retry.RunnableRetry&#45;&gt;base.RunnableBindingBase -->
+<g id="edge16" class="edge">
+<title>retry.RunnableRetry-&gt;base.RunnableBindingBase</title>
+<path fill="none" stroke="#595959" d="M871.59,-483.5C871.59,-483.5 746.07,-483.5 746.07,-483.5 746.07,-483.5 746.07,-488.84 746.07,-495.01"/>
+<polygon fill="#595959" stroke="#595959" points="871.59,-487 881.59,-483.5 871.59,-480 871.59,-487"/>
+</g>
+<!-- router.RouterRunnable -->
+<g id="node18" class="node">
+<title>router.RouterRunnable</title>
+<polygon fill="none" stroke="black" points="573.33,-0.5 573.33,-36.5 737.51,-36.5 737.51,-0.5 573.33,-0.5"/>
+<text text-anchor="middle" x="645.67" y="-14.4" font-family="Times,serif" font-size="14.00">router.RouterRunnable</text>
+<polyline fill="none" stroke="black" points="718.01,-0.7 718.01,-36.5"/>
+<text text-anchor="middle" x="727.76" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- router.RouterRunnable&#45;&gt;base.RunnableSerializable -->
+<g id="edge17" class="edge">
+<title>router.RouterRunnable-&gt;base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M561.49,-18.5C561.49,-18.5 358.15,-18.5 358.15,-18.5 358.15,-18.5 358.15,-190.3 358.15,-247.34"/>
+<polygon fill="#595959" stroke="#595959" points="561.49,-22 571.49,-18.5 561.49,-15 561.49,-22"/>
+</g>
+</g>
+</svg>
