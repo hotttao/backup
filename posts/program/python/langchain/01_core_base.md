@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "langchain-core 核心对象"
-date: 2025-07-24T22:00:00+08:00
-lastmod: 2025-07-24T22:00:00+08:00
+date: 2025-07-20T22:00:00+08:00
+lastmod: 2025-07-20T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
