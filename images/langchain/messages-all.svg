@@ -1,0 +1,380 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1073pt" height="945pt" viewBox="0.00 0.00 1072.91 945.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 941)">
+<title>messages</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-941 1068.91,-941 1068.91,4 -4,4"/>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node1" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="0,-192.5 0,-228.5 285.43,-228.5 285.43,-192.5 0,-192.5"/>
+<text text-anchor="middle" x="132.96" y="-206.4" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="265.93,-192.7 265.93,-228.5"/>
+<text text-anchor="middle" x="275.68" y="-206.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ai.AIMessage -->
+<g id="node2" class="node">
+<title>ai.AIMessage</title>
+<polygon fill="none" stroke="black" points="588.92,-220.5 588.92,-256.5 701.78,-256.5 701.78,-220.5 588.92,-220.5"/>
+<text text-anchor="middle" x="635.6" y="-234.4" font-family="Times,serif" font-size="14.00">ai.AIMessage</text>
+<polyline fill="none" stroke="black" points="682.28,-220.7 682.28,-256.5"/>
+<text text-anchor="middle" x="692.03" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseMessage -->
+<g id="node7" class="node">
+<title>base.BaseMessage</title>
+<polygon fill="none" stroke="black" points="331.56,-192.5 331.56,-228.5 471.64,-228.5 471.64,-192.5 331.56,-192.5"/>
+<text text-anchor="middle" x="391.85" y="-206.4" font-family="Times,serif" font-size="14.00">base.BaseMessage</text>
+<polyline fill="none" stroke="black" points="452.14,-192.7 452.14,-228.5"/>
+<text text-anchor="middle" x="461.89" y="-206.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ai.AIMessage&#45;&gt;base.BaseMessage -->
+<g id="edge1" class="edge">
+<title>ai.AIMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M577,-223C577,-223 472.06,-223 472.06,-223"/>
+<polygon fill="#595959" stroke="#595959" points="577,-226.5 587,-223 577,-219.5 577,-226.5"/>
+</g>
+<!-- ai.AIMessageChunk -->
+<g id="node3" class="node">
+<title>ai.AIMessageChunk</title>
+<polygon fill="none" stroke="black" points="861.82,-192.5 861.82,-228.5 1012.02,-228.5 1012.02,-192.5 861.82,-192.5"/>
+<text text-anchor="middle" x="927.17" y="-206.4" font-family="Times,serif" font-size="14.00">ai.AIMessageChunk</text>
+<polyline fill="none" stroke="black" points="992.52,-192.7 992.52,-228.5"/>
+<text text-anchor="middle" x="1002.27" y="-206.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ai.AIMessageChunk&#45;&gt;ai.AIMessage -->
+<g id="edge2" class="edge">
+<title>ai.AIMessageChunk-&gt;ai.AIMessage</title>
+<path fill="none" stroke="#595959" d="M849.94,-224.5C849.94,-224.5 702.08,-224.5 702.08,-224.5"/>
+<polygon fill="#595959" stroke="#595959" points="849.94,-228 859.94,-224.5 849.94,-221 849.94,-228"/>
+</g>
+<!-- base.BaseMessageChunk -->
+<g id="node8" class="node">
+<title>base.BaseMessageChunk</title>
+<polygon fill="none" stroke="black" points="556.65,-165.5 556.65,-201.5 734.06,-201.5 734.06,-165.5 556.65,-165.5"/>
+<text text-anchor="middle" x="635.6" y="-179.4" font-family="Times,serif" font-size="14.00">base.BaseMessageChunk</text>
+<polyline fill="none" stroke="black" points="714.56,-165.7 714.56,-201.5"/>
+<text text-anchor="middle" x="724.31" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ai.AIMessageChunk&#45;&gt;base.BaseMessageChunk -->
+<g id="edge3" class="edge">
+<title>ai.AIMessageChunk-&gt;base.BaseMessageChunk</title>
+<path fill="none" stroke="#595959" d="M849.94,-194.5C849.94,-194.5 734.49,-194.5 734.49,-194.5"/>
+<polygon fill="#595959" stroke="#595959" points="849.94,-198 859.94,-194.5 849.94,-191 849.94,-198"/>
+</g>
+<!-- ai.InputTokenDetails -->
+<g id="node4" class="node">
+<title>ai.InputTokenDetails</title>
+<polygon fill="none" stroke="black" points="859.88,-405.5 859.88,-441.5 1013.96,-441.5 1013.96,-405.5 859.88,-405.5"/>
+<text text-anchor="middle" x="927.17" y="-419.4" font-family="Times,serif" font-size="14.00">ai.InputTokenDetails</text>
+<polyline fill="none" stroke="black" points="994.46,-405.7 994.46,-441.5"/>
+<text text-anchor="middle" x="1004.21" y="-419.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ai.OutputTokenDetails -->
+<g id="node5" class="node">
+<title>ai.OutputTokenDetails</title>
+<polygon fill="none" stroke="black" points="855.22,-460.5 855.22,-496.5 1018.63,-496.5 1018.63,-460.5 855.22,-460.5"/>
+<text text-anchor="middle" x="927.17" y="-474.4" font-family="Times,serif" font-size="14.00">ai.OutputTokenDetails</text>
+<polyline fill="none" stroke="black" points="999.13,-460.7 999.13,-496.5"/>
+<text text-anchor="middle" x="1008.88" y="-474.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ai.UsageMetadata -->
+<g id="node6" class="node">
+<title>ai.UsageMetadata</title>
+<polygon fill="none" stroke="black" points="868.84,-515.5 868.84,-551.5 1005.01,-551.5 1005.01,-515.5 868.84,-515.5"/>
+<text text-anchor="middle" x="927.17" y="-529.4" font-family="Times,serif" font-size="14.00">ai.UsageMetadata</text>
+<polyline fill="none" stroke="black" points="985.51,-515.7 985.51,-551.5"/>
+<text text-anchor="middle" x="995.26" y="-529.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseMessage&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge4" class="edge">
+<title>base.BaseMessage-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M319.69,-210.5C319.69,-210.5 285.83,-210.5 285.83,-210.5"/>
+<polygon fill="#595959" stroke="#595959" points="319.69,-214 329.69,-210.5 319.69,-207 319.69,-214"/>
+</g>
+<!-- base.BaseMessageChunk&#45;&gt;base.BaseMessage -->
+<g id="edge5" class="edge">
+<title>base.BaseMessageChunk-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M544.8,-198.67C544.8,-198.67 472.08,-198.67 472.08,-198.67"/>
+<polygon fill="#595959" stroke="#595959" points="544.8,-202.17 554.8,-198.67 544.8,-195.17 544.8,-202.17"/>
+</g>
+<!-- chat.ChatMessage -->
+<g id="node9" class="node">
+<title>chat.ChatMessage</title>
+<polygon fill="none" stroke="black" points="576.48,-110.5 576.48,-146.5 714.23,-146.5 714.23,-110.5 576.48,-110.5"/>
+<text text-anchor="middle" x="635.6" y="-124.4" font-family="Times,serif" font-size="14.00">chat.ChatMessage</text>
+<polyline fill="none" stroke="black" points="694.73,-110.7 694.73,-146.5"/>
+<text text-anchor="middle" x="704.48" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.ChatMessage&#45;&gt;base.BaseMessage -->
+<g id="edge6" class="edge">
+<title>chat.ChatMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M564.71,-128.5C564.71,-128.5 424.94,-128.5 424.94,-128.5 424.94,-128.5 424.94,-168.14 424.94,-192.3"/>
+<polygon fill="#595959" stroke="#595959" points="564.71,-132 574.71,-128.5 564.71,-125 564.71,-132"/>
+</g>
+<!-- chat.ChatMessageChunk -->
+<g id="node10" class="node">
+<title>chat.ChatMessageChunk</title>
+<polygon fill="none" stroke="black" points="849.38,-137.5 849.38,-173.5 1024.46,-173.5 1024.46,-137.5 849.38,-137.5"/>
+<text text-anchor="middle" x="927.17" y="-151.4" font-family="Times,serif" font-size="14.00">chat.ChatMessageChunk</text>
+<polyline fill="none" stroke="black" points="1004.96,-137.7 1004.96,-173.5"/>
+<text text-anchor="middle" x="1014.71" y="-151.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.ChatMessageChunk&#45;&gt;base.BaseMessageChunk -->
+<g id="edge7" class="edge">
+<title>chat.ChatMessageChunk-&gt;base.BaseMessageChunk</title>
+<path fill="none" stroke="#595959" d="M837.53,-171.75C837.53,-171.75 734.31,-171.75 734.31,-171.75"/>
+<polygon fill="#595959" stroke="#595959" points="837.53,-175.25 847.53,-171.75 837.53,-168.25 837.53,-175.25"/>
+</g>
+<!-- chat.ChatMessageChunk&#45;&gt;chat.ChatMessage -->
+<g id="edge8" class="edge">
+<title>chat.ChatMessageChunk-&gt;chat.ChatMessage</title>
+<path fill="none" stroke="#595959" d="M837.53,-142C837.53,-142 714.54,-142 714.54,-142"/>
+<polygon fill="#595959" stroke="#595959" points="837.53,-145.5 847.53,-142 837.53,-138.5 837.53,-145.5"/>
+</g>
+<!-- content_blocks.Base64ContentBlock -->
+<g id="node11" class="node">
+<title>content_blocks.Base64ContentBlock</title>
+<polygon fill="none" stroke="black" points="815.55,-680.5 815.55,-716.5 1058.29,-716.5 1058.29,-680.5 815.55,-680.5"/>
+<text text-anchor="middle" x="927.17" y="-694.4" font-family="Times,serif" font-size="14.00">content_blocks.Base64ContentBlock</text>
+<polyline fill="none" stroke="black" points="1038.79,-680.7 1038.79,-716.5"/>
+<text text-anchor="middle" x="1048.54" y="-694.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- content_blocks.BaseDataContentBlock -->
+<g id="node12" class="node">
+<title>content_blocks.BaseDataContentBlock</title>
+<polygon fill="none" stroke="black" points="517.77,-625.5 517.77,-661.5 772.94,-661.5 772.94,-625.5 517.77,-625.5"/>
+<text text-anchor="middle" x="635.6" y="-639.4" font-family="Times,serif" font-size="14.00">content_blocks.BaseDataContentBlock</text>
+<polyline fill="none" stroke="black" points="753.44,-625.7 753.44,-661.5"/>
+<text text-anchor="middle" x="763.19" y="-639.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- content_blocks.Base64ContentBlock&#45;&gt;content_blocks.BaseDataContentBlock -->
+<g id="edge9" class="edge">
+<title>content_blocks.Base64ContentBlock-&gt;content_blocks.BaseDataContentBlock</title>
+<path fill="none" stroke="#595959" d="M803.87,-698.5C803.87,-698.5 645.35,-698.5 645.35,-698.5 645.35,-698.5 645.35,-677.81 645.35,-661.81"/>
+<polygon fill="#595959" stroke="#595959" points="803.87,-702 813.87,-698.5 803.87,-695 803.87,-702"/>
+</g>
+<!-- content_blocks.IDContentBlock -->
+<g id="node13" class="node">
+<title>content_blocks.IDContentBlock</title>
+<polygon fill="none" stroke="black" points="828.77,-735.5 828.77,-771.5 1045.07,-771.5 1045.07,-735.5 828.77,-735.5"/>
+<text text-anchor="middle" x="927.17" y="-749.4" font-family="Times,serif" font-size="14.00">content_blocks.IDContentBlock</text>
+<polyline fill="none" stroke="black" points="1025.57,-735.7 1025.57,-771.5"/>
+<text text-anchor="middle" x="1035.32" y="-749.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- content_blocks.PlainTextContentBlock -->
+<g id="node14" class="node">
+<title>content_blocks.PlainTextContentBlock</title>
+<polygon fill="none" stroke="black" points="808.94,-625.5 808.94,-661.5 1064.91,-661.5 1064.91,-625.5 808.94,-625.5"/>
+<text text-anchor="middle" x="927.17" y="-639.4" font-family="Times,serif" font-size="14.00">content_blocks.PlainTextContentBlock</text>
+<polyline fill="none" stroke="black" points="1045.41,-625.7 1045.41,-661.5"/>
+<text text-anchor="middle" x="1055.16" y="-639.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- content_blocks.PlainTextContentBlock&#45;&gt;content_blocks.BaseDataContentBlock -->
+<g id="edge10" class="edge">
+<title>content_blocks.PlainTextContentBlock-&gt;content_blocks.BaseDataContentBlock</title>
+<path fill="none" stroke="#595959" d="M797.1,-643.5C797.1,-643.5 773.17,-643.5 773.17,-643.5"/>
+<polygon fill="#595959" stroke="#595959" points="797.1,-647 807.1,-643.5 797.1,-640 797.1,-647"/>
+</g>
+<!-- content_blocks.URLContentBlock -->
+<g id="node15" class="node">
+<title>content_blocks.URLContentBlock</title>
+<polygon fill="none" stroke="black" points="822.16,-570.5 822.16,-606.5 1051.69,-606.5 1051.69,-570.5 822.16,-570.5"/>
+<text text-anchor="middle" x="927.17" y="-584.4" font-family="Times,serif" font-size="14.00">content_blocks.URLContentBlock</text>
+<polyline fill="none" stroke="black" points="1032.19,-570.7 1032.19,-606.5"/>
+<text text-anchor="middle" x="1041.94" y="-584.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- content_blocks.URLContentBlock&#45;&gt;content_blocks.BaseDataContentBlock -->
+<g id="edge11" class="edge">
+<title>content_blocks.URLContentBlock-&gt;content_blocks.BaseDataContentBlock</title>
+<path fill="none" stroke="#595959" d="M810.35,-588.5C810.35,-588.5 755.25,-588.5 755.25,-588.5 755.25,-588.5 755.25,-609.19 755.25,-625.19"/>
+<polygon fill="#595959" stroke="#595959" points="810.35,-592 820.35,-588.5 810.35,-585 810.35,-592"/>
+</g>
+<!-- function.FunctionMessage -->
+<g id="node16" class="node">
+<title>function.FunctionMessage</title>
+<polygon fill="none" stroke="black" points="553.14,-55.5 553.14,-91.5 737.56,-91.5 737.56,-55.5 553.14,-55.5"/>
+<text text-anchor="middle" x="635.6" y="-69.4" font-family="Times,serif" font-size="14.00">function.FunctionMessage</text>
+<polyline fill="none" stroke="black" points="718.06,-55.7 718.06,-91.5"/>
+<text text-anchor="middle" x="727.81" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- function.FunctionMessage&#45;&gt;base.BaseMessage -->
+<g id="edge12" class="edge">
+<title>function.FunctionMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M541.17,-73.5C541.17,-73.5 378.25,-73.5 378.25,-73.5 378.25,-73.5 378.25,-154.63 378.25,-192.02"/>
+<polygon fill="#595959" stroke="#595959" points="541.17,-77 551.17,-73.5 541.17,-70 541.17,-77"/>
+</g>
+<!-- function.FunctionMessageChunk -->
+<g id="node17" class="node">
+<title>function.FunctionMessageChunk</title>
+<polygon fill="none" stroke="black" points="826.04,-82.5 826.04,-118.5 1047.8,-118.5 1047.8,-82.5 826.04,-82.5"/>
+<text text-anchor="middle" x="927.17" y="-96.4" font-family="Times,serif" font-size="14.00">function.FunctionMessageChunk</text>
+<polyline fill="none" stroke="black" points="1028.3,-82.7 1028.3,-118.5"/>
+<text text-anchor="middle" x="1038.05" y="-96.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- function.FunctionMessageChunk&#45;&gt;base.BaseMessageChunk -->
+<g id="edge13" class="edge">
+<title>function.FunctionMessageChunk-&gt;base.BaseMessageChunk</title>
+<path fill="none" stroke="#595959" d="M828.76,-130.5C828.76,-130.5 828.76,-169.5 828.76,-169.5 828.76,-169.5 781.1,-169.5 734.37,-169.5"/>
+<polygon fill="#595959" stroke="#595959" points="832.26,-130.5 828.76,-120.5 825.26,-130.5 832.26,-130.5"/>
+</g>
+<!-- function.FunctionMessageChunk&#45;&gt;function.FunctionMessage -->
+<g id="edge14" class="edge">
+<title>function.FunctionMessageChunk-&gt;function.FunctionMessage</title>
+<path fill="none" stroke="#595959" d="M814.35,-87C814.35,-87 737.61,-87 737.61,-87"/>
+<polygon fill="#595959" stroke="#595959" points="814.35,-90.5 824.35,-87 814.35,-83.5 814.35,-90.5"/>
+</g>
+<!-- human.HumanMessage -->
+<g id="node18" class="node">
+<title>human.HumanMessage</title>
+<polygon fill="none" stroke="black" points="561.7,-385.5 561.7,-421.5 729,-421.5 729,-385.5 561.7,-385.5"/>
+<text text-anchor="middle" x="635.6" y="-399.4" font-family="Times,serif" font-size="14.00">human.HumanMessage</text>
+<polyline fill="none" stroke="black" points="709.5,-385.7 709.5,-421.5"/>
+<text text-anchor="middle" x="719.25" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- human.HumanMessage&#45;&gt;base.BaseMessage -->
+<g id="edge15" class="edge">
+<title>human.HumanMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M549.69,-403.5C549.69,-403.5 378.25,-403.5 378.25,-403.5 378.25,-403.5 378.25,-276.7 378.25,-228.66"/>
+<polygon fill="#595959" stroke="#595959" points="549.69,-407 559.69,-403.5 549.69,-400 549.69,-407"/>
+</g>
+<!-- human.HumanMessageChunk -->
+<g id="node19" class="node">
+<title>human.HumanMessageChunk</title>
+<polygon fill="none" stroke="black" points="834.6,-350.5 834.6,-386.5 1039.24,-386.5 1039.24,-350.5 834.6,-350.5"/>
+<text text-anchor="middle" x="927.17" y="-364.4" font-family="Times,serif" font-size="14.00">human.HumanMessageChunk</text>
+<polyline fill="none" stroke="black" points="1019.74,-350.7 1019.74,-386.5"/>
+<text text-anchor="middle" x="1029.49" y="-364.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- human.HumanMessageChunk&#45;&gt;base.BaseMessageChunk -->
+<g id="edge16" class="edge">
+<title>human.HumanMessageChunk-&gt;base.BaseMessageChunk</title>
+<path fill="none" stroke="#595959" d="M831.79,-358.5C831.79,-358.5 831.48,-358.5 831.48,-358.5 831.48,-358.5 831.48,-199.5 831.48,-199.5 831.48,-199.5 782.18,-199.5 734.33,-199.5"/>
+<polygon fill="#595959" stroke="#595959" points="823.01,-362 833.01,-358.5 823.01,-355 823.01,-362"/>
+</g>
+<!-- human.HumanMessageChunk&#45;&gt;human.HumanMessage -->
+<g id="edge17" class="edge">
+<title>human.HumanMessageChunk-&gt;human.HumanMessage</title>
+<path fill="none" stroke="#595959" d="M844.91,-395.1C844.91,-395.1 844.91,-396 844.91,-396 844.91,-396 783.94,-396 729.4,-396"/>
+<polygon fill="#595959" stroke="#595959" points="848.41,-398.51 844.91,-388.51 841.41,-398.51 848.41,-398.51"/>
+</g>
+<!-- modifier.RemoveMessage -->
+<g id="node20" class="node">
+<title>modifier.RemoveMessage</title>
+<polygon fill="none" stroke="black" points="553.93,-330.5 553.93,-366.5 736.78,-366.5 736.78,-330.5 553.93,-330.5"/>
+<text text-anchor="middle" x="635.6" y="-344.4" font-family="Times,serif" font-size="14.00">modifier.RemoveMessage</text>
+<polyline fill="none" stroke="black" points="717.28,-330.7 717.28,-366.5"/>
+<text text-anchor="middle" x="727.03" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- modifier.RemoveMessage&#45;&gt;base.BaseMessage -->
+<g id="edge18" class="edge">
+<title>modifier.RemoveMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M541.96,-348.5C541.96,-348.5 424.94,-348.5 424.94,-348.5 424.94,-348.5 424.94,-266.36 424.94,-228.83"/>
+<polygon fill="#595959" stroke="#595959" points="541.96,-352 551.96,-348.5 541.96,-345 541.96,-352"/>
+</g>
+<!-- system.SystemMessage -->
+<g id="node21" class="node">
+<title>system.SystemMessage</title>
+<polygon fill="none" stroke="black" points="561.3,-275.5 561.3,-311.5 729.4,-311.5 729.4,-275.5 561.3,-275.5"/>
+<text text-anchor="middle" x="635.6" y="-289.4" font-family="Times,serif" font-size="14.00">system.SystemMessage</text>
+<polyline fill="none" stroke="black" points="709.9,-275.7 709.9,-311.5"/>
+<text text-anchor="middle" x="719.65" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- system.SystemMessage&#45;&gt;base.BaseMessage -->
+<g id="edge19" class="edge">
+<title>system.SystemMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M575.11,-263.54C575.11,-263.54 575.11,-226 575.11,-226 575.11,-226 519.83,-226 471.67,-226"/>
+<polygon fill="#595959" stroke="#595959" points="571.61,-263.54 575.11,-273.54 578.61,-263.54 571.61,-263.54"/>
+</g>
+<!-- system.SystemMessageChunk -->
+<g id="node22" class="node">
+<title>system.SystemMessageChunk</title>
+<polygon fill="none" stroke="black" points="834.2,-261.5 834.2,-297.5 1039.64,-297.5 1039.64,-261.5 834.2,-261.5"/>
+<text text-anchor="middle" x="927.17" y="-275.4" font-family="Times,serif" font-size="14.00">system.SystemMessageChunk</text>
+<polyline fill="none" stroke="black" points="1020.14,-261.7 1020.14,-297.5"/>
+<text text-anchor="middle" x="1029.89" y="-275.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- system.SystemMessageChunk&#45;&gt;base.BaseMessageChunk -->
+<g id="edge20" class="edge">
+<title>system.SystemMessageChunk-&gt;base.BaseMessageChunk</title>
+<path fill="none" stroke="#595959" d="M841.79,-249.68C841.79,-249.68 841.79,-197 841.79,-197 841.79,-197 786.35,-197 734.38,-197"/>
+<polygon fill="#595959" stroke="#595959" points="838.29,-249.68 841.79,-259.68 845.29,-249.68 838.29,-249.68"/>
+</g>
+<!-- system.SystemMessageChunk&#45;&gt;system.SystemMessage -->
+<g id="edge21" class="edge">
+<title>system.SystemMessageChunk-&gt;system.SystemMessage</title>
+<path fill="none" stroke="#595959" d="M822.2,-286.5C822.2,-286.5 729.67,-286.5 729.67,-286.5"/>
+<polygon fill="#595959" stroke="#595959" points="822.2,-290 832.2,-286.5 822.2,-283 822.2,-290"/>
+</g>
+<!-- tool.InvalidToolCall -->
+<g id="node23" class="node">
+<title>tool.InvalidToolCall</title>
+<polygon fill="none" stroke="black" points="861.82,-790.5 861.82,-826.5 1012.03,-826.5 1012.03,-790.5 861.82,-790.5"/>
+<text text-anchor="middle" x="927.17" y="-804.4" font-family="Times,serif" font-size="14.00">tool.InvalidToolCall</text>
+<polyline fill="none" stroke="black" points="992.53,-790.7 992.53,-826.5"/>
+<text text-anchor="middle" x="1002.28" y="-804.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tool.ToolCall -->
+<g id="node24" class="node">
+<title>tool.ToolCall</title>
+<polygon fill="none" stroke="black" points="881.65,-845.5 881.65,-881.5 992.2,-881.5 992.2,-845.5 881.65,-845.5"/>
+<text text-anchor="middle" x="927.17" y="-859.4" font-family="Times,serif" font-size="14.00">tool.ToolCall</text>
+<polyline fill="none" stroke="black" points="972.7,-845.7 972.7,-881.5"/>
+<text text-anchor="middle" x="982.45" y="-859.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tool.ToolCallChunk -->
+<g id="node25" class="node">
+<title>tool.ToolCallChunk</title>
+<polygon fill="none" stroke="black" points="862.98,-900.5 862.98,-936.5 1010.87,-936.5 1010.87,-900.5 862.98,-900.5"/>
+<text text-anchor="middle" x="927.17" y="-914.4" font-family="Times,serif" font-size="14.00">tool.ToolCallChunk</text>
+<polyline fill="none" stroke="black" points="991.37,-900.7 991.37,-936.5"/>
+<text text-anchor="middle" x="1001.12" y="-914.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tool.ToolMessage -->
+<g id="node26" class="node">
+<title>tool.ToolMessage</title>
+<polygon fill="none" stroke="black" points="577.25,-0.5 577.25,-36.5 713.46,-36.5 713.46,-0.5 577.25,-0.5"/>
+<text text-anchor="middle" x="635.6" y="-14.4" font-family="Times,serif" font-size="14.00">tool.ToolMessage</text>
+<polyline fill="none" stroke="black" points="693.96,-0.7 693.96,-36.5"/>
+<text text-anchor="middle" x="703.71" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tool.ToolMessage&#45;&gt;base.BaseMessage -->
+<g id="edge22" class="edge">
+<title>tool.ToolMessage-&gt;base.BaseMessage</title>
+<path fill="none" stroke="#595959" d="M565.49,-24.67C565.49,-24.67 535.45,-24.67 535.45,-24.67 535.45,-24.67 535.45,-195.33 535.45,-195.33 535.45,-195.33 504.3,-195.33 472.05,-195.33"/>
+<polygon fill="#595959" stroke="#595959" points="565.49,-28.17 575.49,-24.67 565.49,-21.17 565.49,-28.17"/>
+</g>
+<!-- tool.ToolOutputMixin -->
+<g id="node28" class="node">
+<title>tool.ToolOutputMixin</title>
+<polygon fill="none" stroke="black" points="321.43,-0.5 321.43,-36.5 481.77,-36.5 481.77,-0.5 321.43,-0.5"/>
+<text text-anchor="middle" x="391.85" y="-14.4" font-family="Times,serif" font-size="14.00">tool.ToolOutputMixin</text>
+<polyline fill="none" stroke="black" points="462.27,-0.7 462.27,-36.5"/>
+<text text-anchor="middle" x="472.02" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tool.ToolMessage&#45;&gt;tool.ToolOutputMixin -->
+<g id="edge23" class="edge">
+<title>tool.ToolMessage-&gt;tool.ToolOutputMixin</title>
+<path fill="none" stroke="#595959" d="M565.29,-12.33C565.29,-12.33 482.13,-12.33 482.13,-12.33"/>
+<polygon fill="#595959" stroke="#595959" points="565.29,-15.83 575.29,-12.33 565.29,-8.83 565.29,-15.83"/>
+</g>
+<!-- tool.ToolMessageChunk -->
+<g id="node27" class="node">
+<title>tool.ToolMessageChunk</title>
+<polygon fill="none" stroke="black" points="850.15,-27.5 850.15,-63.5 1023.69,-63.5 1023.69,-27.5 850.15,-27.5"/>
+<text text-anchor="middle" x="927.17" y="-41.4" font-family="Times,serif" font-size="14.00">tool.ToolMessageChunk</text>
+<polyline fill="none" stroke="black" points="1004.19,-27.7 1004.19,-63.5"/>
+<text text-anchor="middle" x="1013.94" y="-41.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tool.ToolMessageChunk&#45;&gt;base.BaseMessageChunk -->
+<g id="edge24" class="edge">
+<title>tool.ToolMessageChunk-&gt;base.BaseMessageChunk</title>
+<path fill="none" stroke="#595959" d="M838.38,-59.5C838.38,-59.5 790.94,-59.5 790.94,-59.5 790.94,-59.5 790.94,-167.25 790.94,-167.25 790.94,-167.25 764.55,-167.25 734.24,-167.25"/>
+<polygon fill="#595959" stroke="#595959" points="838.38,-63 848.38,-59.5 838.38,-56 838.38,-63"/>
+</g>
+<!-- tool.ToolMessageChunk&#45;&gt;tool.ToolMessage -->
+<g id="edge25" class="edge">
+<title>tool.ToolMessageChunk-&gt;tool.ToolMessage</title>
+<path fill="none" stroke="#595959" d="M838.32,-32C838.32,-32 713.49,-32 713.49,-32"/>
+<polygon fill="#595959" stroke="#595959" points="838.32,-35.5 848.32,-32 838.32,-28.5 838.32,-35.5"/>
+</g>
+</g>
+</svg>

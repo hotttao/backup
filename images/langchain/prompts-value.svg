@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="844pt" height="210pt" viewBox="0.00 0.00 843.85 210.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 206)">
+<title>prompt_values.py</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-206 839.85,-206 839.85,4 -4,4"/>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node1" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="0,-55.5 0,-91.5 285.43,-91.5 285.43,-55.5 0,-55.5"/>
+<text text-anchor="middle" x="132.96" y="-69.4" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="265.93,-55.7 265.93,-91.5"/>
+<text text-anchor="middle" x="275.68" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ChatPromptValue -->
+<g id="node2" class="node">
+<title>ChatPromptValue</title>
+<polygon fill="none" stroke="black" points="471.85,-110.5 471.85,-146.5 608.45,-146.5 608.45,-110.5 471.85,-110.5"/>
+<text text-anchor="middle" x="530.4" y="-124.4" font-family="Times,serif" font-size="14.00">ChatPromptValue</text>
+<polyline fill="none" stroke="black" points="588.95,-110.7 588.95,-146.5"/>
+<text text-anchor="middle" x="598.7" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- PromptValue -->
+<g id="node6" class="node">
+<title>PromptValue</title>
+<polygon fill="none" stroke="black" points="321.43,-55.5 321.43,-91.5 431.58,-91.5 431.58,-55.5 321.43,-55.5"/>
+<text text-anchor="middle" x="366.76" y="-69.4" font-family="Times,serif" font-size="14.00">PromptValue</text>
+<polyline fill="none" stroke="black" points="412.08,-55.7 412.08,-91.5"/>
+<text text-anchor="middle" x="421.83" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ChatPromptValue&#45;&gt;PromptValue -->
+<g id="edge1" class="edge">
+<title>ChatPromptValue-&gt;PromptValue</title>
+<path fill="none" stroke="#595959" d="M460.19,-128.5C460.19,-128.5 376.51,-128.5 376.51,-128.5 376.51,-128.5 376.51,-107.81 376.51,-91.81"/>
+<polygon fill="#595959" stroke="#595959" points="460.19,-132 470.19,-128.5 460.19,-125 460.19,-132"/>
+</g>
+<!-- ChatPromptValueConcrete -->
+<g id="node3" class="node">
+<title>ChatPromptValueConcrete</title>
+<polygon fill="none" stroke="black" points="648.72,-110.5 648.72,-146.5 835.85,-146.5 835.85,-110.5 648.72,-110.5"/>
+<text text-anchor="middle" x="732.53" y="-124.4" font-family="Times,serif" font-size="14.00">ChatPromptValueConcrete</text>
+<polyline fill="none" stroke="black" points="816.35,-110.7 816.35,-146.5"/>
+<text text-anchor="middle" x="826.1" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ChatPromptValueConcrete&#45;&gt;ChatPromptValue -->
+<g id="edge2" class="edge">
+<title>ChatPromptValueConcrete-&gt;ChatPromptValue</title>
+<path fill="none" stroke="#595959" d="M636.8,-128.5C636.8,-128.5 608.85,-128.5 608.85,-128.5"/>
+<polygon fill="#595959" stroke="#595959" points="636.8,-132 646.8,-128.5 636.8,-125 636.8,-132"/>
+</g>
+<!-- ImagePromptValue -->
+<g id="node4" class="node">
+<title>ImagePromptValue</title>
+<polygon fill="none" stroke="black" points="467.58,-55.5 467.58,-91.5 612.72,-91.5 612.72,-55.5 467.58,-55.5"/>
+<text text-anchor="middle" x="530.4" y="-69.4" font-family="Times,serif" font-size="14.00">ImagePromptValue</text>
+<polyline fill="none" stroke="black" points="593.22,-55.7 593.22,-91.5"/>
+<text text-anchor="middle" x="602.97" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ImagePromptValue&#45;&gt;PromptValue -->
+<g id="edge3" class="edge">
+<title>ImagePromptValue-&gt;PromptValue</title>
+<path fill="none" stroke="#595959" d="M455.91,-73.5C455.91,-73.5 431.82,-73.5 431.82,-73.5"/>
+<polygon fill="#595959" stroke="#595959" points="455.91,-77 465.91,-73.5 455.91,-70 455.91,-77"/>
+</g>
+<!-- ImageURL -->
+<g id="node5" class="node">
+<title>ImageURL</title>
+<polygon fill="none" stroke="black" points="693.04,-165.5 693.04,-201.5 791.52,-201.5 791.52,-165.5 693.04,-165.5"/>
+<text text-anchor="middle" x="732.53" y="-179.4" font-family="Times,serif" font-size="14.00">ImageURL</text>
+<polyline fill="none" stroke="black" points="772.02,-165.7 772.02,-201.5"/>
+<text text-anchor="middle" x="781.77" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- PromptValue&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge4" class="edge">
+<title>PromptValue-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M309.59,-73.5C309.59,-73.5 285.87,-73.5 285.87,-73.5"/>
+<polygon fill="#595959" stroke="#595959" points="309.59,-77 319.59,-73.5 309.59,-70 309.59,-77"/>
+</g>
+<!-- StringPromptValue -->
+<g id="node7" class="node">
+<title>StringPromptValue</title>
+<polygon fill="none" stroke="black" points="467.96,-0.5 467.96,-36.5 612.34,-36.5 612.34,-0.5 467.96,-0.5"/>
+<text text-anchor="middle" x="530.4" y="-14.4" font-family="Times,serif" font-size="14.00">StringPromptValue</text>
+<polyline fill="none" stroke="black" points="592.84,-0.7 592.84,-36.5"/>
+<text text-anchor="middle" x="602.59" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- StringPromptValue&#45;&gt;PromptValue -->
+<g id="edge5" class="edge">
+<title>StringPromptValue-&gt;PromptValue</title>
+<path fill="none" stroke="#595959" d="M456.38,-18.5C456.38,-18.5 376.51,-18.5 376.51,-18.5 376.51,-18.5 376.51,-39.19 376.51,-55.19"/>
+<polygon fill="#595959" stroke="#595959" points="456.38,-22 466.38,-18.5 456.38,-15 456.38,-22"/>
+</g>
+</g>
+</svg>

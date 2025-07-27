@@ -1,0 +1,308 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1550pt" height="581pt" viewBox="0.00 0.00 1549.95 581.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 577)">
+<title>prompts</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-577 1545.95,-577 1545.95,4 -4,4"/>
+<!-- base.BasePromptTemplate -->
+<g id="node1" class="node">
+<title>base.BasePromptTemplate</title>
+<polygon fill="none" stroke="black" points="366.55,-82.5 366.55,-118.5 551.73,-118.5 551.73,-82.5 366.55,-82.5"/>
+<text text-anchor="middle" x="449.39" y="-96.4" font-family="Times,serif" font-size="14.00">base.BasePromptTemplate</text>
+<polyline fill="none" stroke="black" points="532.23,-82.7 532.23,-118.5"/>
+<text text-anchor="middle" x="541.98" y="-96.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.runnables.base.RunnableSerializable -->
+<g id="node22" class="node">
+<title>langchain_core.runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-109.5 0,-145.5 330.55,-145.5 330.55,-109.5 0,-109.5"/>
+<text text-anchor="middle" x="155.52" y="-123.4" font-family="Times,serif" font-size="14.00">langchain_core.runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="311.05,-109.7 311.05,-145.5"/>
+<text text-anchor="middle" x="320.8" y="-123.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BasePromptTemplate&#45;&gt;langchain_core.runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>base.BasePromptTemplate-&gt;langchain_core.runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M354.64,-114C354.64,-114 330.94,-114 330.94,-114"/>
+<polygon fill="#595959" stroke="#595959" points="354.64,-117.5 364.64,-114 354.64,-110.5 354.64,-117.5"/>
+</g>
+<!-- chat.AIMessagePromptTemplate -->
+<g id="node2" class="node">
+<title>chat.AIMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="1308.56,-536.5 1308.56,-572.5 1528.73,-572.5 1528.73,-536.5 1308.56,-536.5"/>
+<text text-anchor="middle" x="1408.89" y="-550.4" font-family="Times,serif" font-size="14.00">chat.AIMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1509.23,-536.7 1509.23,-572.5"/>
+<text text-anchor="middle" x="1518.98" y="-550.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat._StringImageMessagePromptTemplate -->
+<g id="node10" class="node">
+<title>chat._StringImageMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="938.44,-454.5 938.44,-490.5 1220.04,-490.5 1220.04,-454.5 938.44,-454.5"/>
+<text text-anchor="middle" x="1069.49" y="-468.4" font-family="Times,serif" font-size="14.00">chat._StringImageMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1200.54,-454.7 1200.54,-490.5"/>
+<text text-anchor="middle" x="1210.29" y="-468.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.AIMessagePromptTemplate&#45;&gt;chat._StringImageMessagePromptTemplate -->
+<g id="edge2" class="edge">
+<title>chat.AIMessagePromptTemplate-&gt;chat._StringImageMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M1296.94,-554.5C1296.94,-554.5 1079.24,-554.5 1079.24,-554.5 1079.24,-554.5 1079.24,-514.86 1079.24,-490.7"/>
+<polygon fill="#595959" stroke="#595959" points="1296.94,-558 1306.94,-554.5 1296.94,-551 1296.94,-558"/>
+</g>
+<!-- chat.BaseChatPromptTemplate -->
+<g id="node3" class="node">
+<title>chat.BaseChatPromptTemplate</title>
+<polygon fill="none" stroke="black" points="620.41,-220.5 620.41,-256.5 830.47,-256.5 830.47,-220.5 620.41,-220.5"/>
+<text text-anchor="middle" x="715.69" y="-234.4" font-family="Times,serif" font-size="14.00">chat.BaseChatPromptTemplate</text>
+<polyline fill="none" stroke="black" points="810.97,-220.7 810.97,-256.5"/>
+<text text-anchor="middle" x="820.72" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.BaseChatPromptTemplate&#45;&gt;base.BasePromptTemplate -->
+<g id="edge3" class="edge">
+<title>chat.BaseChatPromptTemplate-&gt;base.BasePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M608.77,-238.5C608.77,-238.5 569.73,-238.5 569.73,-238.5 569.73,-238.5 569.73,-116 569.73,-116 569.73,-116 562.6,-116 551.96,-116"/>
+<polygon fill="#595959" stroke="#595959" points="608.77,-242 618.77,-238.5 608.77,-235 608.77,-242"/>
+</g>
+<!-- chat.BaseStringMessagePromptTemplate -->
+<g id="node4" class="node">
+<title>chat.BaseStringMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="945.83,-385.5 945.83,-421.5 1212.66,-421.5 1212.66,-385.5 945.83,-385.5"/>
+<text text-anchor="middle" x="1069.49" y="-399.4" font-family="Times,serif" font-size="14.00">chat.BaseStringMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1193.16,-385.7 1193.16,-421.5"/>
+<text text-anchor="middle" x="1202.91" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- message.BaseMessagePromptTemplate -->
+<g id="node17" class="node">
+<title>message.BaseMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="597.08,-385.5 597.08,-421.5 853.8,-421.5 853.8,-385.5 597.08,-385.5"/>
+<text text-anchor="middle" x="715.69" y="-399.4" font-family="Times,serif" font-size="14.00">message.BaseMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="834.3,-385.7 834.3,-421.5"/>
+<text text-anchor="middle" x="844.05" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.BaseStringMessagePromptTemplate&#45;&gt;message.BaseMessagePromptTemplate -->
+<g id="edge4" class="edge">
+<title>chat.BaseStringMessagePromptTemplate-&gt;message.BaseMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M933.97,-397.33C933.97,-397.33 854.12,-397.33 854.12,-397.33"/>
+<polygon fill="#595959" stroke="#595959" points="933.97,-400.83 943.97,-397.33 933.97,-393.83 933.97,-400.83"/>
+</g>
+<!-- chat.ChatMessagePromptTemplate -->
+<g id="node5" class="node">
+<title>chat.ChatMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="1302.73,-371.5 1302.73,-407.5 1534.56,-407.5 1534.56,-371.5 1302.73,-371.5"/>
+<text text-anchor="middle" x="1408.89" y="-385.4" font-family="Times,serif" font-size="14.00">chat.ChatMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1515.06,-371.7 1515.06,-407.5"/>
+<text text-anchor="middle" x="1524.81" y="-385.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.ChatMessagePromptTemplate&#45;&gt;chat.BaseStringMessagePromptTemplate -->
+<g id="edge5" class="edge">
+<title>chat.ChatMessagePromptTemplate-&gt;chat.BaseStringMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M1290.8,-396.5C1290.8,-396.5 1212.93,-396.5 1212.93,-396.5"/>
+<polygon fill="#595959" stroke="#595959" points="1290.8,-400 1300.8,-396.5 1290.8,-393 1290.8,-400"/>
+</g>
+<!-- chat.ChatPromptTemplate -->
+<g id="node6" class="node">
+<title>chat.ChatPromptTemplate</title>
+<polygon fill="none" stroke="black" points="987.82,-275.5 987.82,-311.5 1170.67,-311.5 1170.67,-275.5 987.82,-275.5"/>
+<text text-anchor="middle" x="1069.49" y="-289.4" font-family="Times,serif" font-size="14.00">chat.ChatPromptTemplate</text>
+<polyline fill="none" stroke="black" points="1151.17,-275.7 1151.17,-311.5"/>
+<text text-anchor="middle" x="1160.92" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.ChatPromptTemplate&#45;&gt;chat.BaseChatPromptTemplate -->
+<g id="edge6" class="edge">
+<title>chat.ChatPromptTemplate-&gt;chat.BaseChatPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M976.16,-293.5C976.16,-293.5 725.44,-293.5 725.44,-293.5 725.44,-293.5 725.44,-272.81 725.44,-256.81"/>
+<polygon fill="#595959" stroke="#595959" points="976.16,-297 986.16,-293.5 976.16,-290 976.16,-297"/>
+</g>
+<!-- chat.HumanMessagePromptTemplate -->
+<g id="node7" class="node">
+<title>chat.HumanMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="1295.34,-481.5 1295.34,-517.5 1541.95,-517.5 1541.95,-481.5 1295.34,-481.5"/>
+<text text-anchor="middle" x="1408.89" y="-495.4" font-family="Times,serif" font-size="14.00">chat.HumanMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1522.45,-481.7 1522.45,-517.5"/>
+<text text-anchor="middle" x="1532.2" y="-495.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.HumanMessagePromptTemplate&#45;&gt;chat._StringImageMessagePromptTemplate -->
+<g id="edge7" class="edge">
+<title>chat.HumanMessagePromptTemplate-&gt;chat._StringImageMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M1283.64,-486C1283.64,-486 1220.48,-486 1220.48,-486"/>
+<polygon fill="#595959" stroke="#595959" points="1283.64,-489.5 1293.64,-486 1283.64,-482.5 1283.64,-489.5"/>
+</g>
+<!-- chat.MessagesPlaceholder -->
+<g id="node8" class="node">
+<title>chat.MessagesPlaceholder</title>
+<polygon fill="none" stroke="black" points="987.83,-330.5 987.83,-366.5 1170.66,-366.5 1170.66,-330.5 987.83,-330.5"/>
+<text text-anchor="middle" x="1069.49" y="-344.4" font-family="Times,serif" font-size="14.00">chat.MessagesPlaceholder</text>
+<polyline fill="none" stroke="black" points="1151.16,-330.7 1151.16,-366.5"/>
+<text text-anchor="middle" x="1160.91" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.MessagesPlaceholder&#45;&gt;message.BaseMessagePromptTemplate -->
+<g id="edge8" class="edge">
+<title>chat.MessagesPlaceholder-&gt;message.BaseMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M976.06,-348.5C976.06,-348.5 842.13,-348.5 842.13,-348.5 842.13,-348.5 842.13,-369.19 842.13,-385.19"/>
+<polygon fill="#595959" stroke="#595959" points="976.06,-352 986.06,-348.5 976.06,-345 976.06,-352"/>
+</g>
+<!-- chat.SystemMessagePromptTemplate -->
+<g id="node9" class="node">
+<title>chat.SystemMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="1295.33,-426.5 1295.33,-462.5 1541.95,-462.5 1541.95,-426.5 1295.33,-426.5"/>
+<text text-anchor="middle" x="1408.89" y="-440.4" font-family="Times,serif" font-size="14.00">chat.SystemMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1522.45,-426.7 1522.45,-462.5"/>
+<text text-anchor="middle" x="1532.2" y="-440.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.SystemMessagePromptTemplate&#45;&gt;chat._StringImageMessagePromptTemplate -->
+<g id="edge9" class="edge">
+<title>chat.SystemMessagePromptTemplate-&gt;chat._StringImageMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M1283.64,-458.5C1283.64,-458.5 1220.48,-458.5 1220.48,-458.5"/>
+<polygon fill="#595959" stroke="#595959" points="1283.64,-462 1293.64,-458.5 1283.64,-455 1283.64,-462"/>
+</g>
+<!-- chat._StringImageMessagePromptTemplate&#45;&gt;message.BaseMessagePromptTemplate -->
+<g id="edge10" class="edge">
+<title>chat._StringImageMessagePromptTemplate-&gt;message.BaseMessagePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M942.13,-442.81C942.13,-442.81 942.13,-409.67 942.13,-409.67 942.13,-409.67 900.66,-409.67 854,-409.67"/>
+<polygon fill="#595959" stroke="#595959" points="938.63,-442.81 942.13,-452.81 945.63,-442.81 938.63,-442.81"/>
+</g>
+<!-- dict.DictPromptTemplate -->
+<g id="node11" class="node">
+<title>dict.DictPromptTemplate</title>
+<polygon fill="none" stroke="black" points="370.04,-137.5 370.04,-173.5 548.23,-173.5 548.23,-137.5 370.04,-137.5"/>
+<text text-anchor="middle" x="449.39" y="-151.4" font-family="Times,serif" font-size="14.00">dict.DictPromptTemplate</text>
+<polyline fill="none" stroke="black" points="528.73,-137.7 528.73,-173.5"/>
+<text text-anchor="middle" x="538.48" y="-151.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- dict.DictPromptTemplate&#45;&gt;langchain_core.runnables.base.RunnableSerializable -->
+<g id="edge11" class="edge">
+<title>dict.DictPromptTemplate-&gt;langchain_core.runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M358.26,-141.5C358.26,-141.5 331.03,-141.5 331.03,-141.5"/>
+<polygon fill="#595959" stroke="#595959" points="358.26,-145 368.26,-141.5 358.26,-138 358.26,-145"/>
+</g>
+<!-- few_shot.FewShotChatMessagePromptTemplate -->
+<g id="node12" class="node">
+<title>few_shot.FewShotChatMessagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="924.43,-220.5 924.43,-256.5 1234.06,-256.5 1234.06,-220.5 924.43,-220.5"/>
+<text text-anchor="middle" x="1069.49" y="-234.4" font-family="Times,serif" font-size="14.00">few_shot.FewShotChatMessagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="1214.56,-220.7 1214.56,-256.5"/>
+<text text-anchor="middle" x="1224.31" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- few_shot.FewShotChatMessagePromptTemplate&#45;&gt;chat.BaseChatPromptTemplate -->
+<g id="edge12" class="edge">
+<title>few_shot.FewShotChatMessagePromptTemplate-&gt;chat.BaseChatPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M912.55,-244.67C912.55,-244.67 830.92,-244.67 830.92,-244.67"/>
+<polygon fill="#595959" stroke="#595959" points="912.55,-248.17 922.55,-244.67 912.55,-241.17 912.55,-248.17"/>
+</g>
+<!-- few_shot._FewShotPromptTemplateMixin -->
+<g id="node14" class="node">
+<title>few_shot._FewShotPromptTemplateMixin</title>
+<polygon fill="none" stroke="black" points="587.73,-165.5 587.73,-201.5 863.15,-201.5 863.15,-165.5 587.73,-165.5"/>
+<text text-anchor="middle" x="715.69" y="-179.4" font-family="Times,serif" font-size="14.00">few_shot._FewShotPromptTemplateMixin</text>
+<polyline fill="none" stroke="black" points="843.65,-165.7 843.65,-201.5"/>
+<text text-anchor="middle" x="853.4" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- few_shot.FewShotChatMessagePromptTemplate&#45;&gt;few_shot._FewShotPromptTemplateMixin -->
+<g id="edge13" class="edge">
+<title>few_shot.FewShotChatMessagePromptTemplate-&gt;few_shot._FewShotPromptTemplateMixin</title>
+<path fill="none" stroke="#595959" d="M912.6,-232.33C912.6,-232.33 858.48,-232.33 858.48,-232.33 858.48,-232.33 858.48,-215.79 858.48,-201.96"/>
+<polygon fill="#595959" stroke="#595959" points="912.6,-235.83 922.6,-232.33 912.6,-228.83 912.6,-235.83"/>
+</g>
+<!-- few_shot.FewShotPromptTemplate -->
+<g id="node13" class="node">
+<title>few_shot.FewShotPromptTemplate</title>
+<polygon fill="none" stroke="black" points="962.14,-165.5 962.14,-201.5 1196.34,-201.5 1196.34,-165.5 962.14,-165.5"/>
+<text text-anchor="middle" x="1069.49" y="-179.4" font-family="Times,serif" font-size="14.00">few_shot.FewShotPromptTemplate</text>
+<polyline fill="none" stroke="black" points="1176.84,-165.7 1176.84,-201.5"/>
+<text text-anchor="middle" x="1186.59" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- few_shot.FewShotPromptTemplate&#45;&gt;few_shot._FewShotPromptTemplateMixin -->
+<g id="edge14" class="edge">
+<title>few_shot.FewShotPromptTemplate-&gt;few_shot._FewShotPromptTemplateMixin</title>
+<path fill="none" stroke="#595959" d="M950.41,-189.67C950.41,-189.67 863.62,-189.67 863.62,-189.67"/>
+<polygon fill="#595959" stroke="#595959" points="950.41,-193.17 960.41,-189.67 950.41,-186.17 950.41,-193.17"/>
+</g>
+<!-- string.StringPromptTemplate -->
+<g id="node20" class="node">
+<title>string.StringPromptTemplate</title>
+<polygon fill="none" stroke="black" points="625.84,-110.5 625.84,-146.5 825.04,-146.5 825.04,-110.5 625.84,-110.5"/>
+<text text-anchor="middle" x="715.69" y="-124.4" font-family="Times,serif" font-size="14.00">string.StringPromptTemplate</text>
+<polyline fill="none" stroke="black" points="805.54,-110.7 805.54,-146.5"/>
+<text text-anchor="middle" x="815.29" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- few_shot.FewShotPromptTemplate&#45;&gt;string.StringPromptTemplate -->
+<g id="edge15" class="edge">
+<title>few_shot.FewShotPromptTemplate-&gt;string.StringPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M950.19,-177.33C950.19,-177.33 875.15,-177.33 875.15,-177.33 875.15,-177.33 875.15,-137.75 875.15,-137.75 875.15,-137.75 852.76,-137.75 825.3,-137.75"/>
+<polygon fill="#595959" stroke="#595959" points="950.19,-180.83 960.19,-177.33 950.19,-173.83 950.19,-180.83"/>
+</g>
+<!-- few_shot_with_templates.FewShotPromptWithTemplates -->
+<g id="node15" class="node">
+<title>few_shot_with_templates.FewShotPromptWithTemplates</title>
+<polygon fill="none" stroke="black" points="899.15,-110.5 899.15,-146.5 1259.33,-146.5 1259.33,-110.5 899.15,-110.5"/>
+<text text-anchor="middle" x="1069.49" y="-124.4" font-family="Times,serif" font-size="14.00">few_shot_with_templates.FewShotPromptWithTemplates</text>
+<polyline fill="none" stroke="black" points="1239.83,-110.7 1239.83,-146.5"/>
+<text text-anchor="middle" x="1249.58" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- few_shot_with_templates.FewShotPromptWithTemplates&#45;&gt;string.StringPromptTemplate -->
+<g id="edge16" class="edge">
+<title>few_shot_with_templates.FewShotPromptWithTemplates-&gt;string.StringPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M887.2,-128.5C887.2,-128.5 825.42,-128.5 825.42,-128.5"/>
+<polygon fill="#595959" stroke="#595959" points="887.2,-132 897.2,-128.5 887.2,-125 887.2,-132"/>
+</g>
+<!-- image.ImagePromptTemplate -->
+<g id="node16" class="node">
+<title>image.ImagePromptTemplate</title>
+<polygon fill="none" stroke="black" points="624.3,-55.5 624.3,-91.5 826.58,-91.5 826.58,-55.5 624.3,-55.5"/>
+<text text-anchor="middle" x="715.69" y="-69.4" font-family="Times,serif" font-size="14.00">image.ImagePromptTemplate</text>
+<polyline fill="none" stroke="black" points="807.08,-55.7 807.08,-91.5"/>
+<text text-anchor="middle" x="816.83" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- image.ImagePromptTemplate&#45;&gt;base.BasePromptTemplate -->
+<g id="edge17" class="edge">
+<title>image.ImagePromptTemplate-&gt;base.BasePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M612.49,-88.67C612.49,-88.67 551.98,-88.67 551.98,-88.67"/>
+<polygon fill="#595959" stroke="#595959" points="612.49,-92.17 622.49,-88.67 612.49,-85.17 612.49,-92.17"/>
+</g>
+<!-- pipeline.PipelinePromptTemplate -->
+<g id="node18" class="node">
+<title>pipeline.PipelinePromptTemplate</title>
+<polygon fill="none" stroke="black" points="613.4,-0.5 613.4,-36.5 837.47,-36.5 837.47,-0.5 613.4,-0.5"/>
+<text text-anchor="middle" x="715.69" y="-14.4" font-family="Times,serif" font-size="14.00">pipeline.PipelinePromptTemplate</text>
+<polyline fill="none" stroke="black" points="817.97,-0.7 817.97,-36.5"/>
+<text text-anchor="middle" x="827.72" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- pipeline.PipelinePromptTemplate&#45;&gt;base.BasePromptTemplate -->
+<g id="edge18" class="edge">
+<title>pipeline.PipelinePromptTemplate-&gt;base.BasePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M618.85,-48.28C618.85,-48.28 618.85,-85.33 618.85,-85.33 618.85,-85.33 587.18,-85.33 552.04,-85.33"/>
+<polygon fill="#595959" stroke="#595959" points="622.35,-48.28 618.85,-38.28 615.35,-48.28 622.35,-48.28"/>
+</g>
+<!-- prompt.PromptTemplate -->
+<g id="node19" class="node">
+<title>prompt.PromptTemplate</title>
+<polygon fill="none" stroke="black" points="992.48,-55.5 992.48,-91.5 1166.01,-91.5 1166.01,-55.5 992.48,-55.5"/>
+<text text-anchor="middle" x="1069.49" y="-69.4" font-family="Times,serif" font-size="14.00">prompt.PromptTemplate</text>
+<polyline fill="none" stroke="black" points="1146.51,-55.7 1146.51,-91.5"/>
+<text text-anchor="middle" x="1156.26" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- prompt.PromptTemplate&#45;&gt;string.StringPromptTemplate -->
+<g id="edge19" class="edge">
+<title>prompt.PromptTemplate-&gt;string.StringPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M980.68,-73.5C980.68,-73.5 887.15,-73.5 887.15,-73.5 887.15,-73.5 887.15,-119.25 887.15,-119.25 887.15,-119.25 858.37,-119.25 825.09,-119.25"/>
+<polygon fill="#595959" stroke="#595959" points="980.68,-77 990.68,-73.5 980.68,-70 980.68,-77"/>
+</g>
+<!-- string.StringPromptTemplate&#45;&gt;base.BasePromptTemplate -->
+<g id="edge20" class="edge">
+<title>string.StringPromptTemplate-&gt;base.BasePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M614.01,-113C614.01,-113 552.13,-113 552.13,-113"/>
+<polygon fill="#595959" stroke="#595959" points="614.01,-116.5 624.01,-113 614.01,-109.5 614.01,-116.5"/>
+</g>
+<!-- structured.StructuredPrompt -->
+<g id="node21" class="node">
+<title>structured.StructuredPrompt</title>
+<polygon fill="none" stroke="black" points="1321.38,-275.5 1321.38,-311.5 1515.91,-311.5 1515.91,-275.5 1321.38,-275.5"/>
+<text text-anchor="middle" x="1408.89" y="-289.4" font-family="Times,serif" font-size="14.00">structured.StructuredPrompt</text>
+<polyline fill="none" stroke="black" points="1496.41,-275.7 1496.41,-311.5"/>
+<text text-anchor="middle" x="1506.16" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- structured.StructuredPrompt&#45;&gt;chat.ChatPromptTemplate -->
+<g id="edge21" class="edge">
+<title>structured.StructuredPrompt-&gt;chat.ChatPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M1309.42,-293.5C1309.42,-293.5 1171.03,-293.5 1171.03,-293.5"/>
+<polygon fill="#595959" stroke="#595959" points="1309.42,-297 1319.42,-293.5 1309.42,-290 1309.42,-297"/>
+</g>
+</g>
+</svg>
