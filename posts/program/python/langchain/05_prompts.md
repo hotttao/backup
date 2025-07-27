@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "LangChain Prompts"
-date: 2025-07-22T21:00:00+08:00
-lastmod: 2025-07-22T21:00:00+08:00
+date: 2025-07-22T20:00:00+08:00
+lastmod: 2025-07-22T20:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -640,7 +640,7 @@ BaseChatPromptTemplate 最常用的子类是:
 1. chat.ChatPromptTemplate
 2. structured.StructuredPrompt
 
-### 5.1 
+### 5.1 MessagesPlaceholder
 MessagesPlaceholder 定义了通过输入参数解析输出多种 Message 的能力。
 
 ```python

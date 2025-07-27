@@ -1,0 +1,314 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1978pt" height="375pt" viewBox="0.00 0.00 1977.98 375.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 371)">
+<title>output_parsers</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-371 1973.98,-371 1973.98,4 -4,4"/>
+<!-- base.BaseGenerationOutputParser -->
+<g id="node1" class="node">
+<title>base.BaseGenerationOutputParser</title>
+<polygon fill="none" stroke="black" points="366.55,-302.5 366.55,-338.5 593.71,-338.5 593.71,-302.5 366.55,-302.5"/>
+<text text-anchor="middle" x="470.38" y="-316.4" font-family="Times,serif" font-size="14.00">base.BaseGenerationOutputParser</text>
+<polyline fill="none" stroke="black" points="574.21,-302.7 574.21,-338.5"/>
+<text text-anchor="middle" x="583.96" y="-316.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseLLMOutputParser -->
+<g id="node2" class="node">
+<title>base.BaseLLMOutputParser</title>
+<polygon fill="none" stroke="black" points="68.01,-302.5 68.01,-338.5 262.53,-338.5 262.53,-302.5 68.01,-302.5"/>
+<text text-anchor="middle" x="155.52" y="-316.4" font-family="Times,serif" font-size="14.00">base.BaseLLMOutputParser</text>
+<polyline fill="none" stroke="black" points="243.03,-302.7 243.03,-338.5"/>
+<text text-anchor="middle" x="252.78" y="-316.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseGenerationOutputParser&#45;&gt;base.BaseLLMOutputParser -->
+<g id="edge1" class="edge">
+<title>base.BaseGenerationOutputParser-&gt;base.BaseLLMOutputParser</title>
+<path fill="none" stroke="#595959" d="M354.94,-326.67C354.94,-326.67 262.91,-326.67 262.91,-326.67"/>
+<polygon fill="#595959" stroke="#595959" points="354.94,-330.17 364.94,-326.67 354.94,-323.17 354.94,-330.17"/>
+</g>
+<!-- langchain_core.runnables.base.RunnableSerializable -->
+<g id="node22" class="node">
+<title>langchain_core.runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-247.5 0,-283.5 330.55,-283.5 330.55,-247.5 0,-247.5"/>
+<text text-anchor="middle" x="155.52" y="-261.4" font-family="Times,serif" font-size="14.00">langchain_core.runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="311.05,-247.7 311.05,-283.5"/>
+<text text-anchor="middle" x="320.8" y="-261.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseGenerationOutputParser&#45;&gt;langchain_core.runnables.base.RunnableSerializable -->
+<g id="edge2" class="edge">
+<title>base.BaseGenerationOutputParser-&gt;langchain_core.runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M382.09,-290.64C382.09,-290.64 382.09,-274.75 382.09,-274.75 382.09,-274.75 360.52,-274.75 330.99,-274.75"/>
+<polygon fill="#595959" stroke="#595959" points="378.59,-290.64 382.09,-300.64 385.59,-290.64 378.59,-290.64"/>
+</g>
+<!-- base.BaseOutputParser -->
+<g id="node3" class="node">
+<title>base.BaseOutputParser</title>
+<polygon fill="none" stroke="black" points="397.64,-247.5 397.64,-283.5 562.61,-283.5 562.61,-247.5 397.64,-247.5"/>
+<text text-anchor="middle" x="470.38" y="-261.4" font-family="Times,serif" font-size="14.00">base.BaseOutputParser</text>
+<polyline fill="none" stroke="black" points="543.11,-247.7 543.11,-283.5"/>
+<text text-anchor="middle" x="552.86" y="-261.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseOutputParser&#45;&gt;base.BaseLLMOutputParser -->
+<g id="edge3" class="edge">
+<title>base.BaseOutputParser-&gt;base.BaseLLMOutputParser</title>
+<path fill="none" stroke="#595959" d="M385.65,-265.5C385.65,-265.5 348.55,-265.5 348.55,-265.5 348.55,-265.5 348.55,-314.33 348.55,-314.33 348.55,-314.33 306.58,-314.33 262.81,-314.33"/>
+<polygon fill="#595959" stroke="#595959" points="385.65,-269 395.65,-265.5 385.65,-262 385.65,-269"/>
+</g>
+<!-- base.BaseOutputParser&#45;&gt;langchain_core.runnables.base.RunnableSerializable -->
+<g id="edge4" class="edge">
+<title>base.BaseOutputParser-&gt;langchain_core.runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M385.89,-256.25C385.89,-256.25 330.96,-256.25 330.96,-256.25"/>
+<polygon fill="#595959" stroke="#595959" points="385.89,-259.75 395.89,-256.25 385.89,-252.75 385.89,-259.75"/>
+</g>
+<!-- json.JsonOutputParser -->
+<g id="node4" class="node">
+<title>json.JsonOutputParser</title>
+<polygon fill="none" stroke="black" points="1372.64,-275.5 1372.64,-311.5 1533.75,-311.5 1533.75,-275.5 1372.64,-275.5"/>
+<text text-anchor="middle" x="1443.45" y="-289.4" font-family="Times,serif" font-size="14.00">json.JsonOutputParser</text>
+<polyline fill="none" stroke="black" points="1514.25,-275.7 1514.25,-311.5"/>
+<text text-anchor="middle" x="1524" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- transform.BaseCumulativeTransformOutputParser -->
+<g id="node19" class="node">
+<title>transform.BaseCumulativeTransformOutputParser</title>
+<polygon fill="none" stroke="black" points="930.23,-220.5 930.23,-256.5 1249.16,-256.5 1249.16,-220.5 930.23,-220.5"/>
+<text text-anchor="middle" x="1079.95" y="-234.4" font-family="Times,serif" font-size="14.00">transform.BaseCumulativeTransformOutputParser</text>
+<polyline fill="none" stroke="black" points="1229.66,-220.7 1229.66,-256.5"/>
+<text text-anchor="middle" x="1239.41" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- json.JsonOutputParser&#45;&gt;transform.BaseCumulativeTransformOutputParser -->
+<g id="edge5" class="edge">
+<title>json.JsonOutputParser-&gt;transform.BaseCumulativeTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M1360.83,-293.5C1360.83,-293.5 1208.35,-293.5 1208.35,-293.5 1208.35,-293.5 1208.35,-272.81 1208.35,-256.81"/>
+<polygon fill="#595959" stroke="#595959" points="1360.83,-297 1370.83,-293.5 1360.83,-290 1360.83,-297"/>
+</g>
+<!-- list.CommaSeparatedListOutputParser -->
+<g id="node5" class="node">
+<title>list.CommaSeparatedListOutputParser</title>
+<polygon fill="none" stroke="black" points="1327.55,-110.5 1327.55,-146.5 1578.84,-146.5 1578.84,-110.5 1327.55,-110.5"/>
+<text text-anchor="middle" x="1443.45" y="-124.4" font-family="Times,serif" font-size="14.00">list.CommaSeparatedListOutputParser</text>
+<polyline fill="none" stroke="black" points="1559.34,-110.7 1559.34,-146.5"/>
+<text text-anchor="middle" x="1569.09" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- list.ListOutputParser -->
+<g id="node6" class="node">
+<title>list.ListOutputParser</title>
+<polygon fill="none" stroke="black" points="1013.81,-82.5 1013.81,-118.5 1165.58,-118.5 1165.58,-82.5 1013.81,-82.5"/>
+<text text-anchor="middle" x="1079.95" y="-96.4" font-family="Times,serif" font-size="14.00">list.ListOutputParser</text>
+<polyline fill="none" stroke="black" points="1146.08,-82.7 1146.08,-118.5"/>
+<text text-anchor="middle" x="1155.83" y="-96.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- list.CommaSeparatedListOutputParser&#45;&gt;list.ListOutputParser -->
+<g id="edge6" class="edge">
+<title>list.CommaSeparatedListOutputParser-&gt;list.ListOutputParser</title>
+<path fill="none" stroke="#595959" d="M1315.57,-114.5C1315.57,-114.5 1166.06,-114.5 1166.06,-114.5"/>
+<polygon fill="#595959" stroke="#595959" points="1315.57,-118 1325.57,-114.5 1315.57,-111 1315.57,-118"/>
+</g>
+<!-- transform.BaseTransformOutputParser -->
+<g id="node20" class="node">
+<title>transform.BaseTransformOutputParser</title>
+<polygon fill="none" stroke="black" points="635.16,-220.5 635.16,-256.5 888.77,-256.5 888.77,-220.5 635.16,-220.5"/>
+<text text-anchor="middle" x="752.22" y="-234.4" font-family="Times,serif" font-size="14.00">transform.BaseTransformOutputParser</text>
+<polyline fill="none" stroke="black" points="869.27,-220.7 869.27,-256.5"/>
+<text text-anchor="middle" x="879.02" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- list.ListOutputParser&#45;&gt;transform.BaseTransformOutputParser -->
+<g id="edge7" class="edge">
+<title>list.ListOutputParser-&gt;transform.BaseTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M1001.97,-100.5C1001.97,-100.5 719.7,-100.5 719.7,-100.5 719.7,-100.5 719.7,-182.64 719.7,-220.17"/>
+<polygon fill="#595959" stroke="#595959" points="1001.97,-104 1011.97,-100.5 1001.97,-97 1001.97,-104"/>
+</g>
+<!-- list.MarkdownListOutputParser -->
+<g id="node7" class="node">
+<title>list.MarkdownListOutputParser</title>
+<polygon fill="none" stroke="black" points="1346.59,-55.5 1346.59,-91.5 1559.8,-91.5 1559.8,-55.5 1346.59,-55.5"/>
+<text text-anchor="middle" x="1443.45" y="-69.4" font-family="Times,serif" font-size="14.00">list.MarkdownListOutputParser</text>
+<polyline fill="none" stroke="black" points="1540.3,-55.7 1540.3,-91.5"/>
+<text text-anchor="middle" x="1550.05" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- list.MarkdownListOutputParser&#45;&gt;list.ListOutputParser -->
+<g id="edge8" class="edge">
+<title>list.MarkdownListOutputParser-&gt;list.ListOutputParser</title>
+<path fill="none" stroke="#595959" d="M1334.59,-87C1334.59,-87 1166.06,-87 1166.06,-87"/>
+<polygon fill="#595959" stroke="#595959" points="1334.59,-90.5 1344.59,-87 1334.59,-83.5 1334.59,-90.5"/>
+</g>
+<!-- list.NumberedListOutputParser -->
+<g id="node8" class="node">
+<title>list.NumberedListOutputParser</title>
+<polygon fill="none" stroke="black" points="1347.76,-0.5 1347.76,-36.5 1558.63,-36.5 1558.63,-0.5 1347.76,-0.5"/>
+<text text-anchor="middle" x="1443.45" y="-14.4" font-family="Times,serif" font-size="14.00">list.NumberedListOutputParser</text>
+<polyline fill="none" stroke="black" points="1539.13,-0.7 1539.13,-36.5"/>
+<text text-anchor="middle" x="1548.88" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- list.NumberedListOutputParser&#45;&gt;list.ListOutputParser -->
+<g id="edge9" class="edge">
+<title>list.NumberedListOutputParser-&gt;list.ListOutputParser</title>
+<path fill="none" stroke="#595959" d="M1336.05,-18.5C1336.05,-18.5 1089.7,-18.5 1089.7,-18.5 1089.7,-18.5 1089.7,-58.14 1089.7,-82.3"/>
+<polygon fill="#595959" stroke="#595959" points="1336.05,-22 1346.05,-18.5 1336.05,-15 1336.05,-22"/>
+</g>
+<!-- openai_functions.JsonKeyOutputFunctionsParser -->
+<g id="node9" class="node">
+<title>openai_functions.JsonKeyOutputFunctionsParser</title>
+<polygon fill="none" stroke="black" points="1657.23,-220.5 1657.23,-256.5 1969.98,-256.5 1969.98,-220.5 1657.23,-220.5"/>
+<text text-anchor="middle" x="1803.85" y="-234.4" font-family="Times,serif" font-size="14.00">openai_functions.JsonKeyOutputFunctionsParser</text>
+<polyline fill="none" stroke="black" points="1950.48,-220.7 1950.48,-256.5"/>
+<text text-anchor="middle" x="1960.23" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_functions.JsonOutputFunctionsParser -->
+<g id="node10" class="node">
+<title>openai_functions.JsonOutputFunctionsParser</title>
+<polygon fill="none" stroke="black" points="1308.49,-220.5 1308.49,-256.5 1597.91,-256.5 1597.91,-220.5 1308.49,-220.5"/>
+<text text-anchor="middle" x="1443.45" y="-234.4" font-family="Times,serif" font-size="14.00">openai_functions.JsonOutputFunctionsParser</text>
+<polyline fill="none" stroke="black" points="1578.41,-220.7 1578.41,-256.5"/>
+<text text-anchor="middle" x="1588.16" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_functions.JsonKeyOutputFunctionsParser&#45;&gt;openai_functions.JsonOutputFunctionsParser -->
+<g id="edge10" class="edge">
+<title>openai_functions.JsonKeyOutputFunctionsParser-&gt;openai_functions.JsonOutputFunctionsParser</title>
+<path fill="none" stroke="#595959" d="M1645.32,-238.5C1645.32,-238.5 1598.28,-238.5 1598.28,-238.5"/>
+<polygon fill="#595959" stroke="#595959" points="1645.32,-242 1655.32,-238.5 1645.32,-235 1645.32,-242"/>
+</g>
+<!-- openai_functions.JsonOutputFunctionsParser&#45;&gt;transform.BaseCumulativeTransformOutputParser -->
+<g id="edge11" class="edge">
+<title>openai_functions.JsonOutputFunctionsParser-&gt;transform.BaseCumulativeTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M1296.71,-238.5C1296.71,-238.5 1249.54,-238.5 1249.54,-238.5"/>
+<polygon fill="#595959" stroke="#595959" points="1296.71,-242 1306.71,-238.5 1296.71,-235 1296.71,-242"/>
+</g>
+<!-- openai_functions.OutputFunctionsParser -->
+<g id="node11" class="node">
+<title>openai_functions.OutputFunctionsParser</title>
+<polygon fill="none" stroke="black" points="629.71,-316.5 629.71,-352.5 894.23,-352.5 894.23,-316.5 629.71,-316.5"/>
+<text text-anchor="middle" x="752.22" y="-330.4" font-family="Times,serif" font-size="14.00">openai_functions.OutputFunctionsParser</text>
+<polyline fill="none" stroke="black" points="874.73,-316.7 874.73,-352.5"/>
+<text text-anchor="middle" x="884.48" y="-330.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_functions.OutputFunctionsParser&#45;&gt;base.BaseGenerationOutputParser -->
+<g id="edge12" class="edge">
+<title>openai_functions.OutputFunctionsParser-&gt;base.BaseGenerationOutputParser</title>
+<path fill="none" stroke="#595959" d="M617.79,-327.5C617.79,-327.5 593.85,-327.5 593.85,-327.5"/>
+<polygon fill="#595959" stroke="#595959" points="617.79,-331 627.79,-327.5 617.79,-324 617.79,-331"/>
+</g>
+<!-- openai_functions.PydanticAttrOutputFunctionsParser -->
+<g id="node12" class="node">
+<title>openai_functions.PydanticAttrOutputFunctionsParser</title>
+<polygon fill="none" stroke="black" points="1285.16,-330.5 1285.16,-366.5 1621.23,-366.5 1621.23,-330.5 1285.16,-330.5"/>
+<text text-anchor="middle" x="1443.45" y="-344.4" font-family="Times,serif" font-size="14.00">openai_functions.PydanticAttrOutputFunctionsParser</text>
+<polyline fill="none" stroke="black" points="1601.73,-330.7 1601.73,-366.5"/>
+<text text-anchor="middle" x="1611.48" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_functions.PydanticOutputFunctionsParser -->
+<g id="node13" class="node">
+<title>openai_functions.PydanticOutputFunctionsParser</title>
+<polygon fill="none" stroke="black" points="932.94,-330.5 932.94,-366.5 1246.45,-366.5 1246.45,-330.5 932.94,-330.5"/>
+<text text-anchor="middle" x="1079.95" y="-344.4" font-family="Times,serif" font-size="14.00">openai_functions.PydanticOutputFunctionsParser</text>
+<polyline fill="none" stroke="black" points="1226.95,-330.7 1226.95,-366.5"/>
+<text text-anchor="middle" x="1236.7" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_functions.PydanticAttrOutputFunctionsParser&#45;&gt;openai_functions.PydanticOutputFunctionsParser -->
+<g id="edge13" class="edge">
+<title>openai_functions.PydanticAttrOutputFunctionsParser-&gt;openai_functions.PydanticOutputFunctionsParser</title>
+<path fill="none" stroke="#595959" d="M1273.23,-348.5C1273.23,-348.5 1246.85,-348.5 1246.85,-348.5"/>
+<polygon fill="#595959" stroke="#595959" points="1273.23,-352 1283.23,-348.5 1273.23,-345 1273.23,-352"/>
+</g>
+<!-- openai_functions.PydanticOutputFunctionsParser&#45;&gt;openai_functions.OutputFunctionsParser -->
+<g id="edge14" class="edge">
+<title>openai_functions.PydanticOutputFunctionsParser-&gt;openai_functions.OutputFunctionsParser</title>
+<path fill="none" stroke="#595959" d="M921.04,-341.5C921.04,-341.5 894.26,-341.5 894.26,-341.5"/>
+<polygon fill="#595959" stroke="#595959" points="921.04,-345 931.04,-341.5 921.04,-338 921.04,-345"/>
+</g>
+<!-- openai_tools.JsonOutputKeyToolsParser -->
+<g id="node14" class="node">
+<title>openai_tools.JsonOutputKeyToolsParser</title>
+<polygon fill="none" stroke="black" points="1681.34,-165.5 1681.34,-201.5 1945.87,-201.5 1945.87,-165.5 1681.34,-165.5"/>
+<text text-anchor="middle" x="1803.85" y="-179.4" font-family="Times,serif" font-size="14.00">openai_tools.JsonOutputKeyToolsParser</text>
+<polyline fill="none" stroke="black" points="1926.37,-165.7 1926.37,-201.5"/>
+<text text-anchor="middle" x="1936.12" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_tools.JsonOutputToolsParser -->
+<g id="node15" class="node">
+<title>openai_tools.JsonOutputToolsParser</title>
+<polygon fill="none" stroke="black" points="1332.59,-165.5 1332.59,-201.5 1573.8,-201.5 1573.8,-165.5 1332.59,-165.5"/>
+<text text-anchor="middle" x="1443.45" y="-179.4" font-family="Times,serif" font-size="14.00">openai_tools.JsonOutputToolsParser</text>
+<polyline fill="none" stroke="black" points="1554.3,-165.7 1554.3,-201.5"/>
+<text text-anchor="middle" x="1564.05" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_tools.JsonOutputKeyToolsParser&#45;&gt;openai_tools.JsonOutputToolsParser -->
+<g id="edge15" class="edge">
+<title>openai_tools.JsonOutputKeyToolsParser-&gt;openai_tools.JsonOutputToolsParser</title>
+<path fill="none" stroke="#595959" d="M1669.42,-189.67C1669.42,-189.67 1574.25,-189.67 1574.25,-189.67"/>
+<polygon fill="#595959" stroke="#595959" points="1669.42,-193.17 1679.42,-189.67 1669.42,-186.17 1669.42,-193.17"/>
+</g>
+<!-- openai_tools.JsonOutputToolsParser&#45;&gt;transform.BaseCumulativeTransformOutputParser -->
+<g id="edge16" class="edge">
+<title>openai_tools.JsonOutputToolsParser-&gt;transform.BaseCumulativeTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M1320.87,-183.5C1320.87,-183.5 1210.87,-183.5 1210.87,-183.5 1210.87,-183.5 1210.87,-204.19 1210.87,-220.19"/>
+<polygon fill="#595959" stroke="#595959" points="1320.87,-187 1330.87,-183.5 1320.87,-180 1320.87,-187"/>
+</g>
+<!-- openai_tools.PydanticToolsParser -->
+<g id="node16" class="node">
+<title>openai_tools.PydanticToolsParser</title>
+<polygon fill="none" stroke="black" points="1700.4,-110.5 1700.4,-146.5 1926.81,-146.5 1926.81,-110.5 1700.4,-110.5"/>
+<text text-anchor="middle" x="1803.85" y="-124.4" font-family="Times,serif" font-size="14.00">openai_tools.PydanticToolsParser</text>
+<polyline fill="none" stroke="black" points="1907.31,-110.7 1907.31,-146.5"/>
+<text text-anchor="middle" x="1917.06" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- openai_tools.PydanticToolsParser&#45;&gt;openai_tools.JsonOutputToolsParser -->
+<g id="edge17" class="edge">
+<title>openai_tools.PydanticToolsParser-&gt;openai_tools.JsonOutputToolsParser</title>
+<path fill="none" stroke="#595959" d="M1688.73,-128.5C1688.73,-128.5 1669.28,-128.5 1669.28,-128.5 1669.28,-128.5 1669.28,-177.33 1669.28,-177.33 1669.28,-177.33 1623.57,-177.33 1574.19,-177.33"/>
+<polygon fill="#595959" stroke="#595959" points="1688.73,-132 1698.73,-128.5 1688.73,-125 1688.73,-132"/>
+</g>
+<!-- pydantic.PydanticOutputParser -->
+<g id="node17" class="node">
+<title>pydantic.PydanticOutputParser</title>
+<polygon fill="none" stroke="black" points="1708.56,-275.5 1708.56,-311.5 1918.64,-311.5 1918.64,-275.5 1708.56,-275.5"/>
+<text text-anchor="middle" x="1803.85" y="-289.4" font-family="Times,serif" font-size="14.00">pydantic.PydanticOutputParser</text>
+<polyline fill="none" stroke="black" points="1899.14,-275.7 1899.14,-311.5"/>
+<text text-anchor="middle" x="1908.89" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- pydantic.PydanticOutputParser&#45;&gt;json.JsonOutputParser -->
+<g id="edge18" class="edge">
+<title>pydantic.PydanticOutputParser-&gt;json.JsonOutputParser</title>
+<path fill="none" stroke="#595959" d="M1696.88,-293.5C1696.88,-293.5 1534.18,-293.5 1534.18,-293.5"/>
+<polygon fill="#595959" stroke="#595959" points="1696.88,-297 1706.88,-293.5 1696.88,-290 1696.88,-297"/>
+</g>
+<!-- string.StrOutputParser -->
+<g id="node18" class="node">
+<title>string.StrOutputParser</title>
+<polygon fill="none" stroke="black" points="1009.14,-275.5 1009.14,-311.5 1170.25,-311.5 1170.25,-275.5 1009.14,-275.5"/>
+<text text-anchor="middle" x="1079.95" y="-289.4" font-family="Times,serif" font-size="14.00">string.StrOutputParser</text>
+<polyline fill="none" stroke="black" points="1150.75,-275.7 1150.75,-311.5"/>
+<text text-anchor="middle" x="1160.5" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- string.StrOutputParser&#45;&gt;transform.BaseTransformOutputParser -->
+<g id="edge19" class="edge">
+<title>string.StrOutputParser-&gt;transform.BaseTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M997.17,-279.5C997.17,-279.5 761.97,-279.5 761.97,-279.5 761.97,-279.5 761.97,-267.59 761.97,-256.6"/>
+<polygon fill="#595959" stroke="#595959" points="997.17,-283 1007.17,-279.5 997.17,-276 997.17,-283"/>
+</g>
+<!-- transform.BaseCumulativeTransformOutputParser&#45;&gt;transform.BaseTransformOutputParser -->
+<g id="edge20" class="edge">
+<title>transform.BaseCumulativeTransformOutputParser-&gt;transform.BaseTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M918.64,-238.5C918.64,-238.5 888.91,-238.5 888.91,-238.5"/>
+<polygon fill="#595959" stroke="#595959" points="918.64,-242 928.64,-238.5 918.64,-235 918.64,-242"/>
+</g>
+<!-- transform.BaseTransformOutputParser&#45;&gt;base.BaseOutputParser -->
+<g id="edge21" class="edge">
+<title>transform.BaseTransformOutputParser-&gt;base.BaseOutputParser</title>
+<path fill="none" stroke="#595959" d="M623.55,-252C623.55,-252 562.72,-252 562.72,-252"/>
+<polygon fill="#595959" stroke="#595959" points="623.55,-255.5 633.55,-252 623.55,-248.5 623.55,-255.5"/>
+</g>
+<!-- xml.XMLOutputParser -->
+<g id="node21" class="node">
+<title>xml.XMLOutputParser</title>
+<polygon fill="none" stroke="black" points="1006.81,-165.5 1006.81,-201.5 1172.58,-201.5 1172.58,-165.5 1006.81,-165.5"/>
+<text text-anchor="middle" x="1079.95" y="-179.4" font-family="Times,serif" font-size="14.00">xml.XMLOutputParser</text>
+<polyline fill="none" stroke="black" points="1153.08,-165.7 1153.08,-201.5"/>
+<text text-anchor="middle" x="1162.83" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- xml.XMLOutputParser&#45;&gt;transform.BaseTransformOutputParser -->
+<g id="edge22" class="edge">
+<title>xml.XMLOutputParser-&gt;transform.BaseTransformOutputParser</title>
+<path fill="none" stroke="#595959" d="M994.85,-183.5C994.85,-183.5 804.24,-183.5 804.24,-183.5 804.24,-183.5 804.24,-204.19 804.24,-220.19"/>
+<polygon fill="#595959" stroke="#595959" points="994.85,-187 1004.85,-183.5 994.85,-180 994.85,-187"/>
+</g>
+</g>
+</svg>

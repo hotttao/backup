@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "LangChain Output Parser"
-date: 2025-07-22T23:00:00+08:00
-lastmod: 2025-07-22T23:00:00+08:00
+title: "LangChain Tools Define"
+date: 2025-07-23T13:00:00+08:00
+lastmod: 2025-07-23T13:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langchain output_parsers"
+description: "langchain tools define"
 featuredImage: 
 
 tags: ["langchain 源码"]

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="696pt" height="318pt" viewBox="0.00 0.00 695.62 318.40">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 314.4)">
+<title>outputs</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-314.4 691.62,-314.4 691.62,4 -4,4"/>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node1" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="87.47,-260.3 87.47,-309.9 353.4,-309.9 353.4,-260.3 87.47,-260.3"/>
+<text text-anchor="middle" x="220.44" y="-293.3" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="87.47,-285.1 353.4,-285.1"/>
+<text text-anchor="middle" x="220.44" y="-268.5" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_generation.ChatGeneration -->
+<g id="node2" class="node">
+<title>chat_generation.ChatGeneration</title>
+<polygon fill="none" stroke="black" points="18.67,-87.1 18.67,-136.7 216.2,-136.7 216.2,-87.1 18.67,-87.1"/>
+<text text-anchor="middle" x="117.44" y="-120.1" font-family="Times,serif" font-size="14.00">chat_generation.ChatGeneration</text>
+<polyline fill="none" stroke="black" points="18.67,-111.9 216.2,-111.9"/>
+<text text-anchor="middle" x="117.44" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- generation.Generation -->
+<g id="node5" class="node">
+<title>generation.Generation</title>
+<polygon fill="none" stroke="black" points="150.05,-173.7 150.05,-223.3 290.82,-223.3 290.82,-173.7 150.05,-173.7"/>
+<text text-anchor="middle" x="220.44" y="-206.7" font-family="Times,serif" font-size="14.00">generation.Generation</text>
+<polyline fill="none" stroke="black" points="150.05,-198.5 290.82,-198.5"/>
+<text text-anchor="middle" x="220.44" y="-181.9" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_generation.ChatGeneration&#45;&gt;generation.Generation -->
+<g id="edge1" class="edge">
+<title>chat_generation.ChatGeneration-&gt;generation.Generation</title>
+<path fill="none" stroke="#595959" d="M183.13,-148.46C183.13,-148.46 183.13,-173.21 183.13,-173.21"/>
+<polygon fill="#595959" stroke="#595959" points="186.63,-148.46 183.13,-138.46 179.63,-148.46 186.63,-148.46"/>
+</g>
+<!-- chat_generation.ChatGenerationChunk -->
+<g id="node3" class="node">
+<title>chat_generation.ChatGenerationChunk</title>
+<polygon fill="none" stroke="black" points="0,-0.5 0,-50.1 234.87,-50.1 234.87,-0.5 0,-0.5"/>
+<text text-anchor="middle" x="117.44" y="-33.5" font-family="Times,serif" font-size="14.00">chat_generation.ChatGenerationChunk</text>
+<polyline fill="none" stroke="black" points="0,-25.3 234.87,-25.3"/>
+<text text-anchor="middle" x="117.44" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_generation.ChatGenerationChunk&#45;&gt;chat_generation.ChatGeneration -->
+<g id="edge2" class="edge">
+<title>chat_generation.ChatGenerationChunk-&gt;chat_generation.ChatGeneration</title>
+<path fill="none" stroke="#595959" d="M117.44,-61.86C117.44,-61.86 117.44,-86.61 117.44,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="120.94,-61.86 117.44,-51.86 113.94,-61.86 120.94,-61.86"/>
+</g>
+<!-- chat_result.ChatResult -->
+<g id="node4" class="node">
+<title>chat_result.ChatResult</title>
+<polygon fill="none" stroke="black" points="252.87,-0.5 252.87,-50.1 396.01,-50.1 396.01,-0.5 252.87,-0.5"/>
+<text text-anchor="middle" x="324.44" y="-33.5" font-family="Times,serif" font-size="14.00">chat_result.ChatResult</text>
+<polyline fill="none" stroke="black" points="252.87,-25.3 396.01,-25.3"/>
+<text text-anchor="middle" x="324.44" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- generation.Generation&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge3" class="edge">
+<title>generation.Generation-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M220.44,-235.06C220.44,-235.06 220.44,-259.81 220.44,-259.81"/>
+<polygon fill="#595959" stroke="#595959" points="223.94,-235.06 220.44,-225.06 216.94,-235.06 223.94,-235.06"/>
+</g>
+<!-- generation.GenerationChunk -->
+<g id="node6" class="node">
+<title>generation.GenerationChunk</title>
+<polygon fill="none" stroke="black" points="234.38,-87.1 234.38,-136.7 412.49,-136.7 412.49,-87.1 234.38,-87.1"/>
+<text text-anchor="middle" x="323.44" y="-120.1" font-family="Times,serif" font-size="14.00">generation.GenerationChunk</text>
+<polyline fill="none" stroke="black" points="234.38,-111.9 412.49,-111.9"/>
+<text text-anchor="middle" x="323.44" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- generation.GenerationChunk&#45;&gt;generation.Generation -->
+<g id="edge4" class="edge">
+<title>generation.GenerationChunk-&gt;generation.Generation</title>
+<path fill="none" stroke="#595959" d="M262.6,-148.46C262.6,-148.46 262.6,-173.21 262.6,-173.21"/>
+<polygon fill="#595959" stroke="#595959" points="266.1,-148.46 262.6,-138.46 259.1,-148.46 266.1,-148.46"/>
+</g>
+<!-- llm_result.LLMResult -->
+<g id="node7" class="node">
+<title>llm_result.LLMResult</title>
+<polygon fill="none" stroke="black" points="413.63,-0.5 413.63,-50.1 555.24,-50.1 555.24,-0.5 413.63,-0.5"/>
+<text text-anchor="middle" x="484.44" y="-33.5" font-family="Times,serif" font-size="14.00">llm_result.LLMResult</text>
+<polyline fill="none" stroke="black" points="413.63,-25.3 555.24,-25.3"/>
+<text text-anchor="middle" x="484.44" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- run_info.RunInfo -->
+<g id="node8" class="node">
+<title>run_info.RunInfo</title>
+<polygon fill="none" stroke="black" points="573.25,-0.5 573.25,-50.1 687.62,-50.1 687.62,-0.5 573.25,-0.5"/>
+<text text-anchor="middle" x="630.44" y="-33.5" font-family="Times,serif" font-size="14.00">run_info.RunInfo</text>
+<polyline fill="none" stroke="black" points="573.25,-25.3 687.62,-25.3"/>
+<text text-anchor="middle" x="630.44" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+</g>
+</svg>
