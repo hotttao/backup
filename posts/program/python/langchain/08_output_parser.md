@@ -25,6 +25,8 @@ toc:
 1. BaseLLMOutputParser
 2. BaseGenerationOutputParser
 3. BaseOutputParser
+4. BaseTransformOutputParser
+5. BaseCumulativeTransformOutputParser
 
 ### 1.1 提问
 让我们问问大模型这三个基类代表的语义。

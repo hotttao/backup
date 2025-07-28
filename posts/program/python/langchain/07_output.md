@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "LangChain Output Parser"
+title: "LangChain Output"
 date: 2025-07-22T22:00:00+08:00
 lastmod: 2025-07-22T22:00:00+08:00
 draft: false
@@ -127,7 +127,7 @@ print(gen.message.content)
 7. RunInfo
 
 ### 2.1 提问
-让我们问问大模型这三个基类代表的语义。
+让我们问问大模型这些类代表的语义。
 
 ```bash
 我正在阅读  langchain output 子包的源代码，注意到包内，有如下类:
@@ -262,3 +262,4 @@ LLMResult
 └── run (List[RunInfo])
 ```
 
+现在我们就可以扩展在 Prompt 得到的调用链 **Prompts -> PromptValue(包含 Message) -> LLM -> Generation(包含 Message) -> Parser** 

@@ -726,6 +726,8 @@ def parse_tool_call(
 #### PydanticToolsParser
 
 ```python
+TypeBaseModel = type[BaseModel]
+
 class PydanticToolsParser(JsonOutputToolsParser):
     """Parse tools from OpenAI response."""
 
@@ -787,42 +789,61 @@ class PydanticToolsParser(JsonOutputToolsParser):
         return pydantic_objects
 ```
 
-下面是 PydanticOutputFunctionsParser 的使用示例。需要注意的 PydanticToolsParser 中输入的 Model 命名有一套约定的规范，这样 convert_to_openai_tool 函数在调用时才能将 GetWeatherInput 与 get_weather 这个函数关联起来。具体对应上面:
-1. `name_dict = {tool.__name__: tool for tool in self.tools}` 
-2. `pydantic_objects.append(name_dict[res["type"]](**res["args"]))`
-3. `res["type"]` 是 Tool Call 对应的函数名
+下面是 PydanticOutputFunctionsParser 的使用示例。需要注意的 PydanticToolsParser 中输入的 Model 必须是与 Tool 对应的 args_schema，这样 `name_dict[res["type"]](**res["args"])` 的索引关系才能满足。
 
 ```python
-from pydantic import BaseModel
+from audioop import mul
 from langchain_core.output_parsers.openai_tools import PydanticToolsParser
-from langchain_core.messages import AIMessage
-from langchain_core.utils.function_calling import convert_to_openai_tool
+from langchain_core.messages import AIMessage, ToolCall
+from langchain_core.outputs import ChatGeneration
+from langchain_core.tools import tool
+from pydantic import BaseModel
 
-# 1. 定义 Pydantic 工具模型
-class GetWeatherInput(BaseModel):
-    city: str
 
-# 2. 将工具模型转换为 OpenAI 工具规范（可选，用于构造 prompt 或 schema 注册）
-tool = convert_to_openai_tool(GetWeatherInput)
+# 1. 定义工具输入模型
+class MultiplyInput(BaseModel):
+    x: int
+    y: int
 
-# 3. 构造一个 AIMessage，模拟 Tool Calling 响应
-ai_msg = AIMessage(
-    content="",
-    tool_calls=[
-        {
-            "name": "get_weather",
-            "args": {"city": "Beijing"},
-            "id": "tool_call_1"
-        }
-    ]
+
+class AddInput(BaseModel):
+    a: int
+    b: int
+
+
+# 2. 使用 @tool 装饰函数
+@tool
+def multiply_tool(input: MultiplyInput) -> str:
+    """计算乘法"""
+    return str(input.x * input.y)
+
+
+@tool
+def add_tool(input: AddInput) -> str:
+    """计算加法"""
+    return str(input.a + input.b)
+
+
+# ✅ 3. 从 StructuredTool 拿到绑定后的 Pydantic 模型类
+multiply_model = multiply_tool.args_schema
+add_model = add_tool.args_schema
+print(multiply_model.__name__, multiply_model.model_json_schema())
+
+# 4. 模拟 LLM 返回 tool 调用结果
+fake_tool_call = ToolCall(
+    # 注意这里的 args 
+    name="multiply_tool", args={"input": {"x": 6, "y": 7}}, id="tool_call_1"
 )
+ai_message = AIMessage(content="", tool_calls=[fake_tool_call])
+generation = ChatGeneration(message=ai_message)
 
-# 4. 使用 PydanticToolsParser 进行解析
-parser = PydanticToolsParser(tools=[GetWeatherInput])
-parsed = parser.invoke(ai_msg)
+# ✅ 5. 使用 PydanticToolsParser（传入的是 Pydantic 模型类）
+parser = PydanticToolsParser(tools=[multiply_model, add_model])
+parsed = parser.parse_result([generation])
 
+# 6. 输出结构化结果
+print("✅ 解析后的 Pydantic 对象:")
 print(parsed)
-# 输出: [GetWeatherInput(city='Beijing')]
 
 ```
 

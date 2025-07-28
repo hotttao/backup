@@ -311,6 +311,34 @@ class RunnableSerializable(Serializable, Runnable[Input, Output]):
 |出参|ConfigurableField|RunnableConfigurableAlternatives
 |语义|在运行时配置特定的 Runnable 字段|为 Runnable 配置可在运行时设置的替代项|
 
+
+有关 RunnableConfigurableAlternatives 的使用我们看一下注释里的示例:
+1. configurable_alternatives 在调用时，通过 `openai=ChatOpenAI()` 传递了可选的替代项
+2. `configurable={"llm": "openai"}` 通过 llm 参数选择了 ChatOpenAI 作为替代项
+
+
+```python
+model = ChatAnthropic(
+    model_name="claude-3-sonnet-20240229"
+).configurable_alternatives(
+    ConfigurableField(id="llm"),
+    default_key="anthropic",
+    openai=ChatOpenAI()
+)
+
+# uses the default model ChatAnthropic
+print(model.invoke("which organization created you?").content)
+
+# uses ChatOpenAI
+print(
+    model.with_config(
+        configurable={"llm": "openai"}
+    ).invoke("which organization created you?").content
+)
+```
+
+## 4. 参数解析
+
 ```bash
                          RunnableSerializable
                             DynamicRunnable 
@@ -392,8 +420,6 @@ class DynamicRunnable(RunnableSerializable[Input, Output]):
     ) -> tuple[Runnable[Input, Output], RunnableConfig]: ...
 ```
 
-
-## 4. 参数解析
 RunnableConfig 参数解析隐藏在 RunnableConfigurableFields.invoke 调用过程中。invoke 的调用链如下:
 1. DynamicRunnable.invoke
 2. DynamicRunnable.prepare
