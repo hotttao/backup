@@ -250,6 +250,13 @@ class BasePromptTemplate(
 ```
 
 `_call_with_config` 是 Runnable 提供的方法，前面我们介绍过，内部调用的是传入的 `_format_prompt_with_error_handling` 方法。
+调用链如下:
+
+```bash
+invoke
+    _format_prompt_with_error_handling
+        format_prompt
+```
 
 ### 2.3 BaseChatPromptTemplate
 

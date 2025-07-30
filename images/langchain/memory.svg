@@ -1,0 +1,294 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1800pt" height="485pt" viewBox="0.00 0.00 1799.77 485.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 481)">
+<title>memory</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-481 1795.77,-481 1795.77,4 -4,4"/>
+<!-- buffer.ConversationBufferMemory -->
+<g id="node1" class="node">
+<title>buffer.ConversationBufferMemory</title>
+<polygon fill="none" stroke="black" points="969.43,-165.5 969.43,-201.5 1202.03,-201.5 1202.03,-165.5 969.43,-165.5"/>
+<text text-anchor="middle" x="1075.98" y="-179.4" font-family="Times,serif" font-size="14.00">buffer.ConversationBufferMemory</text>
+<polyline fill="none" stroke="black" points="1182.53,-165.7 1182.53,-201.5"/>
+<text text-anchor="middle" x="1192.28" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_memory.BaseChatMemory -->
+<g id="node4" class="node">
+<title>chat_memory.BaseChatMemory</title>
+<polygon fill="none" stroke="black" points="633.17,-151.5 633.17,-187.5 851.01,-187.5 851.01,-151.5 633.17,-151.5"/>
+<text text-anchor="middle" x="732.34" y="-165.4" font-family="Times,serif" font-size="14.00">chat_memory.BaseChatMemory</text>
+<polyline fill="none" stroke="black" points="831.51,-151.7 831.51,-187.5"/>
+<text text-anchor="middle" x="841.26" y="-165.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- buffer.ConversationBufferMemory&#45;&gt;chat_memory.BaseChatMemory -->
+<g id="edge1" class="edge">
+<title>buffer.ConversationBufferMemory-&gt;chat_memory.BaseChatMemory</title>
+<path fill="none" stroke="#595959" d="M957.88,-170.75C957.88,-170.75 851.35,-170.75 851.35,-170.75"/>
+<polygon fill="#595959" stroke="#595959" points="957.88,-174.25 967.88,-170.75 957.88,-167.25 957.88,-174.25"/>
+</g>
+<!-- buffer.ConversationStringBufferMemory -->
+<g id="node2" class="node">
+<title>buffer.ConversationStringBufferMemory</title>
+<polygon fill="none" stroke="black" points="608.67,-206.5 608.67,-242.5 875.51,-242.5 875.51,-206.5 608.67,-206.5"/>
+<text text-anchor="middle" x="732.34" y="-220.4" font-family="Times,serif" font-size="14.00">buffer.ConversationStringBufferMemory</text>
+<polyline fill="none" stroke="black" points="856.01,-206.7 856.01,-242.5"/>
+<text text-anchor="middle" x="865.76" y="-220.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.memory.BaseMemory -->
+<g id="node21" class="node">
+<title>langchain_core.memory.BaseMemory</title>
+<polygon fill="none" stroke="black" points="321.43,-233.5 321.43,-269.5 571.52,-269.5 571.52,-233.5 321.43,-233.5"/>
+<text text-anchor="middle" x="436.73" y="-247.4" font-family="Times,serif" font-size="14.00">langchain_core.memory.BaseMemory</text>
+<polyline fill="none" stroke="black" points="552.02,-233.7 552.02,-269.5"/>
+<text text-anchor="middle" x="561.77" y="-247.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- buffer.ConversationStringBufferMemory&#45;&gt;langchain_core.memory.BaseMemory -->
+<g id="edge2" class="edge">
+<title>buffer.ConversationStringBufferMemory-&gt;langchain_core.memory.BaseMemory</title>
+<path fill="none" stroke="#595959" d="M597.04,-238C597.04,-238 571.78,-238 571.78,-238"/>
+<polygon fill="#595959" stroke="#595959" points="597.04,-241.5 607.04,-238 597.04,-234.5 597.04,-241.5"/>
+</g>
+<!-- buffer_window.ConversationBufferWindowMemory -->
+<g id="node3" class="node">
+<title>buffer_window.ConversationBufferWindowMemory</title>
+<polygon fill="none" stroke="black" points="919.26,-110.5 919.26,-146.5 1252.2,-146.5 1252.2,-110.5 919.26,-110.5"/>
+<text text-anchor="middle" x="1075.98" y="-124.4" font-family="Times,serif" font-size="14.00">buffer_window.ConversationBufferWindowMemory</text>
+<polyline fill="none" stroke="black" points="1232.7,-110.7 1232.7,-146.5"/>
+<text text-anchor="middle" x="1242.45" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- buffer_window.ConversationBufferWindowMemory&#45;&gt;chat_memory.BaseChatMemory -->
+<g id="edge3" class="edge">
+<title>buffer_window.ConversationBufferWindowMemory-&gt;chat_memory.BaseChatMemory</title>
+<path fill="none" stroke="#595959" d="M907.46,-140C907.46,-140 848.87,-140 848.87,-140 848.87,-140 848.87,-145.25 848.87,-151.32"/>
+<polygon fill="#595959" stroke="#595959" points="907.46,-143.5 917.46,-140 907.46,-136.5 907.46,-143.5"/>
+</g>
+<!-- chat_memory.BaseChatMemory&#45;&gt;langchain_core.memory.BaseMemory -->
+<g id="edge4" class="edge">
+<title>chat_memory.BaseChatMemory-&gt;langchain_core.memory.BaseMemory</title>
+<path fill="none" stroke="#595959" d="M621.41,-169.5C621.41,-169.5 488.16,-169.5 488.16,-169.5 488.16,-169.5 488.16,-209.14 488.16,-233.3"/>
+<polygon fill="#595959" stroke="#595959" points="621.41,-173 631.41,-169.5 621.41,-166 621.41,-173"/>
+</g>
+<!-- combined.CombinedMemory -->
+<g id="node5" class="node">
+<title>combined.CombinedMemory</title>
+<polygon fill="none" stroke="black" points="641.71,-96.5 641.71,-132.5 842.46,-132.5 842.46,-96.5 641.71,-96.5"/>
+<text text-anchor="middle" x="732.34" y="-110.4" font-family="Times,serif" font-size="14.00">combined.CombinedMemory</text>
+<polyline fill="none" stroke="black" points="822.96,-96.7 822.96,-132.5"/>
+<text text-anchor="middle" x="832.71" y="-110.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- combined.CombinedMemory&#45;&gt;langchain_core.memory.BaseMemory -->
+<g id="edge5" class="edge">
+<title>combined.CombinedMemory-&gt;langchain_core.memory.BaseMemory</title>
+<path fill="none" stroke="#595959" d="M629.83,-114.5C629.83,-114.5 404.79,-114.5 404.79,-114.5 404.79,-114.5 404.79,-195.63 404.79,-233.02"/>
+<polygon fill="#595959" stroke="#595959" points="629.83,-118 639.83,-114.5 629.83,-111 629.83,-118"/>
+</g>
+<!-- entity.BaseEntityStore -->
+<g id="node6" class="node">
+<title>entity.BaseEntityStore</title>
+<polygon fill="none" stroke="black" points="1004.8,-357.5 1004.8,-393.5 1166.67,-393.5 1166.67,-357.5 1004.8,-357.5"/>
+<text text-anchor="middle" x="1075.98" y="-371.4" font-family="Times,serif" font-size="14.00">entity.BaseEntityStore</text>
+<polyline fill="none" stroke="black" points="1147.17,-357.7 1147.17,-393.5"/>
+<text text-anchor="middle" x="1156.92" y="-371.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- entity.ConversationEntityMemory -->
+<g id="node7" class="node">
+<title>entity.ConversationEntityMemory</title>
+<polygon fill="none" stroke="black" points="971.74,-275.5 971.74,-311.5 1199.72,-311.5 1199.72,-275.5 971.74,-275.5"/>
+<text text-anchor="middle" x="1075.98" y="-289.4" font-family="Times,serif" font-size="14.00">entity.ConversationEntityMemory</text>
+<polyline fill="none" stroke="black" points="1180.22,-275.7 1180.22,-311.5"/>
+<text text-anchor="middle" x="1189.97" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- entity.ConversationEntityMemory&#45;&gt;chat_memory.BaseChatMemory -->
+<g id="edge6" class="edge">
+<title>entity.ConversationEntityMemory-&gt;chat_memory.BaseChatMemory</title>
+<path fill="none" stroke="#595959" d="M959.76,-286.5C959.76,-286.5 894.65,-286.5 894.65,-286.5 894.65,-286.5 894.65,-182.25 894.65,-182.25 894.65,-182.25 875.8,-182.25 851.34,-182.25"/>
+<polygon fill="#595959" stroke="#595959" points="959.76,-290 969.76,-286.5 959.76,-283 959.76,-290"/>
+</g>
+<!-- entity.InMemoryEntityStore -->
+<g id="node8" class="node">
+<title>entity.InMemoryEntityStore</title>
+<polygon fill="none" stroke="black" points="1446.02,-440.5 1446.02,-476.5 1640.56,-476.5 1640.56,-440.5 1446.02,-440.5"/>
+<text text-anchor="middle" x="1533.54" y="-454.4" font-family="Times,serif" font-size="14.00">entity.InMemoryEntityStore</text>
+<polyline fill="none" stroke="black" points="1621.06,-440.7 1621.06,-476.5"/>
+<text text-anchor="middle" x="1630.81" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- entity.InMemoryEntityStore&#45;&gt;entity.BaseEntityStore -->
+<g id="edge7" class="edge">
+<title>entity.InMemoryEntityStore-&gt;entity.BaseEntityStore</title>
+<path fill="none" stroke="#595959" d="M1450.88,-428.54C1450.88,-428.54 1450.88,-391 1450.88,-391 1450.88,-391 1274.35,-391 1166.77,-391"/>
+<polygon fill="#595959" stroke="#595959" points="1447.38,-428.54 1450.88,-438.54 1454.38,-428.54 1447.38,-428.54"/>
+</g>
+<!-- entity.RedisEntityStore -->
+<g id="node9" class="node">
+<title>entity.RedisEntityStore</title>
+<polygon fill="none" stroke="black" points="1460.02,-385.5 1460.02,-421.5 1626.56,-421.5 1626.56,-385.5 1460.02,-385.5"/>
+<text text-anchor="middle" x="1533.54" y="-399.4" font-family="Times,serif" font-size="14.00">entity.RedisEntityStore</text>
+<polyline fill="none" stroke="black" points="1607.06,-385.7 1607.06,-421.5"/>
+<text text-anchor="middle" x="1616.81" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- entity.RedisEntityStore&#45;&gt;entity.BaseEntityStore -->
+<g id="edge8" class="edge">
+<title>entity.RedisEntityStore-&gt;entity.BaseEntityStore</title>
+<path fill="none" stroke="#595959" d="M1448.12,-388C1448.12,-388 1166.91,-388 1166.91,-388"/>
+<polygon fill="#595959" stroke="#595959" points="1448.12,-391.5 1458.12,-388 1448.12,-384.5 1448.12,-391.5"/>
+</g>
+<!-- entity.SQLiteEntityStore -->
+<g id="node10" class="node">
+<title>entity.SQLiteEntityStore</title>
+<polygon fill="none" stroke="black" points="1455.74,-330.5 1455.74,-366.5 1630.84,-366.5 1630.84,-330.5 1455.74,-330.5"/>
+<text text-anchor="middle" x="1533.54" y="-344.4" font-family="Times,serif" font-size="14.00">entity.SQLiteEntityStore</text>
+<polyline fill="none" stroke="black" points="1611.34,-330.7 1611.34,-366.5"/>
+<text text-anchor="middle" x="1621.09" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- entity.SQLiteEntityStore&#45;&gt;entity.BaseEntityStore -->
+<g id="edge9" class="edge">
+<title>entity.SQLiteEntityStore-&gt;entity.BaseEntityStore</title>
+<path fill="none" stroke="#595959" d="M1443.83,-363.67C1443.83,-363.67 1166.87,-363.67 1166.87,-363.67"/>
+<polygon fill="#595959" stroke="#595959" points="1443.83,-367.17 1453.83,-363.67 1443.83,-360.17 1443.83,-367.17"/>
+</g>
+<!-- entity.UpstashRedisEntityStore -->
+<g id="node11" class="node">
+<title>entity.UpstashRedisEntityStore</title>
+<polygon fill="none" stroke="black" points="1437.46,-275.5 1437.46,-311.5 1649.12,-311.5 1649.12,-275.5 1437.46,-275.5"/>
+<text text-anchor="middle" x="1533.54" y="-289.4" font-family="Times,serif" font-size="14.00">entity.UpstashRedisEntityStore</text>
+<polyline fill="none" stroke="black" points="1629.62,-275.7 1629.62,-311.5"/>
+<text text-anchor="middle" x="1639.37" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- entity.UpstashRedisEntityStore&#45;&gt;entity.BaseEntityStore -->
+<g id="edge10" class="edge">
+<title>entity.UpstashRedisEntityStore-&gt;entity.BaseEntityStore</title>
+<path fill="none" stroke="#595959" d="M1441.74,-323.28C1441.74,-323.28 1441.74,-360.33 1441.74,-360.33 1441.74,-360.33 1272.03,-360.33 1166.96,-360.33"/>
+<polygon fill="#595959" stroke="#595959" points="1445.24,-323.28 1441.74,-313.28 1438.24,-323.28 1445.24,-323.28"/>
+</g>
+<!-- readonly.ReadOnlySharedMemory -->
+<g id="node12" class="node">
+<title>readonly.ReadOnlySharedMemory</title>
+<polygon fill="none" stroke="black" points="626.17,-371.5 626.17,-407.5 858.01,-407.5 858.01,-371.5 626.17,-371.5"/>
+<text text-anchor="middle" x="732.34" y="-385.4" font-family="Times,serif" font-size="14.00">readonly.ReadOnlySharedMemory</text>
+<polyline fill="none" stroke="black" points="838.51,-371.7 838.51,-407.5"/>
+<text text-anchor="middle" x="848.26" y="-385.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- readonly.ReadOnlySharedMemory&#45;&gt;langchain_core.memory.BaseMemory -->
+<g id="edge11" class="edge">
+<title>readonly.ReadOnlySharedMemory-&gt;langchain_core.memory.BaseMemory</title>
+<path fill="none" stroke="#595959" d="M614.5,-389.5C614.5,-389.5 404.79,-389.5 404.79,-389.5 404.79,-389.5 404.79,-307.36 404.79,-269.83"/>
+<polygon fill="#595959" stroke="#595959" points="614.5,-393 624.5,-389.5 614.5,-386 614.5,-393"/>
+</g>
+<!-- simple.SimpleMemory -->
+<g id="node13" class="node">
+<title>simple.SimpleMemory</title>
+<polygon fill="none" stroke="black" points="659.98,-316.5 659.98,-352.5 824.2,-352.5 824.2,-316.5 659.98,-316.5"/>
+<text text-anchor="middle" x="732.34" y="-330.4" font-family="Times,serif" font-size="14.00">simple.SimpleMemory</text>
+<polyline fill="none" stroke="black" points="804.7,-316.7 804.7,-352.5"/>
+<text text-anchor="middle" x="814.45" y="-330.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- simple.SimpleMemory&#45;&gt;langchain_core.memory.BaseMemory -->
+<g id="edge12" class="edge">
+<title>simple.SimpleMemory-&gt;langchain_core.memory.BaseMemory</title>
+<path fill="none" stroke="#595959" d="M648.13,-334.5C648.13,-334.5 488.16,-334.5 488.16,-334.5 488.16,-334.5 488.16,-294.37 488.16,-269.92"/>
+<polygon fill="#595959" stroke="#595959" points="648.13,-338 658.13,-334.5 648.13,-331 648.13,-338"/>
+</g>
+<!-- summary.ConversationSummaryMemory -->
+<g id="node14" class="node">
+<title>summary.ConversationSummaryMemory</title>
+<polygon fill="none" stroke="black" points="951.52,-55.5 951.52,-91.5 1219.94,-91.5 1219.94,-55.5 951.52,-55.5"/>
+<text text-anchor="middle" x="1075.98" y="-69.4" font-family="Times,serif" font-size="14.00">summary.ConversationSummaryMemory</text>
+<polyline fill="none" stroke="black" points="1200.44,-55.7 1200.44,-91.5"/>
+<text text-anchor="middle" x="1210.19" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- summary.ConversationSummaryMemory&#45;&gt;chat_memory.BaseChatMemory -->
+<g id="edge13" class="edge">
+<title>summary.ConversationSummaryMemory-&gt;chat_memory.BaseChatMemory</title>
+<path fill="none" stroke="#595959" d="M939.7,-79.67C939.7,-79.67 846.74,-79.67 846.74,-79.67 846.74,-79.67 846.74,-125.07 846.74,-151.32"/>
+<polygon fill="#595959" stroke="#595959" points="939.7,-83.17 949.7,-79.67 939.7,-76.17 939.7,-83.17"/>
+</g>
+<!-- summary.SummarizerMixin -->
+<g id="node15" class="node">
+<title>summary.SummarizerMixin</title>
+<polygon fill="none" stroke="black" points="645.21,-14.5 645.21,-50.5 838.96,-50.5 838.96,-14.5 645.21,-14.5"/>
+<text text-anchor="middle" x="732.34" y="-28.4" font-family="Times,serif" font-size="14.00">summary.SummarizerMixin</text>
+<polyline fill="none" stroke="black" points="819.46,-14.7 819.46,-50.5"/>
+<text text-anchor="middle" x="829.21" y="-28.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- summary.ConversationSummaryMemory&#45;&gt;summary.SummarizerMixin -->
+<g id="edge14" class="edge">
+<title>summary.ConversationSummaryMemory-&gt;summary.SummarizerMixin</title>
+<path fill="none" stroke="#595959" d="M939.88,-67.33C939.88,-67.33 742.09,-67.33 742.09,-67.33 742.09,-67.33 742.09,-59.16 742.09,-50.73"/>
+<polygon fill="#595959" stroke="#595959" points="939.88,-70.83 949.88,-67.33 939.88,-63.83 939.88,-70.83"/>
+</g>
+<!-- summary_buffer.ConversationSummaryBufferMemory -->
+<g id="node16" class="node">
+<title>summary_buffer.ConversationSummaryBufferMemory</title>
+<polygon fill="none" stroke="black" points="912.65,-0.5 912.65,-36.5 1258.81,-36.5 1258.81,-0.5 912.65,-0.5"/>
+<text text-anchor="middle" x="1075.98" y="-14.4" font-family="Times,serif" font-size="14.00">summary_buffer.ConversationSummaryBufferMemory</text>
+<polyline fill="none" stroke="black" points="1239.31,-0.7 1239.31,-36.5"/>
+<text text-anchor="middle" x="1249.06" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- summary_buffer.ConversationSummaryBufferMemory&#45;&gt;chat_memory.BaseChatMemory -->
+<g id="edge15" class="edge">
+<title>summary_buffer.ConversationSummaryBufferMemory-&gt;chat_memory.BaseChatMemory</title>
+<path fill="none" stroke="#595959" d="M900.9,-29.33C900.9,-29.33 844.6,-29.33 844.6,-29.33 844.6,-29.33 844.6,-113.18 844.6,-151.18"/>
+<polygon fill="#595959" stroke="#595959" points="900.9,-32.83 910.9,-29.33 900.9,-25.83 900.9,-32.83"/>
+</g>
+<!-- summary_buffer.ConversationSummaryBufferMemory&#45;&gt;summary.SummarizerMixin -->
+<g id="edge16" class="edge">
+<title>summary_buffer.ConversationSummaryBufferMemory-&gt;summary.SummarizerMixin</title>
+<path fill="none" stroke="#595959" d="M900.89,-21.67C900.89,-21.67 839.13,-21.67 839.13,-21.67"/>
+<polygon fill="#595959" stroke="#595959" points="900.89,-25.17 910.89,-21.67 900.89,-18.17 900.89,-25.17"/>
+</g>
+<!-- token_buffer.ConversationTokenBufferMemory -->
+<g id="node17" class="node">
+<title>token_buffer.ConversationTokenBufferMemory</title>
+<polygon fill="none" stroke="black" points="932.49,-220.5 932.49,-256.5 1238.97,-256.5 1238.97,-220.5 932.49,-220.5"/>
+<text text-anchor="middle" x="1075.98" y="-234.4" font-family="Times,serif" font-size="14.00">token_buffer.ConversationTokenBufferMemory</text>
+<polyline fill="none" stroke="black" points="1219.47,-220.7 1219.47,-256.5"/>
+<text text-anchor="middle" x="1229.22" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- token_buffer.ConversationTokenBufferMemory&#45;&gt;chat_memory.BaseChatMemory -->
+<g id="edge17" class="edge">
+<title>token_buffer.ConversationTokenBufferMemory-&gt;chat_memory.BaseChatMemory</title>
+<path fill="none" stroke="#595959" d="M950.96,-208.72C950.96,-208.72 950.96,-176.5 950.96,-176.5 950.96,-176.5 901.95,-176.5 851.42,-176.5"/>
+<polygon fill="#595959" stroke="#595959" points="947.46,-208.72 950.96,-218.72 954.46,-208.72 947.46,-208.72"/>
+</g>
+<!-- vectorstore.VectorStoreRetrieverMemory -->
+<g id="node18" class="node">
+<title>vectorstore.VectorStoreRetrieverMemory</title>
+<polygon fill="none" stroke="black" points="607.52,-261.5 607.52,-297.5 876.65,-297.5 876.65,-261.5 607.52,-261.5"/>
+<text text-anchor="middle" x="732.34" y="-275.4" font-family="Times,serif" font-size="14.00">vectorstore.VectorStoreRetrieverMemory</text>
+<polyline fill="none" stroke="black" points="857.15,-261.7 857.15,-297.5"/>
+<text text-anchor="middle" x="866.9" y="-275.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- vectorstore.VectorStoreRetrieverMemory&#45;&gt;langchain_core.memory.BaseMemory -->
+<g id="edge18" class="edge">
+<title>vectorstore.VectorStoreRetrieverMemory-&gt;langchain_core.memory.BaseMemory</title>
+<path fill="none" stroke="#595959" d="M595.74,-265.5C595.74,-265.5 571.6,-265.5 571.6,-265.5"/>
+<polygon fill="#595959" stroke="#595959" points="595.74,-269 605.74,-265.5 595.74,-262 595.74,-269"/>
+</g>
+<!-- vectorstore_token_buffer_memory.ConversationVectorStoreTokenBufferMemory -->
+<g id="node19" class="node">
+<title>vectorstore_token_buffer_memory.ConversationVectorStoreTokenBufferMemory</title>
+<polygon fill="none" stroke="black" points="1294.81,-220.5 1294.81,-256.5 1791.77,-256.5 1791.77,-220.5 1294.81,-220.5"/>
+<text text-anchor="middle" x="1533.54" y="-234.4" font-family="Times,serif" font-size="14.00">vectorstore_token_buffer_memory.ConversationVectorStoreTokenBufferMemory</text>
+<polyline fill="none" stroke="black" points="1772.27,-220.7 1772.27,-256.5"/>
+<text text-anchor="middle" x="1782.02" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- vectorstore_token_buffer_memory.ConversationVectorStoreTokenBufferMemory&#45;&gt;token_buffer.ConversationTokenBufferMemory -->
+<g id="edge19" class="edge">
+<title>vectorstore_token_buffer_memory.ConversationVectorStoreTokenBufferMemory-&gt;token_buffer.ConversationTokenBufferMemory</title>
+<path fill="none" stroke="#595959" d="M1282.91,-238.5C1282.91,-238.5 1239.2,-238.5 1239.2,-238.5"/>
+<polygon fill="#595959" stroke="#595959" points="1282.91,-242 1292.91,-238.5 1282.91,-235 1282.91,-242"/>
+</g>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node20" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="0,-233.5 0,-269.5 285.43,-269.5 285.43,-233.5 0,-233.5"/>
+<text text-anchor="middle" x="132.96" y="-247.4" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="265.93,-233.7 265.93,-269.5"/>
+<text text-anchor="middle" x="275.68" y="-247.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.memory.BaseMemory&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge20" class="edge">
+<title>langchain_core.memory.BaseMemory-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M309.66,-251.5C309.66,-251.5 285.51,-251.5 285.51,-251.5"/>
+<polygon fill="#595959" stroke="#595959" points="309.66,-255 319.66,-251.5 309.66,-248 309.66,-255"/>
+</g>
+</g>
+</svg>

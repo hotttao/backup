@@ -1,0 +1,190 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1572pt" height="292pt" viewBox="0.00 0.00 1571.62 292.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 288)">
+<title>language_models</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-288 1567.62,-288 1567.62,4 -4,4"/>
+<!-- base.BaseLanguageModel -->
+<g id="node1" class="node">
+<title>base.BaseLanguageModel</title>
+<polygon fill="none" stroke="black" points="277.54,-55.5 277.54,-91.5 460.37,-91.5 460.37,-55.5 277.54,-55.5"/>
+<text text-anchor="middle" x="359.2" y="-69.4" font-family="Times,serif" font-size="14.00">base.BaseLanguageModel</text>
+<polyline fill="none" stroke="black" points="440.87,-55.7 440.87,-91.5"/>
+<text text-anchor="middle" x="450.62" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- runnables.base.RunnableSerializable -->
+<g id="node14" class="node">
+<title>runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-55.5 0,-91.5 241.54,-91.5 241.54,-55.5 0,-55.5"/>
+<text text-anchor="middle" x="111.02" y="-69.4" font-family="Times,serif" font-size="14.00">runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="222.04,-55.7 222.04,-91.5"/>
+<text text-anchor="middle" x="231.79" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseLanguageModel&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>base.BaseLanguageModel-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M265.73,-73.5C265.73,-73.5 241.67,-73.5 241.67,-73.5"/>
+<polygon fill="#595959" stroke="#595959" points="265.73,-77 275.73,-73.5 265.73,-70 265.73,-77"/>
+</g>
+<!-- base.LangSmithParams -->
+<g id="node2" class="node">
+<title>base.LangSmithParams</title>
+<polygon fill="none" stroke="black" points="1380.38,-55.5 1380.38,-91.5 1547.69,-91.5 1547.69,-55.5 1380.38,-55.5"/>
+<text text-anchor="middle" x="1454.28" y="-69.4" font-family="Times,serif" font-size="14.00">base.LangSmithParams</text>
+<polyline fill="none" stroke="black" points="1528.19,-55.7 1528.19,-91.5"/>
+<text text-anchor="middle" x="1537.94" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_models.BaseChatModel -->
+<g id="node3" class="node">
+<title>chat_models.BaseChatModel</title>
+<polygon fill="none" stroke="black" points="496.37,-110.5 496.37,-146.5 696.34,-146.5 696.34,-110.5 496.37,-110.5"/>
+<text text-anchor="middle" x="586.6" y="-124.4" font-family="Times,serif" font-size="14.00">chat_models.BaseChatModel</text>
+<polyline fill="none" stroke="black" points="676.84,-110.7 676.84,-146.5"/>
+<text text-anchor="middle" x="686.59" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_models.BaseChatModel&#45;&gt;base.BaseLanguageModel -->
+<g id="edge2" class="edge">
+<title>chat_models.BaseChatModel-&gt;base.BaseLanguageModel</title>
+<path fill="none" stroke="#595959" d="M516.39,-98.74C516.39,-98.74 516.39,-83 516.39,-83 516.39,-83 490.63,-83 460.65,-83"/>
+<polygon fill="#595959" stroke="#595959" points="512.89,-98.74 516.39,-108.74 519.89,-98.74 512.89,-98.74"/>
+</g>
+<!-- chat_models.SimpleChatModel -->
+<g id="node4" class="node">
+<title>chat_models.SimpleChatModel</title>
+<polygon fill="none" stroke="black" points="779.76,-220.5 779.76,-256.5 992.18,-256.5 992.18,-220.5 779.76,-220.5"/>
+<text text-anchor="middle" x="876.22" y="-234.4" font-family="Times,serif" font-size="14.00">chat_models.SimpleChatModel</text>
+<polyline fill="none" stroke="black" points="972.68,-220.7 972.68,-256.5"/>
+<text text-anchor="middle" x="982.43" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat_models.SimpleChatModel&#45;&gt;chat_models.BaseChatModel -->
+<g id="edge3" class="edge">
+<title>chat_models.SimpleChatModel-&gt;chat_models.BaseChatModel</title>
+<path fill="none" stroke="#595959" d="M767.85,-238.5C767.85,-238.5 596.35,-238.5 596.35,-238.5 596.35,-238.5 596.35,-177.91 596.35,-146.66"/>
+<polygon fill="#595959" stroke="#595959" points="767.85,-242 777.85,-238.5 767.85,-235 767.85,-242"/>
+</g>
+<!-- fake.FakeListLLM -->
+<g id="node5" class="node">
+<title>fake.FakeListLLM</title>
+<polygon fill="none" stroke="black" points="1131.21,-0.5 1131.21,-36.5 1272.84,-36.5 1272.84,-0.5 1131.21,-0.5"/>
+<text text-anchor="middle" x="1192.27" y="-14.4" font-family="Times,serif" font-size="14.00">fake.FakeListLLM</text>
+<polyline fill="none" stroke="black" points="1253.34,-0.7 1253.34,-36.5"/>
+<text text-anchor="middle" x="1263.09" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- llms.LLM -->
+<g id="node13" class="node">
+<title>llms.LLM</title>
+<polygon fill="none" stroke="black" points="839.64,-0.5 839.64,-36.5 932.31,-36.5 932.31,-0.5 839.64,-0.5"/>
+<text text-anchor="middle" x="876.22" y="-14.4" font-family="Times,serif" font-size="14.00">llms.LLM</text>
+<polyline fill="none" stroke="black" points="912.81,-0.7 912.81,-36.5"/>
+<text text-anchor="middle" x="922.56" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake.FakeListLLM&#45;&gt;llms.LLM -->
+<g id="edge4" class="edge">
+<title>fake.FakeListLLM-&gt;llms.LLM</title>
+<path fill="none" stroke="#595959" d="M1119.58,-18.5C1119.58,-18.5 932.68,-18.5 932.68,-18.5"/>
+<polygon fill="#595959" stroke="#595959" points="1119.58,-22 1129.58,-18.5 1119.58,-15 1119.58,-22"/>
+</g>
+<!-- fake.FakeStreamingListLLM -->
+<g id="node6" class="node">
+<title>fake.FakeStreamingListLLM</title>
+<polygon fill="none" stroke="black" points="1364.44,-0.5 1364.44,-36.5 1563.62,-36.5 1563.62,-0.5 1364.44,-0.5"/>
+<text text-anchor="middle" x="1454.28" y="-14.4" font-family="Times,serif" font-size="14.00">fake.FakeStreamingListLLM</text>
+<polyline fill="none" stroke="black" points="1544.12,-0.7 1544.12,-36.5"/>
+<text text-anchor="middle" x="1553.87" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake.FakeStreamingListLLM&#45;&gt;fake.FakeListLLM -->
+<g id="edge5" class="edge">
+<title>fake.FakeStreamingListLLM-&gt;fake.FakeListLLM</title>
+<path fill="none" stroke="#595959" d="M1352.72,-18.5C1352.72,-18.5 1273.05,-18.5 1273.05,-18.5"/>
+<polygon fill="#595959" stroke="#595959" points="1352.72,-22 1362.72,-18.5 1352.72,-15 1352.72,-22"/>
+</g>
+<!-- fake_chat_models.FakeChatModel -->
+<g id="node7" class="node">
+<title>fake_chat_models.FakeChatModel</title>
+<polygon fill="none" stroke="black" points="1086.5,-247.5 1086.5,-283.5 1317.55,-283.5 1317.55,-247.5 1086.5,-247.5"/>
+<text text-anchor="middle" x="1192.27" y="-261.4" font-family="Times,serif" font-size="14.00">fake_chat_models.FakeChatModel</text>
+<polyline fill="none" stroke="black" points="1298.05,-247.7 1298.05,-283.5"/>
+<text text-anchor="middle" x="1307.8" y="-261.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake_chat_models.FakeChatModel&#45;&gt;chat_models.SimpleChatModel -->
+<g id="edge6" class="edge">
+<title>fake_chat_models.FakeChatModel-&gt;chat_models.SimpleChatModel</title>
+<path fill="none" stroke="#595959" d="M1074.62,-252C1074.62,-252 992.67,-252 992.67,-252"/>
+<polygon fill="#595959" stroke="#595959" points="1074.62,-255.5 1084.62,-252 1074.62,-248.5 1074.62,-255.5"/>
+</g>
+<!-- fake_chat_models.FakeListChatModel -->
+<g id="node8" class="node">
+<title>fake_chat_models.FakeListChatModel</title>
+<polygon fill="none" stroke="black" points="1075.61,-192.5 1075.61,-228.5 1328.44,-228.5 1328.44,-192.5 1075.61,-192.5"/>
+<text text-anchor="middle" x="1192.27" y="-206.4" font-family="Times,serif" font-size="14.00">fake_chat_models.FakeListChatModel</text>
+<polyline fill="none" stroke="black" points="1308.94,-192.7 1308.94,-228.5"/>
+<text text-anchor="middle" x="1318.69" y="-206.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake_chat_models.FakeListChatModel&#45;&gt;chat_models.SimpleChatModel -->
+<g id="edge7" class="edge">
+<title>fake_chat_models.FakeListChatModel-&gt;chat_models.SimpleChatModel</title>
+<path fill="none" stroke="#595959" d="M1063.78,-224.5C1063.78,-224.5 992.42,-224.5 992.42,-224.5"/>
+<polygon fill="#595959" stroke="#595959" points="1063.78,-228 1073.78,-224.5 1063.78,-221 1063.78,-228"/>
+</g>
+<!-- fake_chat_models.FakeMessagesListChatModel -->
+<g id="node9" class="node">
+<title>fake_chat_models.FakeMessagesListChatModel</title>
+<polygon fill="none" stroke="black" points="732.34,-165.5 732.34,-201.5 1039.61,-201.5 1039.61,-165.5 732.34,-165.5"/>
+<text text-anchor="middle" x="876.22" y="-179.4" font-family="Times,serif" font-size="14.00">fake_chat_models.FakeMessagesListChatModel</text>
+<polyline fill="none" stroke="black" points="1020.11,-165.7 1020.11,-201.5"/>
+<text text-anchor="middle" x="1029.86" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake_chat_models.FakeMessagesListChatModel&#45;&gt;chat_models.BaseChatModel -->
+<g id="edge8" class="edge">
+<title>fake_chat_models.FakeMessagesListChatModel-&gt;chat_models.BaseChatModel</title>
+<path fill="none" stroke="#595959" d="M740.31,-153.52C740.31,-153.52 740.31,-134.67 740.31,-134.67 740.31,-134.67 721.11,-134.67 696.73,-134.67"/>
+<polygon fill="#595959" stroke="#595959" points="736.81,-153.52 740.31,-163.52 743.81,-153.52 736.81,-153.52"/>
+</g>
+<!-- fake_chat_models.GenericFakeChatModel -->
+<g id="node10" class="node">
+<title>fake_chat_models.GenericFakeChatModel</title>
+<polygon fill="none" stroke="black" points="748.29,-110.5 748.29,-146.5 1023.65,-146.5 1023.65,-110.5 748.29,-110.5"/>
+<text text-anchor="middle" x="876.22" y="-124.4" font-family="Times,serif" font-size="14.00">fake_chat_models.GenericFakeChatModel</text>
+<polyline fill="none" stroke="black" points="1004.15,-110.7 1004.15,-146.5"/>
+<text text-anchor="middle" x="1013.9" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake_chat_models.GenericFakeChatModel&#45;&gt;chat_models.BaseChatModel -->
+<g id="edge9" class="edge">
+<title>fake_chat_models.GenericFakeChatModel-&gt;chat_models.BaseChatModel</title>
+<path fill="none" stroke="#595959" d="M736.43,-122.33C736.43,-122.33 696.54,-122.33 696.54,-122.33"/>
+<polygon fill="#595959" stroke="#595959" points="736.43,-125.83 746.43,-122.33 736.43,-118.83 736.43,-125.83"/>
+</g>
+<!-- fake_chat_models.ParrotFakeChatModel -->
+<g id="node11" class="node">
+<title>fake_chat_models.ParrotFakeChatModel</title>
+<polygon fill="none" stroke="black" points="753.34,-55.5 753.34,-91.5 1018.61,-91.5 1018.61,-55.5 753.34,-55.5"/>
+<text text-anchor="middle" x="876.22" y="-69.4" font-family="Times,serif" font-size="14.00">fake_chat_models.ParrotFakeChatModel</text>
+<polyline fill="none" stroke="black" points="999.11,-55.7 999.11,-91.5"/>
+<text text-anchor="middle" x="1008.86" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake_chat_models.ParrotFakeChatModel&#45;&gt;chat_models.BaseChatModel -->
+<g id="edge10" class="edge">
+<title>fake_chat_models.ParrotFakeChatModel-&gt;chat_models.BaseChatModel</title>
+<path fill="none" stroke="#595959" d="M741.38,-74C741.38,-74 676.32,-74 676.32,-74 676.32,-74 676.32,-94.24 676.32,-110.05"/>
+<polygon fill="#595959" stroke="#595959" points="741.38,-77.5 751.38,-74 741.38,-70.5 741.38,-77.5"/>
+</g>
+<!-- llms.BaseLLM -->
+<g id="node12" class="node">
+<title>llms.BaseLLM</title>
+<polygon fill="none" stroke="black" points="536.41,-28.5 536.41,-64.5 656.29,-64.5 656.29,-28.5 536.41,-28.5"/>
+<text text-anchor="middle" x="586.6" y="-42.4" font-family="Times,serif" font-size="14.00">llms.BaseLLM</text>
+<polyline fill="none" stroke="black" points="636.79,-28.7 636.79,-64.5"/>
+<text text-anchor="middle" x="646.54" y="-42.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- llms.BaseLLM&#45;&gt;base.BaseLanguageModel -->
+<g id="edge11" class="edge">
+<title>llms.BaseLLM-&gt;base.BaseLanguageModel</title>
+<path fill="none" stroke="#595959" d="M524.5,-60C524.5,-60 460.44,-60 460.44,-60"/>
+<polygon fill="#595959" stroke="#595959" points="524.5,-63.5 534.5,-60 524.5,-56.5 524.5,-63.5"/>
+</g>
+<!-- llms.LLM&#45;&gt;llms.BaseLLM -->
+<g id="edge12" class="edge">
+<title>llms.LLM-&gt;llms.BaseLLM</title>
+<path fill="none" stroke="#595959" d="M827.93,-32.5C827.93,-32.5 656.6,-32.5 656.6,-32.5"/>
+<polygon fill="#595959" stroke="#595959" points="827.93,-36 837.93,-32.5 827.93,-29 827.93,-36"/>
+</g>
+</g>
+</svg>

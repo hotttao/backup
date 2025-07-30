@@ -1,0 +1,346 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1610pt" height="650pt" viewBox="0.00 0.00 1610.18 650.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 646)">
+<title>agents</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-646 1606.18,-646 1606.18,4 -4,4"/>
+<!-- Chain -->
+<g id="node1" class="node">
+<title>Chain</title>
+<polygon fill="none" stroke="black" points="1035.64,-0.5 1035.64,-36.5 1104.58,-36.5 1104.58,-0.5 1035.64,-0.5"/>
+<text text-anchor="middle" x="1060.36" y="-14.4" font-family="Times,serif" font-size="14.00">Chain</text>
+<polyline fill="none" stroke="black" points="1085.08,-0.7 1085.08,-36.5"/>
+<text text-anchor="middle" x="1094.83" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.Agent -->
+<g id="node2" class="node">
+<title>agent.Agent</title>
+<polygon fill="none" stroke="black" points="1018.35,-110.5 1018.35,-146.5 1121.88,-146.5 1121.88,-110.5 1018.35,-110.5"/>
+<text text-anchor="middle" x="1060.36" y="-124.4" font-family="Times,serif" font-size="14.00">agent.Agent</text>
+<polyline fill="none" stroke="black" points="1102.38,-110.7 1102.38,-146.5"/>
+<text text-anchor="middle" x="1112.13" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.BaseSingleActionAgent -->
+<g id="node6" class="node">
+<title>agent.BaseSingleActionAgent</title>
+<polygon fill="none" stroke="black" points="630.75,-165.5 630.75,-201.5 835.38,-201.5 835.38,-165.5 630.75,-165.5"/>
+<text text-anchor="middle" x="723.31" y="-179.4" font-family="Times,serif" font-size="14.00">agent.BaseSingleActionAgent</text>
+<polyline fill="none" stroke="black" points="815.88,-165.7 815.88,-201.5"/>
+<text text-anchor="middle" x="825.63" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.Agent&#45;&gt;agent.BaseSingleActionAgent -->
+<g id="edge1" class="edge">
+<title>agent.Agent-&gt;agent.BaseSingleActionAgent</title>
+<path fill="none" stroke="#595959" d="M1006.67,-128.5C1006.67,-128.5 733.06,-128.5 733.06,-128.5 733.06,-128.5 733.06,-149.19 733.06,-165.19"/>
+<polygon fill="#595959" stroke="#595959" points="1006.68,-132 1016.67,-128.5 1006.67,-125 1006.68,-132"/>
+</g>
+<!-- agent.AgentExecutor -->
+<g id="node3" class="node">
+<title>agent.AgentExecutor</title>
+<polygon fill="none" stroke="black" points="1362.78,-0.5 1362.78,-36.5 1516.84,-36.5 1516.84,-0.5 1362.78,-0.5"/>
+<text text-anchor="middle" x="1430.06" y="-14.4" font-family="Times,serif" font-size="14.00">agent.AgentExecutor</text>
+<polyline fill="none" stroke="black" points="1497.34,-0.7 1497.34,-36.5"/>
+<text text-anchor="middle" x="1507.09" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.AgentExecutor&#45;&gt;Chain -->
+<g id="edge2" class="edge">
+<title>agent.AgentExecutor-&gt;Chain</title>
+<path fill="none" stroke="#595959" d="M1350.79,-18.5C1350.79,-18.5 1104.63,-18.5 1104.63,-18.5"/>
+<polygon fill="#595959" stroke="#595959" points="1350.79,-22 1360.79,-18.5 1350.79,-15 1350.79,-22"/>
+</g>
+<!-- agent.AgentOutputParser -->
+<g id="node4" class="node">
+<title>agent.AgentOutputParser</title>
+<polygon fill="none" stroke="black" points="644.36,-330.5 644.36,-366.5 821.77,-366.5 821.77,-330.5 644.36,-330.5"/>
+<text text-anchor="middle" x="723.31" y="-344.4" font-family="Times,serif" font-size="14.00">agent.AgentOutputParser</text>
+<polyline fill="none" stroke="black" points="802.27,-330.7 802.27,-366.5"/>
+<text text-anchor="middle" x="812.02" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- output_parsers.base.BaseOutputParser -->
+<g id="node21" class="node">
+<title>output_parsers.base.BaseOutputParser</title>
+<polygon fill="none" stroke="black" points="316.45,-385.5 316.45,-421.5 567.34,-421.5 567.34,-385.5 316.45,-385.5"/>
+<text text-anchor="middle" x="432.14" y="-399.4" font-family="Times,serif" font-size="14.00">output_parsers.base.BaseOutputParser</text>
+<polyline fill="none" stroke="black" points="547.84,-385.7 547.84,-421.5"/>
+<text text-anchor="middle" x="557.59" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.AgentOutputParser&#45;&gt;output_parsers.base.BaseOutputParser -->
+<g id="edge3" class="edge">
+<title>agent.AgentOutputParser-&gt;output_parsers.base.BaseOutputParser</title>
+<path fill="none" stroke="#595959" d="M632.61,-348.5C632.61,-348.5 441.89,-348.5 441.89,-348.5 441.89,-348.5 441.89,-369.19 441.89,-385.19"/>
+<polygon fill="#595959" stroke="#595959" points="632.61,-352 642.61,-348.5 632.61,-345 632.61,-352"/>
+</g>
+<!-- agent.BaseMultiActionAgent -->
+<g id="node5" class="node">
+<title>agent.BaseMultiActionAgent</title>
+<polygon fill="none" stroke="black" points="970.13,-605.5 970.13,-641.5 1170.1,-641.5 1170.1,-605.5 970.13,-605.5"/>
+<text text-anchor="middle" x="1060.36" y="-619.4" font-family="Times,serif" font-size="14.00">agent.BaseMultiActionAgent</text>
+<polyline fill="none" stroke="black" points="1150.6,-605.7 1150.6,-641.5"/>
+<text text-anchor="middle" x="1160.35" y="-619.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.ExceptionTool -->
+<g id="node7" class="node">
+<title>agent.ExceptionTool</title>
+<polygon fill="none" stroke="black" points="656.81,-495.5 656.81,-531.5 809.32,-531.5 809.32,-495.5 656.81,-495.5"/>
+<text text-anchor="middle" x="723.31" y="-509.4" font-family="Times,serif" font-size="14.00">agent.ExceptionTool</text>
+<polyline fill="none" stroke="black" points="789.82,-495.7 789.82,-531.5"/>
+<text text-anchor="middle" x="799.57" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tools.base.BaseTool -->
+<g id="node26" class="node">
+<title>tools.base.BaseTool</title>
+<polygon fill="none" stroke="black" points="367.76,-467.5 367.76,-503.5 516.02,-503.5 516.02,-467.5 367.76,-467.5"/>
+<text text-anchor="middle" x="432.14" y="-481.4" font-family="Times,serif" font-size="14.00">tools.base.BaseTool</text>
+<polyline fill="none" stroke="black" points="496.52,-467.7 496.52,-503.5"/>
+<text text-anchor="middle" x="506.27" y="-481.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.ExceptionTool&#45;&gt;tools.base.BaseTool -->
+<g id="edge4" class="edge">
+<title>agent.ExceptionTool-&gt;tools.base.BaseTool</title>
+<path fill="none" stroke="#595959" d="M645.05,-499.5C645.05,-499.5 516.37,-499.5 516.37,-499.5"/>
+<polygon fill="#595959" stroke="#595959" points="645.05,-503 655.05,-499.5 645.05,-496 645.05,-503"/>
+</g>
+<!-- agent.LLMSingleActionAgent -->
+<g id="node8" class="node">
+<title>agent.LLMSingleActionAgent</title>
+<polygon fill="none" stroke="black" points="966.63,-220.5 966.63,-256.5 1173.6,-256.5 1173.6,-220.5 966.63,-220.5"/>
+<text text-anchor="middle" x="1060.36" y="-234.4" font-family="Times,serif" font-size="14.00">agent.LLMSingleActionAgent</text>
+<polyline fill="none" stroke="black" points="1154.1,-220.7 1154.1,-256.5"/>
+<text text-anchor="middle" x="1163.85" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.LLMSingleActionAgent&#45;&gt;agent.BaseSingleActionAgent -->
+<g id="edge5" class="edge">
+<title>agent.LLMSingleActionAgent-&gt;agent.BaseSingleActionAgent</title>
+<path fill="none" stroke="#595959" d="M954.76,-238.5C954.76,-238.5 828.57,-238.5 828.57,-238.5 828.57,-238.5 828.57,-217.81 828.57,-201.81"/>
+<polygon fill="#595959" stroke="#595959" points="954.76,-242 964.76,-238.5 954.76,-235 954.76,-242"/>
+</g>
+<!-- agent.MultiActionAgentOutputParser -->
+<g id="node9" class="node">
+<title>agent.MultiActionAgentOutputParser</title>
+<polygon fill="none" stroke="black" points="609.75,-385.5 609.75,-421.5 856.38,-421.5 856.38,-385.5 609.75,-385.5"/>
+<text text-anchor="middle" x="723.31" y="-399.4" font-family="Times,serif" font-size="14.00">agent.MultiActionAgentOutputParser</text>
+<polyline fill="none" stroke="black" points="836.88,-385.7 836.88,-421.5"/>
+<text text-anchor="middle" x="846.63" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.MultiActionAgentOutputParser&#45;&gt;output_parsers.base.BaseOutputParser -->
+<g id="edge6" class="edge">
+<title>agent.MultiActionAgentOutputParser-&gt;output_parsers.base.BaseOutputParser</title>
+<path fill="none" stroke="#595959" d="M598.07,-403.5C598.07,-403.5 567.43,-403.5 567.43,-403.5"/>
+<polygon fill="#595959" stroke="#595959" points="598.07,-407 608.07,-403.5 598.07,-400 598.07,-407"/>
+</g>
+<!-- agent.RunnableAgent -->
+<g id="node10" class="node">
+<title>agent.RunnableAgent</title>
+<polygon fill="none" stroke="black" points="991.52,-165.5 991.52,-201.5 1148.71,-201.5 1148.71,-165.5 991.52,-165.5"/>
+<text text-anchor="middle" x="1060.36" y="-179.4" font-family="Times,serif" font-size="14.00">agent.RunnableAgent</text>
+<polyline fill="none" stroke="black" points="1129.21,-165.7 1129.21,-201.5"/>
+<text text-anchor="middle" x="1138.96" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.RunnableAgent&#45;&gt;agent.BaseSingleActionAgent -->
+<g id="edge7" class="edge">
+<title>agent.RunnableAgent-&gt;agent.BaseSingleActionAgent</title>
+<path fill="none" stroke="#595959" d="M979.58,-183.5C979.58,-183.5 835.88,-183.5 835.88,-183.5"/>
+<polygon fill="#595959" stroke="#595959" points="979.58,-187 989.58,-183.5 979.58,-180 979.58,-187"/>
+</g>
+<!-- agent.RunnableMultiActionAgent -->
+<g id="node11" class="node">
+<title>agent.RunnableMultiActionAgent</title>
+<polygon fill="none" stroke="black" points="1326.6,-605.5 1326.6,-641.5 1553.01,-641.5 1553.01,-605.5 1326.6,-605.5"/>
+<text text-anchor="middle" x="1430.06" y="-619.4" font-family="Times,serif" font-size="14.00">agent.RunnableMultiActionAgent</text>
+<polyline fill="none" stroke="black" points="1533.51,-605.7 1533.51,-641.5"/>
+<text text-anchor="middle" x="1543.26" y="-619.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- agent.RunnableMultiActionAgent&#45;&gt;agent.BaseMultiActionAgent -->
+<g id="edge8" class="edge">
+<title>agent.RunnableMultiActionAgent-&gt;agent.BaseMultiActionAgent</title>
+<path fill="none" stroke="#595959" d="M1314.61,-623.5C1314.61,-623.5 1170.35,-623.5 1170.35,-623.5"/>
+<polygon fill="#595959" stroke="#595959" points="1314.61,-627 1324.61,-623.5 1314.61,-620 1314.61,-627"/>
+</g>
+<!-- chat.base.ChatAgent -->
+<g id="node12" class="node">
+<title>chat.base.ChatAgent</title>
+<polygon fill="none" stroke="black" points="1364.13,-165.5 1364.13,-201.5 1515.48,-201.5 1515.48,-165.5 1364.13,-165.5"/>
+<text text-anchor="middle" x="1430.06" y="-179.4" font-family="Times,serif" font-size="14.00">chat.base.ChatAgent</text>
+<polyline fill="none" stroke="black" points="1495.98,-165.7 1495.98,-201.5"/>
+<text text-anchor="middle" x="1505.73" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.base.ChatAgent&#45;&gt;agent.Agent -->
+<g id="edge9" class="edge">
+<title>chat.base.ChatAgent-&gt;agent.Agent</title>
+<path fill="none" stroke="#595959" d="M1352.32,-183.5C1352.32,-183.5 1259.44,-183.5 1259.44,-183.5 1259.44,-183.5 1259.44,-137.75 1259.44,-137.75 1259.44,-137.75 1178.39,-137.75 1122.35,-137.75"/>
+<polygon fill="#595959" stroke="#595959" points="1352.32,-187 1362.32,-183.5 1352.32,-180 1352.32,-187"/>
+</g>
+<!-- chat.output_parser.ChatOutputParser -->
+<g id="node13" class="node">
+<title>chat.output_parser.ChatOutputParser</title>
+<polygon fill="none" stroke="black" points="948.56,-385.5 948.56,-421.5 1191.67,-421.5 1191.67,-385.5 948.56,-385.5"/>
+<text text-anchor="middle" x="1060.36" y="-399.4" font-family="Times,serif" font-size="14.00">chat.output_parser.ChatOutputParser</text>
+<polyline fill="none" stroke="black" points="1172.17,-385.7 1172.17,-421.5"/>
+<text text-anchor="middle" x="1181.92" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- chat.output_parser.ChatOutputParser&#45;&gt;agent.AgentOutputParser -->
+<g id="edge10" class="edge">
+<title>chat.output_parser.ChatOutputParser-&gt;agent.AgentOutputParser</title>
+<path fill="none" stroke="#595959" d="M936.56,-403.5C936.56,-403.5 880.79,-403.5 880.79,-403.5 880.79,-403.5 880.79,-357.75 880.79,-357.75 880.79,-357.75 853.27,-357.75 821.98,-357.75"/>
+<polygon fill="#595959" stroke="#595959" points="936.56,-407 946.56,-403.5 936.56,-400 936.56,-407"/>
+</g>
+<!-- conversational.base.ConversationalAgent -->
+<g id="node14" class="node">
+<title>conversational.base.ConversationalAgent</title>
+<polygon fill="none" stroke="black" points="1305.82,-110.5 1305.82,-146.5 1573.8,-146.5 1573.8,-110.5 1305.82,-110.5"/>
+<text text-anchor="middle" x="1430.06" y="-124.4" font-family="Times,serif" font-size="14.00">conversational.base.ConversationalAgent</text>
+<polyline fill="none" stroke="black" points="1554.3,-110.7 1554.3,-146.5"/>
+<text text-anchor="middle" x="1564.05" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- conversational.base.ConversationalAgent&#45;&gt;agent.Agent -->
+<g id="edge11" class="edge">
+<title>conversational.base.ConversationalAgent-&gt;agent.Agent</title>
+<path fill="none" stroke="#595959" d="M1294.04,-128.5C1294.04,-128.5 1122.16,-128.5 1122.16,-128.5"/>
+<polygon fill="#595959" stroke="#595959" points="1294.04,-132 1304.04,-128.5 1294.04,-125 1294.04,-132"/>
+</g>
+<!-- conversational.output_parser.ConvoOutputParser -->
+<g id="node15" class="node">
+<title>conversational.output_parser.ConvoOutputParser</title>
+<polygon fill="none" stroke="black" points="913.95,-330.5 913.95,-366.5 1226.28,-366.5 1226.28,-330.5 913.95,-330.5"/>
+<text text-anchor="middle" x="1060.36" y="-344.4" font-family="Times,serif" font-size="14.00">conversational.output_parser.ConvoOutputParser</text>
+<polyline fill="none" stroke="black" points="1206.78,-330.7 1206.78,-366.5"/>
+<text text-anchor="middle" x="1216.53" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- conversational.output_parser.ConvoOutputParser&#45;&gt;agent.AgentOutputParser -->
+<g id="edge12" class="edge">
+<title>conversational.output_parser.ConvoOutputParser-&gt;agent.AgentOutputParser</title>
+<path fill="none" stroke="#595959" d="M902.41,-348.5C902.41,-348.5 822.09,-348.5 822.09,-348.5"/>
+<polygon fill="#595959" stroke="#595959" points="902.41,-352 912.41,-348.5 902.41,-345 902.41,-352"/>
+</g>
+<!-- conversational_chat.base.ConversationalChatAgent -->
+<g id="node16" class="node">
+<title>conversational_chat.base.ConversationalChatAgent</title>
+<polygon fill="none" stroke="black" points="1277.44,-55.5 1277.44,-91.5 1602.18,-91.5 1602.18,-55.5 1277.44,-55.5"/>
+<text text-anchor="middle" x="1430.06" y="-69.4" font-family="Times,serif" font-size="14.00">conversational_chat.base.ConversationalChatAgent</text>
+<polyline fill="none" stroke="black" points="1582.68,-55.7 1582.68,-91.5"/>
+<text text-anchor="middle" x="1592.43" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- conversational_chat.base.ConversationalChatAgent&#45;&gt;agent.Agent -->
+<g id="edge13" class="edge">
+<title>conversational_chat.base.ConversationalChatAgent-&gt;agent.Agent</title>
+<path fill="none" stroke="#595959" d="M1283.95,-103.36C1283.95,-103.36 1283.95,-119.25 1283.95,-119.25 1283.95,-119.25 1185.44,-119.25 1122.15,-119.25"/>
+<polygon fill="#595959" stroke="#595959" points="1287.45,-103.36 1283.95,-93.36 1280.45,-103.36 1287.45,-103.36"/>
+</g>
+<!-- conversational_chat.output_parser.ConvoOutputParser -->
+<g id="node17" class="node">
+<title>conversational_chat.output_parser.ConvoOutputParser</title>
+<polygon fill="none" stroke="black" points="898.79,-275.5 898.79,-311.5 1241.44,-311.5 1241.44,-275.5 898.79,-275.5"/>
+<text text-anchor="middle" x="1060.36" y="-289.4" font-family="Times,serif" font-size="14.00">conversational_chat.output_parser.ConvoOutputParser</text>
+<polyline fill="none" stroke="black" points="1221.94,-275.7 1221.94,-311.5"/>
+<text text-anchor="middle" x="1231.69" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- conversational_chat.output_parser.ConvoOutputParser&#45;&gt;agent.AgentOutputParser -->
+<g id="edge14" class="edge">
+<title>conversational_chat.output_parser.ConvoOutputParser-&gt;agent.AgentOutputParser</title>
+<path fill="none" stroke="#595959" d="M906.37,-323.36C906.37,-323.36 906.37,-339.25 906.37,-339.25 906.37,-339.25 864.72,-339.25 822.26,-339.25"/>
+<polygon fill="#595959" stroke="#595959" points="909.87,-323.36 906.37,-313.36 902.87,-323.36 909.87,-323.36"/>
+</g>
+<!-- schema.AgentScratchPadChatPromptTemplate -->
+<g id="node18" class="node">
+<title>schema.AgentScratchPadChatPromptTemplate</title>
+<polygon fill="none" stroke="black" points="1290.46,-550.5 1290.46,-586.5 1589.16,-586.5 1589.16,-550.5 1290.46,-550.5"/>
+<text text-anchor="middle" x="1430.06" y="-564.4" font-family="Times,serif" font-size="14.00">schema.AgentScratchPadChatPromptTemplate</text>
+<polyline fill="none" stroke="black" points="1569.66,-550.7 1569.66,-586.5"/>
+<text text-anchor="middle" x="1579.41" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- prompts.chat.ChatPromptTemplate -->
+<g id="node24" class="node">
+<title>prompts.chat.ChatPromptTemplate</title>
+<polygon fill="none" stroke="black" points="953.99,-550.5 953.99,-586.5 1186.23,-586.5 1186.23,-550.5 953.99,-550.5"/>
+<text text-anchor="middle" x="1060.36" y="-564.4" font-family="Times,serif" font-size="14.00">prompts.chat.ChatPromptTemplate</text>
+<polyline fill="none" stroke="black" points="1166.73,-550.7 1166.73,-586.5"/>
+<text text-anchor="middle" x="1176.48" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- schema.AgentScratchPadChatPromptTemplate&#45;&gt;prompts.chat.ChatPromptTemplate -->
+<g id="edge15" class="edge">
+<title>schema.AgentScratchPadChatPromptTemplate-&gt;prompts.chat.ChatPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M1278.46,-568.5C1278.46,-568.5 1186.66,-568.5 1186.66,-568.5"/>
+<polygon fill="#595959" stroke="#595959" points="1278.46,-572 1288.46,-568.5 1278.46,-565 1278.46,-572"/>
+</g>
+<!-- tools.InvalidTool -->
+<g id="node19" class="node">
+<title>tools.InvalidTool</title>
+<polygon fill="none" stroke="black" points="666.9,-440.5 666.9,-476.5 799.23,-476.5 799.23,-440.5 666.9,-440.5"/>
+<text text-anchor="middle" x="723.31" y="-454.4" font-family="Times,serif" font-size="14.00">tools.InvalidTool</text>
+<polyline fill="none" stroke="black" points="779.73,-440.7 779.73,-476.5"/>
+<text text-anchor="middle" x="789.48" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- tools.InvalidTool&#45;&gt;tools.base.BaseTool -->
+<g id="edge16" class="edge">
+<title>tools.InvalidTool-&gt;tools.base.BaseTool</title>
+<path fill="none" stroke="#595959" d="M655.12,-472C655.12,-472 516.5,-472 516.5,-472"/>
+<polygon fill="#595959" stroke="#595959" points="655.12,-475.5 665.12,-472 655.12,-468.5 655.12,-475.5"/>
+</g>
+<!-- output_parsers.base.BaseLLMOutputParser -->
+<g id="node20" class="node">
+<title>output_parsers.base.BaseLLMOutputParser</title>
+<polygon fill="none" stroke="black" points="0,-385.5 0,-421.5 280.45,-421.5 280.45,-385.5 0,-385.5"/>
+<text text-anchor="middle" x="130.47" y="-399.4" font-family="Times,serif" font-size="14.00">output_parsers.base.BaseLLMOutputParser</text>
+<polyline fill="none" stroke="black" points="260.95,-385.7 260.95,-421.5"/>
+<text text-anchor="middle" x="270.7" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- output_parsers.base.BaseOutputParser&#45;&gt;output_parsers.base.BaseLLMOutputParser -->
+<g id="edge17" class="edge">
+<title>output_parsers.base.BaseOutputParser-&gt;output_parsers.base.BaseLLMOutputParser</title>
+<path fill="none" stroke="#595959" d="M304.63,-403.5C304.63,-403.5 280.89,-403.5 280.89,-403.5"/>
+<polygon fill="#595959" stroke="#595959" points="304.63,-407 314.63,-403.5 304.63,-400 304.63,-407"/>
+</g>
+<!-- runnables.base.RunnableSerializable -->
+<g id="node25" class="node">
+<title>runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="19.46,-467.5 19.46,-503.5 260.99,-503.5 260.99,-467.5 19.46,-467.5"/>
+<text text-anchor="middle" x="130.47" y="-481.4" font-family="Times,serif" font-size="14.00">runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="241.49,-467.7 241.49,-503.5"/>
+<text text-anchor="middle" x="251.24" y="-481.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- output_parsers.base.BaseOutputParser&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge18" class="edge">
+<title>output_parsers.base.BaseOutputParser-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M320.53,-433.37C320.53,-433.37 320.53,-476.25 320.53,-476.25 320.53,-476.25 294.1,-476.25 261.49,-476.25"/>
+<polygon fill="#595959" stroke="#595959" points="324.03,-433.37 320.53,-423.37 317.03,-433.37 324.03,-433.37"/>
+</g>
+<!-- prompts.base.BasePromptTemplate -->
+<g id="node22" class="node">
+<title>prompts.base.BasePromptTemplate</title>
+<polygon fill="none" stroke="black" points="324.61,-536.5 324.61,-572.5 559.18,-572.5 559.18,-536.5 324.61,-536.5"/>
+<text text-anchor="middle" x="432.14" y="-550.4" font-family="Times,serif" font-size="14.00">prompts.base.BasePromptTemplate</text>
+<polyline fill="none" stroke="black" points="539.68,-536.7 539.68,-572.5"/>
+<text text-anchor="middle" x="549.43" y="-550.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- prompts.base.BasePromptTemplate&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge19" class="edge">
+<title>prompts.base.BasePromptTemplate-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M346.19,-524.73C346.19,-524.73 346.19,-494.75 346.19,-494.75 346.19,-494.75 306.06,-494.75 261.22,-494.75"/>
+<polygon fill="#595959" stroke="#595959" points="342.69,-524.73 346.19,-534.73 349.69,-524.73 342.69,-524.73"/>
+</g>
+<!-- prompts.chat.BaseChatPromptTemplate -->
+<g id="node23" class="node">
+<title>prompts.chat.BaseChatPromptTemplate</title>
+<polygon fill="none" stroke="black" points="603.34,-550.5 603.34,-586.5 862.79,-586.5 862.79,-550.5 603.34,-550.5"/>
+<text text-anchor="middle" x="723.31" y="-564.4" font-family="Times,serif" font-size="14.00">prompts.chat.BaseChatPromptTemplate</text>
+<polyline fill="none" stroke="black" points="843.29,-550.7 843.29,-586.5"/>
+<text text-anchor="middle" x="853.04" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- prompts.chat.BaseChatPromptTemplate&#45;&gt;prompts.base.BasePromptTemplate -->
+<g id="edge20" class="edge">
+<title>prompts.chat.BaseChatPromptTemplate-&gt;prompts.base.BasePromptTemplate</title>
+<path fill="none" stroke="#595959" d="M591.72,-561.5C591.72,-561.5 559.51,-561.5 559.51,-561.5"/>
+<polygon fill="#595959" stroke="#595959" points="591.72,-565 601.72,-561.5 591.72,-558 591.72,-565"/>
+</g>
+<!-- prompts.chat.ChatPromptTemplate&#45;&gt;prompts.chat.BaseChatPromptTemplate -->
+<g id="edge21" class="edge">
+<title>prompts.chat.ChatPromptTemplate-&gt;prompts.chat.BaseChatPromptTemplate</title>
+<path fill="none" stroke="#595959" d="M942.14,-568.5C942.14,-568.5 863.1,-568.5 863.1,-568.5"/>
+<polygon fill="#595959" stroke="#595959" points="942.14,-572 952.14,-568.5 942.14,-565 942.14,-572"/>
+</g>
+<!-- tools.base.BaseTool&#45;&gt;runnables.base.RunnableSerializable -->
+<g id="edge22" class="edge">
+<title>tools.base.BaseTool-&gt;runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M355.81,-485.5C355.81,-485.5 261.47,-485.5 261.47,-485.5"/>
+<polygon fill="#595959" stroke="#595959" points="355.81,-489 365.81,-485.5 355.81,-482 355.81,-489"/>
+</g>
+</g>
+</svg>

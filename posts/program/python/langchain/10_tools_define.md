@@ -20,7 +20,7 @@ toc:
 
 我们在前面介绍了 Tool 相关的 Message 传递以及解析，这一节我们来看 Langchain 对 Tool 本身的抽象。
 
-## 2. Tool 的 UML 类图
+## 1. Tool 的 UML 类图
 ![Tool 类图](/images/langchain/tool.svg)
 
 如图，OutPut 的代表比较简单，有如下类:
@@ -33,7 +33,7 @@ toc:
 6. RetrieverInput
 7. _SchemaConfig
 
-### 2.1 提问
+### 1.1 提问
 Tool 中的内不多，让我们直接问大模型这些类的语义
 
 ```bash
@@ -610,7 +610,6 @@ class BaseTool(RunnableSerializable[Union[str, dict, ToolCall], Any]):
         run_manager.on_tool_end(output, color=color, name=self.name, **kwargs)
         return output
 ```
-####
 
 run 代码有下面几个比较难以理解的地方：
 1. `_to_args_and_kwargs`
