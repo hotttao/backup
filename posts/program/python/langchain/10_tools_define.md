@@ -440,6 +440,14 @@ BaseTool 继承了 Runable，他实现了 invoke 接口:
 2. run 则调用了 _run 方法
 3. _run是 BaseTool 唯一抽象的接口方法。
 
+调用链如下:
+
+```bash
+invoke
+    run
+        _run
+```
+
 ```python
 class BaseTool(RunnableSerializable[Union[str, dict, ToolCall], Any]):
     @override

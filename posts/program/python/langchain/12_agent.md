@@ -168,16 +168,16 @@ langchain_core.agents 提供了 `AgentAction` 类:
 ```bash
 AgentAction
     AgentActionMessageLog
-    AgentStep
-    AgentFinish
+AgentStep
+AgentFinish
 ```
 
 ```bash
 我正在阅读  langchain_core.agents 子包的源代码，注意到包内，有如下类:
 AgentAction
     AgentActionMessageLog
-    AgentStep
-    AgentFinish
+AgentStep
+AgentFinish
 
 请给我从语义上解释一下这些类的的作用
 ```
@@ -388,7 +388,6 @@ class BaseSingleActionAgent(BaseModel):
 
 ### 2.1 RunnableAgent
 
-
 ```python
 class RunnableAgent(BaseSingleActionAgent):
     """Agent powered by Runnables."""
@@ -475,6 +474,7 @@ class LLMSingleActionAgent(BaseSingleActionAgent):
 ```
 
 ### 2.3 Agent
+Agent 提供了默认的 plan 实现单次推理和工具调用逻辑。他定义的抽象方法主要是为了获取 prompt 模板和 output_parser。
 
 ```python
 @deprecated(
@@ -517,6 +517,27 @@ class Agent(BaseSingleActionAgent):
         full_inputs = self.get_full_inputs(intermediate_steps, **kwargs)
         full_output = self.llm_chain.predict(callbacks=callbacks, **full_inputs)
         return self.output_parser.parse(full_output)
+
+    @property
+    @abstractmethod
+    def observation_prefix(self) -> str:
+        """Prefix to append the observation with."""
+
+    @property
+    @abstractmethod
+    def llm_prefix(self) -> str:
+        """Prefix to append the LLM call with."""
+
+    @classmethod
+    @abstractmethod
+    def create_prompt(cls, tools: Sequence[BaseTool]) -> BasePromptTemplate:
+        pass
+    
+    @classmethod
+    @abstractmethod
+    def _get_default_output_parser(cls, **kwargs: Any) -> AgentOutputParser:
+        """Get default output parser for this class."""
+        pass
 ```
 
 ## 3. BaseMultiActionAgent
@@ -625,6 +646,20 @@ class AgentExecutor(Chain):
     """
 ```
 
+以下是 `AgentExecutor` 类中各个属性的语义解释表格：
+
+| 属性名                         | 类型                                                             | 说明                                                                                                                            |
+| --------------------------- | -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `agent`                     | `Union[BaseSingleActionAgent, BaseMultiActionAgent, Runnable]` | 核心 Agent 对象，负责根据当前状态和输入决定下一步操作（调用哪个 Tool 或结束）                                                                                 |
+| `tools`                     | `Sequence[BaseTool]`                                           | Agent 可用的工具列表，每个工具通常是一个函数或 API 调用的封装                                                                                          |
+| `return_intermediate_steps` | `bool`                                                         | 是否返回中间推理步骤（即每次调用 tool 的 action + observation 轨迹）                                                                              |
+| `max_iterations`            | `Optional[int]`                                                | 最大允许的 Agent 执行步数，防止死循环（默认最多 15 步）                                                                                             |
+| `max_execution_time`        | `Optional[float]`                                              | 最大运行时间（单位为秒），超过此时间则提前终止                                                                                                       |
+| `early_stopping_method`     | `str`（`"force"` 或 `"generate"`）                                | Agent 在未主动结束时的终止策略：<br>`force` 直接终止并返回提示，<br>`generate` 让 agent 再调用一次 LLM 总结出结果                                               |
+| `handle_parsing_errors`     | `Union[bool, str, Callable]`                                   | 控制当输出解析器（output parser）出错时的处理方式：<br>`False` 抛出异常；<br>`True` 把错误反馈给 LLM；<br>`str` 作为 observation 给 LLM；<br>`Callable` 动态生成反馈内容 |
+| `trim_intermediate_steps`   | `int` 或 `Callable`                                             | 控制返回的中间步骤数量：<br>`-1` 不裁剪；<br>`int` 倒数保留 N 个；<br>`Callable` 自定义裁剪逻辑                                                            |
+
+
 ### 4.2 _call 方法
 
 因为 AgentExecutor 继承子 Chain 所以其核心实现位于 _call 方法中。
@@ -704,7 +739,7 @@ Agent 决策，工具调用位于 _take_next_step 函数
 _perform_agent_action 是实际调用 Tool
 
 ```python
-def _iter_next_step(
+    def _iter_next_step(
         self,
         name_to_tool_map: dict[str, BaseTool],
         color_mapping: dict[str, str],
@@ -795,4 +830,16 @@ def _iter_next_step(
                 **tool_run_kwargs,
             )
         return AgentStep(action=agent_action, observation=observation)
+```
+
+### 4.5 调用链
+总结一下，AgentExecutor 的调用链如下:
+
+```bash
+invoke
+    _call
+        _take_next_step
+            action_agent.plan
+            _perform_agent_action
+                tool.run
 ```

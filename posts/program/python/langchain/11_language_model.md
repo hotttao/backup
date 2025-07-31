@@ -322,7 +322,7 @@ class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
         raise NotImplementedError
 ```
 
-通过搜索这些方法可以找到如下的调用关系:
+通过搜索这些方法可以找到如下的调用链:
 
 ```bash
 invoke:
@@ -383,7 +383,7 @@ class BaseLLM(BaseLanguageModel[str], ABC):
         raise NotImplementedError
 ```
 
-抽象方法的调用关系:
+抽象方法的调用链:
 
 ```bash
 invoke
@@ -977,6 +977,42 @@ _generate_helper 实现比较简单，唯一需要注意的是，BaseLLM 的 `_g
                 RunInfo(run_id=run_manager.run_id) for run_manager in run_managers
             ]
         return output
+```
+
+### 4.5 调用链总结
+
+至此我们可以对 LanguageModel 的调用链做一下总结:
+
+```bash
+# BaseLLM
+# LanguageModelInput = Union[PromptValue, str, Sequence[MessageLikeRepresentation]]
+LanguageModelInput -> str
+invoke
+    generate_prompt            
+        generate
+            _generate_helper
+                _generate
+            dict
+                _llm_type
+
+stream:
+    _stream
+
+# BaseChatModel
+LanguageModelInput -> Message
+invoke:
+    generate_prompt
+        generate
+            _get_invocation_params
+                dict
+                    _llm_type
+            _generate_with_cache
+                _generate
+stream:
+    _stream
+
+with_structured_output:
+    bind_tools
 ```
 
 ### 4.4 LLM 

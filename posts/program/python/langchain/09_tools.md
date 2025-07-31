@@ -480,6 +480,7 @@ AIMessage 继承自 BaseMessage，BaseMessage 还有多个字段，具体请查�
 
 
 ### 3.1 ToolCall
+ToolCall 包装了对 tool 的调用请求。
 
 ```python
 class ToolCall(TypedDict):

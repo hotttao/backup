@@ -327,5 +327,50 @@ Chain 只有 Chain 抽象，调用链如下:
 dict[str, Any] -> dict[str, Any]
 invoke
     _call
-        generate
+```
+
+## Tool
+### 抽象层次
+Tool 抽象层次如下:
+```python
+BaseTool
+    Tool
+    StructuredTool
+```
+
+### 顶层抽象
+BaseTool 是顶层抽象，继承自 RunnableSerializable，提供了 invoke 的默认实现。
+BaseLanguageModel 主要有三个接口方法:
+1. `_run`
+
+调用链如下:
+
+```bash
+invoke
+    run
+        _run
+```
+
+### 业务抽象
+Tool，StructuredTool 都是基于函数实现的 Tool 的包装。两个的区别在于，Tool 限定了只能处理单参数。调用链如下:
+
+```bash
+invoke
+    run
+        _run
+            func call
+```
+
+## Agent
+### 顶层抽象
+Agent 的抽象比较简单，顶层抽象只有 BaseMultiActionAgent、BaseSingleActionAgent，并且只有一个抽象方法 plan。
+
+```bash
+BaseMultiActionAgent
+    RunnableMultiActionAgent
+BaseSingleActionAgent
+    RunnableAgent
+    LLMSingleActionAgent
+    Agent
+        ChatAgent
 ```

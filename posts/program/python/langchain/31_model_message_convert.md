@@ -1,3 +1,25 @@
+---
+weight: 1
+title: "LangChain Message Convert"
+date: 2025-07-23T14:00:00+08:00
+lastmod: 2025-07-23T14:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "langchain message convert"
+featuredImage: 
+
+tags: ["langchain 源码"]
+categories: ["langchain"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+## 1. 背景
+
 invoke 代码里有两次对 Message 转换的过程：
 1. `_format_for_tracing`
 2. `_normalize_messages `

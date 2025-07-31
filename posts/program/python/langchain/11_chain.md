@@ -121,6 +121,13 @@ class Chain(RunnableSerializable[dict[str, Any], dict[str, Any]], ABC):
 
 BaseChain 已经继承自 Runnable，所以我们重点来看它的 invoke 方法。chain 原本提供的 run、`__call__` 都已经 deprecated，并在内部调用 invoke。
 
+调用链如下:
+
+```bash
+invoke
+    _call
+```
+
 ```python
 class Chain(RunnableSerializable[dict[str, Any], dict[str, Any]], ABC):
 
@@ -226,10 +233,9 @@ llm = LLMChain(llm=OpenAI(), prompt=prompt)
 ```
 
 ### 2.2 LLMChain 实现
+LLMChain 就是将「Prompt → LLM 调用 → 生成文本」的过程封装起来，让你可以像调用函数一样调用大模型
+
 #### 接口实现
-从 _call 可以看到，核心实现位于:
-1. generate: generate 方法在 BaseLLm 中也被实现，这样就保证 LLMChain 也可以作为一个 LLM 来使用。
-2. create_outputs: 解析 generate 返回的 LLMResult 为 dict
 
 ```python
 class LLMChain(Chain):
@@ -280,6 +286,18 @@ class LLMChain(Chain):
     ) -> dict[str, str]:
         response = self.generate([inputs], run_manager=run_manager)
         return self.create_outputs(response)[0]
+```
+
+从 _call 可以看到，核心实现位于:
+1. generate: generate 方法在 BaseLLm 中也被实现，这样就保证 LLMChain 也可以作为一个 LLM 来使用。
+2. create_outputs: 解析 generate 返回的 LLMResult 为 dict
+
+调用链如下:
+
+```bash
+invke
+    _call
+        generate
 ```
 
 #### generate
