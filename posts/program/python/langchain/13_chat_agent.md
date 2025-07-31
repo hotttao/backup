@@ -293,6 +293,17 @@ self._process_llm_result 会解析获取到的计算表达式，计算结果返�
         return self._process_llm_result(llm_output, _run_manager)
 ```
 
+调用链如下:
+
+```bash
+run
+    __call__
+        invoke
+            prep_inputs
+            _call
+            prep_outputs
+```
+
 
 ## 3. initialize_agent
 
@@ -444,6 +455,12 @@ Final Answer: the final answer to the original input question
 Begin! Reminder to always use the exact characters `Final Answer` when responding.
 ``````
 
+HumanMessagePromptTemplate 如下:
+
+```python
+"{input}\n\n{agent_scratchpad}"
+```
+
 #### ChatAgent 初始化
 ChatAgent 初始化使用的 Agent.from_llm_and_tools 方法，这个方法正式依赖上面定义的 create_prompt、_get_default_output_parser
 
@@ -577,6 +594,8 @@ invoke
                 tool.run
 ```
 
+### 4.1 对象
+
 现在我们把 AgentExecutor 包含的所有对象展开，解析调用过程。我们先看一下 AgentExecutor 中的对象包含关系:
 
 ```bash
@@ -589,6 +608,7 @@ AgentExecutor(Chain)
     List[Tool]
 ```
 
+### 4.2 调用链
 
 完整调用链如下:
 
@@ -610,6 +630,10 @@ Chain.invoke
                                 Chain.__call__
                                     Chain.invoke # output = {}
                             ChatOutputParser.parse # input=str output=Union[AgentAction, AgentFinish]
+                        _perform_agent_action  # input=AgentAction
+                            tool.run           # input=AgentAction.tool_input
+                                LLMMathChain.run
+
         # intermediate_steps.extend(next_step_output)
             AgentExecutor._return # output:dict = AgentFinish.return_values
     Chain.prep_outputs # outpu -> dict
@@ -635,6 +659,47 @@ Chain.invoke               #
                 StrOutputParser.parse(result[0].text)
             LLMChain.output_key # =text
     prep_outputs # input={"text": "", "full_generation": ""} 
-        
+```
 
+### 4.3 prompt 合并
+调用链中 prompt 的生成逻辑如下:
+1. AgentExecutor._call 会使用一个 intermediate_steps 收集已经执行的 AgentStep，AgentStep 包含他执行的 action 和结果
+2. intermediate_steps 最终会传递给 Agent.plan
+3. Agent.plan 会调用 Agent.get_full_inputs 合并已经发生的 AgentAction，合并函数是 ChatAgent._construct_scratchpad，合并的 AgentAction，保存在 input 的 agent_scratchpad key 中。最终input={"agent_scratchpad": "", "input": ""}
+5. Agent.LLMChain 保存的 ChatPromptTemplate 会使用 agent_scratchpad 生成 prompt 传递给大模型。
+6. 大模型选择使用 Tool 之后，会调用 Tool.run 方法，返回 AgentStep
+7. 回到第一步，直至 Agent.plan 判断是否是 AgentFinish，是则返回，不是则继续。
+
+
+完整的对话过程如下:
+
+```bash
+--- Agent -----
+`input` {'input': 'What is the 25% of 300?', 'agent_scratchpad': '', 'stop': ['Observation:']}
+`output` Thought: I need to calculate 25% of 300. I can use the Calculator tool for this.
+Action:
+```
+{
+  "action": "Calculator",
+  "action_input": "300 * 0.25"
+}
+```
+
+--- Agent end-----
+++++++++ llm-math +++++++
+`llm_input` {'question': '300 * 0.25'}
+`llm_output` ```text
+300 * 0.25
+```
+...numexpr.evaluate("300 * 0.25")...
+
+`process_llm_result` {'answer': 'Answer: 75.0'}
+++++++++ llm-math +++++++
+--- Agent -----
+`input` {'input': 'What is the 25% of 300?', 'agent_scratchpad': 'This was your previous work (but I haven\'t seen any of it! I only see what you return as final answer):\nThought: I need to calculate 25% of 300. I can use the Calculator tool for this.\nAction:\n```\n{\n  "action": "Calculator",\n  "action_input": "300 * 0.25"\n}\n```\n\nObservation: Answer: 75.0\nThought:', 'stop': ['Observation:']}
+`output` The calculation shows that 25% of 300 is 75. 
+
+Final Answer: 75
+--- Agent end-----
+{'input': 'What is the 25% of 300?', 'output': '75'}
 ```
