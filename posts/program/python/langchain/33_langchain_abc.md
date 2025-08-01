@@ -18,11 +18,10 @@ toc:
   auto: false
 ---
 
-目前为止我们学习 langchain-core 中几乎所有的核心对象。现在我们对这些核心对象的抽象层次做一个总结，便于我们理解 LCEL 或者说 Agent 中对象的传递和调用链。
+目前为止我们学习 langchain-core 中几乎所有的核心对象。现在我们对这些核心对象的抽象层次做一个总结，便于我们理解 Agent 中对象的传递和调用链。查看源代码时可以快速定位到每个组件核心代码的位置。
 
-
-## Prompts
-### 抽象层次
+## 1. Prompts
+### 1.1 抽象层次
 Prompts 抽象层次如下:
 ```python
 BasePromptTemplate
@@ -50,7 +49,7 @@ BaseMessagePromptTemplate
 2. Chat Prompt: 处理多种多个单条 Promt 的组合
 
 
-### 顶层抽象
+### 1.2 顶层抽象
 BasePromptTemplate 是顶层抽象类，继承自 RunnableSerializable 有默认实现。
 BaseLanguageModel 主要有三个接口方法:
 1. format_prompt
@@ -128,7 +127,7 @@ invoke
         format_prompt
 ```
 
-### 业务抽象
+### 1.3 业务抽象
 单条 Prompt 将 format_prompt 实现在 format 方法之上，所以它们有如下的调用链:
 
 ```bash
@@ -150,7 +149,7 @@ format
         format_messages
 ```
 
-### BaseMessagePromptTemplate
+### 1.4 BaseMessagePromptTemplate
 为什么有 BaseMessagePromptTemplate？
 1. 参数 -> BasePromptTemplate -> PromptValue -> message/text
 3. BaseMessagePromptTemplate 接收更通用的输入，根据输入的不同解析成不同的 PromptTemplate，并生成特定类型的 Message(由 _msg_class 决定生成什么类型的消息)。相当于一个 prompt 生成和聚合的入口。
@@ -183,22 +182,21 @@ class _StringImageMessagePromptTemplate(BaseMessagePromptTemplate):
 ```
 
 
-## Language Model
-### 抽象层次
+## 2. Language Model
+### 2.1 抽象层次
 Language Model 抽象层次如下:
 ```python
 BaseLanguageModel
     BaseLLM
     BaseChatModel
 ```
-### 顶层抽象
+
+### 2.2 顶层抽象
 BaseLanguageModel 是顶层抽象，继承自 RunnableSerializable，但是并没有提供 invoke 的默认实现。
 BaseLanguageModel 主要有三个接口方法:
 1. `generate_prompt`
 2. `agenerate_prompt`
 3. `invoke`
-
-### 业务抽象
 
 ```python
 class BaseLanguageModel(
@@ -223,7 +221,7 @@ class BaseLanguageModel(
     ) -> LLMResult:
 ```
 
-### 业务抽象
+### 2.3 业务抽象
 BaseLLM、BaseChatModel 是实际业务继承类，抽象接口为:
 1. _generate
 2. _llm_type
@@ -263,8 +261,8 @@ with_structured_output:
     bind_tools
 ```
 
-## OutPut
-### 抽象层次
+## 3. OutPut
+### 3.1 抽象层次
 ```bash
 Generation
     GenerationChunk
@@ -279,8 +277,8 @@ Output 代表模型的输出:
 3. ChatResult 表示 Chat Model call 调用结果
 4. LLMResult 表示 LLM Model call 调用结果
 
-## OutPut Parser
-### 抽象层次
+## 4. OutPut Parser
+### 4.1 抽象层次
 ```python
 BaseLLMOutputParser
     BaseGenerationOutputParser
@@ -290,7 +288,7 @@ BaseLLMOutputParser
             BaseCumulativeTransformOutputParser
                 JsonOutPutParser
 ```
-### 顶层抽象
+### 4.2 顶层抽象
 BaseLLMOutputParser 是顶层抽象，定义 parse_result 抽象方法
 
 ```python
@@ -301,7 +299,7 @@ class BaseLLMOutputParser(ABC, Generic[T]):
     def parse_result(self, result: list[Generation], *, partial: bool = False) -> T:
 ```
 
-### 业务抽象
+### 4.3 业务抽象
 BaseGenerationOutputParser
 
 ```bash
@@ -320,8 +318,30 @@ invoke
         parse
 ```
 
-## Chain
-Chain 只有 Chain 抽象，调用链如下:
+## 5. Chain
+Chain 只有 Chain，其定义了如下接口:
+
+```python
+    @property
+    @abstractmethod
+    def input_keys(self) -> list[str]:
+        """Keys expected to be in the chain input."""
+
+    @property
+    @abstractmethod
+    def output_keys(self) -> list[str]:
+        """Keys expected to be in the chain output."""
+
+    @abstractmethod
+    def _call(
+        self,
+        inputs: dict[str, Any],
+        run_manager: Optional[CallbackManagerForChainRun] = None,
+    ) -> dict[str, Any]:
+        pass
+```
+
+chain 实现了 RunnableSerializable 接口，其 invoke 调用链如下:
 
 ```bash
 dict[str, Any] -> dict[str, Any]
@@ -329,8 +349,8 @@ invoke
     _call
 ```
 
-## Tool
-### 抽象层次
+## 6. Tool
+### 6.1 抽象层次
 Tool 抽象层次如下:
 ```python
 BaseTool
@@ -338,7 +358,7 @@ BaseTool
     StructuredTool
 ```
 
-### 顶层抽象
+### 6.2 顶层抽象
 BaseTool 是顶层抽象，继承自 RunnableSerializable，提供了 invoke 的默认实现。
 BaseLanguageModel 主要有三个接口方法:
 1. `_run`
@@ -351,7 +371,7 @@ invoke
         _run
 ```
 
-### 业务抽象
+### 6.2 业务抽象
 Tool，StructuredTool 都是基于函数实现的 Tool 的包装。两个的区别在于，Tool 限定了只能处理单参数。调用链如下:
 
 ```bash
@@ -361,7 +381,7 @@ invoke
             func call
 ```
 
-## Agent
+## 7. Agent
 ### 顶层抽象
 Agent 的抽象比较简单，顶层抽象只有 BaseMultiActionAgent、BaseSingleActionAgent，并且只有一个抽象方法 plan。
 
@@ -373,4 +393,11 @@ BaseSingleActionAgent
     LLMSingleActionAgent
     Agent
         ChatAgent
+```
+
+Agent 的执行实现在 AgentExecutor 中，AgentExecutor 继承自 Chain。所以其 invoke 调用链如下:
+```bash
+dict[str, Any] -> dict[str, Any]
+invoke
+    _call
 ```
