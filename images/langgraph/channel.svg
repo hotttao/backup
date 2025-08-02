@@ -1,0 +1,140 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="518pt" height="485pt" viewBox="0.00 0.00 517.73 485.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 481)">
+<title>channels</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-481 513.73,-481 513.73,4 -4,4"/>
+<!-- any_value.AnyValue -->
+<g id="node1" class="node">
+<title>any_value.AnyValue</title>
+<polygon fill="none" stroke="black" points="264.7,-440.5 264.7,-476.5 418.77,-476.5 418.77,-440.5 264.7,-440.5"/>
+<text text-anchor="middle" x="331.99" y="-454.4" font-family="Times,serif" font-size="14.00">any_value.AnyValue</text>
+<polyline fill="none" stroke="black" points="399.27,-440.7 399.27,-476.5"/>
+<text text-anchor="middle" x="409.02" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseChannel -->
+<g id="node2" class="node">
+<title>base.BaseChannel</title>
+<polygon fill="none" stroke="black" points="0,-220.5 0,-256.5 137.75,-256.5 137.75,-220.5 0,-220.5"/>
+<text text-anchor="middle" x="59.12" y="-234.4" font-family="Times,serif" font-size="14.00">base.BaseChannel</text>
+<polyline fill="none" stroke="black" points="118.25,-220.7 118.25,-256.5"/>
+<text text-anchor="middle" x="128" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- any_value.AnyValue&#45;&gt;base.BaseChannel -->
+<g id="edge1" class="edge">
+<title>any_value.AnyValue-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M252.96,-458.5C252.96,-458.5 27.55,-458.5 27.55,-458.5 27.55,-458.5 27.55,-309.75 27.55,-256.88"/>
+<polygon fill="#595959" stroke="#595959" points="252.96,-462 262.96,-458.5 252.96,-455 252.96,-462"/>
+</g>
+<!-- binop.BinaryOperatorAggregate -->
+<g id="node3" class="node">
+<title>binop.BinaryOperatorAggregate</title>
+<polygon fill="none" stroke="black" points="233.21,-385.5 233.21,-421.5 450.26,-421.5 450.26,-385.5 233.21,-385.5"/>
+<text text-anchor="middle" x="331.99" y="-399.4" font-family="Times,serif" font-size="14.00">binop.BinaryOperatorAggregate</text>
+<polyline fill="none" stroke="black" points="430.76,-385.7 430.76,-421.5"/>
+<text text-anchor="middle" x="440.51" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- binop.BinaryOperatorAggregate&#45;&gt;base.BaseChannel -->
+<g id="edge2" class="edge">
+<title>binop.BinaryOperatorAggregate-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M221.45,-403.5C221.45,-403.5 55.1,-403.5 55.1,-403.5 55.1,-403.5 55.1,-299.75 55.1,-256.79"/>
+<polygon fill="#595959" stroke="#595959" points="221.45,-407 231.45,-403.5 221.45,-400 221.45,-407"/>
+</g>
+<!-- ephemeral_value.EphemeralValue -->
+<g id="node4" class="node">
+<title>ephemeral_value.EphemeralValue</title>
+<polygon fill="none" stroke="black" points="227.4,-330.5 227.4,-366.5 456.08,-366.5 456.08,-330.5 227.4,-330.5"/>
+<text text-anchor="middle" x="331.99" y="-344.4" font-family="Times,serif" font-size="14.00">ephemeral_value.EphemeralValue</text>
+<polyline fill="none" stroke="black" points="436.58,-330.7 436.58,-366.5"/>
+<text text-anchor="middle" x="446.33" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ephemeral_value.EphemeralValue&#45;&gt;base.BaseChannel -->
+<g id="edge3" class="edge">
+<title>ephemeral_value.EphemeralValue-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M215.45,-348.5C215.45,-348.5 82.65,-348.5 82.65,-348.5 82.65,-348.5 82.65,-287.91 82.65,-256.66"/>
+<polygon fill="#595959" stroke="#595959" points="215.45,-352 225.45,-348.5 215.45,-345 215.45,-352"/>
+</g>
+<!-- last_value.LastValue -->
+<g id="node5" class="node">
+<title>last_value.LastValue</title>
+<polygon fill="none" stroke="black" points="265.09,-275.5 265.09,-311.5 418.38,-311.5 418.38,-275.5 265.09,-275.5"/>
+<text text-anchor="middle" x="331.99" y="-289.4" font-family="Times,serif" font-size="14.00">last_value.LastValue</text>
+<polyline fill="none" stroke="black" points="398.88,-275.7 398.88,-311.5"/>
+<text text-anchor="middle" x="408.63" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- last_value.LastValue&#45;&gt;base.BaseChannel -->
+<g id="edge4" class="edge">
+<title>last_value.LastValue-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M253.12,-293.5C253.12,-293.5 110.2,-293.5 110.2,-293.5 110.2,-293.5 110.2,-272.81 110.2,-256.81"/>
+<polygon fill="#595959" stroke="#595959" points="253.12,-297 263.12,-293.5 253.12,-290 253.12,-297"/>
+</g>
+<!-- last_value.LastValueAfterFinish -->
+<g id="node6" class="node">
+<title>last_value.LastValueAfterFinish</title>
+<polygon fill="none" stroke="black" points="232.82,-220.5 232.82,-256.5 450.66,-256.5 450.66,-220.5 232.82,-220.5"/>
+<text text-anchor="middle" x="331.99" y="-234.4" font-family="Times,serif" font-size="14.00">last_value.LastValueAfterFinish</text>
+<polyline fill="none" stroke="black" points="431.16,-220.7 431.16,-256.5"/>
+<text text-anchor="middle" x="440.91" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- last_value.LastValueAfterFinish&#45;&gt;base.BaseChannel -->
+<g id="edge5" class="edge">
+<title>last_value.LastValueAfterFinish-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M220.81,-247.75C220.81,-247.75 137.89,-247.75 137.89,-247.75"/>
+<polygon fill="#595959" stroke="#595959" points="220.81,-251.25 230.81,-247.75 220.81,-244.25 220.81,-251.25"/>
+</g>
+<!-- named_barrier_value.NamedBarrierValue -->
+<g id="node7" class="node">
+<title>named_barrier_value.NamedBarrierValue</title>
+<polygon fill="none" stroke="black" points="206.02,-165.5 206.02,-201.5 477.46,-201.5 477.46,-165.5 206.02,-165.5"/>
+<text text-anchor="middle" x="331.99" y="-179.4" font-family="Times,serif" font-size="14.00">named_barrier_value.NamedBarrierValue</text>
+<polyline fill="none" stroke="black" points="457.96,-165.7 457.96,-201.5"/>
+<text text-anchor="middle" x="467.71" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- named_barrier_value.NamedBarrierValue&#45;&gt;base.BaseChannel -->
+<g id="edge6" class="edge">
+<title>named_barrier_value.NamedBarrierValue-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M216.71,-213.33C216.71,-213.33 216.71,-238.5 216.71,-238.5 216.71,-238.5 176.51,-238.5 138.03,-238.5"/>
+<polygon fill="#595959" stroke="#595959" points="220.21,-213.33 216.71,-203.33 213.21,-213.33 220.21,-213.33"/>
+</g>
+<!-- named_barrier_value.NamedBarrierValueAfterFinish -->
+<g id="node8" class="node">
+<title>named_barrier_value.NamedBarrierValueAfterFinish</title>
+<polygon fill="none" stroke="black" points="173.75,-110.5 173.75,-146.5 509.73,-146.5 509.73,-110.5 173.75,-110.5"/>
+<text text-anchor="middle" x="331.99" y="-124.4" font-family="Times,serif" font-size="14.00">named_barrier_value.NamedBarrierValueAfterFinish</text>
+<polyline fill="none" stroke="black" points="490.23,-110.7 490.23,-146.5"/>
+<text text-anchor="middle" x="499.98" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- named_barrier_value.NamedBarrierValueAfterFinish&#45;&gt;base.BaseChannel -->
+<g id="edge7" class="edge">
+<title>named_barrier_value.NamedBarrierValueAfterFinish-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M189.88,-158.49C189.88,-158.49 189.88,-229.25 189.88,-229.25 189.88,-229.25 165.25,-229.25 138.21,-229.25"/>
+<polygon fill="#595959" stroke="#595959" points="193.38,-158.49 189.88,-148.49 186.38,-158.49 193.38,-158.49"/>
+</g>
+<!-- topic.Topic -->
+<g id="node9" class="node">
+<title>topic.Topic</title>
+<polygon fill="none" stroke="black" points="291.91,-55.5 291.91,-91.5 391.56,-91.5 391.56,-55.5 291.91,-55.5"/>
+<text text-anchor="middle" x="331.99" y="-69.4" font-family="Times,serif" font-size="14.00">topic.Topic</text>
+<polyline fill="none" stroke="black" points="372.06,-55.7 372.06,-91.5"/>
+<text text-anchor="middle" x="381.81" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- topic.Topic&#45;&gt;base.BaseChannel -->
+<g id="edge8" class="edge">
+<title>topic.Topic-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M279.95,-73.5C279.95,-73.5 91.83,-73.5 91.83,-73.5 91.83,-73.5 91.83,-177.25 91.83,-220.21"/>
+<polygon fill="#595959" stroke="#595959" points="279.95,-77 289.95,-73.5 279.95,-70 279.95,-77"/>
+</g>
+<!-- untracked_value.UntrackedValue -->
+<g id="node10" class="node">
+<title>untracked_value.UntrackedValue</title>
+<polygon fill="none" stroke="black" points="230.12,-0.5 230.12,-36.5 453.36,-36.5 453.36,-0.5 230.12,-0.5"/>
+<text text-anchor="middle" x="331.99" y="-14.4" font-family="Times,serif" font-size="14.00">untracked_value.UntrackedValue</text>
+<polyline fill="none" stroke="black" points="433.86,-0.7 433.86,-36.5"/>
+<text text-anchor="middle" x="443.61" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- untracked_value.UntrackedValue&#45;&gt;base.BaseChannel -->
+<g id="edge9" class="edge">
+<title>untracked_value.UntrackedValue-&gt;base.BaseChannel</title>
+<path fill="none" stroke="#595959" d="M218.39,-18.5C218.39,-18.5 45.92,-18.5 45.92,-18.5 45.92,-18.5 45.92,-167.25 45.92,-220.12"/>
+<polygon fill="#595959" stroke="#595959" points="218.39,-22 228.39,-18.5 218.39,-15 218.39,-22"/>
+</g>
+</g>
+</svg>

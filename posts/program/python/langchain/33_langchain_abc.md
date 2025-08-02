@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "LangChain Cache And Memory"
+title: "LangChain-Core 的抽象"
 date: 2025-07-30T23:00:00+08:00
 lastmod: 2025-07-30T23:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langchain Cache And Memory"
+description: "LangChain-Core 的抽象"
 featuredImage: 
 
 tags: ["langchain 源码"]
