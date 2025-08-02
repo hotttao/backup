@@ -20,8 +20,8 @@ if %errorlevel% leq 1 (
 
 
 @echo off
-set s="D:\Blog\backup\images\langgraph"
-set d="D:\Blog\hugo_blog\assets\images\langgraph"
+set s="D:\Blog\hugo_blog\assets\images\langgraph"
+set d="D:\Blog\backup\images\langgraph"
 
 :: 创建目录
 if not exist %s% mkdir %s%
