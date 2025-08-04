@@ -673,7 +673,7 @@ Chain.invoke               #
 
 完整的对话过程如下:
 
-```bash
+``````bash
 --- Agent -----
 `input` {'input': 'What is the 25% of 300?', 'agent_scratchpad': '', 'stop': ['Observation:']}
 `output` Thought: I need to calculate 25% of 300. I can use the Calculator tool for this.
@@ -702,4 +702,4 @@ Action:
 Final Answer: 75
 --- Agent end-----
 {'input': 'What is the 25% of 300?', 'output': '75'}
-```
+``````
