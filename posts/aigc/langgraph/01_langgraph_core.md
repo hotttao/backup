@@ -727,5 +727,4 @@ BaseCheckpointSaver 中比较重要的是:
 3. BaseCheckpointSaver
 5. BaseStore
 4. BaseCache
-6. PregelScratchpad
 7. Pregel 

@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "langgraph checkpointer"
-date: 2025-08-01T9:00:00+08:00
-lastmod: 2025-08-01T9:00:00+08:00
+date: 2025-08-01T12:00:00+08:00
+lastmod: 2025-08-01T12:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -26,12 +26,17 @@ Langgraph 中定义了三个类用于实现对 Checkpointer 的定义:
 1. CheckpointTuple
 3. CheckpointMetadata
 
+| 序号  | 名称                   | 角色            | 说明                               |
+| --- | -------------------- | ------------- | -------------------------------- |
+| 1️⃣ | `CheckpointTuple`    | 📦 顶层容器       | 封装了 checkpoint 本体、其元数据、相关配置等     |
+| 2️⃣ | `Checkpoint`         | 🧠 核心数据（状态快照） | 图执行中保存的值、状态、调度上下文等               |
+| 3️⃣ | `CheckpointMetadata` | 🏷️ 元数据标签     | checkpoint 的非功能信息（时间戳、ID、tags 等） |
+
 
 ### 1.1 Checkpoint
 
 ```python
 ChannelVersions = dict[str, Union[str, int, float]]
-
 
 class Checkpoint(TypedDict):
     """State snapshot at a given point in time."""
