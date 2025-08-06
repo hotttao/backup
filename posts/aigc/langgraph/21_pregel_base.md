@@ -665,3 +665,255 @@ def get_update_as_tuples(input: Any, keys: Sequence[str]) -> list[tuple[str, Any
         )
     ]
 ```
+
+## 3. Pregel.Stream
+Pregel.invoke 内部调用的是 stream 方法。所以我们重点关注 stream 方法。stream 方法内部调用了很多其他的对象，这里我们重点关注两点:
+1. stream 方法的执行流程
+2. 内部使用的对象，为我们下一步学习提供指导。
+
+下面是 stream 的源码及其注释:
+
+```python
+    def stream(
+        self,
+        input: InputT | Command | None,
+        config: RunnableConfig | None = None,
+        *,
+        context: ContextT | None = None,
+        stream_mode: StreamMode | Sequence[StreamMode] | None = None,
+        print_mode: StreamMode | Sequence[StreamMode] = (),
+        output_keys: str | Sequence[str] | None = None,
+        interrupt_before: All | Sequence[str] | None = None,
+        interrupt_after: All | Sequence[str] | None = None,
+        durability: Durability | None = None,
+        subgraphs: bool = False,
+        debug: bool | None = None,
+        **kwargs: Unpack[DeprecatedKwargs],
+    ) -> Iterator[dict[str, Any] | Any]:
+        
+        # 1. 标准化 stream_model
+        if stream_mode is None:
+            # if being called as a node in another graph, default to values mode
+            # but don't overwrite stream_mode arg if provided
+            stream_mode = (
+                "values"
+                if config is not None and CONFIG_KEY_TASK_ID in config.get(CONF, {})
+                else self.stream_mode
+            )
+        if debug or self.debug:
+            print_mode = ["updates", "values"]
+
+        # 2. FIFO 的对象，子图向父图发送数据
+        stream = SyncQueue()
+
+        config = ensure_config(self.config, config)
+        callback_manager = get_callback_manager_for_config(config)
+        run_manager = callback_manager.on_chain_start(
+            None,
+            input,
+            name=config.get("run_name", self.get_name()),
+            run_id=config.get("run_id"),
+        )
+        try:
+            deprecated_checkpoint_during = cast(
+                Optional[bool], kwargs.get("checkpoint_during")
+            )
+            if deprecated_checkpoint_during is not None:
+                warnings.warn(
+                    "`checkpoint_during` is deprecated and will be removed. Please use `durability` instead.",
+                    category=LangGraphDeprecatedSinceV10,
+                )
+            # 3. 标准化参数
+            # assign defaults
+            (
+                stream_modes,
+                output_keys,
+                interrupt_before_,
+                interrupt_after_,
+                checkpointer,
+                store,
+                cache,
+                durability_,
+            ) = self._defaults(
+                config,
+                stream_mode=stream_mode,
+                print_mode=print_mode,
+                output_keys=output_keys,
+                interrupt_before=interrupt_before,
+                interrupt_after=interrupt_after,
+                durability=durability,
+                checkpoint_during=deprecated_checkpoint_during,
+            )
+            if checkpointer is None and (
+                durability is not None or deprecated_checkpoint_during is not None
+            ):
+                warnings.warn(
+                    "`durability` has no effect when no checkpointer is present.",
+                )
+            # 4. 处理子图的 checkpoint
+            # set up subgraph checkpointing
+            if self.checkpointer is True:
+                ns = cast(str, config[CONF][CONFIG_KEY_CHECKPOINT_NS])
+                config[CONF][CONFIG_KEY_CHECKPOINT_NS] = recast_checkpoint_ns(ns)
+            # set up messages stream mode
+            # 5. 处理 messages 流模式，添加 callback handler
+            if "messages" in stream_modes:
+                run_manager.inheritable_handlers.append(
+                    StreamMessagesHandler(stream.put, subgraphs)
+                )
+
+            # 6. 处理 custom 流模式，添加自定义事件
+            # set up custom stream mode
+            if "custom" in stream_modes:
+
+                def stream_writer(c: Any) -> None:
+                    stream.put(
+                        (
+                            tuple(
+                                get_config()[CONF][CONFIG_KEY_CHECKPOINT_NS].split(
+                                    NS_SEP
+                                )[:-1]
+                            ),
+                            "custom",
+                            c,
+                        )
+                    )
+            elif CONFIG_KEY_STREAM in config[CONF]:
+                stream_writer = config[CONF][CONFIG_KEY_RUNTIME].stream_writer
+            else:
+
+                def stream_writer(c: Any) -> None:
+                    pass
+
+            # set durability mode for subgraphs
+            if durability is not None or deprecated_checkpoint_during is not None:
+                config[CONF][CONFIG_KEY_DURABILITY] = durability_
+            # 7. 初始化 runtime，run_time 包含了之前创建的 SyncQueue
+            runtime = Runtime(
+                context=_coerce_context(self.context_schema, context),
+                store=store,
+                stream_writer=stream_writer,
+                previous=None,
+            )
+            parent_runtime = config[CONF].get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+            runtime = parent_runtime.merge(runtime)
+            config[CONF][CONFIG_KEY_RUNTIME] = runtime
+            # 8. 初始化 SyncPregelLoop
+            with SyncPregelLoop(
+                input,
+                stream=StreamProtocol(stream.put, stream_modes),
+                config=config,
+                store=store,
+                cache=cache,
+                checkpointer=checkpointer,
+                nodes=self.nodes,
+                specs=self.channels,
+                output_keys=output_keys,
+                input_keys=self.input_channels,
+                stream_keys=self.stream_channels_asis,
+                interrupt_before=interrupt_before_,
+                interrupt_after=interrupt_after_,
+                manager=run_manager,
+                durability=durability_,
+                trigger_to_nodes=self.trigger_to_nodes,
+                migrate_checkpoint=self._migrate_checkpoint,
+                retry_policy=self.retry_policy,
+                cache_policy=self.cache_policy,
+            ) as loop:
+                # create runner
+                # 9. 初始化 PregelRunner，PregelRunner 包含了 SyncPregelLoop 的 submit 和 put_writes 两个方法
+                runner = PregelRunner(
+                    submit=config[CONF].get(
+                        CONFIG_KEY_RUNNER_SUBMIT, weakref.WeakMethod(loop.submit)
+                    ),
+                    put_writes=weakref.WeakMethod(loop.put_writes),
+                    node_finished=config[CONF].get(CONFIG_KEY_NODE_FINISHED),
+                )
+                # enable subgraph streaming
+                # 10. 向子图传递 stream
+                if subgraphs:
+                    loop.config[CONF][CONFIG_KEY_STREAM] = loop.stream
+                # enable concurrent streaming
+                if (
+                    self.stream_eager
+                    or subgraphs
+                    or "messages" in stream_modes
+                    or "custom" in stream_modes
+                ):
+                    # we are careful to have a single waiter live at any one time
+                    # because on exit we increment semaphore count by exactly 1
+                    waiter: concurrent.futures.Future | None = None
+                    # because sync futures cannot be cancelled, we instead
+                    # release the stream semaphore on exit, which will cause
+                    # a pending waiter to return immediately
+                    # 11. 注册回调函数，在 loop __exit__ 退出时会调用
+                    loop.stack.callback(stream._count.release)
+
+                    def get_waiter() -> concurrent.futures.Future[None]:
+                        # 只有一个 waiter
+                        nonlocal waiter
+                        if waiter is None or waiter.done():
+                            waiter = loop.submit(stream.wait)
+                            return waiter
+                        else:
+                            return waiter
+
+                else:
+                    get_waiter = None  # type: ignore[assignment]
+                # Similarly to Bulk Synchronous Parallel / Pregel model
+                # computation proceeds in steps, while there are channel updates.
+                # Channel updates from step N are only visible in step N+1
+                # channels are guaranteed to be immutable for the duration of the step,
+                # with channel updates applied only at the transition between steps.
+                # 12. 执行 loop.tick，更新 loop.task 产生新的任务
+                while loop.tick():
+                    for task in loop.match_cached_writes():
+                        loop.output_writes(task.id, task.writes, cached=True)
+                    # 13. 执行 runner.tick 执行任务
+                    for _ in runner.tick(
+                        [t for t in loop.tasks.values() if not t.writes],
+                        timeout=self.step_timeout,
+                        get_waiter=get_waiter,
+                        schedule_task=loop.accept_push,
+                    ):
+                        # emit output
+                        yield from _output(
+                            stream_mode, print_mode, subgraphs, stream.get, queue.Empty
+                        )
+                    loop.after_tick()
+                    # wait for checkpoint
+                    if durability_ == "sync":
+                        loop._put_checkpoint_fut.result()
+            # emit output
+            yield from _output(
+                stream_mode, print_mode, subgraphs, stream.get, queue.Empty
+            )
+            # handle exit
+            if loop.status == "out_of_steps":
+                msg = create_error_message(
+                    message=(
+                        f"Recursion limit of {config['recursion_limit']} reached "
+                        "without hitting a stop condition. You can increase the "
+                        "limit by setting the `recursion_limit` config key."
+                    ),
+                    error_code=ErrorCode.GRAPH_RECURSION_LIMIT,
+                )
+                raise GraphRecursionError(msg)
+            # set final channel values as run output
+            run_manager.on_chain_end(loop.output)
+        except BaseException as e:
+            run_manager.on_chain_error(e)
+            raise
+
+```
+
+在 Stream 的实现中，主要用到了如下对象:
+1. RunTime: 
+2. SyncPregelLoop: 会包含 Pregel 提供的方法，stream 中核心调用了如下方法:
+    - tick
+    - match_cached_writes
+    - after_tick
+3. PregelRunner: 会包含 SyncPregelLoop 提供的方法，stream 中调用了其 tick 方法
+
+后面我们会先学习这几个对象，然后再回到 Pregel 上来。
+

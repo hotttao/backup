@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph pregel loop"
+title: "langgraph pregel algo - 1"
 date: 2025-08-01T16:00:00+08:00
 lastmod: 2025-08-01T16:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph pregel loop"
+description: "langgraph pregel algo - 1"
 featuredImage: 
 
 tags: ["langgraph 源码"]
@@ -18,134 +18,19 @@ toc:
   auto: false
 ---
 
-在 Pregel 模型中，图的每个节点以同步轮次进行计算（step），节点之间通过消息传递进行通信，每个 step 都是一个迭代单位，直到满足终止条件（如没有更多消息传递或达到最大轮次）。`PregelScratchpad` 就是**在某一轮 Pregel 计算 step 中记录该轮的状态和辅助逻辑的结构体**。
+## 1. Pregel Alog
 
-## 1. PregelScratchpad
+pregel 有关任务生成的代码位于 `langgraph\pregel\_algo.py`。这个应该算是 pregel 最核心的部分了。`_algo.py` 内有如下几个函数:
+1. `prepare_single_task`
+2. `prepare_next_tasks`
+3. `apply_writes`
 
-PregelScratchpad 的定义比较简单，源码如下:
+prepare_next_tasks 用于生成下一个 Pregel step 中的任务。在介绍这些函数之前我们需要先学习一下与之相关的一些基础对象，包括：
+1. PregelTask/PregelExecutableTask: 
+2. Call
+3. PregelScratchpad
 
-```python
-@dataclasses.dataclass(**_DC_KWARGS)
-class PregelScratchpad:
-    step: int
-    stop: int
-    # call
-    call_counter: Callable[[], int]
-    # interrupt
-    interrupt_counter: Callable[[], int]
-    get_null_resume: Callable[[bool], Any]
-    resume: list[Any]
-    # subgraph
-    subgraph_counter: Callable[[], int]
-```
-
-本节我们核心要关注的是 PregelScratchpad 的生成逻辑。PregelScratchpad 的生成位于 `langgraph\pregel\_algo.py` 下的 `_scratchpad`。`_scratchpad` 的调用入口主要是同目录下的 `prepare_single_task` 函数，这一节我们主要学习的就是这两个函数。
-
-## 2. _scratchpad
-
-_scratchpad 的代码并不复杂，复杂的是里面 null_resume_write、task_resume_write、resume_map 这几个变量的语义和生成逻辑。
-
-
-```python
-def _scratchpad(
-    parent_scratchpad: PregelScratchpad | None,
-    pending_writes: list[PendingWrite],
-    task_id: str,
-    namespace_hash: str,
-    resume_map: dict[str, Any] | None,
-    step: int,
-    stop: int,
-) -> PregelScratchpad:
-    if len(pending_writes) > 0:
-        # find global resume value
-        for w in pending_writes:
-            if w[0] == NULL_TASK_ID and w[1] == RESUME:
-                null_resume_write = w
-                break
-        else:
-            # None cannot be used as a resume value, because it would be difficult to
-            # distinguish from missing when used over http
-            null_resume_write = None
-
-        # find task-specific resume value
-        for w in pending_writes:
-            if w[0] == task_id and w[1] == RESUME:
-                task_resume_write = w[2]
-                if not isinstance(task_resume_write, list):
-                    task_resume_write = [task_resume_write]
-                break
-        else:
-            task_resume_write = []
-        del w
-
-        # find namespace and task-specific resume value
-        if resume_map and namespace_hash in resume_map:
-            mapped_resume_write = resume_map[namespace_hash]
-            task_resume_write.append(mapped_resume_write)
-
-    else:
-        null_resume_write = None
-        task_resume_write = []
-
-    def get_null_resume(consume: bool = False) -> Any:
-        if null_resume_write is None:
-            if parent_scratchpad is not None:
-                return parent_scratchpad.get_null_resume(consume)
-            return None
-        if consume:
-            try:
-                pending_writes.remove(null_resume_write)
-                return null_resume_write[2]
-            except ValueError:
-                return None
-        return null_resume_write[2]
-
-    # using itertools.count as an atomic counter (+= 1 is not thread-safe)
-    return PregelScratchpad(
-        step=step,
-        stop=stop,
-       # call
-        call_counter=LazyAtomicCounter(),
-        # interrupt
-        interrupt_counter=LazyAtomicCounter(),
-        resume=task_resume_write,
-        get_null_resume=get_null_resume,
-        # subgraph
-        subgraph_counter=LazyAtomicCounter(),
-    )
-
-```
-
-### 2.1 PendingWrite
-
-`PendingWrite = tuple[str, str, Any]` 是三元组，分别表示
-1. task_id: 任务 ID
-2. channel: 通道名
-3. value: 写入 channel 的值
-
-
-### 2.2 LazyAtomicCounter
-LazyAtomicCounter 是一个计数器。
-
-```python
-class LazyAtomicCounter:
-    __slots__ = ("_counter",)
-
-    _counter: Callable[[], int] | None
-
-    def __init__(self) -> None:
-        self._counter = None
-
-    def __call__(self) -> int:
-        if self._counter is None:
-            with LAZY_ATOMIC_COUNTER_LOCK:
-                if self._counter is None:
-                    self._counter = itertools.count(0).__next__
-        return self._counter()
-```
-
-## 3. PregelTask/PregelExecutableTask
-prepare_single_task 用于生成 `PregelTask | PregelExecutableTask`。我们先来看看这两个对象的语义。
+## 1. PregelTask/PregelExecutableTask
 
 这两个类是 LangGraph 中 Pregel 模式调度系统的一部分，
 
@@ -176,7 +61,7 @@ prepare_single_task 用于生成 `PregelTask | PregelExecutableTask`。我们先
 * `PregelExecutableTask` 是一个调度器打包好的“任务指令”，
 * 执行完后，就转化为一个 `PregelTask`，记录执行历史（包含错误、返回值、状态等）。
 
-### 3.1 PregelExecutableTask
+### 1.1 PregelExecutableTask
 
 ```python
 @dataclass(**_T_DC_KWARGS)
@@ -205,6 +90,8 @@ class CacheKey(NamedTuple):
     """Time to live for the cache entry in seconds."""
 ```
 
+PregelExecutableTask 包含了一个 task 执行关联的所有信息。下面是其属性的含义
+
 | 属性名            | 类型                         | 默认值    | 含义                    |                |            |
 | -------------- | -------------------------- | ------ | --------------------- | -------------- | ---------- |
 | `name`         | `str`                      | 无      | 节点名称                  |                |            |
@@ -221,7 +108,7 @@ class CacheKey(NamedTuple):
 | `subgraphs`    | `Sequence[PregelProtocol]` | `()`   | 嵌套的子图列表（用于子流程）        |                |            |
 
 
-### 3.2 PregelTask
+### 1.2 PregelTask
 
 ```python
 class PregelTask(NamedTuple):
@@ -236,6 +123,8 @@ class PregelTask(NamedTuple):
     result: Any | None = None
 ```
 
+PregelTask 的定义也比较简单，下面是其属性的含义:
+
 | 属性名          | 类型                      | 默认值            | 含义              |                 |               |
 | ------------ | ----------------------- | -------------- | --------------- | --------------- | ------------- |
 | `id`         | `str`                   | 无              | 任务的唯一标识符        |                 |               |
@@ -246,7 +135,13 @@ class PregelTask(NamedTuple):
 | `state`      | \`None                  | RunnableConfig | StateSnapshot\` | `None`          | 执行时的状态或快照     |
 | `result`     | \`Any                   | None\`         | `None`          | 节点运行后的返回结果（成功时） |               |
 
-### 3.3 StateSnapshot
+PregelTask 里面有两个对象，我们之前没有见过:
+1. Interrupt
+2. StateSnapshot
+
+我们先来看一下这两个对象:
+
+### 1.3 StateSnapshot
 
 ```python
 class StateSnapshot(NamedTuple):
@@ -293,7 +188,7 @@ StateSnapshot 的使用场景
 | **调度分支判断** | `next` 属性用于决定本 step 执行哪些节点 |
 | **中断与恢复**  | `interrupts` 表明是否有异常/终止操作  |
 
-### 3.4 Interrupt
+### 1.4 Interrupt
 
 ```python
 @final
@@ -410,7 +305,7 @@ class Interrupt:
 | `from_ns`      | `classmethod`    | 从字符串命名空间构造中断对象（自动生成 ID）             |
 | `interrupt_id` | `@property`（已弃用） | 兼容旧版本的 `interrupt_id` 字段，现推荐使用 `id` |
 
-### 3.5 Call
+## 2. Call
 这个 Call 类表示一次函数调用的封装，其语义是在一个可控环境中（带有重试策略、缓存策略和回调函数）调用一个函数 func，并记录传入的输入参数。
 
 ```python
@@ -451,194 +346,136 @@ class Call:
 | `callbacks`    | `Callbacks`                              | 函数调用过程中的回调钩子，如执行前、执行后、失败时等            |                       |
 
 
-## 4. prepare_single_task
-prepare_single_task 代码非常长，我们先用 ChatGpt 给我们讲解一下它的代码。
 
-这段函数做了三类任务的准备逻辑：**PUSH**、**PUSH + Call**、和 **PULL**。我会为你分模块讲清楚，并标注重点。
 
----
+## 3. PregelScratchpad
+#### 3.1 PregelScratchpad 的定义
+在 Pregel 模型中，图的每个节点以同步轮次进行计算（step），节点之间通过消息传递进行通信，每个 step 都是一个迭代单位，直到满足终止条件（如没有更多消息传递或达到最大轮次）。`PregelScratchpad` 就是**在某一轮 Pregel 计算 step 中记录该轮的状态和辅助逻辑的结构体**。
 
-### 4.1 🔧 函数功能简述
+PregelScratchpad 的定义比较简单，源码如下:
 
 ```python
-def prepare_single_task(task_path, ..., for_execution, ...) -> PregelTask | PregelExecutableTask | None:
+@dataclasses.dataclass(**_DC_KWARGS)
+class PregelScratchpad:
+    step: int
+    stop: int
+    # call
+    call_counter: Callable[[], int]
+    # interrupt
+    interrupt_counter: Callable[[], int]
+    get_null_resume: Callable[[bool], Any]
+    resume: list[Any]
+    # subgraph
+    subgraph_counter: Callable[[], int]
 ```
 
-这个函数会根据当前的任务路径 `task_path`：
+本节我们核心要关注的是 PregelScratchpad 的生成逻辑。PregelScratchpad 的生成位于 `langgraph\pregel\_algo.py` 下的 `_scratchpad`。`_scratchpad` 的调用入口主要是同目录下的 `prepare_single_task` 函数，这一节我们主要学习的就是这两个函数。
 
-* 构造一个任务 ID 和 checkpoint 命名空间
-* 创建运行所需的环境配置和上下文（configurable, scratchpad, runtime, etc.）
-* 判断是否要**立即执行（for_execution=True）**，若是则构造 `PregelExecutableTask`，否则只返回轻量级的 `PregelTask`
+#### 3.1 PregelScratchpad 的生成
 
----
+_scratchpad 函数用于生成 PregelScratchpad。代码并不复杂，复杂的是里面 null_resume_write、task_resume_write、resume_map 这几个变量的语义和生成逻辑。
 
-#### 📦 参数说明（选主要的讲）
+
 ```python
-def prepare_single_task(
-    task_path: tuple[Any, ...],
-    task_id_checksum: str | None,
-    *,
-    checkpoint: Checkpoint,
-    checkpoint_id_bytes: bytes,
-    checkpoint_null_version: V | None,
+def _scratchpad(
+    parent_scratchpad: PregelScratchpad | None,
     pending_writes: list[PendingWrite],
-    processes: Mapping[str, PregelNode],
-    channels: Mapping[str, BaseChannel],
-    managed: ManagedValueMapping,
-    config: RunnableConfig,
+    task_id: str,
+    namespace_hash: str,
+    resume_map: dict[str, Any] | None,
     step: int,
     stop: int,
-    for_execution: bool,
-    store: BaseStore | None = None,
-    checkpointer: BaseCheckpointSaver | None = None,
-    manager: None | ParentRunManager | AsyncParentRunManager = None,
-    input_cache: dict[INPUT_CACHE_KEY_TYPE, Any] | None = None,
-    cache_policy: CachePolicy | None = None,
-    retry_policy: Sequence[RetryPolicy] = (),
-) -> None | PregelTask | PregelExecutableTask:
-    pass
+) -> PregelScratchpad:
+    if len(pending_writes) > 0:
+        # find global resume value
+        for w in pending_writes:
+            if w[0] == NULL_TASK_ID and w[1] == RESUME:
+                null_resume_write = w
+                break
+        else:
+            # None cannot be used as a resume value, because it would be difficult to
+            # distinguish from missing when used over http
+            null_resume_write = None
+
+        # find task-specific resume value
+        for w in pending_writes:
+            if w[0] == task_id and w[1] == RESUME:
+                task_resume_write = w[2]
+                if not isinstance(task_resume_write, list):
+                    task_resume_write = [task_resume_write]
+                break
+        else:
+            task_resume_write = []
+        del w
+
+        # find namespace and task-specific resume value
+        if resume_map and namespace_hash in resume_map:
+            mapped_resume_write = resume_map[namespace_hash]
+            task_resume_write.append(mapped_resume_write)
+
+    else:
+        null_resume_write = None
+        task_resume_write = []
+
+    def get_null_resume(consume: bool = False) -> Any:
+        if null_resume_write is None:
+            if parent_scratchpad is not None:
+                return parent_scratchpad.get_null_resume(consume)
+            return None
+        if consume:
+            try:
+                pending_writes.remove(null_resume_write)
+                return null_resume_write[2]
+            except ValueError:
+                return None
+        return null_resume_write[2]
+
+    # using itertools.count as an atomic counter (+= 1 is not thread-safe)
+    return PregelScratchpad(
+        step=step,
+        stop=stop,
+       # call
+        call_counter=LazyAtomicCounter(),
+        # interrupt
+        interrupt_counter=LazyAtomicCounter(),
+        resume=task_resume_write,
+        get_null_resume=get_null_resume,
+        # subgraph
+        subgraph_counter=LazyAtomicCounter(),
+    )
+
 ```
 
-下面是 `prepare_single_task` 函数的参数列表，按照功能归类
+_scratchpad 用到了几个对象:
+1. PendingWrite
+2. LazyAtomicCounter
 
-任务标识相关参数
+我们简单看一下他们的实现:
 
-| 参数名                | 类型                | 说明                            |
-| ------------------ | ----------------- | ----------------------------- |
-| `task_path`        | `tuple[Any, ...]` | 当前任务路径（决定任务类型，如 PUSH / PULL）  |
-| `task_id_checksum` | `str \| None`     | 任务 ID 的校验用 checksum，用于构造唯一 ID |
-| `step`             | `int`             | 当前执行步数                        |
-| `stop`             | `int`             | 最大允许执行步数                      |
+### 3.2 PendingWrite
 
-图状态 & Checkpoint 相关
-
-| 参数名                       | 类型           | 说明                      |
-| ------------------------- | ------------ | ----------------------- |
-| `checkpoint`              | `Checkpoint` | 当前图的检查点，包含状态和快照信息       |
-| `checkpoint_id_bytes`     | `bytes`      | 当前检查点 ID 的二进制形式（用于唯一标识） |
-| `checkpoint_null_version` | `V \| None`  | 当前检查点的初始版本，通常用于判定是否为新状态 |
-
-节点、通道、输入输出相关
-
-| 参数名              | 类型                          | 说明                           |
-| ---------------- | --------------------------- | ---------------------------- |
-| `processes`      | `Mapping[str, PregelNode]`  | 图中所有节点定义（name -> PregelNode） |
-| `channels`       | `Mapping[str, BaseChannel]` | 通道名称与通道实例映射                  |
-| `managed`        | `ManagedValueMapping`       | 由调度器托管的中间值/变量映射              |
-| `pending_writes` | `list[PendingWrite]`        | 上一步产生的、尚未提交的写入数据             |
-
-运行配置 & 控制器
-
-| 参数名             | 类型                                                  | 说明                                         |
-| --------------- | --------------------------------------------------- | ------------------------------------------ |
-| `config`        | `RunnableConfig`                                    | 当前任务的执行配置（可传递 tracing / tags / handlers 等） |
-| `for_execution` | `bool`                                              | 是否立即执行任务（返回 ExecutableTask），否则仅调度（Task）    |
-| `manager`       | `ParentRunManager \| AsyncParentRunManager \| None` | 上层运行管理器（用于 tracing / callbacks）            |
-
-缓存、存储、持久化策略
-
-| 参数名            | 类型                                        | 说明                 |
-| -------------- | ----------------------------------------- | ------------------ |
-| `store`        | `BaseStore \| None`                       | 可选的数据存储器，用于通道状态保存  |
-| `checkpointer` | `BaseCheckpointSaver \| None`             | 持久化 checkpoint 的组件 |
-| `input_cache`  | `dict[INPUT_CACHE_KEY_TYPE, Any] \| None` | 输入缓存，用于避免重复执行      |
-| `cache_policy` | `CachePolicy \| None`                     | 缓存策略定义             |
-| `retry_policy` | `Sequence[RetryPolicy]`                   | 失败任务的重试策略          |
+`PendingWrite = tuple[str, str, Any]` 是三元组，分别表示
+1. task_id: 任务 ID
+2. channel: 通道名
+3. value: 写入 channel 的值
 
 
-
-#### 📌 一、PUSH + Call 类型任务（触发子调用的节点）
+### 3.3 LazyAtomicCounter
+LazyAtomicCounter 是一个计数器。
 
 ```python
-if task_path[0] == PUSH and isinstance(task_path[-1], Call):
+class LazyAtomicCounter:
+    __slots__ = ("_counter",)
+
+    _counter: Callable[[], int] | None
+
+    def __init__(self) -> None:
+        self._counter = None
+
+    def __call__(self) -> int:
+        if self._counter is None:
+            with LAZY_ATOMIC_COUNTER_LOCK:
+                if self._counter is None:
+                    self._counter = itertools.count(0).__next__
+        return self._counter()
 ```
-
-这一分支处理的任务格式是：
-
-```python
-(PUSH, parent_path, write_index, parent_id, Call)
-```
-
-* 从 `Call` 对象中提取执行函数 `call.func` 和输入 `call.input`
-* 生成任务 ID（依赖 `step`, `name`, `parent_path`, `index` 等）
-* 构造 `task_checkpoint_ns` 表示命名空间
-* 若 `for_execution=True`：
-
-  * 创建 `writes` 队列用于记录写入
-  * 创建 `scratchpad`（运行时中间缓存）
-  * 构造 `PregelExecutableTask`，注入读取通道、发送、checkpointer 等能力
-* 否则返回轻量版 `PregelTask`
-
-📎 **重点概念：**
-
-* PUSH 表示主动写入
-* Call 是 graph 中的函数调用型节点
-* scratchpad 是该任务的“局部内存”，用于跨读写传递数据
-
----
-
-#### 📌 二、普通 PUSH 类型任务（Send）
-
-```python
-elif task_path[0] == PUSH:
-```
-
-这一分支处理的是 `Send` 类型任务，来源于通道的 `pending sends`。
-
-* 从 `channels[TASKS]` 中取出 `Send` 对象（packet）
-* 根据 packet 构造目标节点 `proc`、任务 ID、checkpoint 命名空间
-* 若 `for_execution=True`：
-
-  * 构造 `writes`, `scratchpad`, `cache_key`
-  * 包装为 `PregelExecutableTask`
-* 否则返回 `PregelTask`
-
-📎 **重点：**
-
-* `Send` 是其他节点写入 TASKS 通道的指令
-* 这个处理类似“中转调度”行为
-
----
-
-#### 📌 三、PULL 类型任务（被动响应触发）
-
-```python
-elif task_path[0] == PULL:
-```
-
-这一类任务是**由通道变更自动触发的节点**
-
-* 触发逻辑：检测自己监听的通道是否变化（\_triggers）
-* 构造任务 ID 和 checkpoint 命名空间
-* 构建输入（`val`）和上下文
-* 若 for\_execution 为 True：
-
-  * 构建写入、读取能力、scratchpad 等，注入 `PregelExecutableTask`
-* 否则返回 `PregelTask`
-
-📎 **重点概念：**
-
-* PULL 表示节点等待输入变化触发
-* 与数据依赖绑定，常用于数据流反应式执行
-
----
-
-#### ✅ 总结关键逻辑流程图（简化）
-
-```
-          task_path
-              ↓
-    ┌───────────────┬───────────────┬───────────────┐
-    │   PUSH + Call │     PUSH      │     PULL      │
-    └──────┬────────┴──────┬────────┴──────┬────────┘
-           │               │               │
-     创建task_id       从Send中取值       检查channel变化
-           │               │               │
-       构造Call         找到目标proc       构建输入值
-           │               │               │
-       构建Metadata     构建Metadata     构建Metadata
-           │               │               │
-      PregelTask或     PregelTask或     PregelTask或
-   PregelExecutableTask PregelExecutableTask PregelExecutableTask
-```
-

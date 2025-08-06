@@ -638,6 +638,24 @@ stream_writer 是一个在 节点执行期间可调用的函数，用于将自�
 
 ## 7. Runtime
 
+```python
+runtime = Runtime(
+    context=_coerce_context(self.context_schema, context),
+    store=store,
+    stream_writer=stream_writer,
+    previous=None,
+)
+parent_runtime = config[CONF].get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+# 从 configurable 获取 __pregel_runtime 并合并
+runtime = parent_runtime.merge(runtime)
+# 更新 runtime
+config[CONF][CONFIG_KEY_RUNTIME] = runtime
+```
+
+### 8. SyncPregelLoop
+
+### 9. PregelRunner
+
 
 ## 2. invoke 方法
 我们对着前面的示例来看  invoke 的代码
