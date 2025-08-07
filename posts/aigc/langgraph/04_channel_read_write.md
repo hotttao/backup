@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph channel 读写"
+title: "pregel channel 读写"
 date: 2025-08-01T11:00:00+08:00
 lastmod: 2025-08-01T11:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph channel 读写"
+description: "pregel channel 读写"
 featuredImage: 
 
 tags: ["langgraph 源码"]
@@ -140,6 +140,7 @@ class ChannelRead(RunnableCallable):
         mapper: Callable[[Any], Any] | None = None,
     ) -> Any:
         try:
+            # 从 configurable 的 __pregel_read 获取调用读取 channel 的函数
             read: READ_TYPE = config[CONF][CONFIG_KEY_READ]
         except KeyError:
             raise RuntimeError(
@@ -206,20 +207,6 @@ class ChannelWrite(RunnableCallable):
         )
 ```
 
-### 2.2 ChannelWrite 方法
-
-| 方法名                        | 作用描述                                                 | 输出类型                         |                  |
-| -------------------------- | ---------------------------------------------------- | ---------------------------- | ---------------- |
-| `get_name`                 | 自动生成节点名称（如 `ChannelWrite<input>`）用于图调试               | `str`                        |                  |
-| `_write(input, config)`    | 同步写入逻辑，将 input 写入 channel，支持 `PASSTHROUGH` 替换        | `Any`（传回 input）              |                  |
-| `_awrite(input, config)`   | 异步版本的写入逻辑                                            | `Any`（传回 input）              |                  |
-| `do_write(config, writes)` | 静态方法，真正执行写入逻辑，调用配置中的 `send` 函数                       | `None`                       |                  |
-| `is_writer(runnable)`      | 判断一个 runnable 是否是 writer（用于 `PregelNode` 识别）         | `bool`                       |                  |
-| `get_static_writes()`      | 获取 static 写入声明（用于静态分析、优化）                            | \`list\[tuple\[str, Any, str | None]] \| None\` |
-| `register_writer()`        | 手动注册非 `ChannelWrite` 的 runnable 为 writer，并可声明其静态写入行为 | `R`（泛型）                      |                  |
-
-
-## 3. WriteEntry
 我们先来 writes 的三种写入类型。
 
 | 特性           | `ChannelWriteEntry` | `ChannelWriteTupleEntry`         |
@@ -231,7 +218,7 @@ class ChannelWrite(RunnableCallable):
 | 🔍 static 用法 | 不常用（默认写入是固定的）       | 通常用于声明所有可能写入的 channel，供静态分析用     |
 
 
-### 3.1 ChannelWriteEntry
+#### ChannelWriteEntry
 
 ```python
 class ChannelWriteEntry(NamedTuple):
@@ -253,7 +240,7 @@ class ChannelWriteEntry(NamedTuple):
 | `skip_none` | `bool`，默认 `False`      | 如果为 `True` 且 `value is None`，则跳过本次写入。   |                                            |
 | `mapper`    | `Callable\| None`  | 可选函数，用于对 `value` 做变换后再写入（接收 `value` 作为参数）。 |
 
-### 3.2 ChannelWriteTupleEntry
+#### ChannelWriteTupleEntry
 
 ```python
 class ChannelWriteTupleEntry(NamedTuple):
@@ -286,7 +273,7 @@ LangGraph 在 构图 或 编译阶段 使用 static 信息来：
 2. 构建数据依赖图
 
 
-### 3.3 Send
+#### Send
 `Send` 是 LangGraph 中用于**动态调度特定节点**的一种机制。它的语义可以总结为：
 
 > **“携带一个子状态，定向投递给某个指定节点执行。”**
@@ -308,8 +295,6 @@ LangGraph 在 构图 或 编译阶段 使用 static 信息来：
 * 类似于“**有条件跳转 + 局部状态替换**”。
 
 ---
-
-#### Send 属性
 
 ```python
 class Send:
@@ -337,7 +322,21 @@ class Send:
 
 Send 没有具体的方法，只是一个数据装载的容器。
 
-## 4. ChannelWrite 方法
+### 2.2 ChannelWrite 方法
+
+ChannelWrite 有如下一些方法:
+
+| 方法名                        | 作用描述                                                 | 输出类型                         |                  |
+| -------------------------- | ---------------------------------------------------- | ---------------------------- | ---------------- |
+| `get_name`                 | 自动生成节点名称（如 `ChannelWrite<input>`）用于图调试               | `str`                        |                  |
+| `_write(input, config)`    | 同步写入逻辑，将 input 写入 channel，支持 `PASSTHROUGH` 替换        | `Any`（传回 input）              |                  |
+| `_awrite(input, config)`   | 异步版本的写入逻辑                                            | `Any`（传回 input）              |                  |
+| `do_write(config, writes)` | 静态方法，真正执行写入逻辑，调用配置中的 `send` 函数                       | `None`                       |                  |
+| `is_writer(runnable)`      | 判断一个 runnable 是否是 writer（用于 `PregelNode` 识别）         | `bool`                       |                  |
+| `get_static_writes()`      | 获取 static 写入声明（用于静态分析、优化）                            | \`list\[tuple\[str, Any, str | None]] \| None\` |
+| `register_writer()`        | 手动注册非 `ChannelWrite` 的 runnable 为 writer，并可声明其静态写入行为 | `R`（泛型）                      |                  |
+
+
 ### 4.1 _write
 _write 调用的是  do_write 方法，在调用前将 PASSTHROUGH 替换为 input。
 
@@ -396,6 +395,7 @@ class ChannelWrite(RunnableCallable):
                     raise InvalidUpdateError("PASSTHROUGH value must be replaced")
         # if we want to persist writes found before hitting a ParentCommand
         # can move this to a finally block
+        # 从 configurable 的 __pregel_send 获取调用往 channel 写入值的函数
         write: TYPE_SEND = config[CONF][CONFIG_KEY_SEND]
         write(_assemble_writes(writes))
 
@@ -424,7 +424,7 @@ def _assemble_writes(
 ```
 
 ### 4.3 writer 管理
-ChannelWrite 省下的三个方法与 writer 的管理有关:
+ChannelWrite 下的三个方法与 writer 的管理有关:
 
 ```python
     @staticmethod

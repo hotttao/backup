@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph runtime"
+title: "pregel runtime"
 date: 2025-08-01T15:00:00+08:00
 lastmod: 2025-08-01T15:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph runtime"
+description: "pregel runtime"
 featuredImage: 
 
 tags: ["langgraph 源码"]

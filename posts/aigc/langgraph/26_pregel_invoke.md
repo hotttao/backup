@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph Pregel - 2"
+title: "pregel - 2"
 date: 2025-08-01T12:00:00+08:00
 lastmod: 2025-08-01T12:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph Pregel"
+description: "pregel - 2"
 featuredImage: 
 
 tags: ["langgraph 源码"]

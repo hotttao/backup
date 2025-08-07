@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph pregel algo - 1"
+title: "pregel algo - 1"
 date: 2025-08-01T16:00:00+08:00
 lastmod: 2025-08-01T16:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph pregel algo - 1"
+description: "pregel algo - 1"
 featuredImage: 
 
 tags: ["langgraph 源码"]
@@ -69,14 +69,19 @@ class PregelExecutableTask:
     name: str
     input: Any
     proc: Runnable
-    writes: deque[tuple[str, Any]]
+    # writes: deque[tuple[str, Any]] = deque()
+    writes: deque[tuple[str, Any]]  
     config: RunnableConfig
+    # triggers = (PUSH,) 谁触发了当前节点
     triggers: Sequence[str]
     retry_policy: Sequence[RetryPolicy]
     cache_key: CacheKey | None
     id: str
+    # (PUSH, parent_task_path, index)
     path: tuple[str | int | tuple, ...]
+    # writers=PregelNode.flat_writers,
     writers: Sequence[Runnable] = ()
+    # writers=PregelNode.subgraphs,
     subgraphs: Sequence[PregelProtocol] = ()
 
 class CacheKey(NamedTuple):

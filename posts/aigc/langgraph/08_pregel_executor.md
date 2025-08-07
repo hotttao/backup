@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph pregel executor"
+title: "pregel executor"
 date: 2025-08-01T16:00:00+08:00
 lastmod: 2025-08-01T16:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph pregel executor"
+description: "pregel executor"
 featuredImage: 
 
 tags: ["langgraph 源码"]

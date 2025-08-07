@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph pregel runner"
+title: "pregel runner"
 date: 2025-08-01T16:00:00+08:00
 lastmod: 2025-08-01T16:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph pregel runner"
+description: "pregel runner"
 featuredImage: 
 
 tags: ["langgraph 源码"]

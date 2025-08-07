@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph pregel algo"
+title: "pregel algo - 2"
 date: 2025-08-01T16:00:00+08:00
 lastmod: 2025-08-01T16:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph pregel algo"
+description: "pregel algo - 2"
 featuredImage: 
 
 tags: ["langgraph 源码"]
@@ -21,33 +21,196 @@ toc:
 前面我们介绍了 `_algo.py` 中关联的对象，这一节我们来介绍 `_algo.py` 的这几个核心函数:
 1. `prepare_single_task`
 2. `prepare_next_tasks`
+3. `local_read`
 3. `apply_writes`
 
 ## 1. prepare_next_tasks
-
-
-## 2. prepare_single_task
-prepare_single_task 代码非常长，我们先用 ChatGpt 给我们讲解一下它的代码。
-
-这段函数做了三类任务的准备逻辑：**PUSH**、**PUSH + Call**、和 **PULL**。我会为你分模块讲清楚，并标注重点。
-
----
-
-### 4.1 🔧 函数功能简述
+### 1.1 prepare_next_tasks 入参
+prepare_next_tasks 函数的定义如下:
 
 ```python
-def prepare_single_task(task_path, ..., for_execution, ...) -> PregelTask | PregelExecutableTask | None:
+def prepare_next_tasks(
+    checkpoint: Checkpoint,
+    pending_writes: list[PendingWrite],
+    processes: Mapping[str, PregelNode],
+    channels: Mapping[str, BaseChannel],
+    managed: ManagedValueMapping,
+    config: RunnableConfig,
+    step: int,
+    stop: int,
+    *,
+    for_execution: bool,
+    store: BaseStore | None = None,
+    checkpointer: BaseCheckpointSaver | None = None,
+    manager: None | ParentRunManager | AsyncParentRunManager = None,
+    trigger_to_nodes: Mapping[str, Sequence[str]] | None = None,
+    updated_channels: set[str] | None = None,
+    retry_policy: Sequence[RetryPolicy] = (),
+    cache_policy: CachePolicy | None = None,
+) -> dict[str, PregelTask] | dict[str, PregelExecutableTask]:
+    """Prepare the set of tasks that will make up the next Pregel step.
+
+    Args:
+        checkpoint: The current checkpoint.
+        pending_writes: The list of pending writes.
+        processes: The mapping of process names to PregelNode instances.
+        channels: The mapping of channel names to BaseChannel instances.
+        managed: The mapping of managed value names to functions.
+        config: The runnable configuration.
+        step: The current step.
+        for_execution: Whether the tasks are being prepared for execution.
+        store: An instance of BaseStore to make it available for usage within tasks.
+        checkpointer: Checkpointer instance used for saving checkpoints.
+        manager: The parent run manager to use for the tasks.
+        trigger_to_nodes: Optional: Mapping of channel names to the set of nodes
+            that are can be triggered by that channel.
+        updated_channels: Optional. Set of channel names that have been updated during
+            the previous step. Using in conjunction with trigger_to_nodes to speed
+            up the process of determining which nodes should be triggered in the next
+            step.
+
+    Returns:
+        A dictionary of tasks to be executed. The keys are the task ids and the values
+        are the tasks themselves. This is the union of all PUSH tasks (Sends)
+        and PULL tasks (nodes triggered by edges).
+    """
 ```
 
-这个函数会根据当前的任务路径 `task_path`：
+下面是入参说明列表:
 
-* 构造一个任务 ID 和 checkpoint 命名空间
-* 创建运行所需的环境配置和上下文（configurable, scratchpad, runtime, etc.）
-* 判断是否要**立即执行（for_execution=True）**，若是则构造 `PregelExecutableTask`，否则只返回轻量级的 `PregelTask`
+| 参数名                | 类型                                                  | 说明                                             |
+| ------------------ | --------------------------------------------------- | ---------------------------------------------- |
+| `checkpoint`       | `Checkpoint`                                        | 当前步骤的系统快照，包含图状态、消息、管理值等                        |
+| `pending_writes`   | `list[PendingWrite]`                                | 等待写入状态的数据，用于节点状态更新、触发 channel 等                |
+| `processes`        | `Mapping[str, PregelNode]`                          | 当前图中所有节点的映射，每个节点一个 `PregelNode` 实例             |
+| `channels`         | `Mapping[str, BaseChannel]`                         | 所有通道（channel）的映射，例如边、消息队列、流数据                  |
+| `managed`          | `ManagedValueMapping`                               | 管理变量的定义（类似于全局状态变量），如 counters、RAG 存储等          |
+| `config`           | `RunnableConfig`                                    | 运行时配置，如 stream 模式、 tracing、stream\_writer 等    |
+| `step`             | `int`                                               | 当前执行步数，表示 pregel loop 的当前 tick                 |
+| `stop`             | `int`                                               | 最多允许的步数（pregel loop 的终止条件之一）                   |
+| `for_execution`    | `bool`                                              | 是否为真正执行任务（`True`）还是仅用于 dry-run、准备              |
+| `store`            | `BaseStore \| None`                                 | 可选的状态存储系统，用于 task 执行时读取全局数据                    |
+| `checkpointer`     | `BaseCheckpointSaver \| None`                       | 检查点保存器，用于在任务中触发 checkpoint                     |
+| `manager`          | `ParentRunManager \| AsyncParentRunManager \| None` | LangChain 的 tracing 上下文管理器，用于日志与可视化            |
+| `trigger_to_nodes` | `Mapping[str, Sequence[str]] \| None`               | 可选：哪些通道触发哪些节点，用于优化计算路径                         |
+| `updated_channels` | `set[str] \| None`                                  | 可选：上一步被更新的通道集合，与 `trigger_to_nodes` 配合用于优化触发范围 |
+| `retry_policy`     | `Sequence[RetryPolicy]`                             | 可选：任务失败时的重试策略配置                                |
+| `cache_policy`     | `CachePolicy \| None`                               | 可选：是否启用缓存，比如对某些节点结果复用缓存结果                      |
 
----
+### 1.2 prepare_next_tasks 执行逻辑
 
-#### 📦 参数说明（选主要的讲）
+prepare_next_tasks 中把任务分为了两种类型:
+1. Push 表示边（channel）的行为：把数据推入边中
+2. Pull 表示节点（node）的行为：处理输入并产出输出
+
+| 任务类型        | task_path 形式     | 含义                                     |
+| ----------- | ----------------- | -------------------------------------- |
+| **PUSH 任务** | `(PUSH, index)`   | index 是 `TASKS` channel 中某个 `Send` 的索引 |
+| **PULL 任务** | `(PULL, node_id)` | node_id 是被触发的节点名称                     |
+
+下面是整个函数执行的概览:
+
+```python
+prepare_next_tasks
+│
+├── 构造 input_cache, checkpoint_id 等基础信息
+│
+├── 消费 PUSH 类型任务（TASKS channel）
+│   └── prepare_single_task((PUSH, idx), ...)
+│
+├── 判断哪些节点应被触发（PULL）
+│   ├── 使用 updated_channels + trigger_to_nodes 优化
+│   ├── 或 fallback 到全体节点
+│
+├── 为每个候选节点构建 PULL 任务
+│   └── prepare_single_task((PULL, node_name), ...)
+│
+└── 返回所有任务 {task_id: task}
+```
+
+```python
+def prepare_next_tasks():
+    input_cache: dict[INPUT_CACHE_KEY_TYPE, Any] = {}
+    checkpoint_id_bytes = binascii.unhexlify(checkpoint["id"].replace("-", ""))
+    null_version = checkpoint_null_version(checkpoint)
+    tasks: list[PregelTask | PregelExecutableTask] = []
+    # 1. PUSH 任务
+    # Consume pending tasks
+    # TASKS = sys.intern("__pregel_tasks")
+    # 读取待发送数据的 channel
+    tasks_channel = cast(Optional[Topic[Send]], channels.get(TASKS))
+    if tasks_channel and tasks_channel.is_available():
+        for idx, _ in enumerate(tasks_channel.get()):
+            if task := prepare_single_task(
+                (PUSH, idx),
+                None,
+                checkpoint=checkpoint,
+                checkpoint_id_bytes=checkpoint_id_bytes,
+                checkpoint_null_version=null_version,
+                pending_writes=pending_writes,
+                processes=processes,
+                channels=channels,
+                managed=managed,
+                config=config,
+                step=step,
+                stop=stop,
+                for_execution=for_execution,
+                store=store,
+                checkpointer=checkpointer,
+                manager=manager,
+                input_cache=input_cache,
+                cache_policy=cache_policy,
+                retry_policy=retry_policy,
+            ):
+                tasks.append(task)
+    # PUSH 任务
+    if updated_channels and trigger_to_nodes:
+        triggered_nodes: set[str] = set()
+        # Get all nodes that have triggers associated with an updated channel
+        for channel in updated_channels:
+            if node_ids := trigger_to_nodes.get(channel):
+                triggered_nodes.update(node_ids)
+        # Sort the nodes to ensure deterministic order
+        candidate_nodes: Iterable[str] = sorted(triggered_nodes)
+    elif not checkpoint["channel_versions"]:
+        candidate_nodes = ()
+    else:
+        candidate_nodes = processes.keys()
+
+    # Check if any processes should be run in next step
+    # If so, prepare the values to be passed to them
+    for name in candidate_nodes:
+        if task := prepare_single_task(
+            (PULL, name),
+            None,
+            checkpoint=checkpoint,
+            checkpoint_id_bytes=checkpoint_id_bytes,
+            checkpoint_null_version=null_version,
+            pending_writes=pending_writes,
+            processes=processes,
+            channels=channels,
+            managed=managed,
+            config=config,
+            step=step,
+            stop=stop,
+            for_execution=for_execution,
+            store=store,
+            checkpointer=checkpointer,
+            manager=manager,
+            input_cache=input_cache,
+            cache_policy=cache_policy,
+            retry_policy=retry_policy,
+        ):
+            tasks.append(task)
+    return {t.id: t for t in tasks}
+```
+
+## 2. prepare_single_task
+构造 task 主要在 prepare_single_task 内。
+
+
+### 2.1 prepare_single_task 入参
+
 ```python
 def prepare_single_task(
     task_path: tuple[Any, ...],
@@ -120,85 +283,8 @@ def prepare_single_task(
 | `cache_policy` | `CachePolicy \| None`                     | 缓存策略定义             |
 | `retry_policy` | `Sequence[RetryPolicy]`                   | 失败任务的重试策略          |
 
-
-
-#### 📌 一、PUSH + Call 类型任务（触发子调用的节点）
-
-```python
-if task_path[0] == PUSH and isinstance(task_path[-1], Call):
-```
-
-这一分支处理的任务格式是：
-
-```python
-(PUSH, parent_path, write_index, parent_id, Call)
-```
-
-* 从 `Call` 对象中提取执行函数 `call.func` 和输入 `call.input`
-* 生成任务 ID（依赖 `step`, `name`, `parent_path`, `index` 等）
-* 构造 `task_checkpoint_ns` 表示命名空间
-* 若 `for_execution=True`：
-
-  * 创建 `writes` 队列用于记录写入
-  * 创建 `scratchpad`（运行时中间缓存）
-  * 构造 `PregelExecutableTask`，注入读取通道、发送、checkpointer 等能力
-* 否则返回轻量版 `PregelTask`
-
-📎 **重点概念：**
-
-* PUSH 表示主动写入
-* Call 是 graph 中的函数调用型节点
-* scratchpad 是该任务的“局部内存”，用于跨读写传递数据
-
----
-
-#### 📌 二、普通 PUSH 类型任务（Send）
-
-```python
-elif task_path[0] == PUSH:
-```
-
-这一分支处理的是 `Send` 类型任务，来源于通道的 `pending sends`。
-
-* 从 `channels[TASKS]` 中取出 `Send` 对象（packet）
-* 根据 packet 构造目标节点 `proc`、任务 ID、checkpoint 命名空间
-* 若 `for_execution=True`：
-
-  * 构造 `writes`, `scratchpad`, `cache_key`
-  * 包装为 `PregelExecutableTask`
-* 否则返回 `PregelTask`
-
-📎 **重点：**
-
-* `Send` 是其他节点写入 TASKS 通道的指令
-* 这个处理类似“中转调度”行为
-
----
-
-#### 📌 三、PULL 类型任务（被动响应触发）
-
-```python
-elif task_path[0] == PULL:
-```
-
-这一类任务是**由通道变更自动触发的节点**
-
-* 触发逻辑：检测自己监听的通道是否变化（\_triggers）
-* 构造任务 ID 和 checkpoint 命名空间
-* 构建输入（`val`）和上下文
-* 若 for\_execution 为 True：
-
-  * 构建写入、读取能力、scratchpad 等，注入 `PregelExecutableTask`
-* 否则返回 `PregelTask`
-
-📎 **重点概念：**
-
-* PULL 表示节点等待输入变化触发
-* 与数据依赖绑定，常用于数据流反应式执行
-
----
-
-#### ✅ 总结关键逻辑流程图（简化）
+### 2.2 prepare_single_task 处理流程
+prepare_single_task 有三个生成 task 的流程，分别对应代码中的三个 if。
 
 ```
           task_path
@@ -218,3 +304,654 @@ elif task_path[0] == PULL:
 ```
 
 
+#### PUSH + Call 
+这个分支在 prepare_next_tasks 内没有调用。
+
+```python
+if task_path[0] == PUSH and isinstance(task_path[-1], Call):
+    # (PUSH, parent task path, idx of PUSH write, id of parent task, Call)
+    # (PUSH, parent_task_path, index, parent_task_id, Call)
+    task_path_t = cast(tuple[str, tuple, int, str, Call], task_path)
+    call = task_path_t[-1]
+    # 1. 关注1
+    proc_ = get_runnable_for_task(call.func)
+    name = proc_.name
+    if name is None:
+        raise ValueError("`call` functions must have a `__name__` attribute")
+    # create task id
+    triggers: Sequence[str] = PUSH_TRIGGER
+    checkpoint_ns = f"{parent_ns}{NS_SEP}{name}" if parent_ns else name
+    task_id = task_id_func(
+        checkpoint_id_bytes,
+        checkpoint_ns,
+        str(step),
+        name,
+        PUSH,
+        task_path_str(task_path[1]),
+        str(task_path[2]),
+    )
+    task_checkpoint_ns = f"{checkpoint_ns}:{task_id}"
+    # we append True to the task path to indicate that a call is being
+    # made, so we should not return interrupts from this task (responsibility lies with the parent)
+    task_path = (*task_path[:3], True)
+    metadata = {
+        "langgraph_step": step,
+        "langgraph_node": name,
+        "langgraph_triggers": triggers,
+        "langgraph_path": task_path,
+        "langgraph_checkpoint_ns": task_checkpoint_ns,
+    }
+    if task_id_checksum is not None:
+        assert task_id == task_id_checksum, f"{task_id} != {task_id_checksum}"
+    if for_execution:
+        writes: deque[tuple[str, Any]] = deque()
+        cache_policy = call.cache_policy or cache_policy
+        if cache_policy:
+            args_key = cache_policy.key_func(*call.input[0], **call.input[1])
+            cache_key: CacheKey | None = CacheKey(
+                (
+                    CACHE_NS_WRITES,
+                    (identifier(call.func) or "__dynamic__"),
+                ),
+                xxh3_128_hexdigest(
+                    args_key.encode() if isinstance(args_key, str) else args_key,
+                ),
+                cache_policy.ttl,
+            )
+        else:
+            cache_key = None
+        scratchpad = _scratchpad(
+            config[CONF].get(CONFIG_KEY_SCRATCHPAD),
+            pending_writes,
+            task_id,
+            xxh3_128_hexdigest(task_checkpoint_ns.encode()),
+            config[CONF].get(CONFIG_KEY_RESUME_MAP),
+            step,
+            stop,
+        )
+        runtime = cast(
+            Runtime, configurable.get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+        )
+        runtime = runtime.override(store=store)
+        return PregelExecutableTask(
+            name,
+            call.input,
+            proc_,
+            writes,
+            patch_config(
+                merge_configs(config, {"metadata": metadata}),
+                run_name=name,
+                callbacks=call.callbacks
+                or (manager.get_child(f"graph:step:{step}") if manager else None),
+                configurable={
+                    CONFIG_KEY_TASK_ID: task_id,
+                    # deque.extend is thread-safe
+                    CONFIG_KEY_SEND: writes.extend,
+                    CONFIG_KEY_READ: partial(
+                        local_read,
+                        scratchpad,
+                        channels,
+                        managed,
+                        PregelTaskWrites(task_path, name, writes, triggers),
+                    ),
+                    CONFIG_KEY_CHECKPOINTER: (
+                        checkpointer or configurable.get(CONFIG_KEY_CHECKPOINTER)
+                    ),
+                    CONFIG_KEY_CHECKPOINT_MAP: {
+                        **configurable.get(CONFIG_KEY_CHECKPOINT_MAP, {}),
+                        parent_ns: checkpoint["id"],
+                    },
+                    CONFIG_KEY_CHECKPOINT_ID: None,
+                    CONFIG_KEY_CHECKPOINT_NS: task_checkpoint_ns,
+                    CONFIG_KEY_SCRATCHPAD: scratchpad,
+                    CONFIG_KEY_RUNTIME: runtime,
+                },
+            ),
+            triggers,
+            call.retry_policy or retry_policy,
+            cache_key,
+            task_id,
+            task_path,
+        )
+    else:
+        return PregelTask(task_id, name, task_path)
+```
+
+
+#### PUSH 任务
+PUSH 是直接触发 Node 执行，并向其出入值。
+
+```python
+elif task_path[0] == PUSH:
+    if len(task_path) == 2:
+        # SEND tasks, executed in superstep n+1
+        # (PUSH, idx of pending send)
+        idx = cast(int, task_path[1])
+        if not channels[TASKS].is_available():
+            return
+        sends: Sequence[Send] = channels[TASKS].get()
+        if idx < 0 or idx >= len(sends):
+            return
+        packet = sends[idx]
+        if not isinstance(packet, Send):
+            logger.warning(
+                f"Ignoring invalid packet type {type(packet)} in pending sends"
+            )
+            return
+        if packet.node not in processes:
+            logger.warning(
+                f"Ignoring unknown node name {packet.node} in pending sends"
+            )
+            return
+        # find process
+        proc = processes[packet.node]
+        proc_node = proc.node
+        if proc_node is None:
+            return
+        # create task id
+        triggers = PUSH_TRIGGER
+        checkpoint_ns = (
+            f"{parent_ns}{NS_SEP}{packet.node}" if parent_ns else packet.node
+        )
+        task_id = task_id_func(
+            checkpoint_id_bytes,
+            checkpoint_ns,
+            str(step),
+            packet.node,
+            PUSH,
+            str(idx),
+        )
+    else:
+        logger.warning(f"Ignoring invalid PUSH task path {task_path}")
+        return
+    task_checkpoint_ns = f"{checkpoint_ns}:{task_id}"
+    # we append False to the task path to indicate that a call is not being made
+    # so we should return interrupts from this task
+    task_path = (*task_path[:3], False)
+    metadata = {
+        "langgraph_step": step,
+        "langgraph_node": packet.node,
+        "langgraph_triggers": triggers,
+        "langgraph_path": task_path,
+        "langgraph_checkpoint_ns": task_checkpoint_ns,
+    }
+    if task_id_checksum is not None:
+        assert task_id == task_id_checksum, f"{task_id} != {task_id_checksum}"
+    if for_execution:
+        if proc.metadata:
+            metadata.update(proc.metadata)
+        writes = deque()
+        cache_policy = proc.cache_policy or cache_policy
+        if cache_policy:
+            args_key = cache_policy.key_func(packet.arg)
+            cache_key = CacheKey(
+                (
+                    CACHE_NS_WRITES,
+                    (identifier(proc) or "__dynamic__"),
+                    packet.node,
+                ),
+                xxh3_128_hexdigest(
+                    args_key.encode() if isinstance(args_key, str) else args_key,
+                ),
+                cache_policy.ttl,
+            )
+        else:
+            cache_key = None
+        scratchpad = _scratchpad(
+            config[CONF].get(CONFIG_KEY_SCRATCHPAD),
+            pending_writes,
+            task_id,
+            xxh3_128_hexdigest(task_checkpoint_ns.encode()),
+            config[CONF].get(CONFIG_KEY_RESUME_MAP),
+            step,
+            stop,
+        )
+        runtime = cast(
+            Runtime, configurable.get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+        )
+        runtime = runtime.override(
+            store=store, previous=checkpoint["channel_values"].get(PREVIOUS, None)
+        )
+        return PregelExecutableTask(
+            packet.node,
+            packet.arg,
+            proc_node,
+            writes,
+            patch_config(
+                merge_configs(config, {"metadata": metadata, "tags": proc.tags}),
+                run_name=packet.node,
+                callbacks=(
+                    manager.get_child(f"graph:step:{step}") if manager else None
+                ),
+                configurable={
+                    CONFIG_KEY_TASK_ID: task_id,
+                    # deque.extend is thread-safe
+                    CONFIG_KEY_SEND: writes.extend,
+                    CONFIG_KEY_READ: partial(
+                        local_read,
+                        scratchpad,
+                        channels,
+                        managed,
+                        PregelTaskWrites(task_path, packet.node, writes, triggers),
+                    ),
+                    CONFIG_KEY_CHECKPOINTER: (
+                        checkpointer or configurable.get(CONFIG_KEY_CHECKPOINTER)
+                    ),
+                    CONFIG_KEY_CHECKPOINT_MAP: {
+                        **configurable.get(CONFIG_KEY_CHECKPOINT_MAP, {}),
+                        parent_ns: checkpoint["id"],
+                    },
+                    CONFIG_KEY_CHECKPOINT_ID: None,
+                    CONFIG_KEY_CHECKPOINT_NS: task_checkpoint_ns,
+                    CONFIG_KEY_SCRATCHPAD: scratchpad,
+                    CONFIG_KEY_RUNTIME: runtime,
+                },
+            ),
+            triggers,
+            proc.retry_policy or retry_policy,
+            cache_key,
+            task_id,
+            task_path,
+            # 输出 ChannelWrite 表示像 channel 写入值
+            writers=proc.flat_writers,
+            subgraphs=proc.subgraphs,
+        )
+    else:
+        return PregelTask(task_id, packet.node, task_path)
+```
+
+
+#### PULL 任务
+PULL 是让 Node 发起检查，是否需要执行，从 Node 监听的 channel 获取值。
+
+```python
+elif task_path[0] == PULL:
+    # (PULL, node name)
+    name = cast(str, task_path[1])
+    if name not in processes:
+        return
+    proc = processes[name]
+    if checkpoint_null_version is None:
+        return
+    # If any of the channels read by this process were updated
+    # 检查 pregelnode 监听的channel 是否有更新
+    if _triggers(
+        channels,
+        checkpoint["channel_versions"],
+        checkpoint["versions_seen"].get(name),
+        checkpoint_null_version,
+        proc,
+    ):
+        triggers = tuple(sorted(proc.triggers))
+        # create task id
+        checkpoint_ns = f"{parent_ns}{NS_SEP}{name}" if parent_ns else name
+        task_id = task_id_func(
+            checkpoint_id_bytes,
+            checkpoint_ns,
+            str(step),
+            name,
+            PULL,
+            *triggers,
+        )
+        task_checkpoint_ns = f"{checkpoint_ns}{NS_END}{task_id}"
+        # create scratchpad
+        scratchpad = _scratchpad(
+            config[CONF].get(CONFIG_KEY_SCRATCHPAD),
+            pending_writes,
+            task_id,
+            xxh3_128_hexdigest(task_checkpoint_ns.encode()),
+            config[CONF].get(CONFIG_KEY_RESUME_MAP),
+            step,
+            stop,
+        )
+        # create task input
+        try:
+            # 为 pregelNode bound 执行器，获取 input 输入
+            val = _proc_input(
+                proc,
+                managed,
+                channels,
+                for_execution=for_execution,
+                input_cache=input_cache,
+                scratchpad=scratchpad,
+            )
+            if val is MISSING:
+                return
+        except Exception as exc:
+            if SUPPORTS_EXC_NOTES:
+                exc.add_note(
+                    f"Before task with name '{name}' and path '{task_path[:3]}'"
+                )
+            raise
+
+        metadata = {
+            "langgraph_step": step,
+            "langgraph_node": name,
+            "langgraph_triggers": triggers,
+            "langgraph_path": task_path[:3],
+            "langgraph_checkpoint_ns": task_checkpoint_ns,
+        }
+        if task_id_checksum is not None:
+            assert task_id == task_id_checksum, f"{task_id} != {task_id_checksum}"
+        if for_execution:
+            if node := proc.node:
+                if proc.metadata:
+                    metadata.update(proc.metadata)
+                writes = deque()
+                cache_policy = proc.cache_policy or cache_policy
+                if cache_policy:
+                    args_key = cache_policy.key_func(val)
+                    cache_key = CacheKey(
+                        (
+                            CACHE_NS_WRITES,
+                            (identifier(proc) or "__dynamic__"),
+                            name,
+                        ),
+                        xxh3_128_hexdigest(
+                            (
+                                args_key.encode()
+                                if isinstance(args_key, str)
+                                else args_key
+                            ),
+                        ),
+                        cache_policy.ttl,
+                    )
+                else:
+                    cache_key = None
+                runtime = cast(
+                    Runtime, configurable.get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+                )
+                runtime = runtime.override(
+                    previous=checkpoint["channel_values"].get(PREVIOUS, None),
+                    store=store,
+                )
+                return PregelExecutableTask(
+                    name,
+                    val,
+                    node,
+                    writes,
+                    patch_config(
+                        merge_configs(
+                            config, {"metadata": metadata, "tags": proc.tags}
+                        ),
+                        run_name=name,
+                        callbacks=(
+                            manager.get_child(f"graph:step:{step}")
+                            if manager
+                            else None
+                        ),
+                        configurable={
+                            CONFIG_KEY_TASK_ID: task_id,
+                            # deque.extend is thread-safe
+                            CONFIG_KEY_SEND: writes.extend,
+                            CONFIG_KEY_READ: partial(
+                                local_read,
+                                scratchpad,
+                                channels,
+                                managed,
+                                PregelTaskWrites(
+                                    task_path[:3],
+                                    name,
+                                    writes,
+                                    triggers,
+                                ),
+                            ),
+                            CONFIG_KEY_CHECKPOINTER: (
+                                checkpointer
+                                or configurable.get(CONFIG_KEY_CHECKPOINTER)
+                            ),
+                            CONFIG_KEY_CHECKPOINT_MAP: {
+                                **configurable.get(CONFIG_KEY_CHECKPOINT_MAP, {}),
+                                parent_ns: checkpoint["id"],
+                            },
+                            CONFIG_KEY_CHECKPOINT_ID: None,
+                            CONFIG_KEY_CHECKPOINT_NS: task_checkpoint_ns,
+                            CONFIG_KEY_SCRATCHPAD: scratchpad,
+                            CONFIG_KEY_RUNTIME: runtime,
+                        },
+                    ),
+                    triggers,
+                    proc.retry_policy or retry_policy,
+                    cache_key,
+                    task_id,
+                    task_path[:3],
+                    writers=proc.flat_writers,
+                    subgraphs=proc.subgraphs,
+                )
+        else:
+            return PregelTask(task_id, name, task_path[:3])
+```
+
+## 3. local_read
+这个函数 local_read 是 LangGraph 中用于从当前节点的 局部上下文状态 中读取数据的工具函数之一。它的作用是为**条件边（conditional edges）**提供一个“视图”——这个视图能看到当前节点写入的值（task.writes），但不会影响全局状态（即不会真正写入通道和托管状态）。
+
+下面是 local_read 的代码:
+
+```python
+def local_read(
+    scratchpad: PregelScratchpad,
+    channels: Mapping[str, BaseChannel],
+    managed: ManagedValueMapping,
+    # PregelTaskWrites(task_path, name, writes, triggers)
+    task: WritesProtocol,
+    select: list[str] | str, # 要读取的字段
+    fresh: bool = False,
+) -> dict[str, Any] | Any:
+    """Function injected under CONFIG_KEY_READ in task config, to read current state.
+    Used by conditional edges to read a copy of the state with reflecting the writes
+    from that node only."""
+    updated: dict[str, list[Any]] = defaultdict(list)
+    if isinstance(select, str):
+        managed_keys = []
+        for c, v in task.writes:
+            if c == select:
+                updated[c].append(v)
+    else:
+        # 从 ManagedValue 中要读的 key
+        managed_keys = [k for k in select if k in managed]
+        select = [k for k in select if k not in managed]
+        for c, v in task.writes:
+            if c in select:
+                updated[c].append(v)
+    if fresh and updated:
+        # apply writes
+        local_channels: dict[str, BaseChannel] = {}
+        for k in channels:
+            if k in updated:
+                # 获取 channel 的复制，并更新
+                cc = channels[k].copy()
+                cc.update(updated[k])
+            else:
+                cc = channels[k]
+            local_channels[k] = cc
+        # read fresh values
+        # 从 channel 读取最新值
+        values = read_channels(local_channels, select)
+    else:
+        values = read_channels(channels, select)
+    if managed_keys:
+        values.update({k: managed[k].get(scratchpad) for k in managed_keys})
+    return values
+
+```
+
+| 参数名          | 含义                                        |
+| ------------ | ----------------------------------------- |
+| `scratchpad` | 当前 Pregel 节点执行上下文状态缓存（传给托管值）              |
+| `channels`   | 当前所有普通通道（channel）的只读视图，key 是通道名           |
+| `managed`    | 当前所有托管变量（ManagedValue），key 是托管名           |
+| `task`       | 当前节点的写操作对象，里面包含 `.writes` 字段：写入哪些变量以及它们的值 |
+| `select`     | 想要读取的变量名（可以是字符串或字符串列表）                    |
+| `fresh`      | 如果为 True，则需要将当前节点写入的值“临时应用”后再读取           |
+
+task 传入的是 `PregelTaskWrites(task_path, name, writes, triggers)`，`writes = deque()`。
+
+```python
+class PregelTaskWrites(NamedTuple):
+    """Simplest implementation of WritesProtocol, for usage with writes that
+    don't originate from a runnable task, eg. graph input, update_state, etc."""
+
+    path: tuple[str | int | tuple, ...]
+    name: str
+    writes: Sequence[tuple[str, Any]]
+    triggers: Sequence[str] 
+```
+
+## 4. apply_write
+函数 `apply_writes` 根据一组任务的写入操作：
+
+* 将数据写入到通道（channels）；
+* 更新版本信息（checkpoint）；
+* 判断哪些通道被修改；
+* **返回被更新的通道集合**，以供调度器用来触发后续节点。
+
+
+### 4.1 函数签名
+
+```python
+def apply_writes(
+    checkpoint: Checkpoint,
+    channels: Mapping[str, BaseChannel],
+    tasks: Iterable[WritesProtocol],
+    get_next_version: GetNextVersion | None,
+    trigger_to_nodes: Mapping[str, Sequence[str]],
+) -> set[str]:
+```
+
+| 参数名                | 类型                          | 含义                               |
+| ------------------ | --------------------------- | -------------------------------- |
+| `checkpoint`       | `dict`                      | 保存每个通道的版本号、任务见过的版本等，属于全局运行状态的一部分 |
+| `channels`         | `Mapping[str, BaseChannel]` | 所有当前通道对象（数据传递容器）                 |
+| `tasks`            | `Iterable[WritesProtocol]`  | 当前要应用的任务集合（通常是一个 Pregel 步骤中活跃节点） |
+| `get_next_version` | 可选的版本生成函数                   | 用于在写入后分配新版本号                     |
+| `trigger_to_nodes` | 映射                          | 记录每个通道更新后可能触发的节点（用于图调度）          |
+
+---
+
+### 4.2 代码逻辑
+```python
+def apply_writes(
+    checkpoint: Checkpoint,
+    channels: Mapping[str, BaseChannel],
+    tasks: Iterable[WritesProtocol],
+    get_next_version: GetNextVersion | None,
+    trigger_to_nodes: Mapping[str, Sequence[str]],
+) -> set[str]:
+    """Apply writes from a set of tasks (usually the tasks from a Pregel step)
+    to the checkpoint and channels, and return managed values writes to be applied
+    externally.
+
+    Args:
+        checkpoint: The checkpoint to update.
+        channels: The channels to update.
+        tasks: The tasks to apply writes from.
+        get_next_version: Optional function to determine the next version of a channel.
+        trigger_to_nodes: Mapping of channel names to the set of nodes that can be triggered by updates to that channel.
+
+    Returns:
+        Set of channels that were updated in this step.
+    """
+    # sort tasks on path, to ensure deterministic order for update application
+    # any path parts after the 3rd are ignored for sorting
+    # (we use them for eg. task ids which aren't good for sorting)
+    # 保证同一超级步内写入操作应用顺序是**确定的**
+    # 只比较 `path[:3]` 是为了排除不可排序的 task ID（可能是 UUID）
+    tasks = sorted(tasks, key=lambda t: task_path_str(t.path[:3]))
+    # if no task has triggers this is applying writes from the null task only
+    # so we don't do anything other than update the channels written to
+    # 所有 task 是否有触发器
+    bump_step = any(t.triggers for t in tasks)
+
+    # update seen versions
+    for task in tasks:
+        checkpoint["versions_seen"].setdefault(task.name, {}).update(
+            {
+                chan: checkpoint["channel_versions"][chan]
+                # task.triggers 表示哪些 channel 触发了当前 task
+                for chan in task.triggers
+                if chan in checkpoint["channel_versions"]
+            }
+        )
+
+    # Find the highest version of all channels
+    # 获取当前最大版本 → 调用 `get_next_version()` 来生成新的版本号；
+    if get_next_version is None:
+        next_version = None
+    else:
+        next_version = get_next_version(
+            (
+                max(checkpoint["channel_versions"].values())
+                if checkpoint["channel_versions"]
+                else None
+            ),
+            None,
+        )
+
+    # Consume all channels that were read
+
+    for chan in {
+        chan
+        for task in tasks
+        for chan in task.triggers
+        # chan 不是 Langgraph 内置 channel
+        if chan not in RESERVED and chan in channels
+    }:
+        # 将 channel 设置为 已消费状态
+        if channels[chan].consume() and next_version is not None:
+            # 如果成功 `consume()`，给 channel 设置新的版本
+            # 表示该通道在这一 step 被读取了一次。
+            checkpoint["channel_versions"][chan] = next_version
+
+    # Group writes by channel
+    # 将所有任务的写入内容按通道归类
+    pending_writes_by_channel: dict[str, list[Any]] = defaultdict(list)
+    for task in tasks:
+        for chan, val in task.writes:
+            if chan in (NO_WRITES, PUSH, RESUME, INTERRUPT, RETURN, ERROR):
+                pass
+            elif chan in channels:
+                pending_writes_by_channel[chan].append(val)
+            else:
+                logger.warning(
+                    f"Task {task.name} with path {task.path} wrote to unknown channel {chan}, ignoring it."
+                )
+
+    # Apply writes to channels
+    # 应用写入，更新通道内容
+    updated_channels: set[str] = set()
+    for chan, vals in pending_writes_by_channel.items():
+        if chan in channels:
+            if channels[chan].update(vals) and next_version is not None:
+                checkpoint["channel_versions"][chan] = next_version
+                # unavailable channels can't trigger tasks, so don't add them
+                # 如果 channel 可读取,加入 updated_channels
+                if channels[chan].is_available():
+                    updated_channels.add(chan)
+
+    # Channels that weren't updated in this step are notified of a new step
+    # 对其他通道执行 empty 更新（用于触发 step 推进）
+    if bump_step:
+        for chan in channels:
+            if channels[chan].is_available() and chan not in updated_channels:
+                # 写入空值会触发一些 `Channel` 的内部状态清理或触发机制。
+                if channels[chan].update(EMPTY_SEQ) and next_version is not None:
+                    checkpoint["channel_versions"][chan] = next_version
+                    # unavailable channels can't trigger tasks, so don't add them
+                    # 如果 channel 可读取,加入 updated_channels
+                    if channels[chan].is_available():
+                        updated_channels.add(chan)
+
+    # If this is (tentatively) the last superstep, notify all channels of finish
+    # 如果已经更新的 channel 和 trigger_to_nodes 没有交集说明已经没有下一步了，这是最后一步
+    if bump_step and updated_channels.isdisjoint(trigger_to_nodes):
+        for chan in channels:
+            # 对所有通道调用 `finish()`，告知它们没有后续步骤了
+            if channels[chan].finish() and next_version is not None:
+                checkpoint["channel_versions"][chan] = next_version
+                # unavailable channels can't trigger tasks, so don't add them
+                if channels[chan].is_available():
+                    updated_channels.add(chan)
+
+    # Return managed values writes to be applied externally
+    return updated_channels
+```

@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph pregel loop"
+title: "pregel loop"
 date: 2025-08-01T16:00:00+08:00
 lastmod: 2025-08-01T16:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph pregel loop"
+description: "pregel loop"
 featuredImage: 
 
 tags: ["langgraph 源码"]
@@ -482,7 +482,8 @@ with ExitStack() as stack:
             else []
         )
         # 2. BackgroundExecutor 是线程池，self.submit = BackgroundExecutor.submit 方法
-        self.submit = self.stack.enter_context(BackgroundExecutor(self.config))
+        self.submit = self.stack.enter_context(BackgroundExecutor(self.config))、
+        # channels_from_checkpoint 用于从 checkpoint 中恢复 channel 的值。
         self.channels, self.managed = channels_from_checkpoint(
             self.specs, self.checkpoint
         )
@@ -513,6 +514,7 @@ self.stack.enter_context(BackgroundExecutor(self.config))
 
 
 #### channels_from_checkpoint
+channels_from_checkpoint 用于从 checkpoint 中恢复 channel 的值。
 
 ```python
 def channels_from_checkpoint(
@@ -545,3 +547,404 @@ def channels_from_checkpoint(
 5. _put_checkpoint_fut
 
 ## 3. tick
+```python
+    def tick(self) -> bool:
+        """Execute a single iteration of the Pregel loop.
+
+        Args:
+            input_keys: The key(s) to read input from.
+
+        Returns:
+            True if more iterations are needed.
+        """
+
+        # check if iteration limit is reached
+        if self.step > self.stop:
+            self.status = "out_of_steps"
+            return False
+
+        # prepare next tasks
+        self.tasks = prepare_next_tasks(
+            self.checkpoint, 
+            self.checkpoint_pending_writes,
+            self.nodes,
+            self.channels,
+            self.managed,
+            self.config,
+            self.step,
+            self.stop,
+            for_execution=True,
+            manager=self.manager,
+            store=self.store,
+            checkpointer=self.checkpointer,
+            trigger_to_nodes=self.trigger_to_nodes,
+            updated_channels=self.updated_channels,
+            retry_policy=self.retry_policy,
+            cache_policy=self.cache_policy,
+        )
+
+        # produce debug output
+        if self._checkpointer_put_after_previous is not None:
+            self._emit(
+                "checkpoints",
+                map_debug_checkpoint,
+                {
+                    **self.checkpoint_config,
+                    CONF: {
+                        **self.checkpoint_config[CONF],
+                        CONFIG_KEY_CHECKPOINT_ID: self.checkpoint["id"],
+                    },
+                },
+                self.channels,
+                self.stream_keys,
+                self.checkpoint_metadata,
+                self.tasks.values(),
+                self.checkpoint_pending_writes,
+                self.prev_checkpoint_config,
+                self.output_keys,
+            )
+
+        # if no more tasks, we're done
+        if not self.tasks:
+            self.status = "done"
+            return False
+
+        # if there are pending writes from a previous loop, apply them
+        if self.skip_done_tasks and self.checkpoint_pending_writes:
+            self._match_writes(self.tasks)
+
+        # before execution, check if we should interrupt
+        if self.interrupt_before and should_interrupt(
+            self.checkpoint, self.interrupt_before, self.tasks.values()
+        ):
+            self.status = "interrupt_before"
+            raise GraphInterrupt()
+
+        # produce debug output
+        self._emit("tasks", map_debug_tasks, self.tasks.values())
+
+        # print output for any tasks we applied previous writes to
+        for task in self.tasks.values():
+            if task.writes:
+                self.output_writes(task.id, task.writes, cached=True)
+
+        return True
+```
+
+tick 方法中，会调用 prepare_next_tasks 方法生成当前 step 的 task，prepare_next_tasks 中的入参来源如下:
+1. self.checkpoint:
+    - `Loop.__enter__` 方法中，会使用 configurable 中保存的 CONFIG_KEY_CHECKPOINT_ID 重新load checkpoint。
+    - 如果没有 checkpoint，使用 empty_checkpoint() 生成一个空的 checkpoint
+2. self.checkpoint_pending_writes:
+    - 从恢复的 checkpoint 读取，默认为空
+3. self.nodes: Loop 初始化传入，`Mapping[str, PregelNode]`
+4. self.channels: 
+    - Loop 初始化传入 `spec=Mapping[str, BaseChannel | ManagedValueSpec]`
+    - `Loop.__enter__` 方法中，会调用 channels_from_checkpoint 方法从 checkpoint 中恢复 channel 的值，并提取出 ManagedValueSpec
+5. self.managed 同 self.channels
+6. self.config: Loop 初始化传入，并在调用过程中更新
+7. self.step: Loop 初始化为 0，`Loop.__enter__` 中重置为 `self.checkpoint_metadata["step"] + 1`
+8. self.stop: Loop 初始化为 0，`Loop.__enter__` 中重置为`self.step + self.config["recursion_limit"] + 1`
+9. self.manager: Loop 初始化传入
+10. self.store: Loop 初始化传入
+10. self.checkpointer: Loop 初始化传入
+11. self.trigger_to_nodes: Loop 初始化传入 `Mapping[str, Sequence[str]]` channel 更新要触发的节点映射
+13. self.updated_channels
+    - `Loop.__enter__` 方法中，会调用 `self._first(input_keys=self.input_keys)` 对 updated_channels 做初始化
+    - `after_tick` 方法中，会调用 `self.updated_channels = apply_writes)` 完成 channel 的更新，并返回更新过的 channel
+10. self.retry_policy: Loop 初始化传入
+10. self.cache_policy: Loop 初始化传入
+
+现在我们来看与 updated_channels 相关的 `loop._first` 方法，
+
+## 4. _first 方法
+_first 是 Pregel 图首次调度（或恢复）的核心入口。 
+
+
+### 4.1 _first 方法签名说明
+
+
+```python
+def _first(self, *, input_keys: str | Sequence[str]) -> set[str] | None:
+```
+
+* `input_keys`: 当前节点接收的输入通道名（channel key），用于解析输入。
+* 返回值是 `set[str]` 或 `None`，表示有哪些通道被更新（用于后续调度）。
+
+---
+
+### 4.2 _first 执行逻辑
+
+按照执行逻辑，函数大致分为 6 步：
+
+#### **判断是否处于恢复状态（is\_resuming）**
+➡️ **作用**：决定是否要跳过输入写入，直接恢复。
+
+```python
+        configurable = self.config.get(CONF, {})
+        is_resuming = bool(self.checkpoint["channel_versions"]) and bool(
+            configurable.get(
+                CONFIG_KEY_RESUMING,
+                self.input is None
+                or isinstance(self.input, Command)
+                or (
+                    # self.is_nested = CONFIG_KEY_TASK_ID in self.config.get(CONF, {})
+                    # not 表示非子图执行
+                    not self.is_nested
+                    # 配置的 run_id 和从恢复的 checkpoint 中的 run_id 一致
+                    and self.config.get("metadata", {}).get("run_id")
+                    == self.checkpoint_metadata.get("run_id", MISSING)
+                ),
+            )
+        )
+        updated_channels: set[str] | None = None
+```
+
+恢复状态的判断条件为：
+
+  * 检查点存在通道版本（说明确实有中断）
+  * 并且配置中 `resuming` 为 True 或逻辑判断为恢复状态：
+
+    * 输入为 None（说明可能是主图首次运行或重启）
+    * 输入是 `Command`（说明可能是子图恢复）
+    * 或者在非嵌套图中，`run_id` 一致（说明是上次运行）
+
+
+#### **处理输入为 `Command` 的情况**
+
+➡️ **作用**：将 command 中显式指定的写入应用到状态中。
+```python
+        # map command to writes
+        if isinstance(self.input, Command):
+            # 判断 Command resume 保存的是不是一个 map
+            if resume_is_map := (
+                (resume := self.input.resume) is not None
+                and isinstance(resume, dict)
+                # 判断 Command.resume 的 key 是否符合中断 ID 的格式
+                and all(is_xxh3_128_hexdigest(k) for k in resume)
+            ):
+                # 将 Command.resume 保存到 config 中
+                self.config[CONF][CONFIG_KEY_RESUME_MAP] = self.input.resume
+            # 若提供 resume 必须配置 `checkpointer`
+            if resume is not None and not self.checkpointer:
+                raise RuntimeError(
+                    "Cannot use Command(resume=...) without checkpointer"
+                )
+            writes: defaultdict[str, list[tuple[str, Any]]] = defaultdict(list)
+            # group writes by task ID
+            # 使用 `map_command(self.input)` 保存在 command 中的，需要执行的 channel 值更新任务
+            for tid, c, v in map_command(cmd=self.input):
+                if not (c == RESUME and resume_is_map):
+                    writes[tid].append((c, v))
+            if not writes and not resume_is_map:
+                raise EmptyInputError("Received empty Command input")
+            # save writes
+            for tid, ws in writes.items():
+                # 保存这些写入到 task 对应的缓存中（`self.put_writes`）
+                self.put_writes(tid, ws)
+
+
+@dataclass(**_DC_KWARGS)
+class Command(Generic[N], ToolOutputMixin):
+    graph: str | None = None
+    update: Any | None = None
+    resume: dict[str, Any] | Any | None = None
+    goto: Send | Sequence[Send | N] | N = ()
+
+
+def map_command(cmd: Command) -> Iterator[tuple[str, str, Any]]:
+    """Map input chunk to a sequence of pending writes in the form (channel, value)."""
+    if cmd.graph == Command.PARENT:
+        raise InvalidUpdateError("There is no parent graph")
+    if cmd.goto:
+        if isinstance(cmd.goto, (tuple, list)):
+            sends = cmd.goto
+        else:
+            sends = [cmd.goto]
+        for send in sends:
+            if isinstance(send, Send):
+                yield (NULL_TASK_ID, TASKS, send)
+            elif isinstance(send, str):
+                yield (NULL_TASK_ID, f"branch:to:{send}", START)
+            else:
+                raise TypeError(
+                    f"In Command.goto, expected Send/str, got {type(send).__name__}"
+                )
+    if cmd.resume is not None:
+        yield (NULL_TASK_ID, RESUME, cmd.resume)
+    if cmd.update:
+        for k, v in cmd._update_as_tuples():
+            yield (NULL_TASK_ID, k, v)
+```
+
+`self.put_writes` 我们后面详述。
+
+
+#### **应用 null writes**
+➡️ **作用**：恢复一些全局层面（非 task 级别）的写入。
+
+`NULL_TASK_ID` 表示“**当前不存在任务（Task）**”或“**这是一个无任务 ID 的占位符**”。
+
+* 在图的执行过程中，LangGraph 使用 `task_id` 来标识每一个任务节点（node）或 loop 中的迭代任务。
+* 但是有些情况下，例如：
+
+  * **初始化阶段**（未开始执行时）
+  * **跳过某些节点或任务**
+  * **中断或终止**
+  * **空的分支**
+
+都可能需要用一个合法但“无含义”的 ID 来表示当前没有实际任务，此时就会用 `NULL_TASK_ID`。
+
+```python
+        # apply NULL writes
+        # 从待写入列表中找出 `NULL_TASK_ID` 对应的写入（表示不属于任何 task 的全局写入）
+        if null_writes := [
+            w[1:] for w in self.checkpoint_pending_writes if w[0] == NULL_TASK_ID
+        ]:
+            # 将这些全局写入应用到当前通道状态中
+            apply_writes(
+                self.checkpoint,
+                self.channels,
+                [PregelTaskWrites((), INPUT, null_writes, [])],
+                self.checkpointer_get_next_version,
+                self.trigger_to_nodes,
+            )
+```
+
+#### **如果是恢复运行，直接跳到恢复流程**
+➡️ **作用**：跳过输入处理，直接进入恢复后的调度。
+
+```python
+if is_resuming:
+    self.checkpoint["versions_seen"].setdefault(INTERRUPT, {})
+    # 设置 seen 版本，用于跳过重复写入
+    for k in self.channels:
+        if k in self.checkpoint["channel_versions"]:
+            # 记录中断恢复时，看到的 channel version
+            # 并告诉调度器这些通道是来自中断恢复的
+            self.checkpoint["versions_seen"][INTERRUPT][k] = version
+    # 调用 `_emit(...)` 发出当前通道值，推动下游执行
+    self._emit("values", map_output_values, self.output_keys, True, self.channels)
+```
+
+self._emit 方法我们后面再详述。
+
+#### **否则处理正常输入写入流程**
+➡️ **作用**：标准运行流程，处理新一轮输入。
+```python
+        # 使用 `map_input(...)` 从输入中提取写入值，从输入中提取的值限定在 input_channel 内。
+        # input_keys 是 loop 初始化时从 Pregel 接收的 input_channels
+        elif input_writes := deque(map_input(input_keys, self.input)):
+            # discard any unfinished tasks from previous checkpoint
+            # 清理上一次运行中未完成的任务（`prepare_next_tasks(...)`）
+            # 就是处理 checkpoint_pending_writes
+            discard_tasks = prepare_next_tasks(
+                self.checkpoint,
+                self.checkpoint_pending_writes,
+                self.nodes,
+                self.channels,
+                self.managed,
+                self.config,
+                self.step,
+                self.stop,
+                for_execution=True,
+                store=None,
+                checkpointer=None,
+                manager=None,
+            )
+            # apply input writes
+            updated_channels = apply_writes(
+                self.checkpoint,
+                self.channels,
+                [
+                    # 处理未完成的写入，
+                    *discard_tasks.values(),
+                    # 处理新的输入
+                    PregelTaskWrites((), INPUT, input_writes, []),
+                ],
+                self.checkpointer_get_next_version,
+                self.trigger_to_nodes,
+            )
+            # save input checkpoint
+            # 更新检查点（标注来源为 input）
+            self._put_checkpoint({"source": "input"})
+        # 若无输入也不在恢复，抛异常
+        elif CONFIG_KEY_RESUMING not in configurable:
+            raise EmptyInputError(f"Received no input for {input_keys}")
+```
+
+这里比较难理解的部分是 discard_tasks。处理新一轮输入，不一定是这条图有史以来第一次运行：
+1. 可能上一次运行一半被 kill、失败或中断；
+2. 系统重启或调度器崩溃了；
+3. Checkpoint 已保存，但部分任务写入未应用；
+
+传给 apply_writes 有两个部分
+1. discard_tasks: 其 `writes=dequeue`，discard_tasks 还没有被执行，所以 writes 为空
+2. PregelTaskWrites: 其 `writes=deque(map_input(input_keys, self.input))`
+
+这样经过 apply_writes，未被处理的 channel 就会直接被 update 为空:
+
+```python
+    if bump_step:
+        for chan in channels:
+            if channels[chan].is_available() and chan not in updated_channels:
+                if channels[chan].update(EMPTY_SEQ) and next_version is not None:
+                    checkpoint["channel_versions"][chan] = next_version
+                    # unavailable channels can't trigger tasks, so don't add them
+                    if channels[chan].is_available():
+                        updated_channels.add(chan)
+```
+
+**`channels[TASKS]`是如何恢复的**
+这里还有个问题需要注意，prepare_next_tasks 在生成 PUSH 任务时，会先做如下判断:
+
+```python
+def prepare_next_tasks():
+    tasks_channel = cast(Optional[Topic[Send]], channels.get(TASKS))
+    if tasks_channel and tasks_channel.is_available():
+```
+
+`channels[TASKS]` 的值是在 Pregel 初始化时添加的，此时 
+
+```python
+class Pregel:
+    def __init__()
+        self.channels = channels or {}
+        if TASKS in self.channels and not isinstance(self.channels[TASKS], Topic):
+            raise ValueError(
+                f"Channel '{TASKS}' is reserved and cannot be used in the graph."
+            )
+        else:
+            self.channels[TASKS] = Topic(Send, accumulate=False)
+```
+
+在 Loop `__enter__` 方法中，会调用 channels_from_checkpoint，尝试从 checkpoint 恢复 channel，如果 checkpoint 中存在 `channels[TASKS]` 就会恢复，此时 `channels[TASKS]` 就有值。
+
+最后 `_put_checkpoint` 方法，我们后面再详述。
+
+#### **更新配置、状态**
+
+```python
+if not self.is_nested:
+    self.config = patch_configurable(self.config, {CONFIG_KEY_RESUMING: is_resuming})
+self.status = "pending"
+```
+
+* 将 `resuming` 信息注入配置
+* 设置当前节点状态为 `"pending"`，准备调度
+
+---
+
+#### ✅ 返回
+返回的是 `apply_writes(...)` 中得到的 **被写入的通道名集合**（`set[str]`），用于触发下游节点。
+
+
+#### 🧠 总结
+
+`_first` 是 Pregel 图首次调度（或恢复）的核心入口：
+
+* 如果是 `Command`，执行恢复流程
+* 如果是中断恢复，跳过输入处理
+* 如果是正常输入，解析写入并更新通道
+* 若都不是，抛出异常
+* 最终返回写入了哪些通道，供调度器判断哪些节点应被触发

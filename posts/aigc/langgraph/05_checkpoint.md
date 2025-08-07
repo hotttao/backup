@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "langgraph checkpointer"
+title: "pregel checkpoint"
 date: 2025-08-01T12:00:00+08:00
 lastmod: 2025-08-01T12:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "langgraph checkpointer"
+description: "pregel checkpoint"
 featuredImage: 
 
 tags: ["langgraph 源码"]
