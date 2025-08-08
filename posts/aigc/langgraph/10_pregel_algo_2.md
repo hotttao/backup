@@ -829,6 +829,12 @@ def apply_writes(
 ---
 
 ### 4.2 代码逻辑
+apply_writes 正常流程下，有两类 channel 会被打上新的版本号：
+
+* task.triggers 中的 channel；及触发当前task 的channel
+* updated_channels，即被更新的 channel
+
+
 ```python
 def apply_writes(
     checkpoint: Checkpoint,
@@ -933,6 +939,7 @@ def apply_writes(
     # 对其他通道执行 empty 更新（用于触发 step 推进）
     if bump_step:
         for chan in channels:
+            # 目前还不清楚，为什么会出现这种情况
             if channels[chan].is_available() and chan not in updated_channels:
                 # 写入空值会触发一些 `Channel` 的内部状态清理或触发机制。
                 if channels[chan].update(EMPTY_SEQ) and next_version is not None:

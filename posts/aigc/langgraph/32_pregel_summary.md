@@ -564,7 +564,10 @@ def create_checkpoint(
     - 判断 updated_channels 为空并且 `checkpoint["channel_versions"]` 有值，就会假设所有 node 都被触发
     - prepare_single_task 内会对 node 是否被触发做一个判断 `_triggers`
     - `_triggers` 判断的逻辑是`触发这个 node 执行的 channel 的最大版本` 是否大于 `这个 node 能看到 channel 版本`
-    - 这个逻辑正好符合我们在 apply_write 的对 trigger node 的更新逻辑。trigger node 的可见版本是上一个版本，最新版本是新生成的版本
+4. apply_writes 正常流程下，有两类 channel 会被打上新的版本号：
+    - task.triggers 中的 channel；及触发当前task 的channel，这一类 `is_available()` 为 False，`_triggers` 会跳过
+    - updated_channels，即被更新的 channel，这一类 `is_available()` 为 True，`_triggers` 会执行
+    - 最终在恢复流程中，通过 new_versions 间接找到了 updated_channels
 
 由此可见 pending_writes 是否完整不影响错误恢复。
 
@@ -629,7 +632,7 @@ def _triggers(
     return False
 ```
 
-pregel 还有个避免 task 重复执行的逻辑
+pregel 还有个避免 task 重复执行的逻辑:
 
 ```python
 class Pregel:
