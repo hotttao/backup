@@ -122,6 +122,27 @@ class Runtime(Generic[ContextT]):
     """
 ```
 
+下面是 Runtime 在 Pregel 初始化的相关代码，初始化示例有助于我们理解 Runtime 每个参数的含义:
+
+```python
+runtime = Runtime(
+    # 对 context 做类型转换，对应示例传入的 context_schema
+    context=_coerce_context(self.context_schema, context),
+    # BaseStore
+    store=store,
+    # def stream_writer(c: Any) -> None:
+    # 内部会调用 SyncQueue.put 方法，往消息队列提交自定义消息
+    # pregel.stream 可以从 SyncQueue 读取到对应的消息
+    stream_writer=stream_writer,
+    previous=None,
+)
+parent_runtime = config[CONF].get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
+# 从 configurable 获取 __pregel_runtime 并合并
+runtime = parent_runtime.merge(runtime)
+# 更新 runtime
+config[CONF][CONFIG_KEY_RUNTIME] = runtime
+```
+
 ### 1.3 泛型变量 ContextT
 下面是 ContextT 的声明，它是一个泛型变量，用于表示上下文对象的类型。之前对 Python 泛型关注的比较少，这里对此做个详细解释。
 

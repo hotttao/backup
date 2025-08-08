@@ -863,6 +863,7 @@ def apply_writes(
     bump_step = any(t.triggers for t in tasks)
 
     # update seen versions
+    # chan1 触发了 node1, node1 就能看到 chan1 当前的最新值
     for task in tasks:
         checkpoint["versions_seen"].setdefault(task.name, {}).update(
             {
@@ -874,7 +875,7 @@ def apply_writes(
         )
 
     # Find the highest version of all channels
-    # 获取当前最大版本 → 调用 `get_next_version()` 来生成新的版本号；
+    # 获取当前最大版本 → 调用 `get_next_version()` 从 BaseCheckpointSaver 中获取下一个版本号
     if get_next_version is None:
         next_version = None
     else:
@@ -888,7 +889,7 @@ def apply_writes(
         )
 
     # Consume all channels that were read
-
+    # 将触发 task 的 channel 设置为已消费，并将其 channe_version 设置成新版本
     for chan in {
         chan
         for task in tasks
@@ -917,7 +918,7 @@ def apply_writes(
                 )
 
     # Apply writes to channels
-    # 应用写入，更新通道内容
+    # 应用写入，更新通道内容，并将这些被更新的 channel 的版本号更新为 next_version
     updated_channels: set[str] = set()
     for chan, vals in pending_writes_by_channel.items():
         if chan in channels:

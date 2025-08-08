@@ -505,6 +505,7 @@ ContextT = TypeVar("ContextT", bound=Union[StateLike, None], default=None)
 
 
 ### 2.3 StreamMode
+StreamMode 控制 PregelLoop 或调度器在执行过程中，以什么粒度、方式、频率将中间结果（包括 task 输出、中断、写入等）传输给使用者。
 
 ```python
 StreamMode = Literal[
@@ -880,6 +881,7 @@ Pregel.invoke 内部调用的是 stream 方法。所以我们重点关注 stream
                         yield from _output(
                             stream_mode, print_mode, subgraphs, stream.get, queue.Empty
                         )
+                    # 14. 当前 step 执行完毕，调用 apply_write 更新 channel
                     loop.after_tick()
                     # wait for checkpoint
                     if durability_ == "sync":

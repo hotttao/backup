@@ -482,7 +482,7 @@ with ExitStack() as stack:
             else []
         )
         # 2. BackgroundExecutor 是线程池，self.submit = BackgroundExecutor.submit 方法
-        self.submit = self.stack.enter_context(BackgroundExecutor(self.config))、
+        self.submit = self.stack.enter_context(BackgroundExecutor(self.config)) 
         # channels_from_checkpoint 用于从 checkpoint 中恢复 channel 的值。
         self.channels, self.managed = channels_from_checkpoint(
             self.specs, self.checkpoint
@@ -948,3 +948,49 @@ self.status = "pending"
 * 如果是正常输入，解析写入并更新通道
 * 若都不是，抛出异常
 * 最终返回写入了哪些通道，供调度器判断哪些节点应被触发
+
+## 5. after_tick
+与 tick 方法对应的还有一个 after_tick 方法，代码不长我们直接来看代码:
+
+```python
+    def after_tick(self) -> None:
+        # self.tasks 是 tick() 调用 prepare_next_tasks 获取的 Task
+        # 获取 Task 的执行结果
+        writes = [w for t in self.tasks.values() for w in t.writes]
+        # all tasks have finished
+        # 应用写入，更新通道，获取被更新的 channel
+        self.updated_channels = apply_writes(
+            self.checkpoint,
+            self.channels,
+            self.tasks.values(),
+            self.checkpointer_get_next_version,
+            self.trigger_to_nodes,
+        )
+        # produce values output
+        # 如果被更新的 channel 和要输出的 channel 存在交集，调用 _emit 方法输出值
+        if not self.updated_channels.isdisjoint(
+            (self.output_keys,)
+            if isinstance(self.output_keys, str)
+            else self.output_keys
+        ):
+            self._emit(
+                "values", map_output_values, self.output_keys, writes, self.channels
+            )
+        # clear pending writes
+        # 清空 pending writes
+        self.checkpoint_pending_writes.clear()
+        # "not skip_done_tasks" only applies to first tick after resuming
+        self.skip_done_tasks = True
+        # save checkpoint
+        # 保存 checkpoint
+        self._put_checkpoint({"source": "loop"})
+        # after execution, check if we should interrupt
+        # 判断是否应该发生中断
+        if self.interrupt_after and should_interrupt(
+            self.checkpoint, self.interrupt_after, self.tasks.values()
+        ):
+            self.status = "interrupt_after"
+            raise GraphInterrupt()
+        # unset resuming flag
+        self.config[CONF].pop(CONFIG_KEY_RESUMING, None)
+```

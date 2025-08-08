@@ -75,10 +75,16 @@ stream 方法非常的长，我直接把代码拷贝到 ChatGpt了，让 ChatGpt
 4. 参数标准化
 5. Subgraph 处理
 6. 消息流模式处理
-6. 配置 Runtime 和 stream_writer
-7. 启动主循环：SyncPregelLoop
+7. 配置 Runtime
+8. 启动主循环：SyncPregelLoop
+9. 初始化 PregelRunner
+10. 执行 loop.tick 生成 tasks
+11. 执行 runner.tick 执行 tasks
+12. _output 输出中间结果
+13. 执行 loop.after_tick 更新 channel
+14. _output 输出最终结果
 
-代码比较复杂，所以接下来我们分块讲解。
+核心的代码我们在之前介绍 Loop，Runner 时都已经介绍过了。
 
 ```python
 class Pregel(
@@ -137,7 +143,7 @@ class Pregel(
                 durability=durability,
                 checkpoint_during=deprecated_checkpoint_during,
             )
-            # 5. Subgraph 和消息流模式处理
+            # 5. Subgraph 处理
             if checkpointer is None and (
                 durability is not None or deprecated_checkpoint_during is not None
             ):
@@ -149,6 +155,7 @@ class Pregel(
                 ns = cast(str, config[CONF][CONFIG_KEY_CHECKPOINT_NS])
                 config[CONF][CONFIG_KEY_CHECKPOINT_NS] = recast_checkpoint_ns(ns)
             # set up messages stream mode
+            # 6. 消息流模式处理
             if "messages" in stream_modes:
                 run_manager.inheritable_handlers.append(
                     StreamMessagesHandler(stream.put, subgraphs)
@@ -179,7 +186,7 @@ class Pregel(
             # set durability mode for subgraphs
             if durability is not None or deprecated_checkpoint_during is not None:
                 config[CONF][CONFIG_KEY_DURABILITY] = durability_
-            # 6. 配置 Runtime 和 stream_writer
+            # 7. 配置 Runtime 和 stream_writer
             runtime = Runtime(
                 context=_coerce_context(self.context_schema, context),
                 store=store,
@@ -189,7 +196,7 @@ class Pregel(
             parent_runtime = config[CONF].get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
             runtime = parent_runtime.merge(runtime)
             config[CONF][CONFIG_KEY_RUNTIME] = runtime
-            # 7. 启动主循环：SyncPregelLoop
+            # 8. 启动主循环：SyncPregelLoop
             with SyncPregelLoop(
                 input,
                 stream=StreamProtocol(stream.put, stream_modes),
@@ -211,7 +218,7 @@ class Pregel(
                 retry_policy=self.retry_policy,
                 cache_policy=self.cache_policy,
             ) as loop:
-                # create runner
+                # 9. 初始化 PregelRunner
                 runner = PregelRunner(
                     submit=config[CONF].get(
                         CONFIG_KEY_RUNNER_SUBMIT, weakref.WeakMethod(loop.submit)
@@ -253,9 +260,11 @@ class Pregel(
                 # Channel updates from step N are only visible in step N+1
                 # channels are guaranteed to be immutable for the duration of the step,
                 # with channel updates applied only at the transition between steps.
+                # 10. step 第一步，生成 tasks
                 while loop.tick():
                     for task in loop.match_cached_writes():
                         loop.output_writes(task.id, task.writes, cached=True)
+                    # 11. step 第二步，执行 task
                     for _ in runner.tick(
                         [t for t in loop.tasks.values() if not t.writes],
                         timeout=self.step_timeout,
@@ -263,15 +272,17 @@ class Pregel(
                         schedule_task=loop.accept_push,
                     ):
                         # emit output
+                        # 12. 输出中间结果
                         yield from _output(
                             stream_mode, print_mode, subgraphs, stream.get, queue.Empty
                         )
+                    # 13. step 第三步，更新 channel
                     loop.after_tick()
                     # wait for checkpoint
                     if durability_ == "sync":
                         loop._put_checkpoint_fut.result()
             # emit output
-            # 8. 最后输出和异常处理
+            # 13. 执行完成，输出结果
             yield from _output(
                 stream_mode, print_mode, subgraphs, stream.get, queue.Empty
             )
@@ -293,7 +304,7 @@ class Pregel(
             raise
 ```
 
-## 3. stream 管道
+### 2.1 stream 管道
 `stream=SyncQueue()` SyncQueue 是一个先进先出的队列。实现比较简单，内部是一个 queue 和 信号量。
 
 ```python
@@ -309,7 +320,7 @@ class SyncQueue:
 
 引入信号量，是为了给 get 操作提供超时控制。
 
-## 4. 参数标准化
+### 2.2 参数标准化
 参数标准化通过 `_default` 方法实现，下面是 `_defaults` 的源码:
 ```python
     def _defaults(
@@ -420,245 +431,8 @@ _default 用于标准化 pregel 参数。`_default` 会从 config 中获取如�
 | `exit`  | 图执行完后才保存一次 | 低   | 最高 | 可重跑流程、实验性流程   |
 
 
-## 5. Subgraph 处理
-学习这段代码之前，我们需要先了解 Langgraph 中关于子图的概念。这一部分我也不了解，直接问的 ChatGpt。
-
-### 5.1 Subgraph
-LangGraph 支持在图中调用**嵌套子图（subgraph）**，比如：
-
-```python
-parent_node -> child_node(subgraph) -> ...
-```
-
-为了让主图和子图的 stream 输出可以区分并追踪，LangGraph 引入了 `namespace` 机制：每个子图的事件都带上其命名路径，如：
-
-```
-("parent_node:<task_id>", "child_node:<task_id>")
-```
-
-### 5.2 Subgraph 的处理
-
-代码中关于子图的处理有两个部分:
-
-```python
-CONFIG_KEY_CHECKPOINT_NS = sys.intern("checkpoint_ns")
-CONFIG_KEY_STREAM = sys.intern("__pregel_stream")
-
-# 子图的 namespace 配置
-if self.checkpointer is True:
-    ns = cast(str, config[CONF][CONFIG_KEY_CHECKPOINT_NS])
-    config[CONF][CONFIG_KEY_CHECKPOINT_NS] = recast_checkpoint_ns(ns)
-
-# subgraph 流式输出支持
-if subgraphs:
-    loop.config[CONF][CONFIG_KEY_STREAM] = loop.stream
-```
-
-namespace:
-* `self.checkpointer is True`：代表这是一个启用了持久化的子图；
-* `recast_checkpoint_ns`：去掉命名空间中的 `<task_id>` 部分，只保留路径部分；
-
-流式输出支持:
-* 如果调用 `stream(subgraphs=True)`，则将当前 `loop.stream` 对象写入子图 config；
-* 这样子图执行期间产生的事件也会通过主图的 stream 发出；
-* 子图发出的事件格式如下：
-
-  * 单一 `stream_mode`: `(namespace: tuple, data)`
-  * 多重 `stream_mode`: `(namespace: tuple, mode, data)`
-
-示例输出：
-
-```python
-(
-  ("parent_node:abc123", "child_node:def456"),
-  "values",
-  {"foo": "bar"}
-)
-```
-
-你可以通过解析这个 `namespace` 路径，知道数据是在哪个子图中哪个节点产出的。
-
----
-
-### 5.3 namespace
-这里补充一下 Langgraph 中有关 namespace 的知识。
-
-假设你有一个 LangGraph 工作流，用于问答系统（QA system），主图如下：
-
-```
-MainGraph（graph_name="qa_graph"）
-│
-├── Node: retrieve_documents
-├── Node: select_subgraph
-├── Node: SubGraphRouter → routes to:
-│       ├── SubGraph A: summarize_graph
-│       └── SubGraph B: qa_graph
-└── Node: final_answer
-```
-
-你想要为每个用户的每次请求做持久化记录，并为主图和子图都创建独立的 namespace，以便更好地控制 checkpoint 和缓存数据的范围。
-
----
-
-#### 主图的 namespace 示例
-
-设定参数如下：
-
-| 参数          | 值            |
-| ----------- | ------------ |
-| graph\_name | `qa_graph`   |
-| user\_id    | `user_123`   |
-| run\_id     | `run_abc456` |
-
-主图的 namespace 可以设为：
-
-```
-namespace = ("qa_graph", "user_123", "run_abc456")
-```
-
-或等效的字符串形式：
-
-```
-"qa_graph/user_123/run_abc456"
-```
-
-这就是该用户本次请求的主图持久化空间。子图应派生在主图的 namespace 下，追加子图名称，以实现**命名空间继承 + 局部隔离**。
-
-
-#### 子图 namespace
-
-子图名：`summarize_graph` 子图 namespace 派生自主图：
-
-```python
-
-subgraph_namespace = namespace + ("summarize_graph",)
-# 子图 A：summarize
-("qa_graph", "user_123", "run_abc456", "summarize_graph")
-# 子图 B：qa
-("qa_graph", "user_123", "run_abc456", "qa_graph")
-```
-
-
-#### 图与子图的 namespace 层级关系
-
-```
-namespace hierarchy (tuple form):
-
-└── ("qa_graph", "user_123", "run_abc456")                     # MainGraph
-    ├── ("qa_graph", "user_123", "run_abc456", "summarize_graph")  # SubGraph A
-    └── ("qa_graph", "user_123", "run_abc456", "qa_graph")         # SubGraph B
-```
-
-
-## 6. 消息流模式
-
-### 6.1 `stream_mode="messages"`
-
-当图中某个节点调用了 LLM（如 OpenAI Chat API），你可能希望 **逐 token** 地将 LLM 回复 stream 给前端。LangGraph 提供 `messages` 模式实现这一点：
-
-#### stream 中相关代码详解
-
-```python
-if "messages" in stream_modes:
-    run_manager.inheritable_handlers.append(
-        StreamMessagesHandler(stream.put, subgraphs)
-    )
-```
-
-* 给 callback handler 列表添加一个 `StreamMessagesHandler`；
-* 它会自动挂载到所有 LLM 调用上（只要用的是 langchain LLM）；
-* 它将每个 token 连同其 metadata（包括哪一个节点）写入 `stream.put()`；
-* 如果是子图节点，还会加上完整 namespace 路径。
-
-
-#### 消息流的输出格式
-
-```python
-("messages", ("Hello", {"name": "llm_node", "type": "llm"}))
-```
-
-或者如果启用了子图：
-
-```python
-(("parent_node:xyz", "llm_node:abc"), "messages", ("Hello", {"name": "llm_node"}))
-```
-
-这对于 **实时展示 token 输出的前端 UI 非常有用**。
-
-
-### 6.2 stream_mode="custom"
-
-```python
-            if "custom" in stream_modes:
-
-                def stream_writer(c: Any) -> None:
-                    stream.put(
-                        (
-                            # get_config 用于 Runnable Context 中获取 child_runnable_config
-                            # [:-1] 表示去掉，去掉当前 node id，仅保留子图路径，防止误分类？
-                            tuple(
-                                get_config()[CONF][CONFIG_KEY_CHECKPOINT_NS].split(
-                                    NS_SEP
-                                )[:-1]
-                            ),
-                            "custom",
-                            c,
-                        )
-                    )
-            elif CONFIG_KEY_STREAM in config[CONF]:
-                # 从 config 中获取 stream_writer 函数
-                # CONFIG_KEY_RUNTIME = sys.intern("__pregel_runtime")
-                stream_writer = config[CONF][CONFIG_KEY_RUNTIME].stream_writer
-            else:
-
-                def stream_writer(c: Any) -> None:
-                    pass
-
-
-def get_config() -> RunnableConfig:
-    if sys.version_info < (3, 11):
-        try:
-            if asyncio.current_task():
-                raise RuntimeError(
-                    "Python 3.11 or later required to use this in an async context"
-                )
-        except RuntimeError:
-            pass
-    if var_config := var_child_runnable_config.get():
-        return var_config
-    else:
-        raise RuntimeError("Called get_config outside of a runnable context")
-
-var_child_runnable_config: ContextVar[RunnableConfig | None] = ContextVar(
-    "child_runnable_config", default=None
-)
-```
-
-stream_writer 是一个在 节点执行期间可调用的函数，用于将自定义数据（c）写入 stream 队列，从而实现 自定义流式事件输出（stream_mode="custom"）。
-
-## 7. Runtime
-
-```python
-runtime = Runtime(
-    context=_coerce_context(self.context_schema, context),
-    store=store,
-    stream_writer=stream_writer,
-    previous=None,
-)
-parent_runtime = config[CONF].get(CONFIG_KEY_RUNTIME, DEFAULT_RUNTIME)
-# 从 configurable 获取 __pregel_runtime 并合并
-runtime = parent_runtime.merge(runtime)
-# 更新 runtime
-config[CONF][CONFIG_KEY_RUNTIME] = runtime
-```
-
-### 8. SyncPregelLoop
-
-### 9. PregelRunner
-
-
-## 2. invoke 方法
-我们对着前面的示例来看  invoke 的代码
+## 3. invoke 方法
+我们对着前面的示例来看 invoke 的代码，invoke 调用 stream，并从 stream 的输出中提取 stream_mode=values 的值，作为 invoke 的返回值。
 
 ```python
 app = Pregel(
