@@ -54,13 +54,14 @@ return PregelExecutableTask(
 ```
 
 PregelExecutableTask 初始化是用到了很多 PregelNode 的属性。下面是节点初始化相关的代码，可以看到
-2. `proc_node=Pregel.node`
+
+1. `proc_node=Pregel.node`
 2. `Pregel.node 是属性方法，最终会返回 RunnableSeq(self.bound, *writers)`
-2. self.bound 是传入的节点执行器
-3. `writers=self.flat_writers`
-4. self.flat_writers 是对初始化传入 `writers=[ChannelWrite(self._writes)]` 里的 ChannelWrite 进行了合并
-5. 所以最终 `proc_node=RunnableSeq(self.bound, ChannelWrite(self._writes))`
-6. `self._writes 是 List[ChannelWriteEntry]` 包装了要写入的 channel
+3. self.bound 是传入的节点执行器
+4. `writers=self.flat_writers`
+5. self.flat_writers 是对初始化传入 `writers=[ChannelWrite(self._writes)]` 里的 ChannelWrite 进行了合并
+6. 所以最终 `proc_node=RunnableSeq(self.bound, ChannelWrite(self._writes))`
+7. `self._writes 是 List[ChannelWriteEntry]` 包装了要写入的 channel
 
 
 ```python
@@ -146,6 +147,7 @@ class PregelNode:
 
 ### 1.2 任务执行循环
 任务执行位于 pregel.stream 方法内，整个调用链如下:
+
 1. stream 内创建 `stream = SyncQueue()`
 2. `with PregelLoop(input=input, stream=stream.put)`:
     - PregelLoop 初始化，接受 `input` 和 `stream.put`
@@ -257,14 +259,15 @@ node 的定义内包含了如下信息:
 为了验证上面得到的结论，我们来看每次 checkpoint 都保存了哪些内容。BaseCheckpointSaver.get_tuple 返回的是 CheckpointTuple
 
 CheckpointTuple 保存了:
+
 1. Checkpoint:
-    2. `channel_versions: ChannelVersions`: 
+    - `channel_versions: ChannelVersions`: 
         - eg: `{"c1": "version1", "c2": "version2"}`
         - 含义: channel 到其最新版本的映射
-    1. `channel_values: dict[str, Any]`: 
+    - `channel_values: dict[str, Any]`: 
         - eg: `{"c1": "v1", "c2": "v2"}`
         - 含义: channel 到其最新值的映射    
-    3. `versions_seen: dict[str, ChannelVersions]`: 
+    - `versions_seen: dict[str, ChannelVersions]`: 
         - eg: `{"node": {"c1": "version1", "c2": "version2"}}`
         - 含义: node 能看到的每个 channel 的版本
 2. `pending_writes: list[PendingWrite]`:
@@ -382,6 +385,7 @@ class InMemorySaver():
 ### 2.4 checkpoint 的保存逻辑
 
 checkpoint 的保存过程定义在 Loop._put_checkpoint 方法中。核心逻辑有如下几步:
+
 1. create_checkpoint:
     - 生成一个新的 checkpoint_id
     - 从 loop.channels 中读取 channels 的值

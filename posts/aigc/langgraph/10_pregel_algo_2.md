@@ -762,10 +762,11 @@ return PregelExecutableTask(
 ```
 
 PregelExecutableTask 初始化是用到了很多 PregelNode 的属性。可以看到
-2. `proc_node=Pregel.node`
+
+1. `proc_node=Pregel.node`
 2. `Pregel.node 是属性方法，最终会返回 RunnableSeq(self.bound, *writers)`
-2. self.bound 是传入的节点执行器
-3. `writers=self.flat_writers`
+3. self.bound 是传入的节点执行器
+4. `writers=self.flat_writers`
 4. self.flat_writers 是对初始化传入 `writers=[ChannelWrite(self._writes)]` 里的 ChannelWrite 进行了合并
 5. 所以最终 `proc_node=RunnableSeq(self.bound, ChannelWrite(self._writes))`
 6. `self._writes 是 List[ChannelWriteEntry]` 包装了要写入的 channel
