@@ -18,14 +18,16 @@ toc:
   auto: false
 ---
 
-## 1. Pregel Alog
+## 1. Pregel Algo
 
 pregel 有关任务生成的代码位于 `langgraph\pregel\_algo.py`。这个应该算是 pregel 最核心的部分了。`_algo.py` 内有如下几个函数:
-1. `prepare_single_task`
 2. `prepare_next_tasks`
+    - 用于生成下一个 Pregel step 中的任务。
+    - 内部会调用 `prepare_single_task`
 3. `apply_writes`
+    - 把对 channel 的写入应用到 channel 中，并返回 updated_channels
 
-prepare_next_tasks 用于生成下一个 Pregel step 中的任务。在介绍这些函数之前我们需要先学习一下与之相关的一些基础对象，包括：
+在介绍这些函数之前我们需要先学习一下与之相关的一些基础对象，包括：
 1. PregelTask/PregelExecutableTask: 
 2. Call
 3. PregelScratchpad
@@ -62,7 +64,7 @@ prepare_next_tasks 用于生成下一个 Pregel step 中的任务。在介绍这
 * 执行完后，就转化为一个 `PregelTask`，记录执行历史（包含错误、返回值、状态等）。
 
 ### 1.1 PregelExecutableTask
-
+#### PregelExecutableTask 的定义
 ```python
 @dataclass(**_T_DC_KWARGS)
 class PregelExecutableTask:
@@ -111,6 +113,35 @@ PregelExecutableTask 包含了一个 task 执行关联的所有信息。下面�
 | `path`         | \`tuple\[str               | int    | tuple, ...]\`         | 无              | 节点在图中的路径标识 |
 | `writers`      | `Sequence[Runnable]`       | `()`   | 输出写入副作用处理器（如写入 store） |                |            |
 | `subgraphs`    | `Sequence[PregelProtocol]` | `()`   | 嵌套的子图列表（用于子流程）        |                |            |
+
+#### PregelExecutableTask 的执行
+PregelExecutableTask 的执行定义在 `langgraph\pregel\_retry.py` 下:
+1. run_with_retry: 同步执行函数
+2. arun_with_retry: 异步执行函数
+
+run_with_retry 代码很长，大多数都是异常处理的逻辑，正常执行流程就是如下几行代码:
+
+```python
+def run_with_retry(
+    task: PregelExecutableTask,
+    retry_policy: Sequence[RetryPolicy] | None,
+    configurable: dict[str, Any] | None = None,
+) -> None:
+    """Run a task with retries."""
+    retry_policy = task.retry_policy or retry_policy
+    attempts = 0
+    config = task.config
+    if configurable is not None:
+        config = patch_configurable(config, configurable)
+    while True:
+        try:
+            # clear any writes from previous attempts
+            task.writes.clear()
+            # run the task
+            return task.proc.invoke(task.input, config)
+```
+
+`task.proc.invoke` 的调用链很长，需要结合 PregelExecutableTask 创建过程讲解，这个我们放到 prepare_single_task 时在详述。
 
 
 ### 1.2 PregelTask
@@ -374,7 +405,7 @@ class PregelScratchpad:
     subgraph_counter: Callable[[], int]
 ```
 
-本节我们核心要关注的是 PregelScratchpad 的生成逻辑。PregelScratchpad 的生成位于 `langgraph\pregel\_algo.py` 下的 `_scratchpad`。`_scratchpad` 的调用入口主要是同目录下的 `prepare_single_task` 函数，这一节我们主要学习的就是这两个函数。
+本节我们核心要关注的是 PregelScratchpad 的生成逻辑。PregelScratchpad 的生成位于 `langgraph\pregel\_algo.py` 下的 `_scratchpad`。`_scratchpad` 的调用入口主要是同目录下的 `prepare_single_task` 函数。
 
 #### 3.1 PregelScratchpad 的生成
 

@@ -445,6 +445,7 @@ elif task_path[0] == PUSH:
             return
         # find process
         proc = processes[packet.node]
+        # 调用的 PregelNode.node
         proc_node = proc.node
         if proc_node is None:
             return
@@ -721,6 +722,140 @@ elif task_path[0] == PULL:
         else:
             return PregelTask(task_id, name, task_path[:3])
 ```
+
+#### PregelExecutableTask 创建
+创建 PregelExecutableTask 的三个分支代码都比较长，但是代码结构完全一样。PregelExecutableTask 创建用到的参数如下:
+
+```python
+processes: Mapping[str, PregelNode]
+proc = processes[packet.node]
+proc_node = proc.node
+
+return PregelExecutableTask(
+    packet.node, # 节点名称
+    packet.arg,  # 传递给节点执行器的参数
+    proc_node,   # PregelNode.node 
+    writes,      # dequeue
+    ...
+    patch_config(
+        configurable={
+            CONFIG_KEY_SEND: writes.extend,
+            CONFIG_KEY_READ: partial(
+                local_read,
+                scratchpad,
+                channels,
+                managed,
+                PregelTaskWrites(
+                    task_path[:3],
+                    name,
+                    writes,
+                    triggers,
+                ),
+            ),
+        }
+    )
+    # proc 是 pregelNode
+    writers=proc.flat_writers, # 节点的写入通道，[ChannelWrite(self._writes)]
+    subgraphs=proc.subgraphs,  # 节点包含的子图
+
+)
+```
+
+PregelExecutableTask 初始化是用到了很多 PregelNode 的属性。可以看到
+2. `proc_node=Pregel.node`
+2. `Pregel.node 是属性方法，最终会返回 RunnableSeq(self.bound, *writers)`
+2. self.bound 是传入的节点执行器
+3. `writers=self.flat_writers`
+4. self.flat_writers 是对初始化传入 `writers=[ChannelWrite(self._writes)]` 里的 ChannelWrite 进行了合并
+5. 所以最终 `proc_node=RunnableSeq(self.bound, ChannelWrite(self._writes))`
+6. `self._writes 是 List[ChannelWriteEntry]` 包装了要写入的 channel
+7. `RunnableSeq.invoke` 会分别调用 `self.bound` 和 `ChannelWrite` 的 `invoke` 方法
+8. ChannelWrite.invoke 的调用过程前面的章节我们分析过，其写入最终调用的是从 RunnableConfig 中配置的写入函数: `write: TYPE_SEND = config[CONF][CONFIG_KEY_SEND]`
+9. `config[CONF][CONFIG_KEY_SEND]` 正是 PregelExecutableTask 初始化时配置的 `writes.extend`。
+10. 所以 PregelExecutableTask 执行的最终结果会把节点的执行结果写入到 PregelExecutableTask.writes 的 dequeue 中。
+
+
+```python
+node2 = (
+    NodeBuilder().subscribe_to("b")
+    .do(lambda x: x["b"] + x["b"])
+    .write_to("c")
+)
+# write_to 用户设置节点要写入的通道，flat_writers 用于合并 ChannelWrite
+class NodeBuilder:
+    def write_to(
+        self,
+        *channels: str | ChannelWriteEntry,
+        **kwargs: _WriteValue,
+    ) -> Self:
+
+        self._writes.extend(
+            ChannelWriteEntry(c) if isinstance(c, str) else c for c in channels
+        )
+        self._writes.extend(
+            ChannelWriteEntry(k, mapper=v)
+            if callable(v)
+            else ChannelWriteEntry(k, value=v)
+            for k, v in kwargs.items()
+        )
+
+        return self
+
+    def subscribe_to(
+        self,
+        *channels: str,
+        read: bool = True,
+    ) -> Self:
+        if isinstance(self._channels, str):
+            raise ValueError(
+                "Cannot subscribe to channels when subscribed to a single channel"
+            )
+        if read:
+            if not self._channels:
+                self._channels = list(channels)
+            else:
+                # 从哪些 channel 读
+                self._channels.extend(channels)
+
+        # 被哪些 channel 触发
+        if isinstance(channels, str):
+            self._triggers.append(channels)
+        else:
+            self._triggers.extend(channels)
+
+        return self
+
+    def build(self) -> PregelNode:
+        """Builds the node."""
+        return PregelNode(
+            channels=self._channels,
+            triggers=self._triggers,
+            tags=self._tags,
+            metadata=self._metadata,
+            writers=[ChannelWrite(self._writes)],
+            bound=self._bound,
+            retry_policy=self._retry_policy,
+            cache_policy=self._cache_policy,
+        )
+
+class PregelNode:
+    @cached_property
+    def node(self) -> Runnable[Any, Any] | None:
+        """Get a runnable that combines `bound` and `writers`."""
+        writers = self.flat_writers
+        if self.bound is DEFAULT_BOUND and not writers:
+            return None
+        elif self.bound is DEFAULT_BOUND and len(writers) == 1:
+            return writers[0]
+        elif self.bound is DEFAULT_BOUND:
+            return RunnableSeq(*writers)
+        # 初始化时有 bound，也有 writers 所以走的是这个分支
+        elif writers:
+            return RunnableSeq(self.bound, *writers)
+        else:
+            return self.bound
+```
+
 
 ## 3. local_read
 这个函数 local_read 是 LangGraph 中用于从当前节点的 局部上下文状态 中读取数据的工具函数之一。它的作用是为**条件边（conditional edges）**提供一个“视图”——这个视图能看到当前节点写入的值（task.writes），但不会影响全局状态（即不会真正写入通道和托管状态）。
