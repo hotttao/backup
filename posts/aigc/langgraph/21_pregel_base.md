@@ -608,6 +608,21 @@ class Command(Generic[N], ToolOutputMixin):
 | `goto`   | `Send \| Sequence[Send \| N] \| N` | 指定接下来要跳转执行的节点（或节点序列）或发送命令。可以是：<br>- 节点名（`str` 或 `Literal`）<br>- `Send` 对象（含输入数据）<br>- 上述任意组合的列表       |
 
 
+#### Command 示例
+
+如果你正在使用子图，你可能希望从子图中的一个节点导航到另一个子图（即父图中的另一个节点）。为此，你可以在 Command 中指定 graph=Command.PARENT
+
+
+
+```python
+def my_node(state: State) -> Command[Literal["other_subgraph"]]:
+    return Command(
+        update={"foo": "bar"}, # 要更新的参数
+        goto="other_subgraph",  # `other_subgraph` 是父图的节点
+        graph=Command.PARENT # 跳转到父图
+    )
+```
+
 #### _update_as_tuples 
 _update_as_tuples 用于统一 Command update 值，其用到了 get_cached_annotated_keys 和 get_update_as_tuples 两个函数。
 

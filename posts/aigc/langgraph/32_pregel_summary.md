@@ -23,7 +23,8 @@ toc:
 1. PregelLoop 的更新循环
 2. PregelLoop 的崩溃恢复
 3. 中断执行流程，包括父图发生中断、子图发生中断
-
+4. 节点执行是如何获取输入参数的
+5. channel finish 的执行逻辑
 <!-- 2. 图中函数参数如何传递 -->
 
 ## 1. PregelLoop 的更新循环
@@ -253,7 +254,10 @@ node 的定义内包含了如下信息:
 
 ```
 
-而整个 graph 的状态就保存在 `channels`，`node`, `updated_channels` 中。
+而整个 graph 的状态就保存在 `channels`，`node`, `updated_channels` 中。从后面 checkpoint 保存的内容会看到
+1. checkpoint 不会持久化 node，只保存了 node 能看到的 channel 版本。所以 node 没有包含 graph 的状态。
+2. checkpoint 也没有持久化 updated_channels，updated_channels，是通过 channel 的 version，以及 node 能看到的 channel version 计算出来的
+
 
 ### 2.3 checkpoint 保存的内容
 为了验证上面得到的结论，我们来看每次 checkpoint 都保存了哪些内容。BaseCheckpointSaver.get_tuple 返回的是 CheckpointTuple
@@ -584,7 +588,9 @@ def create_checkpoint(
     - updated_channels，即被更新的 channel，这一类 `is_available()` 为 True，`_triggers` 会执行
     - 最终在恢复流程中，通过 new_versions 间接找到了 updated_channels
 
-由此可见 pending_writes 是否完整不影响错误恢复。
+由此可见 pending_writes 是否完整不影响错误恢复。并且:
+1. checkpoint 不会持久化 node，只保存了 node 能看到的 channel 版本。所以 node 没有包含 graph 的状态。
+2. checkpoint 也没有持久化 updated_channels，updated_channels，是通过 channel 的 version，以及 node 能看到的 channel version 计算出来的
 
 ```python
     def __enter__(self) -> Self:
@@ -664,3 +670,57 @@ class Pregel:
                         schedule_task=loop.accept_push,
                     ):
 ```
+
+## 3. PregelNode 的入参
+
+
+```python
+def prepare_single_task():
+    elif task_path[0] == PULL:
+        if _triggers(
+            channels,
+            checkpoint["channel_versions"],
+            checkpoint["versions_seen"].get(name),
+            checkpoint_null_version,
+            proc,
+        ):
+            try:
+                val = _proc_input(
+                    proc,
+                    managed,
+                    channels,
+                    for_execution=for_execution,
+                    input_cache=input_cache,
+                    scratchpad=scratchpad,
+                )
+                if val is MISSING:
+                    return
+
+def run_with_retry(
+    task: PregelExecutableTask,
+    retry_policy: Sequence[RetryPolicy] | None,
+    configurable: dict[str, Any] | None = None,
+) -> None:
+    """Run a task with retries."""
+    retry_policy = task.retry_policy or retry_policy
+    attempts = 0
+    config = task.config
+    if configurable is not None:
+        config = patch_configurable(config, configurable)
+    while True:
+        try:
+            # clear any writes from previous attempts
+            task.writes.clear()
+            # 从 task.input 读取输入，input 从 _proc_input 获取
+            return task.proc.invoke(task.input, config)
+
+
+class RunnableCallable(Runnable):
+    def invoke(
+        self, input: Any, config: RunnableConfig | None = None, **kwargs: Any
+    ) -> Any:
+        # 处理 runtime，config 等参数
+
+```
+
+## 4. channel finish

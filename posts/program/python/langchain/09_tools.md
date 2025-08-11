@@ -336,7 +336,7 @@ response = client.chat.completions.create(
     tool_choice="auto"
 )
 
-tool_calls = response.choices[0].message.tool_calls
+tool_calls = response.choices[0].message.
 
 # 4. 执行真实函数（模拟）
 location = eval(tool_calls[0].function.arguments)["location"]

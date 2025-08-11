@@ -1,0 +1,202 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="791pt" height="870pt" viewBox="0.00 0.00 791.04 870.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 866)">
+<title>graph</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-866 787.04,-866 787.04,4 -4,4"/>
+<!-- TypedDict -->
+<g id="node1" class="node">
+<title>TypedDict</title>
+<polygon fill="none" stroke="black" points="355.5,-55.5 355.5,-91.5 450.86,-91.5 450.86,-55.5 355.5,-55.5"/>
+<text text-anchor="middle" x="393.43" y="-69.4" font-family="Times,serif" font-size="14.00">TypedDict</text>
+<polyline fill="none" stroke="black" points="431.36,-55.7 431.36,-91.5"/>
+<text text-anchor="middle" x="441.11" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _branch.BranchSpec -->
+<g id="node2" class="node">
+<title>_branch.BranchSpec</title>
+<polygon fill="none" stroke="black" points="585.43,-165.5 585.43,-201.5 737.16,-201.5 737.16,-165.5 585.43,-165.5"/>
+<text text-anchor="middle" x="651.54" y="-179.4" font-family="Times,serif" font-size="14.00">_branch.BranchSpec</text>
+<polyline fill="none" stroke="black" points="717.66,-165.7 717.66,-201.5"/>
+<text text-anchor="middle" x="727.41" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node.StateNodeSpec -->
+<g id="node3" class="node">
+<title>_node.StateNodeSpec</title>
+<polygon fill="none" stroke="black" points="581.92,-220.5 581.92,-256.5 740.66,-256.5 740.66,-220.5 581.92,-220.5"/>
+<text text-anchor="middle" x="651.54" y="-234.4" font-family="Times,serif" font-size="14.00">_node.StateNodeSpec</text>
+<polyline fill="none" stroke="black" points="721.16,-220.7 721.16,-256.5"/>
+<text text-anchor="middle" x="730.91" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._Node -->
+<g id="node4" class="node">
+<title>_node._Node</title>
+<polygon fill="none" stroke="black" points="606.02,-275.5 606.02,-311.5 716.56,-311.5 716.56,-275.5 606.02,-275.5"/>
+<text text-anchor="middle" x="651.54" y="-289.4" font-family="Times,serif" font-size="14.00">_node._Node</text>
+<polyline fill="none" stroke="black" points="697.06,-275.7 697.06,-311.5"/>
+<text text-anchor="middle" x="706.81" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithConfig -->
+<g id="node5" class="node">
+<title>_node._NodeWithConfig</title>
+<polygon fill="none" stroke="black" points="572.58,-330.5 572.58,-366.5 750,-366.5 750,-330.5 572.58,-330.5"/>
+<text text-anchor="middle" x="651.54" y="-344.4" font-family="Times,serif" font-size="14.00">_node._NodeWithConfig</text>
+<polyline fill="none" stroke="black" points="730.5,-330.7 730.5,-366.5"/>
+<text text-anchor="middle" x="740.25" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithConfigStore -->
+<g id="node6" class="node">
+<title>_node._NodeWithConfigStore</title>
+<polygon fill="none" stroke="black" points="557.8,-385.5 557.8,-421.5 764.78,-421.5 764.78,-385.5 557.8,-385.5"/>
+<text text-anchor="middle" x="651.54" y="-399.4" font-family="Times,serif" font-size="14.00">_node._NodeWithConfigStore</text>
+<polyline fill="none" stroke="black" points="745.28,-385.7 745.28,-421.5"/>
+<text text-anchor="middle" x="755.03" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithConfigWriter -->
+<g id="node7" class="node">
+<title>_node._NodeWithConfigWriter</title>
+<polygon fill="none" stroke="black" points="554.31,-440.5 554.31,-476.5 768.27,-476.5 768.27,-440.5 554.31,-440.5"/>
+<text text-anchor="middle" x="651.54" y="-454.4" font-family="Times,serif" font-size="14.00">_node._NodeWithConfigWriter</text>
+<polyline fill="none" stroke="black" points="748.77,-440.7 748.77,-476.5"/>
+<text text-anchor="middle" x="758.52" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithConfigWriterStore -->
+<g id="node8" class="node">
+<title>_node._NodeWithConfigWriterStore</title>
+<polygon fill="none" stroke="black" points="539.54,-495.5 539.54,-531.5 783.04,-531.5 783.04,-495.5 539.54,-495.5"/>
+<text text-anchor="middle" x="651.54" y="-509.4" font-family="Times,serif" font-size="14.00">_node._NodeWithConfigWriterStore</text>
+<polyline fill="none" stroke="black" points="763.54,-495.7 763.54,-531.5"/>
+<text text-anchor="middle" x="773.29" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithRuntime -->
+<g id="node9" class="node">
+<title>_node._NodeWithRuntime</title>
+<polygon fill="none" stroke="black" points="567.92,-550.5 567.92,-586.5 754.67,-586.5 754.67,-550.5 567.92,-550.5"/>
+<text text-anchor="middle" x="651.54" y="-564.4" font-family="Times,serif" font-size="14.00">_node._NodeWithRuntime</text>
+<polyline fill="none" stroke="black" points="735.17,-550.7 735.17,-586.5"/>
+<text text-anchor="middle" x="744.92" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithStore -->
+<g id="node10" class="node">
+<title>_node._NodeWithStore</title>
+<polygon fill="none" stroke="black" points="577.25,-605.5 577.25,-641.5 745.33,-641.5 745.33,-605.5 577.25,-605.5"/>
+<text text-anchor="middle" x="651.54" y="-619.4" font-family="Times,serif" font-size="14.00">_node._NodeWithStore</text>
+<polyline fill="none" stroke="black" points="725.83,-605.7 725.83,-641.5"/>
+<text text-anchor="middle" x="735.58" y="-619.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithWriter -->
+<g id="node11" class="node">
+<title>_node._NodeWithWriter</title>
+<polygon fill="none" stroke="black" points="573.76,-660.5 573.76,-696.5 748.82,-696.5 748.82,-660.5 573.76,-660.5"/>
+<text text-anchor="middle" x="651.54" y="-674.4" font-family="Times,serif" font-size="14.00">_node._NodeWithWriter</text>
+<polyline fill="none" stroke="black" points="729.32,-660.7 729.32,-696.5"/>
+<text text-anchor="middle" x="739.07" y="-674.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- _node._NodeWithWriterStore -->
+<g id="node12" class="node">
+<title>_node._NodeWithWriterStore</title>
+<polygon fill="none" stroke="black" points="558.98,-715.5 558.98,-751.5 763.6,-751.5 763.6,-715.5 558.98,-715.5"/>
+<text text-anchor="middle" x="651.54" y="-729.4" font-family="Times,serif" font-size="14.00">_node._NodeWithWriterStore</text>
+<polyline fill="none" stroke="black" points="744.1,-715.7 744.1,-751.5"/>
+<text text-anchor="middle" x="753.85" y="-729.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- message.MessageGraph -->
+<g id="node13" class="node">
+<title>message.MessageGraph</title>
+<polygon fill="none" stroke="black" points="576.09,-770.5 576.09,-806.5 746.49,-806.5 746.49,-770.5 576.09,-770.5"/>
+<text text-anchor="middle" x="651.54" y="-784.4" font-family="Times,serif" font-size="14.00">message.MessageGraph</text>
+<polyline fill="none" stroke="black" points="726.99,-770.7 726.99,-806.5"/>
+<text text-anchor="middle" x="736.74" y="-784.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- state.StateGraph -->
+<g id="node16" class="node">
+<title>state.StateGraph</title>
+<polygon fill="none" stroke="black" points="339.36,-770.5 339.36,-806.5 467,-806.5 467,-770.5 339.36,-770.5"/>
+<text text-anchor="middle" x="393.43" y="-784.4" font-family="Times,serif" font-size="14.00">state.StateGraph</text>
+<polyline fill="none" stroke="black" points="447.5,-770.7 447.5,-806.5"/>
+<text text-anchor="middle" x="457.25" y="-784.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- message.MessageGraph&#45;&gt;state.StateGraph -->
+<g id="edge1" class="edge">
+<title>message.MessageGraph-&gt;state.StateGraph</title>
+<path fill="none" stroke="#595959" d="M564.19,-788.5C564.19,-788.5 467.29,-788.5 467.29,-788.5"/>
+<polygon fill="#595959" stroke="#595959" points="564.19,-792 574.19,-788.5 564.19,-785 564.19,-792"/>
+</g>
+<!-- message.MessagesState -->
+<g id="node14" class="node">
+<title>message.MessagesState</title>
+<polygon fill="none" stroke="black" points="576.86,-110.5 576.86,-146.5 745.72,-146.5 745.72,-110.5 576.86,-110.5"/>
+<text text-anchor="middle" x="651.54" y="-124.4" font-family="Times,serif" font-size="14.00">message.MessagesState</text>
+<polyline fill="none" stroke="black" points="726.22,-110.7 726.22,-146.5"/>
+<text text-anchor="middle" x="735.97" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- message.MessagesState&#45;&gt;TypedDict -->
+<g id="edge2" class="edge">
+<title>message.MessagesState-&gt;TypedDict</title>
+<path fill="none" stroke="#595959" d="M564.9,-128.5C564.9,-128.5 403.18,-128.5 403.18,-128.5 403.18,-128.5 403.18,-107.81 403.18,-91.81"/>
+<polygon fill="#595959" stroke="#595959" points="564.9,-132 574.9,-128.5 564.9,-125 564.9,-132"/>
+</g>
+<!-- state.CompiledStateGraph -->
+<g id="node15" class="node">
+<title>state.CompiledStateGraph</title>
+<polygon fill="none" stroke="black" points="569.86,-825.5 569.86,-861.5 752.72,-861.5 752.72,-825.5 569.86,-825.5"/>
+<text text-anchor="middle" x="651.54" y="-839.4" font-family="Times,serif" font-size="14.00">state.CompiledStateGraph</text>
+<polyline fill="none" stroke="black" points="733.22,-825.7 733.22,-861.5"/>
+<text text-anchor="middle" x="742.97" y="-839.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langgraph.pregel.main.Pregel -->
+<g id="node19" class="node">
+<title>langgraph.pregel.main.Pregel</title>
+<polygon fill="none" stroke="black" points="302.82,-825.5 302.82,-861.5 503.54,-861.5 503.54,-825.5 302.82,-825.5"/>
+<text text-anchor="middle" x="393.43" y="-839.4" font-family="Times,serif" font-size="14.00">langgraph.pregel.main.Pregel</text>
+<polyline fill="none" stroke="black" points="484.04,-825.7 484.04,-861.5"/>
+<text text-anchor="middle" x="493.79" y="-839.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- state.CompiledStateGraph&#45;&gt;langgraph.pregel.main.Pregel -->
+<g id="edge3" class="edge">
+<title>state.CompiledStateGraph-&gt;langgraph.pregel.main.Pregel</title>
+<path fill="none" stroke="#595959" d="M558.05,-843.5C558.05,-843.5 503.82,-843.5 503.82,-843.5"/>
+<polygon fill="#595959" stroke="#595959" points="558.05,-847 568.05,-843.5 558.05,-840 558.05,-847"/>
+</g>
+<!-- ui.RemoveUIMessage -->
+<g id="node17" class="node">
+<title>ui.RemoveUIMessage</title>
+<polygon fill="none" stroke="black" points="581.14,-55.5 581.14,-91.5 741.44,-91.5 741.44,-55.5 581.14,-55.5"/>
+<text text-anchor="middle" x="651.54" y="-69.4" font-family="Times,serif" font-size="14.00">ui.RemoveUIMessage</text>
+<polyline fill="none" stroke="black" points="721.94,-55.7 721.94,-91.5"/>
+<text text-anchor="middle" x="731.69" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ui.RemoveUIMessage&#45;&gt;TypedDict -->
+<g id="edge4" class="edge">
+<title>ui.RemoveUIMessage-&gt;TypedDict</title>
+<path fill="none" stroke="#595959" d="M569.17,-73.5C569.17,-73.5 451.3,-73.5 451.3,-73.5"/>
+<polygon fill="#595959" stroke="#595959" points="569.17,-77 579.17,-73.5 569.17,-70 569.17,-77"/>
+</g>
+<!-- ui.UIMessage -->
+<g id="node18" class="node">
+<title>ui.UIMessage</title>
+<polygon fill="none" stroke="black" points="604.47,-0.5 604.47,-36.5 718.12,-36.5 718.12,-0.5 604.47,-0.5"/>
+<text text-anchor="middle" x="651.54" y="-14.4" font-family="Times,serif" font-size="14.00">ui.UIMessage</text>
+<polyline fill="none" stroke="black" points="698.62,-0.7 698.62,-36.5"/>
+<text text-anchor="middle" x="708.37" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- ui.UIMessage&#45;&gt;TypedDict -->
+<g id="edge5" class="edge">
+<title>ui.UIMessage-&gt;TypedDict</title>
+<path fill="none" stroke="#595959" d="M592.49,-18.5C592.49,-18.5 403.18,-18.5 403.18,-18.5 403.18,-18.5 403.18,-39.19 403.18,-55.19"/>
+<polygon fill="#595959" stroke="#595959" points="592.49,-22 602.49,-18.5 592.49,-15 592.49,-22"/>
+</g>
+<!-- langgraph.pregel.protocol.PregelProtocol -->
+<g id="node20" class="node">
+<title>langgraph.pregel.protocol.PregelProtocol</title>
+<polygon fill="none" stroke="black" points="0,-825.5 0,-861.5 266.82,-861.5 266.82,-825.5 0,-825.5"/>
+<text text-anchor="middle" x="123.66" y="-839.4" font-family="Times,serif" font-size="14.00">langgraph.pregel.protocol.PregelProtocol</text>
+<polyline fill="none" stroke="black" points="247.32,-825.7 247.32,-861.5"/>
+<text text-anchor="middle" x="257.07" y="-839.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langgraph.pregel.main.Pregel&#45;&gt;langgraph.pregel.protocol.PregelProtocol -->
+<g id="edge6" class="edge">
+<title>langgraph.pregel.main.Pregel-&gt;langgraph.pregel.protocol.PregelProtocol</title>
+<path fill="none" stroke="#595959" d="M290.83,-843.5C290.83,-843.5 267.08,-843.5 267.08,-843.5"/>
+<polygon fill="#595959" stroke="#595959" points="290.83,-847 300.83,-843.5 290.83,-840 290.83,-847"/>
+</g>
+</g>
+</svg>

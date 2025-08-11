@@ -132,7 +132,7 @@ runtime = Runtime(
     store=store,
     # def stream_writer(c: Any) -> None:
     # 内部会调用 SyncQueue.put 方法，往消息队列提交自定义消息
-    # pregel.stream 可以从 SyncQueue 读取到对应的消息
+    # pregel.stream 可以向 SyncQueue 发送消息
     stream_writer=stream_writer,
     previous=None,
 )

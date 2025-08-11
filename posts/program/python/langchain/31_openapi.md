@@ -199,3 +199,74 @@ def convert_to_openai_tool(
         OpenAI tool-calling API.
     """
 ```
+
+### 1.3 tools 使用过程
+这里以 ChatTongyi 为例说明一下 ChatModel 使用 tools 的过程:
+
+#### 使用示例
+先来看使用示例:
+
+```python
+tool = TavilySearch(max_results=2)
+tools = [tool]
+# 绑定 tools
+llm_with_tools = llm.bind_tools(tools)
+llm_with_tools.invoke("北京天气")
+```
+
+
+#### bind_tools
+bind_tools 会将 tools 转换为 OpenAI 格式的 tools，然后调用 bind 方法绑定到 llm 上。在执行 invoke 时:
+1. 转换后的 tool，会以 tools 参数传递给 invoke 方法，被收集在 kwargs 中 `{"tools": formatted_tools}`
+2. 随着其他参数，原样传递给 api 接口。
+
+
+```python
+class ChatTongyi(BaseChatModel):
+    def bind_tools(
+        self,
+        tools: Sequence[Union[Dict[str, Any], Type[BaseModel], Callable, BaseTool]],
+        **kwargs: Any,
+    ) -> Runnable[LanguageModelInput, BaseMessage]:
+        """Bind tool-like objects to this chat model.
+
+        Args:
+            tools: A list of tool definitions to bind to this chat model.
+                Can be  a dictionary, pydantic model, callable, or BaseTool. Pydantic
+                models, callables, and BaseTools will be automatically converted to
+                their schema dictionary representation.
+            **kwargs: Any additional parameters to pass to the
+                :class:`~langchain.runnable.Runnable` constructor.
+        """
+
+        formatted_tools = [convert_to_openai_tool(tool) for tool in tools]
+        return super().bind(tools=formatted_tools, **kwargs)
+
+    def _generate(
+        self,
+        messages: List[BaseMessage],
+        stop: Optional[List[str]] = None,
+        run_manager: Optional[CallbackManagerForLLMRun] = None,
+        **kwargs: Any,
+    ) -> ChatResult:
+        generations = []
+        if self.streaming:
+            generation_chunk: Optional[ChatGenerationChunk] = None
+            for chunk in self._stream(
+                messages, stop=stop, run_manager=run_manager, **kwargs
+            ):
+                if generation_chunk is None:
+                    generation_chunk = chunk
+                else:
+                    generation_chunk += chunk
+            assert generation_chunk is not None
+            generations.append(self._chunk_to_generation(generation_chunk))
+        else:
+            params: Dict[str, Any] = self._invocation_params(
+                messages=messages, stop=stop, **kwargs
+            )
+            resp = self.completion_with_retry(**params)
+            generations.append(
+                ChatGeneration(**self._chat_generation_from_qwen_resp(resp))
+            )
+```
