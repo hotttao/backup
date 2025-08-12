@@ -252,7 +252,9 @@ def _get_channels(
     )
 ```
 
-_get_channels 的核心是 _get_channel
+_get_channels 的核心是 _get_channel，可以看到
+1. schema 申明的所有字段都会被包装为 channel
+2. Langgraph 中所谓的 reducer，会被包装为 BinaryOperatorAggregate
 
 
 ```python
@@ -264,13 +266,15 @@ def _get_channel(
             return manager
         else:
             raise ValueError(f"This {annotation} not allowed in this position")
+    # 返回从 annotation 中解析出来的 channel
     elif channel := _is_field_channel(annotation):
         channel.key = name
         return channel
+    # BinaryOperatorAggregate
     elif channel := _is_field_binop(annotation):
         channel.key = name
         return channel
-
+    # 默认返回 LastValue channel
     fallback: LastValue = LastValue(annotation)
     fallback.key = name
     return fallback
@@ -291,6 +295,7 @@ def _is_field_channel(typ: type[Any]) -> BaseChannel | None:
     return None
 
 
+# 返回的是 BinaryOperatorAggregate channel
 def _is_field_binop(typ: type[Any]) -> BinaryOperatorAggregate | None:
     # 解析； `aggregate: Annotated[list, operator.add]`
     if hasattr(typ, "__metadata__"):
@@ -371,6 +376,25 @@ _add_schema 会将解析出来的 channel、ManagedValue 添加到 StateGraph �
                     self.managed[key] = managed
 
 ```
+
+这里要特别注意，_add_schema 中下面的代码:
+1. 每个 channel 都重载了 `__eq__` 方法，用于比较 channel 是否相等。所以这里的 != 不是比较他们是不是相同的实例，而是比较的他们是不是统一类型，是不是觉有相同的参数
+2. 这意味着不同的 input_schema 可以通过申明相同的 schema 而共用相同的 channel，从而做到在不同的 Node 之间传递数据。
+
+```python
+                if key in self.channels:
+                    if self.channels[key] != channel:
+                        if isinstance(channel, LastValue):
+                            pass
+                        else:
+                            raise ValueError(
+                                f"Channel '{key}' already exists with a different type"
+                            )
+                else:
+                    self.channels[key] = channel
+```
+
+
 StateGraph 初始化之后就是:
 1. 添加节点: add_node
 2. 添加边: add_conditional_edges/add_edge
@@ -872,11 +896,541 @@ def compile(
 
         return compiled.validate()
 ```
-
-## 3. ToolNode
 示例代码中，我们还用到了 ToolNode, tools_condition 这里我们介绍一下他们的实现。
 
-### 3.1 ToolNode
 
+## 3. ToolNode
+
+### 3.1 初始化
+在调用 `graph_builder.add_node("tools", tool_node)` 时:
+1. tool_node 不是可调用对象，所以不会尝试从参数中解析出 input_schema
+2. tool_node 的 input_schema 默认为 state_schema
+3. ToolNode 初始化有个特殊的 messages_key 参数。就是指定从 input_schema 读取 message 需要访问的字段名。
+
+```python
+class ToolNode(RunnableCallable):
+
+    name: str = "ToolNode"
+
+    def __init__(
+        self,
+        tools: Sequence[Union[BaseTool, Callable]],
+        *,
+        name: str = "tools",
+        tags: Optional[list[str]] = None,
+        handle_tool_errors: Union[
+            bool, str, Callable[..., str], tuple[type[Exception], ...]
+        ] = True,
+        messages_key: str = "messages",
+    ) -> None:
+        """Initialize the ToolNode with the provided tools and configuration.
+
+        Args:
+            tools: Sequence of tools to make available for execution.
+            name: Node name for graph identification.
+            tags: Optional metadata tags.
+            handle_tool_errors: Error handling configuration.
+            messages_key: State key containing messages.
+        """
+        # 1. 初始化 RunnableCallable
+        super().__init__(self._func, self._afunc, name=name, tags=tags, trace=False)
+        self.tools_by_name: dict[str, BaseTool] = {}
+        self.tool_to_state_args: dict[str, dict[str, Optional[str]]] = {}
+        self.tool_to_store_arg: dict[str, Optional[str]] = {}
+        self.handle_tool_errors = handle_tool_errors
+        self.messages_key = messages_key
+        for tool_ in tools:
+            if not isinstance(tool_, BaseTool):
+                tool_ = create_tool(tool_)
+            self.tools_by_name[tool_.name] = tool_
+            # tool inject 处理
+            self.tool_to_state_args[tool_.name] = _get_state_args(tool_)
+            self.tool_to_store_arg[tool_.name] = _get_store_arg(tool_)
+```
+
+#### _get_state_args
+
+_get_state_args 函数是在 LangGraph 里用来分析 Tool 的输入参数，看哪些参数需要自动从 graph state 注入的。
+
+```python
+def _get_state_args(tool: BaseTool) -> dict[str, Optional[str]]:
+    """
+    分析 Tool 的输入 schema，找出需要自动从 Graph State 注入的参数。
+
+    返回一个映射：
+        key   = tool 的参数名
+        value = 对应 state 的字段名（如果 None 表示直接注入整个 state）
+    """
+    # 获取 tool 的完整输入 schema（通常是一个 pydantic.BaseModel）
+    full_schema = tool.get_input_schema()
+
+    # 存放映射关系：{ tool参数名: state字段名 或 None }
+    tool_args_to_state_fields: dict = {}
+
+    # 遍历 schema 中的所有字段及类型注解
+    for name, type_ in get_all_basemodel_annotations(full_schema).items():
+        # 找出这个字段的类型参数里所有 InjectedState 注解
+        injections = [
+            type_arg
+            for type_arg in get_args(type_)  # 从 Union[...]、Annotated[...] 里取参数类型
+            if _is_injection(type_arg, InjectedState)
+        ]
+
+        # 如果同一个参数里标了多个 InjectedState，是不合法的
+        if len(injections) > 1:
+            raise ValueError(
+                f"参数 {name} 上有多个 InjectedState 注解，这是不允许的。"
+            )
+
+        # 如果正好有一个 InjectedState 注解
+        elif len(injections) == 1:
+            injection = injections[0]
+
+            # 如果注解里指定了 field 名，就映射到该 field
+            if isinstance(injection, InjectedState) and injection.field:
+                tool_args_to_state_fields[name] = injection.field
+            # 否则表示整个 state 注入
+            else:
+                tool_args_to_state_fields[name] = None
+
+        # 如果没有 InjectedState 注解，跳过
+        else:
+            pass
+
+    return tool_args_to_state_fields
+
+```
+
+执行过程:
+* **目标**：找到 Tool 参数中用 `InjectedState` 注解的字段。
+* 如果 `InjectedState(field="xxx")` → 说明只注入 `state["xxx"]`。
+* 如果 `InjectedState()` → 注入整个 state。
+* 如果没加注解 → 不自动注入。
+* 如果加了多个 `InjectedState` → 抛错。
+
+下面是一个代码示例:
+
+```python
+class MyState(TypedDict):
+    user_id: str
+    session_data: dict
+```
+
+然后你有一个 Tool 输入 schema：
+
+```python
+from langchain_core.tools import BaseTool
+from langgraph.prebuilt import InjectedState
+from typing import Annotated
+from pydantic import BaseModel
+
+class MyToolInput(BaseModel):
+    # 注入整个 state
+    state: Annotated[dict, InjectedState()]
+    
+    # 只注入 state["user_id"]
+    uid: Annotated[str, InjectedState(field="user_id")]
+
+    # 普通参数（不会注入）
+    query: str
+
+    # 需要注入 store
+    store: Annotated[dict, InjectedStore()]
+
+class MyTool(BaseTool):
+    name = "my_tool"
+    description = "Example tool"
+    args_schema = MyToolInput
+
+    def _run(self, state, uid, query):
+        return f"Got uid={uid}, query={query}, state_keys={list(state.keys())}"
+```
+
+调用 `_get_state_args(MyTool())`：
+
+```python
+result = _get_state_args(MyTool())
+print(result)
+```
+
+输出：
+
+```python
+{
+    "state": None,          # None → 表示注入整个 state
+    "uid": "user_id"        # 注入 state["user_id"]
+}
+```
+
+#### _get_store_arg
+_get_store_arg 和 _get_state_args 很像，只不过它是专门检测 Tool 里是否有参数需要注入 graph store。
+
+_get_store_arg 只找 InjectedStore 注解（区别于 _get_state_args 里找的是 InjectedState）。
+
+```python
+def _get_store_arg(tool: BaseTool) -> Optional[str]:
+    """Extract store injection argument from tool annotations.
+
+    This function analyzes a tool's input schema to identify the argument that
+    should be injected with the graph store. Only one store argument is supported
+    per tool.
+
+    Args:
+        tool: The tool to analyze for store injection requirements.
+
+    Returns:
+        The name of the argument that should receive the store injection, or None
+        if no store injection is required.
+
+    Raises:
+        ValueError: If a tool argument has multiple InjectedStore annotations.
+    """
+    full_schema = tool.get_input_schema()
+    for name, type_ in get_all_basemodel_annotations(full_schema).items():
+        injections = [
+            type_arg
+            for type_arg in get_args(type_)
+            # InjectedStore
+            if _is_injection(type_arg, InjectedStore)
+        ]
+        if len(injections) > 1:
+            raise ValueError(
+                "A tool argument should not be annotated with InjectedStore more than "
+                f"once. Received arg {name} with annotations {injections}."
+            )
+        elif len(injections) == 1:
+            return name
+        else:
+            pass
+
+    return None
+```
+
+#### _inject_state
+
+这段 `_inject_state` 是 LangGraph 在 Tool 执行前，**把 Graph State 里需要的字段自动注入到 Tool 参数**的关键步骤:
+
+1. 读取 `tool_to_state_args`（来自 `_get_state_args` 生成的映射）。
+2. 检查输入格式是否和注入要求匹配。
+3. 从 Graph State 里取出对应字段，自动塞进 Tool 的参数里。
+4. 返回带有完整参数的 `tool_call`。
+
+
+```python
+    def _inject_state(
+        self,
+        tool_call: ToolCall,
+        input: Union[
+            list[AnyMessage],
+            dict[str, Any],
+            BaseModel,
+        ],
+    ) -> ToolCall:
+        # * 从 `tool_to_state_args`（形如 `{ "tool_name": { "arg_name": "state_field" | None } }`）中取出当前这个 Tool 的映射规则。
+        state_args = self.tool_to_state_args[tool_call["name"]]
+        # * 如果 `state_args` 不为空，并且 `input` 是 **list** 类型（比如消息列表 `list[AnyMessage]`）：
+        if state_args and isinstance(input, list):
+            required_fields = list(state_args.values())
+            if (
+                len(required_fields) == 1
+                # 只需要一个字段，并且字段名等于 `self.messages_key`
+                and required_fields[0] == self.messages_key
+                # `None`（表示整个 state）
+                or required_fields[0] is None
+            ):
+                input = {self.messages_key: input}
+            else:
+                err_msg = (
+                    f"Invalid input to ToolNode. Tool {tool_call['name']} requires "
+                    f"graph state dict as input."
+                )
+                if any(state_field for state_field in state_args.values()):
+                    required_fields_str = ", ".join(f for f in required_fields if f)
+                    err_msg += f" State should contain fields {required_fields_str}."
+                raise ValueError(err_msg)
+        # 兼容一个特殊格式
+        # {
+        # "__type": "tool_call_with_context",
+        # "state": {...}
+        # }
+        if isinstance(input, dict) and input.get("__type") == "tool_call_with_context":
+            state = input["state"]
+        else:
+            state = input
+
+        if isinstance(state, dict):
+            tool_state_args = {
+                # 从 state 中提取 tool inject 的参数
+                tool_arg: state[state_field] if state_field else state
+                for tool_arg, state_field in state_args.items()
+            }
+        else:
+            tool_state_args = {
+                tool_arg: getattr(state, state_field) if state_field else state
+                for tool_arg, state_field in state_args.items()
+            }
+        # 合并 tool 参数
+        tool_call["args"] = {
+            **tool_call["args"],
+            **tool_state_args,
+        }
+        return tool_call
+```
+
+#### _inject_store
+
+```python
+    def _inject_store(
+        self, tool_call: ToolCall, store: Optional[BaseStore]
+    ) -> ToolCall:
+        store_arg = self.tool_to_store_arg[tool_call["name"]]
+        if not store_arg:
+            return tool_call
+
+        if store is None:
+            raise ValueError(
+                "Cannot inject store into tools with InjectedStore annotations - "
+                "please compile your graph with a store."
+            )
+
+        tool_call["args"] = {
+            **tool_call["args"],
+            store_arg: store,
+        }
+        return tool_call
+```
+
+
+### 3.2 _func
+ToolNode 继承自 RunnableCallable，ToolNode.invoke 将调用 ToolNodel._func。
+
+```python
+
+    def _func(
+        self,
+        input: Union[
+            list[AnyMessage],
+            dict[str, Any],
+            BaseModel,
+        ],
+        config: RunnableConfig,
+        *,
+        store: Optional[BaseStore],
+    ) -> Any:
+        #  从 input 中解析出 tool_calls
+        # 对于实例就是，通过 message_key 访问 state_schema 中的 messages，取最后一个 AIMessage
+        tool_calls, input_type = self._parse_input(input)
+        # 给 tool_call 注入参数，返回完整的 tool_call
+        tool_calls = [self.inject_tool_args(call, input, store) for call in tool_calls]
+        # 为每一个 tool_call 生成一份配置
+        config_list = get_config_list(config, len(tool_calls))
+        input_types = [input_type] * len(tool_calls)
+        # 使用线程池执行 tool_calls
+        with get_executor_for_config(config) as executor:
+            outputs = [
+                # 实际执行运行的是 _run_one
+                *executor.map(self._run_one, tool_calls, input_types, config_list)
+            ]
+
+        return self._combine_tool_outputs(outputs, input_type)
+```
+
+### 3.3 _run_one
+
+_run_one 会执行一下逻辑:
+1. 校验 toll_call 中的 tool 是否在输入的 tool 中
+2. 执行 tool.invoke 并处理异常
+3. 针对 tool 返回 Command 类型的返回值做校验
+
+```python
+    def _run_one(
+        self,
+        call: ToolCall,                         # 单个 tool 调用的数据（包含 name、id、args 等）
+        input_type: Literal["list", "dict", "tool_calls"],  # 输入数据的格式类型
+        config: RunnableConfig,                 # 执行时的配置信息（RunnableConfig）
+    ) -> ToolMessage:
+        """同步执行一次单个 tool 调用。"""
+        
+        # 先验证 tool 调用是否合法（比如是否存在该 tool，参数是否正确等）
+        # 如果验证失败，直接返回一个表示无效调用的 ToolMessage
+        if invalid_tool_message := self._validate_tool_call(call):
+            return invalid_tool_message
+
+        try:
+            # 构造调用参数：把 call 内容展开，并加上 type="tool_call" 标记
+            call_args = {**call, **{"type": "tool_call"}}
+            
+            # 根据 tool 名字找到对应的 tool 实例，并调用其 invoke() 方法执行
+            # 这里会进入具体 tool 的实现逻辑
+            response = self.tools_by_name[call["name"]].invoke(call_args, config)
+
+        # -------------------- 特殊中断处理（GraphInterrupt 系列） --------------------
+        # GraphBubbleUp 是 GraphInterrupt 的一种，它不会被吞掉，而是直接抛出
+        # 常见触发场景：
+        # (1) tool 内部显式抛出了 GraphInterrupt
+        # (2) graph 节点（作为 tool 调用）中抛出了 GraphInterrupt
+        # (3) 子图被中断，而该子图是通过 tool 调用的
+        except GraphBubbleUp as e:
+            raise e
+
+        # -------------------- 普通异常处理 --------------------
+        except Exception as e:
+            # 确定哪些异常类型需要被处理（其余的直接抛出）
+            if isinstance(self.handle_tool_errors, tuple):
+                handled_types: tuple = self.handle_tool_errors
+            elif callable(self.handle_tool_errors):
+                # 根据一个“自定义错误处理函数”的类型注解，推断它能处理哪些异常类型，并返回一个 tuple 形式的异常类型集合。
+                handled_types = _infer_handled_types(self.handle_tool_errors)
+            else:
+                # 默认处理所有异常
+                handled_types = (Exception,)
+
+            # 如果没有配置处理函数，或者异常类型不在可处理列表里 → 直接抛出
+            if not self.handle_tool_errors or not isinstance(e, handled_types):
+                raise e
+            # 否则使用配置的处理逻辑生成错误内容
+            else:
+                content = _handle_tool_error(e, flag=self.handle_tool_errors)
+
+            # 返回一个带错误状态的 ToolMessage，通知调用方 tool 执行失败
+            return ToolMessage(
+                content=content,           # 错误描述
+                name=call["name"],          # tool 名字
+                tool_call_id=call["id"],    # 对应的调用 ID
+                status="error",             # 标记为错误
+            )
+
+        # -------------------- 正常返回处理 --------------------
+        # 如果 tool 返回的是 Command 类型，进入命令验证逻辑
+        if isinstance(response, Command):
+            return self._validate_tool_command(response, call, input_type)
+        
+        # 如果返回的是 ToolMessage，处理其 content 内容的格式
+        elif isinstance(response, ToolMessage):
+            # msg_content_output 会把 content 转成标准的 str 或 list 格式
+            response.content = cast(
+                Union[str, list], msg_content_output(response.content)
+            )
+            return response
+
+        # 如果返回的是未知类型，直接报错
+        else:
+            raise TypeError(
+                f"Tool {call['name']} returned unexpected type: {type(response)}"
+            )
+```
+
+### 3.4 _validate_tool_command
+_validate_tool_command 对 tool 返回的 Command 类型做校验:
+1. Command.update 类型校验：必须和输入格式匹配（dict ↔ dict，list ↔ list）
+2. 工具调用回复验证：必须有一个 ToolMessage，且 tool_call_id 对应当前的 call.id
+
+```python
+    def _validate_tool_command(
+        self,
+        command: Command,
+        call: ToolCall,
+        input_type: Literal["list", "dict", "tool_calls"],
+    ) -> Command:
+        """
+        验证一个工具节点（ToolNode）返回的 Command 对象是否符合要求。
+        主要确保：
+        1. Command.update 的类型（list/dict）要与输入数据类型匹配
+        2. Command.update 中的消息里必须包含与当前 tool_call 对应的 ToolMessage
+        """
+
+        if isinstance(command.update, dict):
+            # ✅ Command.update 是 dict 的情况：
+            # 这种情况一般出现在 ToolNode 输入是字典格式，例如：
+            # {"messages": [AIMessage(..., tool_calls=[...])]}
+            if input_type not in ("dict", "tool_calls"):
+                raise ValueError(
+                    f"Tools can provide a dict in Command.update only when using dict with '{self.messages_key}' key as ToolNode input, "
+                    f"got: {command.update} for tool '{call['name']}'"
+                )
+
+            # 复制 command 避免修改原对象
+            updated_command = deepcopy(command)
+            # 强制类型转换，确保是 dict
+            state_update = cast(dict[str, Any], updated_command.update) or {}
+            # 从 dict 中取出 messages_key 对应的消息列表
+            messages_update = state_update.get(self.messages_key, [])
+
+        elif isinstance(command.update, list):
+            # ✅ Command.update 是 list 的情况：
+            # 这种情况一般出现在 ToolNode 输入是消息列表，例如：
+            # [AIMessage(..., tool_calls=[...])]
+            if input_type != "list":
+                raise ValueError(
+                    f"Tools can provide a list of messages in Command.update only when using list of messages as ToolNode input, "
+                    f"got: {command.update} for tool '{call['name']}'"
+                )
+
+            # 复制 command
+            updated_command = deepcopy(command)
+            messages_update = updated_command.update
+
+        else:
+            # ❌ 如果 update 不是 list 也不是 dict，直接返回原始 command（无需校验）
+            return command
+
+        # 将 messages_update 中的元素统一转换为 Message 对象（如果是 dict 格式则会变成对象）
+        messages_update = convert_to_messages(messages_update)
+
+        # 特殊情况：如果 messages_update 只包含一个 RemoveMessage(REMOVE_ALL_MESSAGES)
+        # 表示要清空所有消息，则不需要做后续验证
+        if messages_update == [RemoveMessage(id=REMOVE_ALL_MESSAGES)]:
+            return updated_command
+
+        # 检查 Command.update 中是否存在与当前 tool_call 匹配的 ToolMessage
+        has_matching_tool_message = False
+        for message in messages_update:
+            if not isinstance(message, ToolMessage):
+                continue
+
+            # 匹配上 tool_call_id，说明这是该工具调用的回复
+            if message.tool_call_id == call["id"]:
+                # 补齐 ToolMessage.name，确保和 call.name 一致
+                message.name = call["name"]
+                has_matching_tool_message = True
+
+        # 如果 Command 是发给当前图（graph is None），但没有匹配的 ToolMessage，就报错
+        if updated_command.graph is None and not has_matching_tool_message:
+            # 提供一个修复用的示例
+            example_update = (
+                '`Command(update={"messages": [ToolMessage("Success", tool_call_id=tool_call_id), ...]}, ...)`'
+                if input_type == "dict"
+                else '`Command(update=[ToolMessage("Success", tool_call_id=tool_call_id), ...], ...)`'
+            )
+            raise ValueError(
+                f"Expected to have a matching ToolMessage in Command.update for tool '{call['name']}', got: {messages_update}. "
+                "Every tool call (LLM requesting to call a tool) in the message history MUST have a corresponding ToolMessage. "
+                f"You can fix it by modifying the tool to return {example_update}."
+            )
+
+        return updated_command
+
+```
 
 ### 3.2 tools_condition
+
+tools_condition 的逻辑很简答，就是判断 messages 的最后一条有没有 tool_calls 属性，有就跳转到 tools 节点，否则跳转到 END 节点。
+
+```python
+def tools_condition(
+    state: Union[list[AnyMessage], dict[str, Any], BaseModel],
+    messages_key: str = "messages",
+) -> Literal["tools", "__end__"]:
+
+    if isinstance(state, list):
+        ai_message = state[-1]
+    elif isinstance(state, dict) and (messages := state.get(messages_key, [])):
+        ai_message = messages[-1]
+    elif messages := getattr(state, messages_key, []):
+        ai_message = messages[-1]
+    else:
+        raise ValueError(f"No messages found in input state to tool_edge: {state}")
+    if hasattr(ai_message, "tool_calls") and len(ai_message.tool_calls) > 0:
+        return "tools"
+    return "__end__"
+```

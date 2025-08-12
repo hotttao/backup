@@ -54,7 +54,7 @@ toc:
 ### 1.1 StateNodeSpec -> PregelNode
 StateNodeSpec -> PregelNode 的映射位于 CompiledStateGraph.attach_node
 1. 每个 node 都会单独定义一个 branch_channel，命名为 `branch:to:{node_key}`
-2. node 会被自己的 branch_channel 触发
+2. node 会被自己的 branch_channel 触发，这个 branch_channel 只起到触发作用，不传递值。
 
 在 PregelNode 的初始化中:
 1. channels: 是从 node 的 input_schema 中解析的 channel
@@ -437,7 +437,8 @@ def prepare_single_task():
 4. branch._finish
     - writer=get_writes，`entries = writer(destinations, False)` 标准化 branch_channel，并将 str 的 branch_channel 转换为 ChannelWriteEntry
     - `if need_passthrough: return ChannelWrite(entries)`: 暂时不知道这个分支何时被调用。
-    - `ChannelWrite.do_write(config, entries)`: get_writes 中将 value 设置成了 None，所以会直接调用这个分支，生成对 branch_channel 的写入
+    - `ChannelWrite.do_write(config, entries)`: get_writes 中将 value 设置成了 None，所以会直接调用这个分支，生成对 branch_channel 的写入，进而触发对应 node 的执行
+
 
 ```python
 class BranchSpec(NamedTuple):
