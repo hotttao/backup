@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "langgraph api 流程总结"
-date: 2025-08-08T13:00:00+08:00
-lastmod: 2025-08-08T13:00:00+08:00
+date: 2025-08-12T13:00:00+08:00
+lastmod: 2025-08-12T13:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -100,6 +100,65 @@ PregelNode writers 参数的初始化最为复杂:
 
 ```python
     def attach_node(self, key: str, node: StateNodeSpec[Any, ContextT] | None) -> None:
+        if key == START:
+            # 从 input_schema 获取 input 可能输入的 key
+            output_keys = [
+                k
+                for k, v in self.builder.schemas[self.builder.input_schema].items()
+                if not is_managed_value(v)
+            ]
+        else:
+            # 非 start 节点，获取所有 channel 作为 可能输入的 key
+            output_keys = list(self.builder.channels) + [
+                k for k, v in self.builder.managed.items()
+            ]
+
+        # 获取对 channel 的更新
+        def _get_updates(
+            input: None | dict | Any,
+        ) -> Sequence[tuple[str, Any]] | None:
+            if input is None:
+                return None
+            elif isinstance(input, dict):
+                return [(k, v) for k, v in input.items() if k in output_keys]
+            elif isinstance(input, Command):
+                # 这个更新是父图要处理的，不归当前图管，所以直接返回空元组 ()
+                if input.graph == Command.PARENT:
+                    return None
+                return [
+                    # _update_as_tuples 获取 Command 对 channel 的更新值
+                    (k, v)
+                    for k, v in input._update_as_tuples()
+                    if k in output_keys
+                ]
+            elif (
+                isinstance(input, (list, tuple))
+                and input
+                and any(isinstance(i, Command) for i in input)
+            ):
+                updates: list[tuple[str, Any]] = []
+                for i in input:
+                    if isinstance(i, Command):
+                        if i.graph == Command.PARENT:
+                            continue
+                        updates.extend(
+                            (k, v) for k, v in i._update_as_tuples() if k in output_keys
+                        )
+                    else:
+                        updates.extend(_get_updates(i) or ())
+                return updates
+            # 如果是其他类型，比如 BaseModel ，判断其默认值，跟当前值，判断是否发生了更新
+            elif (t := type(input)) and get_cached_annotated_keys(t):
+                return get_update_as_tuples(input, output_keys)
+            else:
+                msg = create_error_message(
+                    message=f"Expected dict, got {input}",
+                    error_code=ErrorCode.INVALID_GRAPH_NODE_RETURN_VALUE,
+                )
+                raise InvalidUpdateError(msg)
+
+        # state updaters
+        # 调用 mapper(input) 获取 [(channel, value)]
         write_entries: tuple[ChannelWriteEntry | ChannelWriteTupleEntry, ...] = (
             ChannelWriteTupleEntry(
                 # 处理 channel 值设置任务
@@ -116,6 +175,73 @@ PregelNode writers 参数的初始化最为复杂:
                 ),
             ),
         )
+
+        # add node and output channel
+        if key == START:
+            self.nodes[key] = PregelNode(
+                tags=[TAG_HIDDEN],
+                triggers=[START],  # 被 Start 节点出发
+                channels=START,  # 从 Start 节点读取值
+                # 输出的 channel
+                writers=[ChannelWrite(write_entries)],
+            )
+        elif node is not None:
+            input_schema = node.input_schema if node else self.builder.state_schema
+            input_channels = list(self.builder.schemas[input_schema])
+            is_single_input = len(input_channels) == 1 and "__root__" in input_channels
+            if input_schema in self.schema_to_mapper:
+                mapper = self.schema_to_mapper[input_schema]
+            else:
+                # 用 input_schema 实例化
+                mapper = _pick_mapper(input_channels, input_schema)
+                self.schema_to_mapper[input_schema] = mapper
+
+            # 所有对节点的触发的 channel 都统一命名为 "branch:to:{}"
+            branch_channel = _CHANNEL_BRANCH_TO.format(key)
+            self.channels[branch_channel] = (
+                LastValueAfterFinish(Any)
+                if node.defer
+                else EphemeralValue(Any, guard=False)
+            )
+            self.nodes[key] = PregelNode(
+                triggers=[branch_channel],
+                # read state keys and managed values
+                channels=("__root__" if is_single_input else input_channels),
+                # coerce state dict to schema class (eg. pydantic model)
+                mapper=mapper,
+                # publish to state keys
+                writers=[ChannelWrite(write_entries)],
+                metadata=node.metadata,
+                retry_policy=node.retry_policy,
+                cache_policy=node.cache_policy,
+                bound=node.runnable,  # type: ignore[arg-type]
+            )
+        else:
+            raise RuntimeError
+
+
+def _get_root(input: Any) -> Sequence[tuple[str, Any]] | None:
+    if isinstance(input, Command):
+        # 这个更新是父图要处理的，不归当前图管，所以直接返回空元组 ()
+        if input.graph == Command.PARENT:
+            return ()
+        return input._update_as_tuples()
+    elif (
+        isinstance(input, (list, tuple))
+        and input
+        and any(isinstance(i, Command) for i in input)
+    ):
+        updates: list[tuple[str, Any]] = []
+        for i in input:
+            if isinstance(i, Command):
+                if i.graph == Command.PARENT:
+                    continue
+                updates.extend(i._update_as_tuples())
+            else:
+                updates.append(("__root__", i))
+        return updates
+    elif input is not None:
+        return [("__root__", input)]
 ```
 
 ### 1.2 edges
@@ -146,8 +272,6 @@ attach_edge 还需要处理一种特殊情况，多个 start 节点触发一个 
 
 ```python
     def attach_edge(self, starts: str | Sequence[str], end: str) -> None:
-        if isinstance(starts, str):
-           pass
         elif end != END:
             channel_name = f"join:{'+'.join(starts)}:{end}"
             # register channel
@@ -408,3 +532,5 @@ class BranchSpec(NamedTuple):
                 ChannelWrite.do_write(config, entries)
                 return input
 ```
+
+## 2. Function API 如何映射为 Pregel

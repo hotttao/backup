@@ -22,10 +22,7 @@ toc:
 本节我们总结回顾一下 Pregel 重要流程，包括
 1. PregelLoop 的更新循环
 2. PregelLoop 的崩溃恢复
-3. 中断执行流程，包括父图发生中断、子图发生中断
-4. 节点执行是如何获取输入参数的
-5. channel finish 的执行逻辑
-<!-- 2. 图中函数参数如何传递 -->
+
 
 ## 1. PregelLoop 的更新循环
 ### 1.1 任务生成
@@ -670,57 +667,3 @@ class Pregel:
                         schedule_task=loop.accept_push,
                     ):
 ```
-
-## 3. PregelNode 的入参
-
-
-```python
-def prepare_single_task():
-    elif task_path[0] == PULL:
-        if _triggers(
-            channels,
-            checkpoint["channel_versions"],
-            checkpoint["versions_seen"].get(name),
-            checkpoint_null_version,
-            proc,
-        ):
-            try:
-                val = _proc_input(
-                    proc,
-                    managed,
-                    channels,
-                    for_execution=for_execution,
-                    input_cache=input_cache,
-                    scratchpad=scratchpad,
-                )
-                if val is MISSING:
-                    return
-
-def run_with_retry(
-    task: PregelExecutableTask,
-    retry_policy: Sequence[RetryPolicy] | None,
-    configurable: dict[str, Any] | None = None,
-) -> None:
-    """Run a task with retries."""
-    retry_policy = task.retry_policy or retry_policy
-    attempts = 0
-    config = task.config
-    if configurable is not None:
-        config = patch_configurable(config, configurable)
-    while True:
-        try:
-            # clear any writes from previous attempts
-            task.writes.clear()
-            # 从 task.input 读取输入，input 从 _proc_input 获取
-            return task.proc.invoke(task.input, config)
-
-
-class RunnableCallable(Runnable):
-    def invoke(
-        self, input: Any, config: RunnableConfig | None = None, **kwargs: Any
-    ) -> Any:
-        # 处理 runtime，config 等参数
-
-```
-
-## 4. channel finish
