@@ -1200,6 +1200,9 @@ def _get_store_arg(tool: BaseTool) -> Optional[str]:
         return tool_call
 ```
 
+总结一下:
+1. inject_store, inject_state 是把 State 的字段映射进 tool_call 的 arg 参数内，发生在 ToolNode 中
+2. InjectedToolCallId 是往 Tool.func 传入 tool_id，发生在 tool.run 方法内。
 
 ### 3.2 _func
 ToolNode 继承自 RunnableCallable，ToolNode.invoke 将调用 ToolNodel._func。
@@ -1411,8 +1414,73 @@ _validate_tool_command 对 tool 返回的 Command 类型做校验:
         return updated_command
 
 ```
+### 3.5 _combine_tool_outputs
 
-### 3.2 tools_condition
+_combine_tool_outputs 用于合并多个 tool_call 的输出结果。
+
+```python
+def _combine_tool_outputs(
+    self,
+    outputs: list[ToolMessage],
+    input_type: Literal["list", "dict", "tool_calls"],
+) -> list[Union[Command, list[ToolMessage], dict[str, list[ToolMessage]]]]:
+    # 如果 outputs 中没有任何 Command 类型（只有普通的 ToolMessage）
+    # 那么直接保持原有行为（兼容旧版本的逻辑）
+    if not any(isinstance(output, Command) for output in outputs):
+        # 如果 input_type == "list"，直接返回原列表
+        # 否则（"dict" 模式），返回一个字典，key 为 self.messages_key，值是 outputs 列表
+        return outputs if input_type == "list" else {self.messages_key: outputs}
+
+    # 如果 outputs 里包含了 Command
+    # 就需要组合 Command 和非 Command 的输出
+    # LangGraph 会自动处理 Command 列表和普通节点更新
+    combined_outputs: list[
+        Command | list[ToolMessage] | dict[str, list[ToolMessage]]
+    ] = []
+
+    # parent_command 用于收集所有 "父级图" Command（graph == Command.PARENT）的 goto
+    # 因为这些 goto 都可以合并到同一个 Command 里
+    parent_command: Optional[Command] = None
+
+    # 遍历所有输出
+    for output in outputs:
+        if isinstance(output, Command):
+            # 如果是父图 Command，且 goto 是 Send 对象列表（代表跳转/发消息的指令）
+            if (
+                output.graph is Command.PARENT
+                and isinstance(output.goto, list)
+                and all(isinstance(send, Send) for send in output.goto)
+            ):
+                if parent_command:
+                    # 如果已有 parent_command，则合并它的 goto 列表
+                    parent_command = replace(
+                        parent_command,
+                        goto=cast(list[Send], parent_command.goto) + output.goto,
+                    )
+                else:
+                    # 否则创建一个新的 parent_command
+                    parent_command = Command(graph=Command.PARENT, goto=output.goto)
+            else:
+                # 如果是其他 Command（非父图的 Command），直接加入结果列表
+                combined_outputs.append(output)
+        else:
+            # 如果是普通 ToolMessage
+            # 根据 input_type 的不同，包装成 list 或 dict
+            combined_outputs.append(
+                [output] if input_type == "list" else {self.messages_key: [output]}
+            )
+
+    # 如果有合并后的 parent_command，放到结果列表最后
+    if parent_command:
+        combined_outputs.append(parent_command)
+
+    # 返回组合后的输出
+    return combined_outputs
+
+```
+
+
+## 4. tools_condition
 
 tools_condition 的逻辑很简答，就是判断 messages 的最后一条有没有 tool_calls 属性，有就跳转到 tools 节点，否则跳转到 END 节点。
 

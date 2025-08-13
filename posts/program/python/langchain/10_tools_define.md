@@ -503,7 +503,115 @@ class BaseTool(RunnableSerializable[Union[str, dict, ToolCall], Any]):
         return self.run(tool_input, callbacks=callbacks)
 ```
 
-### 2.3 run 方法
+#### 输入解析
+Tool 的一个重要功能就是将函数的参数，转换成 arg_schema。arg_schema 可以生成各种元数据信息，便于在各个组件间传递。转换使用的是 create_schema_from_function 函数。
+
+
+```python
+def create_schema_from_function(
+    model_name: str,
+    func: Callable,
+    *,
+    filter_args: Optional[Sequence[str]] = None,
+    parse_docstring: bool = False,
+    error_on_invalid_docstring: bool = False,
+    include_injected: bool = True,
+) -> type[BaseModel]:
+    """Create a pydantic schema from a function's signature.
+
+    Args:
+        model_name: 生成的 pydantic schema 类名。
+        func: 用来生成 schema 的目标函数。
+        filter_args: 需要从 schema 中排除的参数名列表（可选）。
+        parse_docstring: 是否解析函数的 docstring 来提取每个参数的描述。
+        error_on_invalid_docstring: 如果解析 docstring 时格式不正确，是否抛出错误。
+        include_injected: 是否包含被“注入”的参数（例如 InjectedToolCallId 这种特殊参数）。
+    """
+    # 获取函数的签名对象（参数信息等）
+    sig = inspect.signature(func)
+
+    # 判断函数的注解是否是 Pydantic v1 风格
+    if _function_annotations_are_pydantic_v1(sig, func):
+        # 使用 pydantic v1 的 validate_arguments_v1 创建参数校验模型
+        validated = validate_arguments_v1(func, config=_SchemaConfig)  # type: ignore[call-overload]
+    else:
+        # 使用 pydantic v2 的 validate_arguments 创建参数校验模型
+        # 这里用了 warnings.catch_warnings，因为 validate_arguments 在新版里被弃用
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", category=PydanticDeprecationWarning)
+            validated = validate_arguments(func, config=_SchemaConfig)  # type: ignore[operator]
+
+    # 判断函数是否是类方法或实例方法（通过 __qualname__ 里是否有 "." 判断）
+    in_class = bool(func.__qualname__ and "." in func.__qualname__)
+
+    # 标记函数是否有 *args 和 **kwargs
+    has_args = False
+    has_kwargs = False
+    for param in sig.parameters.values():
+        if param.kind == param.VAR_POSITIONAL:
+            has_args = True
+        elif param.kind == param.VAR_KEYWORD:
+            has_kwargs = True
+
+    # 从 pydantic validate_arguments 生成的对象中获取模型类
+    inferred_model = validated.model
+
+    # 确定要过滤的参数（filter_args_）
+    if filter_args:
+        filter_args_ = filter_args
+    else:
+        # 获取函数所有参数名
+        existing_params: list[str] = list(sig.parameters.keys())
+
+        # 如果是类方法/实例方法，自动过滤掉第一个参数 self/cls
+        if existing_params and existing_params[0] in {"self", "cls"} and in_class:
+            filter_args_ = [existing_params[0], *list(FILTERED_ARGS)]
+        else:
+            filter_args_ = list(FILTERED_ARGS)
+
+        # 如果不包含“注入参数”，则也将注入参数过滤掉
+        for existing_param in existing_params:
+            if not include_injected and _is_injected_arg_type(
+                sig.parameters[existing_param].annotation
+            ):
+                filter_args_.append(existing_param)
+
+    # 从 docstring 中推断整体描述和各参数的描述（如果 parse_docstring=True）
+    description, arg_descriptions = _infer_arg_descriptions(
+        func,
+        parse_docstring=parse_docstring,
+        error_on_invalid_docstring=error_on_invalid_docstring,
+    )
+
+    # Pydantic 会在模型中加入一些虚拟字段，这里进行过滤
+    valid_properties = []
+    for field in get_fields(inferred_model):
+        # 如果函数没有 *args，则去掉 "args" 字段
+        if not has_args and field == "args":
+            continue
+        # 如果函数没有 **kwargs，则去掉 "kwargs" 字段
+        if not has_kwargs and field == "kwargs":
+            continue
+        # 去掉 Pydantic 内部字段
+        if field == "v__duplicate_kwargs":
+            continue
+        # 去掉 filter_args_ 里列出的字段
+        if field not in filter_args_:
+            valid_properties.append(field)
+
+    # 创建一个新的 Pydantic 模型，保留有效字段，附加 docstring 描述
+    return _create_subset_model(
+        model_name,
+        inferred_model,
+        list(valid_properties),
+        descriptions=arg_descriptions,
+        fn_description=description,
+    )
+
+```
+
+
+### 2.3 run 方法 
 ```python
 class BaseTool(RunnableSerializable[Union[str, dict, ToolCall], Any]):
     def run(
@@ -694,33 +802,54 @@ tool_args, tool_kwargs = self._to_args_and_kwargs(
                 InjectedToolCallId is required but not provided.
             NotImplementedError: If args_schema is not a supported type.
         """
+
+        # 获取当前工具的参数模式（args_schema），可能是 Pydantic BaseModel、BaseModelV1、dict 或 None
         input_args = self.args_schema
+
+        # 情况 1：tool_input 是字符串
         if isinstance(tool_input, str):
-            if input_args is not None:
+            if input_args is not None:  # 如果工具定义了参数模式
                 if isinstance(input_args, dict):
+                    # 如果参数模式是 dict（JSON schema），但传入了字符串，这是不允许的
                     msg = (
                         "String tool inputs are not allowed when "
                         "using tools with JSON schema args_schema."
                     )
                     raise ValueError(msg)
+
+                # 获取 args_schema 第一个字段的名字（假设字符串输入应该映射到这个字段）
                 key_ = next(iter(get_fields(input_args).keys()))
+
+                # 如果 args_schema 是 Pydantic BaseModel（新版）
                 if issubclass(input_args, BaseModel):
-                    input_args.model_validate({key_: tool_input})
+                    input_args.model_validate({key_: tool_input})  # 进行类型校验
+                # 如果是旧版 Pydantic BaseModel
                 elif issubclass(input_args, BaseModelV1):
                     input_args.parse_obj({key_: tool_input})
                 else:
+                    # 参数模式类型错误
                     msg = f"args_schema must be a Pydantic BaseModel, got {input_args}"
                     raise TypeError(msg)
+
+            # 返回原始字符串输入（如果没有被模式拒绝）
             return tool_input
-        if input_args is not None:
+
+        # 情况 2：tool_input 是 dict
+        if input_args is not None:  # 如果有参数模式
             if isinstance(input_args, dict):
+                # 如果模式本身就是 dict（JSON schema 格式），直接返回输入
                 return tool_input
+
+            # 如果是 Pydantic BaseModel（新版）
             if issubclass(input_args, BaseModel):
+                # 遍历所有字段及其类型注解
                 for k, v in get_all_basemodel_annotations(input_args).items():
+                    # 如果字段类型是 InjectedToolCallId（特殊注入参数），但输入中没有这个字段
                     if (
                         _is_injected_arg_type(v, injected_type=InjectedToolCallId)
                         and k not in tool_input
                     ):
+                        # 这时必须要求有 tool_call_id
                         if tool_call_id is None:
                             msg = (
                                 "When tool includes an InjectedToolCallId "
@@ -730,9 +859,15 @@ tool_args, tool_kwargs = self._to_args_and_kwargs(
                                 "'tool_call_id': '...'}"
                             )
                             raise ValueError(msg)
+                        # 将 tool_call_id 注入到输入中
                         tool_input[k] = tool_call_id
+
+                # 用 Pydantic 进行校验
                 result = input_args.model_validate(tool_input)
+                # 转为字典以便后续处理
                 result_dict = result.model_dump()
+
+            # 如果是 Pydantic BaseModelV1（旧版）
             elif issubclass(input_args, BaseModelV1):
                 for k, v in get_all_basemodel_annotations(input_args).items():
                     if (
@@ -749,17 +884,25 @@ tool_args, tool_kwargs = self._to_args_and_kwargs(
                             )
                             raise ValueError(msg)
                         tool_input[k] = tool_call_id
+
                 result = input_args.parse_obj(tool_input)
                 result_dict = result.dict()
+
             else:
+                # 如果 args_schema 不是 BaseModel 或 BaseModelV1，不支持
                 msg = (
                     f"args_schema must be a Pydantic BaseModel, got {self.args_schema}"
                 )
                 raise NotImplementedError(msg)
+
+            # 只返回输入中原有的字段（避免返回模型默认值或额外字段）
             return {
                 k: getattr(result, k) for k, v in result_dict.items() if k in tool_input
             }
+
+        # 情况 3：没有参数模式，直接返回输入
         return tool_input
+
 ```
 
 #### _run 方法的参数兼容
@@ -777,12 +920,23 @@ class MyTool(BaseTool):
 ```
 
 1. `signature(self._run).parameters.get("run_manager")`: 检查有没有 run_manager 命名的参数
-`config_param := _get_runnable_config_param(self._run)`: 检查有没有 RunnableConfig 注解的参数
+2. `config_param := _get_runnable_config_param(self._run)`: 检查有没有 RunnableConfig 注解的参数
 
 #### _format_output
-_format_output 会将 _run 的结果包装为 ToolMessage
+_format_output 会将 _run 的结果包装为 ToolMessage:
+1. 如果 content 就是一个类 ToolOutputMixin 的实例，直接返回
+2. Command、ToolMessage 都是 ToolOutputMixin 的子类，会直接返回
+3. 其他类型，会包装为 ToolMessage
+4. 正因为如此，如果要在 Tool 中，返回对 channel 的修改，必须使用 Command
 
 ```python
+
+class Command(Generic[N], ToolOutputMixin):
+    pass
+
+class ToolMessage(BaseMessage, ToolOutputMixin):
+    pass
+
 def _format_output(
     content: Any,
     artifact: Any,
@@ -802,6 +956,8 @@ def _format_output(
     Returns:
         The formatted output, either as a ToolMessage or the original content.
     """
+    # 如果 content 就是一个类 ToolOutputMixin 的实例，直接返回
+
     if isinstance(content, ToolOutputMixin) or tool_call_id is None:
         return content
     if not _is_message_content_type(content):
@@ -865,8 +1021,9 @@ class Tool(BaseTool):
 ```
 
 ## 4. StructuredTool 
-StructuredTool 也是基于函数的 Tool 实现。复杂主要复杂在函数元数据的解析上，实现位于 from_function 方法内。
-
+StructuredTool 也是基于函数的 BaseTool 实现。复杂主要复杂在函数元数据的解析上，实现位于 from_function 方法内。
+1. 使用 create_schema_from_function 基于函数注解创建 arg_schema
+2. 按照固定顺序解析 description
 
 ```python
 class StructuredTool(BaseTool):
@@ -885,152 +1042,98 @@ class StructuredTool(BaseTool):
     @classmethod
     def from_function(
         cls,
-        func: Optional[Callable] = None,
-        coroutine: Optional[Callable[..., Awaitable[Any]]] = None,
-        name: Optional[str] = None,
-        description: Optional[str] = None,
-        return_direct: bool = False,  # noqa: FBT001,FBT002
-        args_schema: Optional[ArgsSchema] = None,
-        infer_schema: bool = True,  # noqa: FBT001,FBT002
+        func: Optional[Callable] = None,  # 普通同步函数
+        coroutine: Optional[Callable[..., Awaitable[Any]]] = None,  # 异步函数
+        name: Optional[str] = None,  # 工具名称（可选，默认用函数名）
+        description: Optional[str] = None,  # 工具描述（可选，默认用 docstring）
+        return_direct: bool = False,  # 是否直接返回结果（跳过 Agent 的后续处理）
+        args_schema: Optional[ArgsSchema] = None,  # 工具参数的 Pydantic schema
+        infer_schema: bool = True,  # 是否根据函数签名自动推断 schema
         *,
-        response_format: Literal["content", "content_and_artifact"] = "content",
-        parse_docstring: bool = False,
-        error_on_invalid_docstring: bool = False,
-        **kwargs: Any,
+        response_format: Literal["content", "content_and_artifact"] = "content",  # 工具返回值格式
+        parse_docstring: bool = False,  # 是否解析 docstring 生成参数描述
+        error_on_invalid_docstring: bool = False,  # docstring 格式错误是否抛异常
+        **kwargs: Any,  # 其他要传给工具构造方法的参数
     ) -> StructuredTool:
-```
+        """根据给定函数创建一个 StructuredTool 实例"""
 
+        # 1️⃣ 选择工具的源函数（优先 func，同步；其次 coroutine，异步）
+        if func is not None:
+            source_function = func
+        elif coroutine is not None:
+            source_function = coroutine
+        else:
+            # 同步和异步函数都没传，报错
+            msg = "Function and/or coroutine must be provided"
+            raise ValueError(msg)
 
-from_function:
+        # 2️⃣ 工具名称默认取函数名
+        name = name or source_function.__name__
 
-> **将一个普通函数（带类型注解和 docstring）转换为 StructuredTool 实例**，并自动处理参数 schema 推断、描述生成等逻辑。
+        # 3️⃣ 如果没有显式提供 args_schema 且允许自动推断，则根据函数签名生成 schema
+        if args_schema is None and infer_schema:
+            # create_schema_from_function 会用 inspect.signature + pydantic 创建参数模型
+            args_schema = create_schema_from_function(
+                name,  # schema 名称
+                source_function,  # 要分析的函数
+                parse_docstring=parse_docstring,  # 是否解析 docstring
+                error_on_invalid_docstring=error_on_invalid_docstring,
+                filter_args=_filter_schema_args(source_function),  # 要过滤的参数（如 self/cls）
+            )
 
-换句话说，它实现了从：
+        # 4️⃣ 如果没传 description，则默认用函数的 docstring
+        description_ = description
+        if description is None and not parse_docstring:
+            description_ = source_function.__doc__ or None
 
-```python
-def add(a: int, b: int) -> int:
-    """Add two numbers."""
-    return a + b
-```
+        # 5️⃣ 如果 description 还是 None 且有 args_schema，则尝试从 schema 里获取描述
+        if description_ is None and args_schema:
+            if isinstance(args_schema, type) and is_basemodel_subclass(args_schema):
+                # 从 Pydantic BaseModel 的 __doc__ 获取描述
+                description_ = args_schema.__doc__
+                # 如果 docstring 是 Pydantic 默认模板，则清空
+                if (
+                    description_
+                    and "A base class for creating Pydantic models" in description_
+                ):
+                    description_ = ""
+                elif not description_:
+                    description_ = None
+            elif isinstance(args_schema, dict):
+                # 如果 schema 是 dict 格式，取其中的 "description"
+                description_ = args_schema.get("description")
+            else:
+                # 类型不对，抛异常
+                msg = (
+                    "Invalid args_schema: expected BaseModel or dict, "
+                    f"got {args_schema}"
+                )
+                raise TypeError(msg)
 
-变成：
+        # 6️⃣ 如果 description 最终还是 None，则必须报错
+        if description_ is None:
+            msg = "Function must have a docstring if description not provided."
+            raise ValueError(msg)
 
-```python
-StructuredTool(
-    name="add",
-    func=add,
-    args_schema=自动生成的 Pydantic schema,
-    description="Add two numbers."
-)
-```
+        # 7️⃣ 如果 description 是从函数 docstring 来的，去掉多余缩进和空格
+        if description is None:
+            description_ = textwrap.dedent(description_).strip()
 
----
+        # 8️⃣ 确保描述是纯字符串（防止有多余换行）
+        description_ = f"{description_.strip()}"
 
-### ✅ 参数说明
+        # 9️⃣ 创建并返回 StructuredTool 实例
+        return cls(
+            name=name,
+            func=func,
+            coroutine=coroutine,
+            args_schema=args_schema,  # 函数参数的 Pydantic 模型
+            description=description_,  # 工具描述
+            return_direct=return_direct,
+            response_format=response_format,
+            **kwargs,  # 传递给 StructuredTool 的其他参数
+        )
 
-| 参数名                          | 说明                                                   |
-| ---------------------------- | ---------------------------------------------------- |
-| `func`                       | 要转换为 Tool 的普通函数（sync）                                |
-| `coroutine`                  | 异步函数（async），和 `func` 二选一                             |
-| `name`                       | Tool 的名称，默认用函数名                                      |
-| `description`                | Tool 的描述，默认用函数 docstring                             |
-| `return_direct`              | 是否直接返回结果（跳过 Agent 的输出封装）                             |
-| `args_schema`                | Tool 输入参数的 Pydantic Schema，可以手动提供                    |
-| `infer_schema`               | 是否自动从函数签名推导 schema（默认开启）                             |
-| `response_format`            | `content` 或 `content_and_artifact`，控制 ToolMessage 格式 |
-| `parse_docstring`            | 是否解析 docstring 的参数说明（Google Style）                   |
-| `error_on_invalid_docstring` | docstring 解析失败是否报错                                   |
-| `kwargs`                     | 传给 StructuredTool 的额外参数                              |
-
----
-
-### ✅ 核心逻辑拆解
-
-源码的核心步骤可以分为 6 步：
-
----
-
-1️⃣ 获取目标函数对象：
-
-```python
-if func is not None:
-    source_function = func
-elif coroutine is not None:
-    source_function = coroutine
-else:
-    raise ValueError("Function and/or coroutine must be provided")
-```
-
-必须传入 `func` 或 `coroutine`，二选一。
-
----
-
-2️⃣ 设置 name 和 args\_schema：
-
-```python
-name = name or source_function.__name__
-
-if args_schema is None and infer_schema:
-    args_schema = create_schema_from_function(...)
-```
-
-若未手动传入 `args_schema`，则自动调用 `create_schema_from_function` 将函数签名转成一个 `Pydantic.BaseModel` 类。
-
----
-
-3️⃣ 获取 Tool 描述 description：
-
-优先级：
-
-1. 使用传入的 `description`
-2. 若没传，则使用函数 docstring（`__doc__`）
-3. 若没 docstring，尝试用 `args_schema.__doc__`
-4. 最后都没提供时，报错
-
----
-
-4️⃣ 整理描述格式：
-
-```python
-description_ = textwrap.dedent(description_).strip()
-description_ = f"{description_.strip()}"
-```
-
-对 docstring 做了标准化处理，防止缩进问题。
-
----
-
-5️⃣ 最终构造 Tool 对象
-
-```python
-return cls(
-    name=name,
-    func=func,
-    coroutine=coroutine,
-    args_schema=args_schema,
-    description=description_,
-    return_direct=return_direct,
-    response_format=response_format,
-    **kwargs,
-)
-```
-
-调用 `StructuredTool.__init__` 构建实例返回。
-
----
-
-✅ 使用示例
-
-```python
-from langchain.tools import StructuredTool
-
-def add(a: int, b: int) -> int:
-    """Add two numbers."""
-    return a + b
-
-tool = StructuredTool.from_function(add)
-result = tool.invoke({"a": 2, "b": 3})
-print(result)  # 输出：5
 ```
 
 ## 5. Convert

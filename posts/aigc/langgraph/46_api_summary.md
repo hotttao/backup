@@ -94,9 +94,26 @@ PregelNode writers 参数的初始化最为复杂:
     - _get_updates 会从 bound_return 中过滤出所有在 output_keys 的返回值，输出为对 channel 的更改，对于嵌套结构会递归处理
     - _get_root 类似 _get_updates，但是因为 `output_keys == ["__root__"]` ，只有一个 channel 默认会把 bound_return 整体作为 `__root__` channel 的值，不回去判断 bound_return 内部是有 `__root__`
     - _control_branch 用于从 bond_return 中提取出 Send 和 Command.goto，生成节点跳转的任务
-2. 总结一下 writers 完成以下两个任务:
-    - 处理 channel 值设置
-    - 处理跨节点跳转任务
+2. 总结一下 PregelNode.writers `writers=[ChannelWrite(List[ChannelWriteEntry|ChannelWriteTupleEntry])]`
+    - Pregel 的原始 API 
+        - PregelNode.writers 包含的是 ChannelWriteEntry
+        - ChannelWriteEntry 包含 channel，PregelNode.bound 只返回值，ChannelWrite 返回 (channel, mapper(value))
+    - StateGraph 中
+        - PregelNode.writers 包含的是 ChannelWriteTupleEntry
+        - ChannelWriteTupleEntry 包含的是 mapper 函数，返回 mapper(value)
+        - mapper 有 _get_updates，_control_branch，正是因为这些 mapper 函数，StateGraph 的 node 函数，可以返回 `dict|Command`
+
+这里解释解释了 node 函数的返回值是如何处理。作为对比，我们额外说明一下 tool 函数的返回值是如何处理的。
+1. 首先 tool 函数被包装在 Tool 类中，Tool 会调用 _format_output 对函数返回结果进行包装:
+    - 如果 content 就是一个类 ToolOutputMixin 的实例，直接返回
+    - Command、ToolMessage 都是 ToolOutputMixin 的子类，会直接返回
+    - 其他类型，会包装为 ToolMessage
+    - 正因为如此，如果要在 Tool 中，返回对 channel 的修改，必须使用 Command
+2. tools 会被包装在 ToolNode 中，ToolNode 会调用 _combine_tool_outputs 对多个 tool 的返回结果进行合并
+    - tool 的返回值经过 _format_output 包装后，只会返回 ToolMessage 和 Command
+    - command 被收集后返回，ToolMessage 会包装成 `{message_key: [ToolMessage]}` 返回
+3. 回到上面 StateGraph 中对 node 函数返回值的处理流程
+
 
 ```python
     def attach_node(self, key: str, node: StateNodeSpec[Any, ContextT] | None) -> None:
@@ -242,6 +259,37 @@ def _get_root(input: Any) -> Sequence[tuple[str, Any]] | None:
         return updates
     elif input is not None:
         return [("__root__", input)]
+
+
+def _control_branch(value: Any) -> Sequence[tuple[str, Any]]:
+    if isinstance(value, Send):
+        return ((TASKS, value),)
+    commands: list[Command] = []
+    if isinstance(value, Command):
+        commands.append(value)
+    elif isinstance(value, (list, tuple)):
+        for cmd in value:
+            if isinstance(cmd, Command):
+                commands.append(cmd)
+    rtn: list[tuple[str, Any]] = []
+    for command in commands:
+        if command.graph == Command.PARENT:
+            raise ParentCommand(command)
+
+        goto_targets = (
+            [command.goto] if isinstance(command.goto, (Send, str)) else command.goto
+        )
+
+        for go in goto_targets:
+            # Send 表示跳转到固定节点
+            if isinstance(go, Send):
+                rtn.append((TASKS, go))
+            # 否则跳转到 branch 节点
+            elif isinstance(go, str) and go != END:
+                # END is a special case, it's not actually a node in a practical sense
+                # but rather a special terminal node that we don't need to branch to
+                rtn.append((_CHANNEL_BRANCH_TO.format(go), None))
+    return rtn
 ```
 
 ### 1.2 edges
