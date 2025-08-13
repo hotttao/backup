@@ -257,12 +257,119 @@ Langgraph 中有很多地方会对异常做处理，典型的有如下几个地�
 
 这些地方都不会对 GraphInterrupt 做容错处理。
 
-GraphInterrupt 异常会在如下调用中被处理:
+所有异常都会在 PregelLoop 的 tick 循环中被处理，处理流程经过两个函数:
 1. Runner.tick
-2. PregelLoop.__exit__
+    - tick 会调用 `self.commit(t, exc)` 处理所有异常
+    - commit 方法会调用 `loop.put_writes()` 将异常或者中断写入 checkpointer
+    - tick 重新触发异常
+2. `PregelLoop.__exit__`
+    - `PregelLoop` 使用 self.stack 管理多个上下文管理器，并注册了上下文退出的回调函数 `self.stack.push(self._suppress_interrupt)`
+    - `PregelLoop.__exit__` 执行时会调用 `self._suppress_interrupt`
+        - 如果异常时最顶层的 GraphInterrupt，会忽略异常，直接退出
+    - `PregelLoop.__exit__` 正常退出后，程序正常结束
 
 
 ```python
+class Pregel()
+    def stream():
+            with SyncPregelLoop():
+                while loop.tick():
+                    for _ in runner.tick():
+                        pass
+
+class SyncPregelLoop(PregelLoop, AbstractContextManager):
+    def __init__():
+        self.stack = ExitStack()
+
+    def __enter__(self) -> Self:
+        self.submit = self.stack.enter_context(BackgroundExecutor(self.config))
+        self.channels, self.managed = channels_from_checkpoint(
+            self.specs, self.checkpoint
+        )
+        self.stack.push(self._suppress_interrupt)
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> bool | None:
+        # unwind stack
+        return self.stack.__exit__(exc_type, exc_value, traceback)
+
+
+    def _suppress_interrupt(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: TracebackType | None,
+        ) -> bool | None:
+        # 如果持久化策略是 "exit"（表示退出时保存）并且满足以下任意条件：
+        # 1. 是顶层图（not self.is_nested）
+        # 2. 是嵌套图但执行中出现异常（exc_value is not None）
+        # 3. 是嵌套图并且 checkpoint 命名空间中没有 NS_END（表示还没到终止节点）
+        # 则会保存当前 checkpoint 和 pending_writes
+        if self.durability == "exit" and (
+            not self.is_nested
+            or exc_value is not None
+            or all(NS_END not in part for part in self.checkpoint_ns)
+        ):
+            # 持久化当前 checkpoint 元数据
+            self._put_checkpoint(self.checkpoint_metadata)
+            # 持久化当前待写入的数据
+            self._put_pending_writes()
+
+        # suppress（抑制）标志：当异常是 GraphInterrupt 且当前是顶层图时为 True
+        suppress = isinstance(exc_value, GraphInterrupt) and not self.is_nested
+        if suppress:
+            # 如果有 tasks 且存在未写入的任务数据，则先应用这些写入
+            if (
+                hasattr(self, "tasks")
+                and self.checkpoint_pending_writes
+                and any(task.writes for task in self.tasks.values())
+            ):
+                # 将所有 task 的写入应用到当前 channels 中
+                updated_channels = apply_writes(
+                    self.checkpoint,
+                    self.channels,
+                    self.tasks.values(),
+                    self.checkpointer_get_next_version,
+                    self.trigger_to_nodes,
+                )
+                # 如果更新的 channels 中包含了输出 keys，则发出 "values" 事件
+                if not updated_channels.isdisjoint(
+                    (self.output_keys,)
+                    if isinstance(self.output_keys, str)
+                    else self.output_keys
+                ):
+                    self._emit(
+                        "values",
+                        map_output_values,
+                        self.output_keys,
+                        [w for t in self.tasks.values() for w in t.writes],
+                        self.channels,
+                    )
+
+            # 如果 exc_value 存在，但异常的参数是空的（表示是纯中断，没有具体错误信息）
+            # 则发出 "updates" 事件，通知 INTERRUPT
+            if exc_value is not None and (not exc_value.args or not exc_value.args[0]):
+                self._emit(
+                    "updates",
+                    lambda: iter(
+                        [{INTERRUPT: cast(GraphInterrupt, exc_value).args[0]}]
+                    ),
+                )
+
+            # 保存最终输出数据
+            self.output = read_channels(self.channels, self.output_keys)
+            # 返回 True 表示抑制这个中断（不再向外抛出异常）
+            return True
+
+        # 如果没有异常（exc_type is None），也要保存最终输出
+        elif exc_type is None:
+            self.output = read_channels(self.channels, self.output_keys)
+
+
 class PregelRunner:
     def tick():
             try:
@@ -296,7 +403,7 @@ class PregelRunner:
                 self.put_writes()(task.id, task.writes)  # type: ignore[misc]
 ```
 
-当捕获到 `GraphInterrupt` 时：
+需要注意 commit 方法内捕获 `GraphInterrupt` 的逻辑：
 
 * 先把 `(INTERRUPT, exception.args[0])` 写入 checkpoint，标记这个任务被中断。
 * 再把**同一次中断**中已经生成的所有 `(RESUME, …)` 事件附加上去。
@@ -309,6 +416,165 @@ class PregelRunner:
 
 * **完整恢复上下文**：下次 resume 时，不仅知道停在哪，还能知道 resume 数据是什么。
 * **支持多次 interrupt**：`scratchpad.resume` 可能会有多个值（比如多阶段暂停/恢复）。
+
+
+### 1.3 Command
+
+中断恢复时，需要传入:
+1. `config = {"configurable": {"thread_id": "1"}}`: 指定恢复哪个会话的终端
+2. `Command(resume={"data": human_response})`: 传入恢复所需要的数据。
+
+执行恢复时，首先会执行[故障恢复流程](./32_pregel_summary.md)。Langgraph 故障恢复的核心流程位于 
+1. `Loop.__enter__`
+    - 恢复到中断前的状态
+1. `Loop._first`
+    - Command.resume 会生成 `writes=[(NULL_TASK_ID, RESUME, cmd.resume)]` 的全局写入任务
+    - `self.put_writes(tid, ws)` 会把 `(RESUME, cmd.resume)` 放到 pending_tasks 中
+    - `apply_writes` 执行 `[PregelTaskWrites((), INPUT, null_writes, [])]` 写入，resume 任务会跳过
+3. 当任务恢复执行到之前终端的地方时，重新调用 `interrupt`
+    - `scratchpad.get_null_resume(True)` 会从 pending_tasks 中读取上面写入的 RESUME task，并返回 cmd.resume
+    - 然后直接返回 cmd.resume，这样原本中断的位置就可以继续执行，而不是触发异常退出
+
+```python
+def _first(self, *, input_keys: str | Sequence[str]) -> set[str] | None:
+    # 这个方法主要是图执行的第一步：
+    # - 检查是否是从 checkpoint 恢复执行
+    # - 处理外部输入（普通输入或 Command 对象）
+    # - 应用输入写入到 channels
+    # - 处理空输入错误
+    # - 返回本轮更新过的 channels 集合
+
+    # 从配置中获取 configurable（CONF 是运行配置字典的 key）
+    configurable = self.config.get(CONF, {})
+
+    # 判断是否是从之前的 checkpoint 恢复执行
+    # 条件：
+    # 1. checkpoint 中存在 channel_versions（说明之前执行过）
+    # 2. CONFIG_KEY_RESUMING 为 True（可能是外部显式设置），否则判断：
+    #    - 输入为 None（外层图，没有新输入）
+    #    - 输入是 Command（恢复执行的指令）
+    #    - 或者（是顶层图，且当前 run_id 与 checkpoint 的 run_id 相同）
+    is_resuming = bool(self.checkpoint["channel_versions"]) and bool(
+        configurable.get(
+            CONFIG_KEY_RESUMING,
+            self.input is None
+            or isinstance(self.input, Command)
+            or (
+                not self.is_nested
+                and self.config.get("metadata", {}).get("run_id")
+                == self.checkpoint_metadata.get("run_id", MISSING)
+            ),
+        )
+    )
+
+    # 存储更新过的 channels，默认 None（表示没更新）
+    updated_channels: set[str] | None = None
+
+    # 如果输入是 Command 类型（可能带恢复信息和写入数据）
+    if isinstance(self.input, Command):
+        # 检查 resume 字段是否是一个 resume map（key 是 hash 值）
+        if resume_is_map := (
+            (resume := self.input.resume) is not None
+            and isinstance(resume, dict)
+            and all(is_xxh3_128_hexdigest(k) for k in resume)
+        ):
+            # 保存 resume_map 到 config，用于后续恢复任务
+            self.config[CONF][CONFIG_KEY_RESUME_MAP] = self.input.resume
+
+        # 如果提供了 resume 但没有 checkpointer，直接报错
+        if resume is not None and not self.checkpointer:
+            raise RuntimeError(
+                "Cannot use Command(resume=...) without checkpointer"
+            )
+
+        # 收集任务写入，按 task ID 分组
+        writes: defaultdict[str, list[tuple[str, Any]]] = defaultdict(list)
+        for tid, c, v in map_command(cmd=self.input):
+            # 如果是 RESUME 且是 resume_map，则跳过这些写入
+            if not (c == RESUME and resume_is_map):
+                writes[tid].append((c, v))
+
+        # 如果没有写入且不是 resume_map，说明 Command 是空的 → 报错
+        if not writes and not resume_is_map:
+            raise EmptyInputError("Received empty Command input")
+
+        # 把写入保存到 checkpoint_pending_writes
+        # resume task_id = NULL_TASK_ID，(NULL_TASK_ID, RESUME, cmd.resume)
+        for tid, ws in writes.items():
+            self.put_writes(tid, ws)
+
+    # 处理 NULL_TASK_ID 的写入（没有任务 ID 的全局写入）
+    if null_writes := [
+        w[1:] for w in self.checkpoint_pending_writes if w[0] == NULL_TASK_ID
+    ]:
+        apply_writes(
+            self.checkpoint,
+            self.channels,
+            [PregelTaskWrites((), INPUT, null_writes, [])],
+            self.checkpointer_get_next_version,
+            self.trigger_to_nodes,
+        )
+
+    # 如果是恢复执行
+    if is_resuming:
+        # 在 versions_seen 中标记 INTERRUPT 已经看过的版本
+        self.checkpoint["versions_seen"].setdefault(INTERRUPT, {})
+        for k in self.channels:
+            if k in self.checkpoint["channel_versions"]:
+                version = self.checkpoint["channel_versions"][k]
+                self.checkpoint["versions_seen"][INTERRUPT][k] = version
+        # 发出当前 values（输出）事件
+        self._emit(
+            "values", map_output_values, self.output_keys, True, self.channels
+        )
+
+    # 如果不是恢复，而是有普通输入
+    elif input_writes := deque(map_input(input_keys, self.input)):
+        # 丢弃上次 checkpoint 里未完成的任务
+        discard_tasks = prepare_next_tasks(
+            self.checkpoint,
+            self.checkpoint_pending_writes,
+            self.nodes,
+            self.channels,
+            self.managed,
+            self.config,
+            self.step,
+            self.stop,
+            for_execution=True,
+            store=None,
+            checkpointer=None,
+            manager=None,
+        )
+        # 应用输入写入（包括丢弃任务写入和新的输入）
+        updated_channels = apply_writes(
+            self.checkpoint,
+            self.channels,
+            [
+                *discard_tasks.values(),
+                PregelTaskWrites((), INPUT, input_writes, []),
+            ],
+            self.checkpointer_get_next_version,
+            self.trigger_to_nodes,
+        )
+        # 保存 "input" 类型的 checkpoint
+        self._put_checkpoint({"source": "input"})
+
+    # 如果既不是恢复，也没有输入 → 报错
+    elif CONFIG_KEY_RESUMING not in configurable:
+        raise EmptyInputError(f"Received no input for {input_keys}")
+
+    # 如果是顶层图，更新 config 的 CONFIG_KEY_RESUMING 标志
+    if not self.is_nested:
+        self.config = patch_configurable(
+            self.config, {CONFIG_KEY_RESUMING: is_resuming}
+        )
+
+    # 设置当前状态为 pending
+    self.status = "pending"
+
+    # 返回更新过的 channels（可能为 None）
+    return updated_channels
+```
 
 
 ## 2. 节点间的参数传递

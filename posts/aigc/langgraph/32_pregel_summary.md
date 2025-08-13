@@ -574,7 +574,7 @@ def create_checkpoint(
 #### 发生错误恢复
 假设在第二轮 step 中发生了错误，并使用 ck_v2 进行恢复。注意因为 step 执行了一部分，所以 checkpoint(ck_v2) pending_writes 已经保存了部分 task.writes。下面我们来分析一下恢复过程。
 
-1. 初始化 Loop 时，会从 BaseCheckpointSaver 中获取 ck_v2 checkpoint，然后会调用 `Loop._first` 方法。
+1. 初始化 Loop 时，会从 BaseCheckpointSaver 中恢复 ck_v2 checkpoint，然后会调用 `Loop._first` 方法。
 2. `Loop._first` 方法 resume 的相关逻辑，接下来就直接进入到 tick 方法，调用 `prepare_next_tasks`
 3. prepare_next_tasks:
     - 判断 updated_channels 为空并且 `checkpoint["channel_versions"]` 有值，就会假设所有 node 都被触发
