@@ -253,7 +253,8 @@ node 的定义内包含了如下信息:
 
 而整个 graph 的状态就保存在 `channels`，`node`, `updated_channels` 中。从后面 checkpoint 保存的内容会看到
 1. checkpoint 不会持久化 node，只保存了 node 能看到的 channel 版本。所以 node 没有包含 graph 的状态。
-2. checkpoint 也没有持久化 updated_channels，updated_channels，是通过 channel 的 version，以及 node 能看到的 channel version 计算出来的
+2. checkpoint 也没有持久化 updated_channels，保存了 channel 当前的快照，channel 所有版本及其值，以及 node 能看到的 channel 版本
+3. updated_channels，是通过 channel 的 version，以及 node 能看到的 channel version 计算出来的
 
 
 ### 2.3 checkpoint 保存的内容
@@ -574,7 +575,7 @@ def create_checkpoint(
 #### 发生错误恢复
 假设在第二轮 step 中发生了错误，并使用 ck_v2 进行恢复。注意因为 step 执行了一部分，所以 checkpoint(ck_v2) pending_writes 已经保存了部分 task.writes。下面我们来分析一下恢复过程。
 
-1. 初始化 Loop 时，会从 BaseCheckpointSaver 中恢复 ck_v2 checkpoint，然后会调用 `Loop._first` 方法。
+1. 初始化 Loop 时，会从 BaseCheckpointSaver 中恢复 ck_v2 checkpoint，**并恢复 channel 的值**，然后会调用 `Loop._first` 方法。
 2. `Loop._first` 方法 resume 的相关逻辑，接下来就直接进入到 tick 方法，调用 `prepare_next_tasks`
 3. prepare_next_tasks:
     - 判断 updated_channels 为空并且 `checkpoint["channel_versions"]` 有值，就会假设所有 node 都被触发
@@ -603,7 +604,33 @@ def create_checkpoint(
             if saved.pending_writes is not None
             else []
         )
+        self.submit = self.stack.enter_context(BackgroundExecutor(self.config))
+        # 恢复 channel 的值
+        self.channels, self.managed = channels_from_checkpoint(
+            self.specs, self.checkpoint
+        )
         self.updated_channels = self._first(input_keys=self.input_keys)
+
+
+def channels_from_checkpoint(
+    specs: Mapping[str, BaseChannel | ManagedValueSpec],
+    checkpoint: Checkpoint,
+) -> tuple[Mapping[str, BaseChannel], ManagedValueMapping]:
+    """Get channels from a checkpoint."""
+    channel_specs: dict[str, BaseChannel] = {}
+    managed_specs: dict[str, ManagedValueSpec] = {}
+    for k, v in specs.items():
+        if isinstance(v, BaseChannel):
+            channel_specs[k] = v
+        else:
+            managed_specs[k] = v
+    return (
+        {
+            k: v.from_checkpoint(checkpoint["channel_values"].get(k, MISSING))
+            for k, v in channel_specs.items()
+        },
+        managed_specs,
+    )
 
 
 def prepare_next_tasks():
