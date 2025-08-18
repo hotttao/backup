@@ -536,6 +536,10 @@ StreamMode = Literal[
 | `"debug"`       | 是 `"checkpoints"` 和 `"tasks"` 的组合，便于调试。            | 调试模式，获取完整运行过程         |
 
 
+总结:
+1. updates: 发生在 Loop.put_writes，每个task 在 Pregel Runner 中执行完毕后，调用 Loop.put_writes 生成 updates model 的数据
+2. values: 发生在 Loop._first 和 Loop.after_tick 当 updated_channel 与 loop.output_keys 没有交集时，会输出所有 所有 loop.output_keys 对应 channel 中的数据。
+
 ### 2.4 Command
 
 Command 的泛型数据类，是 LangGraph 中用于 控制图状态更新和节点跳转的核心指令对象。你可以把它理解为图执行中的“一次行动指令”，在一个节点执行后返回，用于告诉引擎下一步干什么。后面我们讲解 interrupt 时，就能理解 Command 的作用了。我们先看它的实现。
