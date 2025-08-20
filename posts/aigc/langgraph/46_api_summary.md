@@ -582,4 +582,11 @@ class BranchSpec(NamedTuple):
                 return input
 ```
 
+### 1.4 不同节点的返回
+至此我们总结一下，不同节点的返回值:
+1. node: 可以返回 `dict|command`，dict 表示对应 channel 的更改
+2. tool: 可以返回 `any|command`，tool 内如果想实现对 channel 的更新和节点跳转，必须使用 command
+3. branch: 可以返回 `str|Send`，str 会转换为 ChannelWriteEntry(channel, None) 表示对 channel 的更新，Send 表示节点跳转
+
+
 ## 2. Function API 如何映射为 Pregel
