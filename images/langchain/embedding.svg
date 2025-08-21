@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="378pt" height="145pt" viewBox="0.00 0.00 378.17 145.20">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 141.2)">
+<title>embeddings</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-141.2 374.17,-141.2 374.17,4 -4,4"/>
+<!-- embeddings.Embeddings -->
+<g id="node1" class="node">
+<title>embeddings.Embeddings</title>
+<polygon fill="none" stroke="black" points="124.2,-87.1 124.2,-136.7 281.35,-136.7 281.35,-87.1 124.2,-87.1"/>
+<text text-anchor="middle" x="202.77" y="-120.1" font-family="Times,serif" font-size="14.00">embeddings.Embeddings</text>
+<polyline fill="none" stroke="black" points="124.2,-111.9 281.35,-111.9"/>
+<text text-anchor="middle" x="202.77" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake.DeterministicFakeEmbedding -->
+<g id="node2" class="node">
+<title>fake.DeterministicFakeEmbedding</title>
+<polygon fill="none" stroke="black" points="0,-0.5 0,-50.1 211.55,-50.1 211.55,-0.5 0,-0.5"/>
+<text text-anchor="middle" x="105.77" y="-33.5" font-family="Times,serif" font-size="14.00">fake.DeterministicFakeEmbedding</text>
+<polyline fill="none" stroke="black" points="0,-25.3 211.55,-25.3"/>
+<text text-anchor="middle" x="105.77" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake.DeterministicFakeEmbedding&#45;&gt;embeddings.Embeddings -->
+<g id="edge1" class="edge">
+<title>fake.DeterministicFakeEmbedding-&gt;embeddings.Embeddings</title>
+<path fill="none" stroke="#595959" d="M167.87,-61.86C167.87,-61.86 167.87,-86.61 167.87,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="171.37,-61.86 167.87,-51.86 164.37,-61.86 171.37,-61.86"/>
+</g>
+<!-- fake.FakeEmbeddings -->
+<g id="node3" class="node">
+<title>fake.FakeEmbeddings</title>
+<polygon fill="none" stroke="black" points="229.38,-0.5 229.38,-50.1 370.17,-50.1 370.17,-0.5 229.38,-0.5"/>
+<text text-anchor="middle" x="299.77" y="-33.5" font-family="Times,serif" font-size="14.00">fake.FakeEmbeddings</text>
+<polyline fill="none" stroke="black" points="229.38,-25.3 370.17,-25.3"/>
+<text text-anchor="middle" x="299.77" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- fake.FakeEmbeddings&#45;&gt;embeddings.Embeddings -->
+<g id="edge2" class="edge">
+<title>fake.FakeEmbeddings-&gt;embeddings.Embeddings</title>
+<path fill="none" stroke="#595959" d="M255.36,-61.86C255.36,-61.86 255.36,-86.61 255.36,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="258.86,-61.86 255.36,-51.86 251.86,-61.86 258.86,-61.86"/>
+</g>
+</g>
+</svg>

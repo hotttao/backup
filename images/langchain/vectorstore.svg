@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="589pt" height="318pt" viewBox="0.00 0.00 588.75 318.40">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 314.4)">
+<title>vectorstores</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-314.4 584.75,-314.4 584.75,4 -4,4"/>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node1" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="0,-260.3 0,-309.9 265.93,-309.9 265.93,-260.3 0,-260.3"/>
+<text text-anchor="middle" x="132.96" y="-293.3" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="0,-285.1 265.93,-285.1"/>
+<text text-anchor="middle" x="132.96" y="-268.5" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.retrievers.BaseRetriever -->
+<g id="node2" class="node">
+<title>langchain_core.retrievers.BaseRetriever</title>
+<polygon fill="none" stroke="black" points="148.63,-87.1 148.63,-136.7 389.3,-136.7 389.3,-87.1 148.63,-87.1"/>
+<text text-anchor="middle" x="268.96" y="-120.1" font-family="Times,serif" font-size="14.00">langchain_core.retrievers.BaseRetriever</text>
+<polyline fill="none" stroke="black" points="148.63,-111.9 389.3,-111.9"/>
+<text text-anchor="middle" x="268.96" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.runnables.base.RunnableSerializable -->
+<g id="node4" class="node">
+<title>langchain_core.runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="113.44,-173.7 113.44,-223.3 424.49,-223.3 424.49,-173.7 113.44,-173.7"/>
+<text text-anchor="middle" x="268.96" y="-206.7" font-family="Times,serif" font-size="14.00">langchain_core.runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="113.44,-198.5 424.49,-198.5"/>
+<text text-anchor="middle" x="268.96" y="-181.9" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.retrievers.BaseRetriever&#45;&gt;langchain_core.runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>langchain_core.retrievers.BaseRetriever-&gt;langchain_core.runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M268.96,-148.46C268.96,-148.46 268.96,-173.21 268.96,-173.21"/>
+<polygon fill="#595959" stroke="#595959" points="272.46,-148.46 268.96,-138.46 265.46,-148.46 272.46,-148.46"/>
+</g>
+<!-- langchain_core.runnables.base.Runnable -->
+<g id="node3" class="node">
+<title>langchain_core.runnables.base.Runnable</title>
+<polygon fill="none" stroke="black" points="283.48,-260.3 283.48,-309.9 528.45,-309.9 528.45,-260.3 283.48,-260.3"/>
+<text text-anchor="middle" x="405.96" y="-293.3" font-family="Times,serif" font-size="14.00">langchain_core.runnables.base.Runnable</text>
+<polyline fill="none" stroke="black" points="283.48,-285.1 528.45,-285.1"/>
+<text text-anchor="middle" x="405.96" y="-268.5" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.runnables.base.RunnableSerializable&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge2" class="edge">
+<title>langchain_core.runnables.base.RunnableSerializable-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M189.69,-235.06C189.69,-235.06 189.69,-259.81 189.69,-259.81"/>
+<polygon fill="#595959" stroke="#595959" points="193.19,-235.06 189.69,-225.06 186.19,-235.06 193.19,-235.06"/>
+</g>
+<!-- langchain_core.runnables.base.RunnableSerializable&#45;&gt;langchain_core.runnables.base.Runnable -->
+<g id="edge3" class="edge">
+<title>langchain_core.runnables.base.RunnableSerializable-&gt;langchain_core.runnables.base.Runnable</title>
+<path fill="none" stroke="#595959" d="M353.98,-235.06C353.98,-235.06 353.98,-259.81 353.98,-259.81"/>
+<polygon fill="#595959" stroke="#595959" points="357.48,-235.06 353.98,-225.06 350.48,-235.06 357.48,-235.06"/>
+</g>
+<!-- base.VectorStore -->
+<g id="node5" class="node">
+<title>base.VectorStore</title>
+<polygon fill="none" stroke="black" points="418.96,-87.1 418.96,-136.7 530.97,-136.7 530.97,-87.1 418.96,-87.1"/>
+<text text-anchor="middle" x="474.96" y="-120.1" font-family="Times,serif" font-size="14.00">base.VectorStore</text>
+<polyline fill="none" stroke="black" points="418.96,-111.9 530.97,-111.9"/>
+<text text-anchor="middle" x="474.96" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.VectorStoreRetriever -->
+<g id="node6" class="node">
+<title>base.VectorStoreRetriever</title>
+<polygon fill="none" stroke="black" points="186.91,-0.5 186.91,-50.1 351.01,-50.1 351.01,-0.5 186.91,-0.5"/>
+<text text-anchor="middle" x="268.96" y="-33.5" font-family="Times,serif" font-size="14.00">base.VectorStoreRetriever</text>
+<polyline fill="none" stroke="black" points="186.91,-25.3 351.01,-25.3"/>
+<text text-anchor="middle" x="268.96" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.VectorStoreRetriever&#45;&gt;langchain_core.retrievers.BaseRetriever -->
+<g id="edge4" class="edge">
+<title>base.VectorStoreRetriever-&gt;langchain_core.retrievers.BaseRetriever</title>
+<path fill="none" stroke="#595959" d="M268.96,-61.86C268.96,-61.86 268.96,-86.61 268.96,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="272.46,-61.86 268.96,-51.86 265.46,-61.86 272.46,-61.86"/>
+</g>
+<!-- in_memory.InMemoryVectorStore -->
+<g id="node7" class="node">
+<title>in_memory.InMemoryVectorStore</title>
+<polygon fill="none" stroke="black" points="369.18,-0.5 369.18,-50.1 580.75,-50.1 580.75,-0.5 369.18,-0.5"/>
+<text text-anchor="middle" x="474.96" y="-33.5" font-family="Times,serif" font-size="14.00">in_memory.InMemoryVectorStore</text>
+<polyline fill="none" stroke="black" points="369.18,-25.3 580.75,-25.3"/>
+<text text-anchor="middle" x="474.96" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- in_memory.InMemoryVectorStore&#45;&gt;base.VectorStore -->
+<g id="edge5" class="edge">
+<title>in_memory.InMemoryVectorStore-&gt;base.VectorStore</title>
+<path fill="none" stroke="#595959" d="M474.96,-61.86C474.96,-61.86 474.96,-86.61 474.96,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="478.46,-61.86 474.96,-51.86 471.46,-61.86 478.46,-61.86"/>
+</g>
+</g>
+</svg>

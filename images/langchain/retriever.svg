@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="619pt" height="145pt" viewBox="0.00 0.00 618.96 145.20">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 141.2)">
+<title>retrievers.py</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-141.2 614.96,-141.2 614.96,4 -4,4"/>
+<!-- langchain_core.retrievers.BaseRetriever -->
+<g id="node1" class="node">
+<title>langchain_core.retrievers.BaseRetriever</title>
+<polygon fill="none" stroke="black" points="35.19,-0.5 35.19,-50.1 275.85,-50.1 275.85,-0.5 35.19,-0.5"/>
+<text text-anchor="middle" x="155.52" y="-33.5" font-family="Times,serif" font-size="14.00">langchain_core.retrievers.BaseRetriever</text>
+<polyline fill="none" stroke="black" points="35.19,-25.3 275.85,-25.3"/>
+<text text-anchor="middle" x="155.52" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.runnables.base.RunnableSerializable -->
+<g id="node3" class="node">
+<title>langchain_core.runnables.base.RunnableSerializable</title>
+<polygon fill="none" stroke="black" points="0,-87.1 0,-136.7 311.05,-136.7 311.05,-87.1 0,-87.1"/>
+<text text-anchor="middle" x="155.52" y="-120.1" font-family="Times,serif" font-size="14.00">langchain_core.runnables.base.RunnableSerializable</text>
+<polyline fill="none" stroke="black" points="0,-111.9 311.05,-111.9"/>
+<text text-anchor="middle" x="155.52" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.retrievers.BaseRetriever&#45;&gt;langchain_core.runnables.base.RunnableSerializable -->
+<g id="edge1" class="edge">
+<title>langchain_core.retrievers.BaseRetriever-&gt;langchain_core.runnables.base.RunnableSerializable</title>
+<path fill="none" stroke="#595959" d="M155.52,-61.86C155.52,-61.86 155.52,-86.61 155.52,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="159.02,-61.86 155.52,-51.86 152.02,-61.86 159.02,-61.86"/>
+</g>
+<!-- langchain_core.retrievers.LangSmithRetrieverParams -->
+<g id="node2" class="node">
+<title>langchain_core.retrievers.LangSmithRetrieverParams</title>
+<polygon fill="none" stroke="black" points="294.08,-0.5 294.08,-50.1 610.96,-50.1 610.96,-0.5 294.08,-0.5"/>
+<text text-anchor="middle" x="452.52" y="-33.5" font-family="Times,serif" font-size="14.00">langchain_core.retrievers.LangSmithRetrieverParams</text>
+<polyline fill="none" stroke="black" points="294.08,-25.3 610.96,-25.3"/>
+<text text-anchor="middle" x="452.52" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+</g>
+</svg>

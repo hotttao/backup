@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="513pt" height="145pt" viewBox="0.00 0.00 513.25 145.20">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 141.2)">
+<title>document_loaders</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-141.2 509.25,-141.2 509.25,4 -4,4"/>
+<!-- base.BaseBlobParser -->
+<g id="node1" class="node">
+<title>base.BaseBlobParser</title>
+<polygon fill="none" stroke="black" points="0,-0.5 0,-50.1 133.8,-50.1 133.8,-0.5 0,-0.5"/>
+<text text-anchor="middle" x="66.9" y="-33.5" font-family="Times,serif" font-size="14.00">base.BaseBlobParser</text>
+<polyline fill="none" stroke="black" points="0,-25.3 133.8,-25.3"/>
+<text text-anchor="middle" x="66.9" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseLoader -->
+<g id="node2" class="node">
+<title>base.BaseLoader</title>
+<polygon fill="none" stroke="black" points="184.29,-87.1 184.29,-136.7 295.52,-136.7 295.52,-87.1 184.29,-87.1"/>
+<text text-anchor="middle" x="239.9" y="-120.1" font-family="Times,serif" font-size="14.00">base.BaseLoader</text>
+<polyline fill="none" stroke="black" points="184.29,-111.9 295.52,-111.9"/>
+<text text-anchor="middle" x="239.9" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- blob_loaders.BlobLoader -->
+<g id="node3" class="node">
+<title>blob_loaders.BlobLoader</title>
+<polygon fill="none" stroke="black" points="346.56,-0.5 346.56,-50.1 505.25,-50.1 505.25,-0.5 346.56,-0.5"/>
+<text text-anchor="middle" x="425.9" y="-33.5" font-family="Times,serif" font-size="14.00">blob_loaders.BlobLoader</text>
+<polyline fill="none" stroke="black" points="346.56,-25.3 505.25,-25.3"/>
+<text text-anchor="middle" x="425.9" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langsmith.LangSmithLoader -->
+<g id="node4" class="node">
+<title>langsmith.LangSmithLoader</title>
+<polygon fill="none" stroke="black" points="151.61,-0.5 151.61,-50.1 328.19,-50.1 328.19,-0.5 151.61,-0.5"/>
+<text text-anchor="middle" x="239.9" y="-33.5" font-family="Times,serif" font-size="14.00">langsmith.LangSmithLoader</text>
+<polyline fill="none" stroke="black" points="151.61,-25.3 328.19,-25.3"/>
+<text text-anchor="middle" x="239.9" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langsmith.LangSmithLoader&#45;&gt;base.BaseLoader -->
+<g id="edge1" class="edge">
+<title>langsmith.LangSmithLoader-&gt;base.BaseLoader</title>
+<path fill="none" stroke="#595959" d="M239.9,-61.86C239.9,-61.86 239.9,-86.61 239.9,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="243.4,-61.86 239.9,-51.86 236.4,-61.86 243.4,-61.86"/>
+</g>
+</g>
+</svg>

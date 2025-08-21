@@ -1,0 +1,316 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="1527pt" height="897pt" viewBox="0.00 0.00 1526.96 897.00">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 893)">
+<title>langchain_text_splitters</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-893 1522.96,-893 1522.96,4 -4,4"/>
+<!-- TypedDict -->
+<g id="node1" class="node">
+<title>TypedDict</title>
+<polygon fill="none" stroke="black" points="897.02,-55.5 897.02,-91.5 992.39,-91.5 992.39,-55.5 897.02,-55.5"/>
+<text text-anchor="middle" x="934.96" y="-69.4" font-family="Times,serif" font-size="14.00">TypedDict</text>
+<polyline fill="none" stroke="black" points="972.89,-55.7 972.89,-91.5"/>
+<text text-anchor="middle" x="982.64" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- enum.Enum -->
+<g id="node2" class="node">
+<title>enum.Enum</title>
+<polygon fill="none" stroke="black" points="892.93,-165.5 892.93,-201.5 996.48,-201.5 996.48,-165.5 892.93,-165.5"/>
+<text text-anchor="middle" x="934.96" y="-179.4" font-family="Times,serif" font-size="14.00">enum.Enum</text>
+<polyline fill="none" stroke="black" points="976.98,-165.7 976.98,-201.5"/>
+<text text-anchor="middle" x="986.73" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.documents.transformers.BaseDocumentTransformer -->
+<g id="node3" class="node">
+<title>langchain_core.documents.transformers.BaseDocumentTransformer</title>
+<polygon fill="none" stroke="black" points="0,-357.5 0,-393.5 418.42,-393.5 418.42,-357.5 0,-357.5"/>
+<text text-anchor="middle" x="199.46" y="-371.4" font-family="Times,serif" font-size="14.00">langchain_core.documents.transformers.BaseDocumentTransformer</text>
+<polyline fill="none" stroke="black" points="398.92,-357.7 398.92,-393.5"/>
+<text text-anchor="middle" x="408.67" y="-371.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.Language -->
+<g id="node4" class="node">
+<title>base.Language</title>
+<polygon fill="none" stroke="black" points="1288.68,-165.5 1288.68,-201.5 1407.75,-201.5 1407.75,-165.5 1288.68,-165.5"/>
+<text text-anchor="middle" x="1338.47" y="-179.4" font-family="Times,serif" font-size="14.00">base.Language</text>
+<polyline fill="none" stroke="black" points="1388.25,-165.7 1388.25,-201.5"/>
+<text text-anchor="middle" x="1398" y="-179.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.Language&#45;&gt;enum.Enum -->
+<g id="edge1" class="edge">
+<title>base.Language-&gt;enum.Enum</title>
+<path fill="none" stroke="#595959" d="M1276.73,-183.5C1276.73,-183.5 996.98,-183.5 996.98,-183.5"/>
+<polygon fill="#595959" stroke="#595959" points="1276.73,-187 1286.73,-183.5 1276.73,-180 1276.73,-187"/>
+</g>
+<!-- base.TextSplitter -->
+<g id="node5" class="node">
+<title>base.TextSplitter</title>
+<polygon fill="none" stroke="black" points="517.8,-385.5 517.8,-421.5 648.55,-421.5 648.55,-385.5 517.8,-385.5"/>
+<text text-anchor="middle" x="573.43" y="-399.4" font-family="Times,serif" font-size="14.00">base.TextSplitter</text>
+<polyline fill="none" stroke="black" points="629.05,-385.7 629.05,-421.5"/>
+<text text-anchor="middle" x="638.8" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.TextSplitter&#45;&gt;langchain_core.documents.transformers.BaseDocumentTransformer -->
+<g id="edge2" class="edge">
+<title>base.TextSplitter-&gt;langchain_core.documents.transformers.BaseDocumentTransformer</title>
+<path fill="none" stroke="#595959" d="M506.1,-389.5C506.1,-389.5 418.59,-389.5 418.59,-389.5"/>
+<polygon fill="#595959" stroke="#595959" points="506.1,-393 516.1,-389.5 506.1,-386 506.1,-393"/>
+</g>
+<!-- base.TokenTextSplitter -->
+<g id="node6" class="node">
+<title>base.TokenTextSplitter</title>
+<polygon fill="none" stroke="black" points="861.45,-550.5 861.45,-586.5 1027.96,-586.5 1027.96,-550.5 861.45,-550.5"/>
+<text text-anchor="middle" x="934.96" y="-564.4" font-family="Times,serif" font-size="14.00">base.TokenTextSplitter</text>
+<polyline fill="none" stroke="black" points="1008.46,-550.7 1008.46,-586.5"/>
+<text text-anchor="middle" x="1018.21" y="-564.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.TokenTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge3" class="edge">
+<title>base.TokenTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M849.54,-568.5C849.54,-568.5 561.39,-568.5 561.39,-568.5 561.39,-568.5 561.39,-464.75 561.39,-421.79"/>
+<polygon fill="#595959" stroke="#595959" points="849.54,-572 859.54,-568.5 849.54,-565 849.54,-572"/>
+</g>
+<!-- base.Tokenizer -->
+<g id="node7" class="node">
+<title>base.Tokenizer</title>
+<polygon fill="none" stroke="black" points="1287.91,-577.5 1287.91,-613.5 1408.53,-613.5 1408.53,-577.5 1287.91,-577.5"/>
+<text text-anchor="middle" x="1338.47" y="-591.4" font-family="Times,serif" font-size="14.00">base.Tokenizer</text>
+<polyline fill="none" stroke="black" points="1389.03,-577.7 1389.03,-613.5"/>
+<text text-anchor="middle" x="1398.78" y="-591.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- character.CharacterTextSplitter -->
+<g id="node8" class="node">
+<title>character.CharacterTextSplitter</title>
+<polygon fill="none" stroke="black" points="838.92,-495.5 838.92,-531.5 1050.49,-531.5 1050.49,-495.5 838.92,-495.5"/>
+<text text-anchor="middle" x="934.96" y="-509.4" font-family="Times,serif" font-size="14.00">character.CharacterTextSplitter</text>
+<polyline fill="none" stroke="black" points="1030.99,-495.7 1030.99,-531.5"/>
+<text text-anchor="middle" x="1040.74" y="-509.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- character.CharacterTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge4" class="edge">
+<title>character.CharacterTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M827.09,-513.5C827.09,-513.5 604.97,-513.5 604.97,-513.5 604.97,-513.5 604.97,-452.91 604.97,-421.66"/>
+<polygon fill="#595959" stroke="#595959" points="827.09,-517 837.09,-513.5 827.09,-510 827.09,-517"/>
+</g>
+<!-- character.RecursiveCharacterTextSplitter -->
+<g id="node9" class="node">
+<title>character.RecursiveCharacterTextSplitter</title>
+<polygon fill="none" stroke="black" points="810.93,-440.5 810.93,-476.5 1078.48,-476.5 1078.48,-440.5 810.93,-440.5"/>
+<text text-anchor="middle" x="934.96" y="-454.4" font-family="Times,serif" font-size="14.00">character.RecursiveCharacterTextSplitter</text>
+<polyline fill="none" stroke="black" points="1058.98,-440.7 1058.98,-476.5"/>
+<text text-anchor="middle" x="1068.73" y="-454.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- character.RecursiveCharacterTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge5" class="edge">
+<title>character.RecursiveCharacterTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M837.86,-428.64C837.86,-428.64 837.86,-415.83 837.86,-415.83 837.86,-415.83 724.22,-415.83 648.76,-415.83"/>
+<polygon fill="#595959" stroke="#595959" points="834.36,-428.64 837.86,-438.64 841.36,-428.64 834.36,-428.64"/>
+</g>
+<!-- html.ElementType -->
+<g id="node10" class="node">
+<title>html.ElementType</title>
+<polygon fill="none" stroke="black" points="1278.18,-110.5 1278.18,-146.5 1418.26,-146.5 1418.26,-110.5 1278.18,-110.5"/>
+<text text-anchor="middle" x="1338.47" y="-124.4" font-family="Times,serif" font-size="14.00">html.ElementType</text>
+<polyline fill="none" stroke="black" points="1398.76,-110.7 1398.76,-146.5"/>
+<text text-anchor="middle" x="1408.51" y="-124.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- html.ElementType&#45;&gt;TypedDict -->
+<g id="edge6" class="edge">
+<title>html.ElementType-&gt;TypedDict</title>
+<path fill="none" stroke="#595959" d="M1266.42,-128.5C1266.42,-128.5 944.71,-128.5 944.71,-128.5 944.71,-128.5 944.71,-107.81 944.71,-91.81"/>
+<polygon fill="#595959" stroke="#595959" points="1266.42,-132 1276.42,-128.5 1266.42,-125 1266.42,-132"/>
+</g>
+<!-- html.HTMLHeaderTextSplitter -->
+<g id="node11" class="node">
+<title>html.HTMLHeaderTextSplitter</title>
+<polygon fill="none" stroke="black" points="1242.41,-632.5 1242.41,-668.5 1454.03,-668.5 1454.03,-632.5 1242.41,-632.5"/>
+<text text-anchor="middle" x="1338.47" y="-646.4" font-family="Times,serif" font-size="14.00">html.HTMLHeaderTextSplitter</text>
+<polyline fill="none" stroke="black" points="1434.53,-632.7 1434.53,-668.5"/>
+<text text-anchor="middle" x="1444.28" y="-646.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- html.HTMLSectionSplitter -->
+<g id="node12" class="node">
+<title>html.HTMLSectionSplitter</title>
+<polygon fill="none" stroke="black" points="1254.44,-687.5 1254.44,-723.5 1441.99,-723.5 1441.99,-687.5 1254.44,-687.5"/>
+<text text-anchor="middle" x="1338.47" y="-701.4" font-family="Times,serif" font-size="14.00">html.HTMLSectionSplitter</text>
+<polyline fill="none" stroke="black" points="1422.49,-687.7 1422.49,-723.5"/>
+<text text-anchor="middle" x="1432.24" y="-701.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- html.HTMLSemanticPreservingSplitter -->
+<g id="node13" class="node">
+<title>html.HTMLSemanticPreservingSplitter</title>
+<polygon fill="none" stroke="black" points="454.42,-330.5 454.42,-366.5 711.94,-366.5 711.94,-330.5 454.42,-330.5"/>
+<text text-anchor="middle" x="573.43" y="-344.4" font-family="Times,serif" font-size="14.00">html.HTMLSemanticPreservingSplitter</text>
+<polyline fill="none" stroke="black" points="692.44,-330.7 692.44,-366.5"/>
+<text text-anchor="middle" x="702.19" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- html.HTMLSemanticPreservingSplitter&#45;&gt;langchain_core.documents.transformers.BaseDocumentTransformer -->
+<g id="edge7" class="edge">
+<title>html.HTMLSemanticPreservingSplitter-&gt;langchain_core.documents.transformers.BaseDocumentTransformer</title>
+<path fill="none" stroke="#595959" d="M442.44,-362C442.44,-362 418.66,-362 418.66,-362"/>
+<polygon fill="#595959" stroke="#595959" points="442.44,-365.5 452.44,-362 442.44,-358.5 442.44,-365.5"/>
+</g>
+<!-- json.RecursiveJsonSplitter -->
+<g id="node14" class="node">
+<title>json.RecursiveJsonSplitter</title>
+<polygon fill="none" stroke="black" points="1256,-742.5 1256,-778.5 1440.43,-778.5 1440.43,-742.5 1256,-742.5"/>
+<text text-anchor="middle" x="1338.47" y="-756.4" font-family="Times,serif" font-size="14.00">json.RecursiveJsonSplitter</text>
+<polyline fill="none" stroke="black" points="1420.93,-742.7 1420.93,-778.5"/>
+<text text-anchor="middle" x="1430.68" y="-756.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- jsx.JSFrameworkTextSplitter -->
+<g id="node15" class="node">
+<title>jsx.JSFrameworkTextSplitter</title>
+<polygon fill="none" stroke="black" points="1248.22,-522.5 1248.22,-558.5 1448.21,-558.5 1448.21,-522.5 1248.22,-522.5"/>
+<text text-anchor="middle" x="1338.47" y="-536.4" font-family="Times,serif" font-size="14.00">jsx.JSFrameworkTextSplitter</text>
+<polyline fill="none" stroke="black" points="1428.71,-522.7 1428.71,-558.5"/>
+<text text-anchor="middle" x="1438.46" y="-536.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- jsx.JSFrameworkTextSplitter&#45;&gt;character.RecursiveCharacterTextSplitter -->
+<g id="edge8" class="edge">
+<title>jsx.JSFrameworkTextSplitter-&gt;character.RecursiveCharacterTextSplitter</title>
+<path fill="none" stroke="#595959" d="M1256.98,-510.72C1256.98,-510.72 1256.98,-473.67 1256.98,-473.67 1256.98,-473.67 1163.59,-473.67 1078.95,-473.67"/>
+<polygon fill="#595959" stroke="#595959" points="1253.48,-510.72 1256.98,-520.72 1260.48,-510.72 1253.48,-510.72"/>
+</g>
+<!-- konlpy.KonlpyTextSplitter -->
+<g id="node16" class="node">
+<title>konlpy.KonlpyTextSplitter</title>
+<polygon fill="none" stroke="black" points="851.32,-385.5 851.32,-421.5 1038.09,-421.5 1038.09,-385.5 851.32,-385.5"/>
+<text text-anchor="middle" x="934.96" y="-399.4" font-family="Times,serif" font-size="14.00">konlpy.KonlpyTextSplitter</text>
+<polyline fill="none" stroke="black" points="1018.59,-385.7 1018.59,-421.5"/>
+<text text-anchor="middle" x="1028.34" y="-399.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- konlpy.KonlpyTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge9" class="edge">
+<title>konlpy.KonlpyTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M839.62,-409.67C839.62,-409.67 648.98,-409.67 648.98,-409.67"/>
+<polygon fill="#595959" stroke="#595959" points="839.62,-413.17 849.62,-409.67 839.62,-406.17 839.62,-413.17"/>
+</g>
+<!-- latex.LatexTextSplitter -->
+<g id="node17" class="node">
+<title>latex.LatexTextSplitter</title>
+<polygon fill="none" stroke="black" points="1265.74,-467.5 1265.74,-503.5 1430.69,-503.5 1430.69,-467.5 1265.74,-467.5"/>
+<text text-anchor="middle" x="1338.47" y="-481.4" font-family="Times,serif" font-size="14.00">latex.LatexTextSplitter</text>
+<polyline fill="none" stroke="black" points="1411.19,-467.7 1411.19,-503.5"/>
+<text text-anchor="middle" x="1420.94" y="-481.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- latex.LatexTextSplitter&#45;&gt;character.RecursiveCharacterTextSplitter -->
+<g id="edge10" class="edge">
+<title>latex.LatexTextSplitter-&gt;character.RecursiveCharacterTextSplitter</title>
+<path fill="none" stroke="#595959" d="M1254.07,-470.33C1254.07,-470.33 1078.85,-470.33 1078.85,-470.33"/>
+<polygon fill="#595959" stroke="#595959" points="1254.07,-473.83 1264.07,-470.33 1254.07,-466.83 1254.07,-473.83"/>
+</g>
+<!-- markdown.ExperimentalMarkdownSyntaxTextSplitter -->
+<g id="node18" class="node">
+<title>markdown.ExperimentalMarkdownSyntaxTextSplitter</title>
+<polygon fill="none" stroke="black" points="1177.47,-797.5 1177.47,-833.5 1518.96,-833.5 1518.96,-797.5 1177.47,-797.5"/>
+<text text-anchor="middle" x="1338.47" y="-811.4" font-family="Times,serif" font-size="14.00">markdown.ExperimentalMarkdownSyntaxTextSplitter</text>
+<polyline fill="none" stroke="black" points="1499.46,-797.7 1499.46,-833.5"/>
+<text text-anchor="middle" x="1509.21" y="-811.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- markdown.HeaderType -->
+<g id="node19" class="node">
+<title>markdown.HeaderType</title>
+<polygon fill="none" stroke="black" points="1264.19,-55.5 1264.19,-91.5 1432.24,-91.5 1432.24,-55.5 1264.19,-55.5"/>
+<text text-anchor="middle" x="1338.47" y="-69.4" font-family="Times,serif" font-size="14.00">markdown.HeaderType</text>
+<polyline fill="none" stroke="black" points="1412.74,-55.7 1412.74,-91.5"/>
+<text text-anchor="middle" x="1422.49" y="-69.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- markdown.HeaderType&#45;&gt;TypedDict -->
+<g id="edge11" class="edge">
+<title>markdown.HeaderType-&gt;TypedDict</title>
+<path fill="none" stroke="#595959" d="M1252.61,-73.5C1252.61,-73.5 992.69,-73.5 992.69,-73.5"/>
+<polygon fill="#595959" stroke="#595959" points="1252.61,-77 1262.61,-73.5 1252.61,-70 1252.61,-77"/>
+</g>
+<!-- markdown.LineType -->
+<g id="node20" class="node">
+<title>markdown.LineType</title>
+<polygon fill="none" stroke="black" points="1271.57,-0.5 1271.57,-36.5 1424.87,-36.5 1424.87,-0.5 1271.57,-0.5"/>
+<text text-anchor="middle" x="1338.47" y="-14.4" font-family="Times,serif" font-size="14.00">markdown.LineType</text>
+<polyline fill="none" stroke="black" points="1405.37,-0.7 1405.37,-36.5"/>
+<text text-anchor="middle" x="1415.12" y="-14.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- markdown.LineType&#45;&gt;TypedDict -->
+<g id="edge12" class="edge">
+<title>markdown.LineType-&gt;TypedDict</title>
+<path fill="none" stroke="#595959" d="M1259.86,-18.5C1259.86,-18.5 944.71,-18.5 944.71,-18.5 944.71,-18.5 944.71,-39.19 944.71,-55.19"/>
+<polygon fill="#595959" stroke="#595959" points="1259.86,-22 1269.86,-18.5 1259.86,-15 1259.86,-22"/>
+</g>
+<!-- markdown.MarkdownHeaderTextSplitter -->
+<g id="node21" class="node">
+<title>markdown.MarkdownHeaderTextSplitter</title>
+<polygon fill="none" stroke="black" points="1214.42,-852.5 1214.42,-888.5 1482.02,-888.5 1482.02,-852.5 1214.42,-852.5"/>
+<text text-anchor="middle" x="1338.47" y="-866.4" font-family="Times,serif" font-size="14.00">markdown.MarkdownHeaderTextSplitter</text>
+<polyline fill="none" stroke="black" points="1462.52,-852.7 1462.52,-888.5"/>
+<text text-anchor="middle" x="1472.27" y="-866.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- markdown.MarkdownTextSplitter -->
+<g id="node22" class="node">
+<title>markdown.MarkdownTextSplitter</title>
+<polygon fill="none" stroke="black" points="1234.62,-412.5 1234.62,-448.5 1461.81,-448.5 1461.81,-412.5 1234.62,-412.5"/>
+<text text-anchor="middle" x="1338.47" y="-426.4" font-family="Times,serif" font-size="14.00">markdown.MarkdownTextSplitter</text>
+<polyline fill="none" stroke="black" points="1442.31,-412.7 1442.31,-448.5"/>
+<text text-anchor="middle" x="1452.06" y="-426.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- markdown.MarkdownTextSplitter&#45;&gt;character.RecursiveCharacterTextSplitter -->
+<g id="edge13" class="edge">
+<title>markdown.MarkdownTextSplitter-&gt;character.RecursiveCharacterTextSplitter</title>
+<path fill="none" stroke="#595959" d="M1222.69,-444.5C1222.69,-444.5 1078.78,-444.5 1078.78,-444.5"/>
+<polygon fill="#595959" stroke="#595959" points="1222.69,-448 1232.69,-444.5 1222.69,-441 1222.69,-448"/>
+</g>
+<!-- nltk.NLTKTextSplitter -->
+<g id="node23" class="node">
+<title>nltk.NLTKTextSplitter</title>
+<polygon fill="none" stroke="black" points="862.22,-330.5 862.22,-366.5 1027.2,-366.5 1027.2,-330.5 862.22,-330.5"/>
+<text text-anchor="middle" x="934.96" y="-344.4" font-family="Times,serif" font-size="14.00">nltk.NLTKTextSplitter</text>
+<polyline fill="none" stroke="black" points="1007.7,-330.7 1007.7,-366.5"/>
+<text text-anchor="middle" x="1017.45" y="-344.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- nltk.NLTKTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge14" class="edge">
+<title>nltk.NLTKTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M850.29,-348.5C850.29,-348.5 824.4,-348.5 824.4,-348.5 824.4,-348.5 824.4,-403.5 824.4,-403.5 824.4,-403.5 720.2,-403.5 648.77,-403.5"/>
+<polygon fill="#595959" stroke="#595959" points="850.29,-352 860.29,-348.5 850.29,-345 850.29,-352"/>
+</g>
+<!-- python.PythonCodeTextSplitter -->
+<g id="node24" class="node">
+<title>python.PythonCodeTextSplitter</title>
+<polygon fill="none" stroke="black" points="1241.22,-357.5 1241.22,-393.5 1455.21,-393.5 1455.21,-357.5 1241.22,-357.5"/>
+<text text-anchor="middle" x="1338.47" y="-371.4" font-family="Times,serif" font-size="14.00">python.PythonCodeTextSplitter</text>
+<polyline fill="none" stroke="black" points="1435.71,-357.7 1435.71,-393.5"/>
+<text text-anchor="middle" x="1445.46" y="-371.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- python.PythonCodeTextSplitter&#45;&gt;character.RecursiveCharacterTextSplitter -->
+<g id="edge15" class="edge">
+<title>python.PythonCodeTextSplitter-&gt;character.RecursiveCharacterTextSplitter</title>
+<path fill="none" stroke="#595959" d="M1229.57,-389.5C1229.57,-389.5 1058.28,-389.5 1058.28,-389.5 1058.28,-389.5 1058.28,-419.57 1058.28,-440.01"/>
+<polygon fill="#595959" stroke="#595959" points="1229.57,-393 1239.57,-389.5 1229.57,-386 1229.57,-393"/>
+</g>
+<!-- sentence_transformers.SentenceTransformersTokenTextSplitter -->
+<g id="node25" class="node">
+<title>sentence_transformers.SentenceTransformersTokenTextSplitter</title>
+<polygon fill="none" stroke="black" points="747.94,-275.5 747.94,-311.5 1141.47,-311.5 1141.47,-275.5 747.94,-275.5"/>
+<text text-anchor="middle" x="934.96" y="-289.4" font-family="Times,serif" font-size="14.00">sentence_transformers.SentenceTransformersTokenTextSplitter</text>
+<polyline fill="none" stroke="black" points="1121.97,-275.7 1121.97,-311.5"/>
+<text text-anchor="middle" x="1131.72" y="-289.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- sentence_transformers.SentenceTransformersTokenTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge16" class="edge">
+<title>sentence_transformers.SentenceTransformersTokenTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M779.44,-323.1C779.44,-323.1 779.44,-397.33 779.44,-397.33 779.44,-397.33 705.86,-397.33 648.8,-397.33"/>
+<polygon fill="#595959" stroke="#595959" points="782.94,-323.1 779.44,-313.1 775.94,-323.1 782.94,-323.1"/>
+</g>
+<!-- spacy.SpacyTextSplitter -->
+<g id="node26" class="node">
+<title>spacy.SpacyTextSplitter</title>
+<polygon fill="none" stroke="black" points="858.72,-220.5 858.72,-256.5 1030.69,-256.5 1030.69,-220.5 858.72,-220.5"/>
+<text text-anchor="middle" x="934.96" y="-234.4" font-family="Times,serif" font-size="14.00">spacy.SpacyTextSplitter</text>
+<polyline fill="none" stroke="black" points="1011.19,-220.7 1011.19,-256.5"/>
+<text text-anchor="middle" x="1020.94" y="-234.4" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- spacy.SpacyTextSplitter&#45;&gt;base.TextSplitter -->
+<g id="edge17" class="edge">
+<title>spacy.SpacyTextSplitter-&gt;base.TextSplitter</title>
+<path fill="none" stroke="#595959" d="M846.77,-238.5C846.77,-238.5 729.94,-238.5 729.94,-238.5 729.94,-238.5 729.94,-391.17 729.94,-391.17 729.94,-391.17 687.91,-391.17 648.83,-391.17"/>
+<polygon fill="#595959" stroke="#595959" points="846.77,-242 856.77,-238.5 846.77,-235 846.77,-242"/>
+</g>
+</g>
+</svg>

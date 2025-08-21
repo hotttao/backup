@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="764pt" height="318pt" viewBox="0.00 0.00 764.49 318.40">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 314.4)">
+<title>documents</title>
+<polygon fill="white" stroke="none" points="-4,4 -4,-314.4 760.49,-314.4 760.49,4 -4,4"/>
+<!-- base.BaseMedia -->
+<g id="node1" class="node">
+<title>base.BaseMedia</title>
+<polygon fill="none" stroke="black" points="334.94,-87.1 334.94,-136.7 442.29,-136.7 442.29,-87.1 334.94,-87.1"/>
+<text text-anchor="middle" x="388.62" y="-120.1" font-family="Times,serif" font-size="14.00">base.BaseMedia</text>
+<polyline fill="none" stroke="black" points="334.94,-111.9 442.29,-111.9"/>
+<text text-anchor="middle" x="388.62" y="-95.3" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.load.serializable.Serializable -->
+<g id="node6" class="node">
+<title>langchain_core.load.serializable.Serializable</title>
+<polygon fill="none" stroke="black" points="255.65,-173.7 255.65,-223.3 521.58,-223.3 521.58,-173.7 255.65,-173.7"/>
+<text text-anchor="middle" x="388.62" y="-206.7" font-family="Times,serif" font-size="14.00">langchain_core.load.serializable.Serializable</text>
+<polyline fill="none" stroke="black" points="255.65,-198.5 521.58,-198.5"/>
+<text text-anchor="middle" x="388.62" y="-181.9" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.BaseMedia&#45;&gt;langchain_core.load.serializable.Serializable -->
+<g id="edge1" class="edge">
+<title>base.BaseMedia-&gt;langchain_core.load.serializable.Serializable</title>
+<path fill="none" stroke="#595959" d="M388.62,-148.46C388.62,-148.46 388.62,-173.21 388.62,-173.21"/>
+<polygon fill="#595959" stroke="#595959" points="392.12,-148.46 388.62,-138.46 385.12,-148.46 392.12,-148.46"/>
+</g>
+<!-- base.Blob -->
+<g id="node2" class="node">
+<title>base.Blob</title>
+<polygon fill="none" stroke="black" points="300.81,-0.5 300.81,-50.1 372.42,-50.1 372.42,-0.5 300.81,-0.5"/>
+<text text-anchor="middle" x="336.62" y="-33.5" font-family="Times,serif" font-size="14.00">base.Blob</text>
+<polyline fill="none" stroke="black" points="300.81,-25.3 372.42,-25.3"/>
+<text text-anchor="middle" x="336.62" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.Blob&#45;&gt;base.BaseMedia -->
+<g id="edge2" class="edge">
+<title>base.Blob-&gt;base.BaseMedia</title>
+<path fill="none" stroke="#595959" d="M353.68,-61.86C353.68,-61.86 353.68,-86.61 353.68,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="357.18,-61.86 353.68,-51.86 350.18,-61.86 357.18,-61.86"/>
+</g>
+<!-- base.Document -->
+<g id="node3" class="node">
+<title>base.Document</title>
+<polygon fill="none" stroke="black" points="390.27,-0.5 390.27,-50.1 492.96,-50.1 492.96,-0.5 390.27,-0.5"/>
+<text text-anchor="middle" x="441.62" y="-33.5" font-family="Times,serif" font-size="14.00">base.Document</text>
+<polyline fill="none" stroke="black" points="390.27,-25.3 492.96,-25.3"/>
+<text text-anchor="middle" x="441.62" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- base.Document&#45;&gt;base.BaseMedia -->
+<g id="edge3" class="edge">
+<title>base.Document-&gt;base.BaseMedia</title>
+<path fill="none" stroke="#595959" d="M416.28,-61.86C416.28,-61.86 416.28,-86.61 416.28,-86.61"/>
+<polygon fill="#595959" stroke="#595959" points="419.78,-61.86 416.28,-51.86 412.78,-61.86 419.78,-61.86"/>
+</g>
+<!-- compressor.BaseDocumentCompressor -->
+<g id="node4" class="node">
+<title>compressor.BaseDocumentCompressor</title>
+<polygon fill="none" stroke="black" points="0,-173.7 0,-223.3 237.23,-223.3 237.23,-173.7 0,-173.7"/>
+<text text-anchor="middle" x="118.62" y="-206.7" font-family="Times,serif" font-size="14.00">compressor.BaseDocumentCompressor</text>
+<polyline fill="none" stroke="black" points="0,-198.5 237.23,-198.5"/>
+<text text-anchor="middle" x="118.62" y="-181.9" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- pydantic.main.BaseModel -->
+<g id="node7" class="node">
+<title>pydantic.main.BaseModel</title>
+<polygon fill="none" stroke="black" points="172.13,-260.3 172.13,-309.9 335.1,-309.9 335.1,-260.3 172.13,-260.3"/>
+<text text-anchor="middle" x="253.62" y="-293.3" font-family="Times,serif" font-size="14.00">pydantic.main.BaseModel</text>
+<polyline fill="none" stroke="black" points="172.13,-285.1 335.1,-285.1"/>
+<text text-anchor="middle" x="253.62" y="-268.5" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- compressor.BaseDocumentCompressor&#45;&gt;pydantic.main.BaseModel -->
+<g id="edge4" class="edge">
+<title>compressor.BaseDocumentCompressor-&gt;pydantic.main.BaseModel</title>
+<path fill="none" stroke="#595959" d="M204.68,-235.06C204.68,-235.06 204.68,-259.81 204.68,-259.81"/>
+<polygon fill="#595959" stroke="#595959" points="208.18,-235.06 204.68,-225.06 201.18,-235.06 208.18,-235.06"/>
+</g>
+<!-- transformers.BaseDocumentTransformer -->
+<g id="node5" class="node">
+<title>transformers.BaseDocumentTransformer</title>
+<polygon fill="none" stroke="black" points="510.74,-0.5 510.74,-50.1 756.49,-50.1 756.49,-0.5 510.74,-0.5"/>
+<text text-anchor="middle" x="633.62" y="-33.5" font-family="Times,serif" font-size="14.00">transformers.BaseDocumentTransformer</text>
+<polyline fill="none" stroke="black" points="510.74,-25.3 756.49,-25.3"/>
+<text text-anchor="middle" x="633.62" y="-8.7" font-family="Times,serif" font-size="14.00"> </text>
+</g>
+<!-- langchain_core.load.serializable.Serializable&#45;&gt;pydantic.main.BaseModel -->
+<g id="edge5" class="edge">
+<title>langchain_core.load.serializable.Serializable-&gt;pydantic.main.BaseModel</title>
+<path fill="none" stroke="#595959" d="M295.38,-235.06C295.38,-235.06 295.38,-259.81 295.38,-259.81"/>
+<polygon fill="#595959" stroke="#595959" points="298.88,-235.06 295.38,-225.06 291.88,-235.06 298.88,-235.06"/>
+</g>
+</g>
+</svg>
