@@ -348,7 +348,7 @@ standard chunking 执行了两步:
 ```
 
 ### 2.1 build_chunks
-这里我们还是借助 ChatGpt。
+build_chunks 也很长，这里我们还是借助 ChatGpt。了解这个函数究竟干了什么。
 
 `build_chunks` 是一个 **异步文档切分、存储、关键词/问题生成和打标签的完整任务处理函数**。它在前面 `do_handle_task` 中被调用，用于把文档拆成 chunks 并处理。
 
@@ -590,7 +590,7 @@ RAG 的目标是：
 2. 如何根据文档的类型选择不同的 chunker
 3. **关键词生成**、**问题生成**、**文档内容打标签** 的执行流程
 4. 如何 embedding
-2. 文件如何上传，如何下载。更一步是解析后的 chunk 如何在 MinIO 和 ES 中存储
+5. 文件如何上传，如何下载。更一步是解析后的 chunk 如何在 MinIO 和 ES 中存储
 
 
 下面是我通过断点，获取的一个 task 参数，以及整理的核心调用链的执行过程:
@@ -668,6 +668,7 @@ chunks = await build_chunks(task, progress_callback)
                     tenant_id=task["tenant_id"],
                 )
     upload_to_minio
+    doc_keyword_extraction
     doc_question_proposal
     doc_content_tagging
 embedding
