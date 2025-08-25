@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "RagFlow Service"
+title: "RagFlow ORM"
 date: 2025-08-20T12:00:00+08:00
 lastmod: 2025-08-20T12:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "RagFlow Service"
+description: "RagFlow ORM"
 featuredImage: 
 
 tags: ["RAG", "RagFlow"]

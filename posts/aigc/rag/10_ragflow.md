@@ -792,3 +792,70 @@ print(tokenizer.decode(outputs[0], skip_special_tokens=True))
 2. 目录：`config.json` + `权重文件` + `tokenizer配置`
 3. 使用：本地路径加载，配合 `transformers` 的 `AutoModel` 和 `AutoTokenizer`
 
+### 5.4 ragflow 下载的模型
+dwonload_deps.py 总共下载了 5 个模型。
+
+#### **InfiniFlow/text_concat_xgb_v1.0**
+
+* 机构：**InfiniFlow**（一个做智能文档解析、RAG 基础设施的团队）
+* 模型类型：传统 ML 模型（**XGBoost**）
+* 作用：对文本拼接相关任务（text concatenation）做分类/排序。
+* 可能用途：在文档拆分 + 拼接的场景中，用来判断哪些文本片段需要合并，比如多行表格、被换行的句子、跨页内容。
+
+---
+
+#### **InfiniFlow/deepdoc**
+
+* 机构：**InfiniFlow**
+* 模型类型：**文档解析模型（Document Parsing）**
+* 作用：从复杂的 PDF / Office 文档中抽取结构化信息（段落、表格、标题等）。
+* 类似的方向有 **LayoutLM**、**DocFormer** 这样的文档理解模型。
+* 在 RAG / 文档管理系统里常用，负责把文档切成语义块再送去 embedding。
+
+---
+
+#### **InfiniFlow/huqie**
+
+* 机构：**InfiniFlow**
+* 模型类型：看名字像是“**互切/互嵌**”相关的 embedding / 匹配模型。
+* 作用：用于语义相似度计算、问答匹配或文本检索。
+* 具体细节官方文档里应该有，但大概率是 **中文语义表示模型**。
+
+---
+
+#### **BAAI/bge-large-zh-v1.5**
+
+* 机构：**北京智源 BAAI**
+* 模型类型：**中文文本 Embedding 模型**
+* 作用：把中文文本编码成向量，用于相似度计算、检索、RAG。
+* 特点：
+
+  * 属于 BGE 系列，v1.5 在中文理解和鲁棒性上更好。
+  * 向量维度 1024，适合中文检索任务。
+
+---
+
+#### **maidalun1020/bce-embedding-base_v1**
+
+* 机构：网易有道（研究者账号：maidalun1020）
+* 模型类型：**中英文双语 Embedding 模型**
+* 作用：用于中文 + 英文语义检索 / RAG。
+* 特点：
+
+  * BCE 系列模型，支持跨语言向量检索。
+  * 向量维度 768。
+
+---
+
+#### 总结
+
+
+| 模型                                      | 来源         | 类型             | 主要用途               |
+| --------------------------------------- | ---------- | -------------- | ------------------ |
+| **InfiniFlow/text_concat_xgb_v1.0**  | InfiniFlow | XGBoost 排序模型   | 文本拼接判断（句子/段落合并）    |
+| **InfiniFlow/deepdoc**                  | InfiniFlow | 文档解析模型         | PDF/Office 文档结构化抽取 |
+| **InfiniFlow/huqie**                    | InfiniFlow | Embedding/匹配模型 | 中文语义相似度、检索         |
+| **BAAI/bge-large-zh-v1.5**              | BAAI       | 中文 Embedding   | 中文检索、RAG           |
+| **maidalun1020/bce-embedding-base_v1** | Youdao     | 中英 Embedding   | 跨语言检索、RAG          |
+
+## 6. 

@@ -291,7 +291,7 @@ ragflow 使用 redis 作为消息中间件:
 
 ---
 
-## 3. 基于 Sorted Set 的延迟队列（Valkey）
+#### 基于 Sorted Set 的延迟队列（Valkey）
 
 | Redis 命令                             | 作用      | 说明            | Valkey Redis client 对应方法                          |
 | ------------------------------------ | ------- | ------------- | ------------------------------------------------- |
@@ -819,4 +819,347 @@ def stop_tracemalloc(signum, frame):
 ```bash
 kill -SIGUSR1 <pid>
 kill -SIGUSR2 <pid>
+```
+
+## 5. 初始化配置
+### 5.1 配置读取
+init_settings 执行初始化配置。首先配置的读取位于 `api/utils/__init__.py`。
+1. conf_realpath: 会在项目根目录的 conf 目录下查找配置文件。
+2. 优先查找 `local.service_conf.yaml`
+3. 在查找 `service_conf.yaml`
+
+```python
+CONFIGS = read_config()
+SERVICE_CONF = "service_conf.yaml"
+
+def conf_realpath(conf_name):
+    conf_path = f"conf/{conf_name}"
+    return os.path.join(file_utils.get_project_base_directory(), conf_path)
+
+def read_config(conf_name=SERVICE_CONF):
+    local_config = {}
+    local_path = conf_realpath(f'local.{conf_name}')
+
+    # load local config file
+    if os.path.exists(local_path):
+        local_config = file_utils.load_yaml_conf(local_path)
+        if not isinstance(local_config, dict):
+            raise ValueError(f'Invalid config file: "{local_path}".')
+
+    global_config_path = conf_realpath(conf_name)
+    global_config = file_utils.load_yaml_conf(global_config_path)
+
+    if not isinstance(global_config, dict):
+        raise ValueError(f'Invalid config file: "{global_config_path}".')
+
+    global_config.update(local_config)
+    return global_config
+```
+
+### 5.2 默认配置
+`conf/service_conf.yaml` 是项目提供的默认配置，配置如下，包括:
+1. ragflow: 服务启动配置
+2. mysql: mysql 数据库配置
+3. minio: MinIO 是一个 开源的对象存储系统，兼容 Amazon S3 API
+4. es: elasticsearch 服务配置
+5. os: opensearch 服务配置，opensearch 是 es 的开源版本
+6. infinity: 向量数据库（Vector Database）
+7. redis: redis 配置
+8. postgres: postgres 配置，与 mysql 二选一
+9. s3，oss，azure: 亚马逊、阿里、微软提供的对象存储（Object Storage）服务
+10. opendal:
+    - opendal 是一个 开源的数据访问层库（Open Data Access Layer）
+    - 统一接口：通过一个统一的 API，就能访问各种存储服务。
+    - 多种存储后端：支持本地文件系统、Amazon S3、Google Cloud Storage、Azure Blob、HDFS、WebDAV、HTTP(S) 等。
+11. user_default_llm: 使用的大模型配置
+12. oauth: OAuth 认证
+13. authentication: API 访问和 Web UI 登录的身份认证
+14. permission: 权限控制，管理用户对资源的访问权限。
+14. smtp: 邮箱配置
+
+
+```yaml
+ragflow:
+  host: 0.0.0.0
+  http_port: 9380
+mysql:
+  name: 'rag_flow'
+  user: 'root'
+  password: 'infini_rag_flow'
+  host: 'localhost'
+  port: 5455
+  max_connections: 900
+  stale_timeout: 300
+  max_allowed_packet: 1073741824
+minio:
+  user: 'rag_flow'
+  password: 'infini_rag_flow'
+  host: 'localhost:9000'
+es:
+  hosts: 'http://localhost:1200'
+  username: 'elastic'
+  password: 'infini_rag_flow'
+os:
+  hosts: 'http://localhost:1201'
+  username: 'admin'
+  password: 'infini_rag_flow_OS_01'
+infinity:
+  uri: 'localhost:23817'
+  db_name: 'default_db'
+redis:
+  db: 1
+  password: 'infini_rag_flow'
+  host: 'localhost:6379'
+# postgres:
+#   name: 'rag_flow'
+#   user: 'rag_flow'
+#   password: 'infini_rag_flow'
+#   host: 'postgres'
+#   port: 5432
+#   max_connections: 100
+#   stale_timeout: 30
+# s3:
+#   access_key: 'access_key'
+#   secret_key: 'secret_key'
+#   region: 'region'
+# oss:
+#   access_key: 'access_key'
+#   secret_key: 'secret_key'
+#   endpoint_url: 'http://oss-cn-hangzhou.aliyuncs.com'
+#   region: 'cn-hangzhou'
+#   bucket: 'bucket_name'
+# azure:
+#   auth_type: 'sas'
+#   container_url: 'container_url'
+#   sas_token: 'sas_token'
+# azure:
+#   auth_type: 'spn'
+#   account_url: 'account_url'
+#   client_id: 'client_id'
+#   secret: 'secret'
+#   tenant_id: 'tenant_id'
+#   container_name: 'container_name'
+# The OSS object storage uses the MySQL configuration above by default. If you need to switch to antoher object storage service, please uncomment and configure the following parameters.
+# opendal:
+#   scheme: 'mysql'  # Storage type, such as s3, oss, azure, etc.
+#   config:
+#     oss_table: 'opendal_storage'
+# user_default_llm:
+#   factory: 'BAAI'
+#   api_key: 'backup'
+#   base_url: 'backup_base_url'
+#   default_models:
+#     chat_model:
+#       name: 'qwen2.5-7b-instruct'
+#       factory: 'xxxx'
+#       api_key: 'xxxx'
+#       base_url: 'https://api.xx.com'
+#     embedding_model:
+#       name: 'bge-m3'
+#     rerank_model: 'bge-reranker-v2'
+#     asr_model:
+#       model: 'whisper-large-v3' # alias of name
+#     image2text_model: ''
+# oauth:
+#   oauth2:
+#     display_name: "OAuth2"
+#     client_id: "your_client_id"
+#     client_secret: "your_client_secret"
+#     authorization_url: "https://your-oauth-provider.com/oauth/authorize"
+#     token_url: "https://your-oauth-provider.com/oauth/token"
+#     userinfo_url: "https://your-oauth-provider.com/oauth/userinfo"
+#     redirect_uri: "https://your-app.com/v1/user/oauth/callback/oauth2"
+#   oidc:
+#     display_name: "OIDC"
+#     client_id: "your_client_id"
+#     client_secret: "your_client_secret"
+#     issuer: "https://your-oauth-provider.com/oidc"
+#     scope: "openid email profile"
+#     redirect_uri: "https://your-app.com/v1/user/oauth/callback/oidc"
+#   github:
+#     type: "github"
+#     icon: "github"
+#     display_name: "Github"
+#     client_id: "your_client_id"
+#     client_secret: "your_client_secret"
+#     redirect_uri: "https://your-app.com/v1/user/oauth/callback/github"
+# authentication:
+#   client:
+#     switch: false
+#     http_app_key:
+#     http_secret_key:
+#   site:
+#     switch: false
+# permission:
+#   switch: false
+#   component: false
+#   dataset: false
+# smtp:
+#   mail_server: ""
+#   mail_port: 465
+#   mail_use_ssl: true
+#   mail_use_tls: false
+#   mail_username: ""
+#   mail_password: ""
+#   mail_default_sender:
+#     - "RAGFlow" # display name
+#     - "" # sender email address
+#   mail_frontend_url: "https://your-frontend.example.com"
+
+```
+
+### 5.3 初始化配置 
+配置初始化位于 `api/settings.py`，init_settings 函数代码比较长，我们分块来看
+
+#### 大模型配置
+大模型配置对应的配置段是 user_default_llm:
+
+```yaml
+user_default_llm:
+  factory: 'BAAI'
+  api_key: 'backup'
+  base_url: 'backup_base_url'
+  default_models:
+    chat_model:
+      name: 'qwen2.5-7b-instruct'
+      factory: 'xxxx'
+      api_key: 'xxxx'
+      base_url: 'https://api.xx.com'
+    embedding_model:
+      name: 'bge-m3'
+    rerank_model: 'bge-reranker-v2'
+    asr_model:
+      model: 'whisper-large-v3' # alias of name
+    image2text_model: ''
+```
+
+```python
+BUILTIN_EMBEDDING_MODELS = ["BAAI/bge-large-zh-v1.5@BAAI", "maidalun1020/bce-embedding-base_v1@Youdao"]
+
+def init_settings():
+    global LLM, LLM_FACTORY, LLM_BASE_URL, LIGHTEN, DATABASE_TYPE, DATABASE, FACTORY_LLM_INFOS, REGISTER_ENABLED
+    LIGHTEN = int(os.environ.get("LIGHTEN", "0"))
+    # 加载不同厂商提供的大模型元数据信息，位于 conf/llm_factories.json
+    try:
+        with open(os.path.join(get_project_base_directory(), "conf", "llm_factories.json"), "r") as f:
+            FACTORY_LLM_INFOS = json.load(f)["factory_llm_infos"]
+    except Exception:
+        FACTORY_LLM_INFOS = []
+    # 读取 user_default_llm 配置段
+    LLM = get_base_config("user_default_llm", {}) or {}
+    LLM_DEFAULT_MODELS = LLM.get("default_models", {}) or {}
+    LLM_FACTORY = LLM.get("factory", "") or ""
+    LLM_BASE_URL = LLM.get("base_url", "") or ""
+
+    global CHAT_MDL, EMBEDDING_MDL, RERANK_MDL, ASR_MDL, IMAGE2TEXT_MDL
+    global CHAT_CFG, EMBEDDING_CFG, RERANK_CFG, ASR_CFG, IMAGE2TEXT_CFG
+    if not LIGHTEN:
+        EMBEDDING_MDL = BUILTIN_EMBEDDING_MODELS[0]
+
+    # 加载 default_models 不同模型的配置
+    chat_entry = _parse_model_entry(LLM_DEFAULT_MODELS.get("chat_model", CHAT_MDL))
+    embedding_entry = _parse_model_entry(LLM_DEFAULT_MODELS.get("embedding_model", EMBEDDING_MDL))
+    rerank_entry = _parse_model_entry(LLM_DEFAULT_MODELS.get("rerank_model", RERANK_MDL))
+    asr_entry = _parse_model_entry(LLM_DEFAULT_MODELS.get("asr_model", ASR_MDL))
+    image2text_entry = _parse_model_entry(LLM_DEFAULT_MODELS.get("image2text_model", IMAGE2TEXT_MDL))
+
+    # 使用 user_default_llm 下的根配置，作为默认配置合并模型配置
+    global API_KEY, PARSERS, HOST_IP, HOST_PORT, SECRET_KEY
+    API_KEY = LLM.get("api_key")
+    PARSERS = LLM.get(
+        "parsers", "naive:General,qa:Q&A,resume:Resume,manual:Manual,table:Table,paper:Paper,book:Book,laws:Laws,presentation:Presentation,picture:Picture,one:One,audio:Audio,email:Email,tag:Tag"
+    )
+    CHAT_CFG = _resolve_per_model_config(chat_entry, LLM_FACTORY, API_KEY, LLM_BASE_URL)
+    EMBEDDING_CFG = _resolve_per_model_config(embedding_entry, LLM_FACTORY, API_KEY, LLM_BASE_URL)
+    RERANK_CFG = _resolve_per_model_config(rerank_entry, LLM_FACTORY, API_KEY, LLM_BASE_URL)
+    ASR_CFG = _resolve_per_model_config(asr_entry, LLM_FACTORY, API_KEY, LLM_BASE_URL)
+    IMAGE2TEXT_CFG = _resolve_per_model_config(image2text_entry, LLM_FACTORY, API_KEY, LLM_BASE_URL)
+
+    # 相当于按照 1. default_models、2. 代码中配置的常量、3. user_default_llm 根下默认配置的优先级，获取模型配置
+    CHAT_MDL = CHAT_CFG.get("model", "") or ""
+    EMBEDDING_MDL = EMBEDDING_CFG.get("model", "") or ""
+    RERANK_MDL = RERANK_CFG.get("model", "") or ""
+    ASR_MDL = ASR_CFG.get("model", "") or ""
+    IMAGE2TEXT_MDL = IMAGE2TEXT_CFG.get("model", "") or ""
+```
+
+#### 数据库配置
+数据库配置，主要:
+1. mysql/postgresql 的选择
+2. es/opensearch 的选择
+3. retriever 的初始化
+
+```python
+def init_settings():
+    # mysql/postgresql 的选择
+    DATABASE_TYPE = os.getenv("DB_TYPE", "mysql")
+    DATABASE = decrypt_database_config(name=DATABASE_TYPE)
+    
+    global DOC_ENGINE, docStoreConn, retrievaler, kg_retrievaler
+    DOC_ENGINE = os.environ.get("DOC_ENGINE", "elasticsearch")
+    # DOC_ENGINE = os.environ.get('DOC_ENGINE', "opensearch")
+    lower_case_doc_engine = DOC_ENGINE.lower()
+    if lower_case_doc_engine == "elasticsearch":
+        docStoreConn = rag.utils.es_conn.ESConnection()
+    elif lower_case_doc_engine == "infinity":
+        docStoreConn = rag.utils.infinity_conn.InfinityConnection()
+    elif lower_case_doc_engine == "opensearch":
+        docStoreConn = rag.utils.opensearch_conn.OSConnection()
+    else:
+        raise Exception(f"Not supported doc engine: {DOC_ENGINE}")
+
+    retrievaler = search.Dealer(docStoreConn)
+    from graphrag import search as kg_search
+
+    kg_retrievaler = kg_search.KGSearch(docStoreConn)
+```
+
+#### 其他配置项
+
+```python
+def init_settings():
+    # 服务启动配置
+    try:
+        REGISTER_ENABLED = int(os.environ.get("REGISTER_ENABLED", "1"))
+    except Exception:
+        pass
+
+    global API_KEY, PARSERS, HOST_IP, HOST_PORT, SECRET_KEY
+    
+    HOST_IP = get_base_config(RAG_FLOW_SERVICE_NAME, {}).get("host", "127.0.0.1")
+    HOST_PORT = get_base_config(RAG_FLOW_SERVICE_NAME, {}).get("http_port")
+
+    SECRET_KEY = get_or_create_secret_key()
+
+    # 客户端认证配置
+    global AUTHENTICATION_CONF, CLIENT_AUTHENTICATION, HTTP_APP_KEY, GITHUB_OAUTH, FEISHU_OAUTH, OAUTH_CONFIG
+    # authentication
+    AUTHENTICATION_CONF = get_base_config("authentication", {})
+
+    CLIENT_AUTHENTICATION = AUTHENTICATION_CONF.get("client", {}).get("switch", False)
+    HTTP_APP_KEY = AUTHENTICATION_CONF.get("client", {}).get("http_app_key")
+    GITHUB_OAUTH = get_base_config("oauth", {}).get("github")
+    FEISHU_OAUTH = get_base_config("oauth", {}).get("feishu")
+
+    OAUTH_CONFIG = get_base_config("oauth", {})
+
+    if int(os.environ.get("SANDBOX_ENABLED", "0")):
+        global SANDBOX_HOST
+        SANDBOX_HOST = os.environ.get("SANDBOX_HOST", "sandbox-executor-manager")
+
+    # 邮箱服务配置
+    global SMTP_CONF, MAIL_SERVER, MAIL_PORT, MAIL_USE_SSL, MAIL_USE_TLS
+    global MAIL_USERNAME, MAIL_PASSWORD, MAIL_DEFAULT_SENDER, MAIL_FRONTEND_URL
+    SMTP_CONF = get_base_config("smtp", {})
+
+    MAIL_SERVER = SMTP_CONF.get("mail_server", "")
+    MAIL_PORT = SMTP_CONF.get("mail_port", 000)
+    MAIL_USE_SSL = SMTP_CONF.get("mail_use_ssl", True)
+    MAIL_USE_TLS = SMTP_CONF.get("mail_use_tls", False)
+    MAIL_USERNAME = SMTP_CONF.get("mail_username", "")
+    MAIL_PASSWORD = SMTP_CONF.get("mail_password", "")
+    mail_default_sender = SMTP_CONF.get("mail_default_sender", [])
+    if mail_default_sender and len(mail_default_sender) >= 2:
+        MAIL_DEFAULT_SENDER = (mail_default_sender[0], mail_default_sender[1])
+    MAIL_FRONTEND_URL = SMTP_CONF.get("mail_frontend_url", "")
 ```
