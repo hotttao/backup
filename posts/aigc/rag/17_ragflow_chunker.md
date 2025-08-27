@@ -892,6 +892,9 @@ def tokenize(d, t, eng):
     d["content_sm_ltks"] = rag_tokenizer.fine_grained_tokenize(d["content_ltks"])
 ```
 
+## 4. upload_to_minio
+
+
 
 ## 5. 解析完之后的统一处理
 经过解析之后，所有类型的文件都会被分为:

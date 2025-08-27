@@ -645,31 +645,39 @@ embedding_model = LLMBundle(
             # 加载模型
             EmbeddingModel[model_config["llm_factory"]](model_config["api_key"], model_config["llm_name"], base_url=model_config["api_base"])
         model_config = TenantLLMService.get_model_config(tenant_id, llm_type, llm_name)
-
+if task.get("task_type", "") == "raptor":
+    chunks, token_count = await run_raptor(task, chat_model, embedding_model, vector_size, progress_callback)
+elif task.get("task_type", "") == "graphrag":
+    await run_graphrag(task, task_language, with_resolution, with_community, chat_model, embedding_model, progress_callback)
+    return
+else:
 # 分块
-chunks = await build_chunks(task, progress_callback)
-    # bucket=kb_id, name=47_langgraph_summary.md
-    bucket, name = File2DocumentService.get_storage_address(doc_id=task["doc_id"])
-    # 从 minio 中下载 47_langgraph_summary.md
-    binary = await get_storage_binary(bucket, name)
+    chunks = await build_chunks(task, progress_callback)
+        # bucket=kb_id, name=47_langgraph_summary.md
+        bucket, name = File2DocumentService.get_storage_address(doc_id=task["doc_id"])
+        # 从 minio 中下载 47_langgraph_summary.md
+        binary = await get_storage_binary(bucket, name)
 
-    # 获取文件解析器
-    chunker = FACTORY[task["parser_id"].lower()]
-    # naive.chunk 会根据文件名中的文件类型，实例化不同的 parser 进行chunk
-    chunker.chunk(
-                    task["name"],
-                    binary=binary,
-                    from_page=task["from_page"],
-                    to_page=task["to_page"],
-                    lang=task["language"],
-                    callback=progress_callback,
-                    kb_id=task["kb_id"],
-                    parser_config=task["parser_config"],
-                    tenant_id=task["tenant_id"],
-                )
-    upload_to_minio
-    doc_keyword_extraction
-    doc_question_proposal
-    doc_content_tagging
-embedding
+        # 获取文件解析器
+        chunker = FACTORY[task["parser_id"].lower()]
+        # naive.chunk 会根据文件名中的文件类型，实例化不同的 parser 进行chunk
+        chunker.chunk(
+                        task["name"],
+                        binary=binary,
+                        from_page=task["from_page"],
+                        to_page=task["to_page"],
+                        lang=task["language"],
+                        callback=progress_callback,
+                        kb_id=task["kb_id"],
+                        parser_config=task["parser_config"],
+                        tenant_id=task["tenant_id"],
+                    )
+        upload_to_minio
+        doc_keyword_extraction
+        doc_question_proposal
+        doc_content_tagging
+    embedding
+settings.docStoreConn.insert(chunks)
+TaskService.update_chunk_ids(task["id"], chunk_ids_str)
+DocumentService.increment_chunk_num(task_doc_id, task_dataset_id, token_count, chunk_count, 0)
 ```
