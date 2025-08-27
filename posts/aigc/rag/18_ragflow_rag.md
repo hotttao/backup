@@ -578,3 +578,20 @@ Output:
 {{ content }}
 
 ```
+
+## 5. 总结
+
+经过索引增强后，doc 会添加如下字段:
+
+```python
+# 关键词
+d["important_kwd"] = cached.split(",")
+d["important_tks"] = rag_tokenizer.tokenize(" ".join(d["important_kwd"]))
+
+# 问题生成
+d["question_kwd"] = cached.split("\n")  # 按行拆成问题列表
+d["question_tks"] = rag_tokenizer.tokenize("\n".join(d["question_kwd"]))  # 分词
+
+# 标签
+d["tag_feas"] = {"tag1": 1, "tag2": 2} # value是tag 的权重
+```

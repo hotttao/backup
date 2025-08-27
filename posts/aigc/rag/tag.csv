@@ -1,0 +1,27 @@
+tag,description
+embedder,将文本或文档编码为向量的组件
+indexer,向量或文档索引构建与写入的组件
+retriever,根据 query 从索引中检索候选文档的组件
+reranker,对检索结果重新排序以提高精度的组件
+reader,基于上下文生成最终答案的组件
+generator,同 reader，强调生成型输出
+storage,对象存储或持久化服务（如 MinIO、S3）
+prompt,提示模板组件，用于 LLM 输入构造
+chain,组合多个步骤的链式调用
+llm,大语言模型调用组件
+hybrid,混合策略（如稀疏+稠密检索）的组件
+monitor,监控与日志记录组件
+node,图中的单个算子/节点
+edge,节点之间的数据流连接
+embedder-node,向量编码节点
+chunker-node,文档分块节点
+indexer-node,写入索引的节点
+retriever-node,检索节点
+reranker-node,重排节点
+reader-node,回答生成节点
+graph,完整的计算图定义
+state,节点或图的状态存储
+checkpoint,图执行的中间检查点
+interrupt,图运行中的中断控制
+loop,循环执行控制节点（如 PregelLoop）
+store,LangGraph 的存储组件
