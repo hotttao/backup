@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "RagFlow 框架"
-date: 2025-08-20T10:00:00+08:00
-lastmod: 2025-08-20T10:00:00+08:00
+date: 2025-08-20T08:00:00+08:00
+lastmod: 2025-08-20T08:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"

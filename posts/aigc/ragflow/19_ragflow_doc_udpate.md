@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "RagFlow embedding 和结果上传"
-date: 2025-08-20T11:00:00+08:00
-lastmod: 2025-08-20T11:00:00+08:00
+date: 2025-08-20T17:00:00+08:00
+lastmod: 2025-08-20T17:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
