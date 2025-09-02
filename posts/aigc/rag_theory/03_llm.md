@@ -105,3 +105,86 @@ ALCE 的任务设置为：给定一个问题，系统不仅需从大规模检索
 
 ## 4. 大模型性能评估
 RAGAS 库（全称 RAGAs，Retrieval-Augmented-Generation Assessment）是一个专门用于评估 RAG（Retrieval-Augmented Generation，检索增强生成）系统的开源框架。
+
+
+## 5. LLM Quantization
+
+### 5.1 背景
+
+大语言模型（LLM，比如 GPT、LLaMA、Qwen）通常有上百亿甚至上千亿参数。
+这些参数本质上是**浮点数（通常是 FP32 或 FP16）**，存储和推理时需要巨大的显存和计算资源。
+
+为了让模型能在更便宜的硬件（如单张消费级显卡、甚至 CPU）上运行，就引入了 **量化（Quantization）** 技术。
+
+---
+
+### 5.2 什么是量化
+
+量化就是 **把原本的高精度浮点数参数，用更低精度的数据类型（int8、int4、甚至 int2）来近似表示**。
+
+* 例如：
+
+  * 原始参数：`0.123456789 (FP32)`
+  * 量化后：`0.12 (INT8 对应的缩放表示)`
+
+这样可以：
+
+* **减少模型大小**（比如 4bit 量化能让模型体积缩小到 1/8）
+* **降低内存带宽压力**
+* **加速推理**（低精度矩阵乘法更快）
+
+---
+
+### 5.3 量化方法分类
+
+常见的 LLM 量化方法有以下几类：
+
+#### （1）Post-training Quantization（PTQ，训练后量化）
+
+* 不需要重新训练
+* 直接把训练好的模型参数转换成低精度
+* 常见方法：
+
+  * **per-tensor quantization**：一个张量用同一缩放因子
+  * **per-channel quantization**：每个通道（比如权重矩阵的每一列/行）用不同缩放因子，精度更高
+* 缺点：可能精度损失明显，尤其在极低比特（int4、int2）时
+
+#### （2）Quantization-aware Training（QAT，量化感知训练）
+
+* 在训练阶段就模拟量化效果，让模型学会在低精度下保持精度
+* 精度更高，但需要重新训练，成本大
+
+#### （3）混合精度量化（Mixed Precision）
+
+* 不同部分用不同精度
+* 例如：
+
+  * **Embedding 层 / 输出层** → FP16（防止信息损失过大）
+  * **Attention / MLP 权重** → INT4 或 INT8
+
+#### （4）近年常见优化方法
+
+* **GPTQ**（Post-training）：逐步量化权重并最小化误差
+* **AWQ**（Activation-aware Weight Quantization）：对激活分布友好的量化
+* **SmoothQuant**：通过平滑激活和权重分布，使量化更稳定
+* **ZeroQuant**：针对超大模型的自动量化方法
+
+---
+
+### 5.4 精度 vs 性能权衡
+
+* **FP16**（16-bit float）：几乎无损，推理速度和存储减半
+* **INT8**：常见于 CPU/GPU 部署，精度损失可控
+* **INT4**：目前最流行的 LLM 量化方案，可以让 70B 模型在单机 GPU 上运行
+* **INT2 / Binary**：极端情况，通常只用于研究，精度损失大
+
+---
+
+### 5.5 实际应用举例
+
+* **Hugging Face** 上很多 LLaMA、Qwen 模型都提供了 **GPTQ / AWQ 量化版**，显存占用直接减少 4-8 倍
+* **GGUF 格式（llama.cpp 社区）**：支持 `q8_0`, `q4_k`, `q2_k` 等不同量化等级，可以在 MacBook / PC CPU 上跑大模型
+* **Inference Frameworks**：
+
+  * GPU 上：bitsandbytes、TensorRT-LLM、vLLM（部分支持）
+  * CPU 上：llama.cpp、MLC-LLM

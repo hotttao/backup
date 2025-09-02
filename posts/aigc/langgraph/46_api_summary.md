@@ -103,7 +103,7 @@ PregelNode writers 参数的初始化最为复杂:
         - ChannelWriteTupleEntry 包含的是 mapper 函数，返回 mapper(value)
         - mapper 有 _get_updates，_control_branch，正是因为这些 mapper 函数，StateGraph 的 node 函数，可以返回 `dict|Command`
 
-这里解释解释了 node 函数的返回值是如何处理。作为对比，我们额外说明一下 tool 函数的返回值是如何处理的。
+这里解释了 node 函数的返回值是如何处理。作为对比，我们额外说明一下 tool 函数的返回值是如何处理的。
 1. 首先 tool 函数被包装在 Tool 类中，Tool 会调用 _format_output 对函数返回结果进行包装:
     - 如果 content 就是一个类 ToolOutputMixin 的实例，直接返回
     - Command、ToolMessage 都是 ToolOutputMixin 的子类，会直接返回
