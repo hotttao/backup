@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "Langchain RAG 相关抽象"
+title: "Langchain Rag 相关抽象"
 date: 2025-08-19T8:00:00+08:00
 lastmod: 2025-08-19T8:00:00+08:00
 draft: false
@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Langchain RAG 相关抽象"
 featuredImage: 
 
-tags: ["langgraph 源码", "RAG"]
+tags: ["RAG"]
 categories: ["langchain"]
 
 lightgallery: true

@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Pod 使用进阶"
 featuredImage: 
 
-tags: ["k8s", "k8s 实现"]
+tags: ["k8s"]
 categories: ["architecture"]
 
 lightgallery: true

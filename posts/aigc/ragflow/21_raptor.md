@@ -10,7 +10,7 @@ authorLink: "https://hotttao.github.io/"
 description: "RagFlow Raptor 召回增强"
 featuredImage: 
 
-tags: ["RAG", "RagFlow"]
+tags: ["RagFlow"]
 categories: ["langchain"]
 
 lightgallery: true

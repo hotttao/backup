@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Langchain Rag 抽象详解"
 featuredImage: 
 
-tags: ["langgraph 源码", "RAG"]
+tags: ["RAG"]
 categories: ["langchain"]
 
 lightgallery: true

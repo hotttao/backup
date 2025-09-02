@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "k8s 使用工具"
 featuredImage: 
 
-tags: ["k8s", "工具集"]
+tags: ["k8s"]
 categories: ["architecture"]
 
 lightgallery: true

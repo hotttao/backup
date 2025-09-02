@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "RagFlow Full Text Query"
 featuredImage: 
 
-tags: ["RAG", "RagFlow"]
+tags: ["RagFlow"]
 categories: ["langchain"]
 
 lightgallery: true

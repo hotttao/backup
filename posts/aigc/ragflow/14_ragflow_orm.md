@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "RagFlow ORM"
 featuredImage: 
 
-tags: ["RAG", "RagFlow"]
+tags: ["RagFlow"]
 categories: ["langchain"]
 
 lightgallery: true

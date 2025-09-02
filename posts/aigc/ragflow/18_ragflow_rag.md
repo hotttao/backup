@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "RagFlow 增强 Rag"
 featuredImage: 
 
-tags: ["RAG", "RagFlow"]
+tags: ["RagFlow"]
 categories: ["langchain"]
 
 lightgallery: true

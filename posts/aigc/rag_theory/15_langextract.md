@@ -1,12 +1,12 @@
 ---
 weight: 1
-title: "自主式 Rag"
-date: 2025-08-20T13:00:00+08:00
-lastmod: 2025-08-20T13:00:00+08:00
+title: "LangExtract 库"
+date: 2025-08-19T10:00:00+08:00
+lastmod: 2025-08-19T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "Rag 自主式 RAG"
+description: "LangExtract 库"
 featuredImage: 
 
 tags: ["RAG"]
@@ -17,4 +17,3 @@ lightgallery: true
 toc:
   auto: false
 ---
-

@@ -10,7 +10,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Langchain Text Splitter"
 featuredImage: 
 
-tags: ["langgraph 源码", "RAG"]
+tags: ["RAG"]
 categories: ["langchain"]
 
 lightgallery: true

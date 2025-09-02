@@ -10,7 +10,7 @@ authorLink: "https://hotttao.github.io/"
 description: "RagFlow NLP Tokenizer"
 featuredImage: 
 
-tags: ["RAG", "RagFlow"]
+tags: ["RagFlow"]
 categories: ["langchain"]
 
 lightgallery: true

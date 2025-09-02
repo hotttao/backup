@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "RagFlow 模型实例化"
 featuredImage: 
 
-tags: ["RAG", "RagFlow"]
+tags: ["RagFlow"]
 categories: ["langchain"]
 
 lightgallery: true

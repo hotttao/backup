@@ -337,4 +337,4 @@ spec:
 
 
 ### 1.3 自定义控制器
-接下来，我还需要让 Kubernetes“认识”这种 YAML 文件里描述的“网络”部分，比如“cidr”（网段），“gateway”（网关）这些字段的含义。最新的自定义控制器的代码示例参见 [sample-controller](git@github.com:kubernetes/sample-controller.git)
+接下来，我还需要让 Kubernetes“认识”这种 YAML 文件里描述的“网络”部分，比如“cidr”（网段），“gateway”（网关）这些字段的含义。最新的自定义控制器的代码示例参见 [sample-controller](https://github.com/kubernetes/sample-controller)
