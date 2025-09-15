@@ -721,7 +721,7 @@ conditional_edges 以 BranchSpec 保存在 self.branches 中。这里我们需�
 2. 如果起点是多节点，边会添加到 self.waiting_edges
 3. 如果是 condition_edge，边会添加到 self.branches
 
-## 2.7 validate
+### 2.7 validate
 
 StateGragph 在 compile 之前会调用 validate 进行参数校验。主要校验的逻辑是，边的起点、结束点是否在 self.nodes 中，以及中断是否在 self.nodes 内。
 
