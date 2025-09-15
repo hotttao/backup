@@ -183,6 +183,247 @@ class PregelNode:
 
 至此我们可以得到一个结论: `updated_channels` 是驱动 graph 向前执行的"源"。
 
+### 1.3 apply_writes
+
+apply_writes 是 Pregel 更新 channel 的过程，其中很重要的逻辑是判断 channel 是否可以被认定为 updated。我们来看 apply_writes 的代码
+
+```python
+def apply_writes(
+    checkpoint: Checkpoint,
+    channels: Mapping[str, BaseChannel],
+    tasks: Iterable[WritesProtocol],
+    get_next_version: GetNextVersion | None,
+    trigger_to_nodes: Mapping[str, Sequence[str]],
+) -> set[str]:
+    """Apply writes from a set of tasks (usually the tasks from a Pregel step)
+    to the checkpoint and channels, and return managed values writes to be applied
+    externally.
+
+    Args:
+        checkpoint: The checkpoint to update.
+        channels: The channels to update.
+        tasks: The tasks to apply writes from.
+        get_next_version: Optional function to determine the next version of a channel.
+        trigger_to_nodes: Mapping of channel names to the set of nodes that can be triggered by updates to that channel.
+
+    Returns:
+        Set of channels that were updated in this step.
+    """
+    # sort tasks on path, to ensure deterministic order for update application
+    # any path parts after the 3rd are ignored for sorting
+    # (we use them for eg. task ids which aren't good for sorting)
+    # 保证同一超级步内写入操作应用顺序是**确定的**
+    # 只比较 `path[:3]` 是为了排除不可排序的 task ID（可能是 UUID）
+    tasks = sorted(tasks, key=lambda t: task_path_str(t.path[:3]))
+    # if no task has triggers this is applying writes from the null task only
+    # so we don't do anything other than update the channels written to
+    # 所有 task 是否有触发器，t.triggers 表示哪些 channel 触发了当前 task
+    bump_step = any(t.triggers for t in tasks)
+
+    # update seen versions
+    # chan1 触发了 node1, node1 就能看到 chan1 当前的最新值
+    for task in tasks:
+        checkpoint["versions_seen"].setdefault(task.name, {}).update(
+            {
+                chan: checkpoint["channel_versions"][chan]
+                # task.triggers 表示哪些 channel 触发了当前 task
+                for chan in task.triggers
+                if chan in checkpoint["channel_versions"]
+            }
+        )
+
+    # Find the highest version of all channels
+    # 获取当前最大版本 → 调用 `get_next_version()` 从 BaseCheckpointSaver 中获取下一个版本号
+    if get_next_version is None:
+        next_version = None
+    else:
+        next_version = get_next_version(
+            (
+                max(checkpoint["channel_versions"].values())
+                if checkpoint["channel_versions"]
+                else None
+            ),
+            None,
+        )
+
+    # Consume all channels that were read
+    # 将触发 task 的 channel 设置为已消费，并将其 channe_version 设置成新版本
+    for chan in {
+        chan
+        for task in tasks
+        for chan in task.triggers
+        # chan 不是 Langgraph 内置 channel
+        if chan not in RESERVED and chan in channels
+    }:
+        # 将 channel 设置为 已消费状态
+        if channels[chan].consume() and next_version is not None:
+            # 如果成功 `consume()`，给 channel 设置新的版本
+            # 表示该通道在这一 step 被读取了一次。
+            checkpoint["channel_versions"][chan] = next_version
+
+    # Group writes by channel
+    # 将所有任务的写入内容按通道归类
+    pending_writes_by_channel: dict[str, list[Any]] = defaultdict(list)
+    for task in tasks:
+        for chan, val in task.writes:
+            if chan in (NO_WRITES, PUSH, RESUME, INTERRUPT, RETURN, ERROR):
+                pass
+            elif chan in channels:
+                pending_writes_by_channel[chan].append(val)
+            else:
+                logger.warning(
+                    f"Task {task.name} with path {task.path} wrote to unknown channel {chan}, ignoring it."
+                )
+
+    # Apply writes to channels
+    # 应用写入，更新通道内容，并将这些被更新的 channel 的版本号更新为 next_version
+    updated_channels: set[str] = set()
+    for chan, vals in pending_writes_by_channel.items():
+        if chan in channels:
+            if channels[chan].update(vals) and next_version is not None:
+                checkpoint["channel_versions"][chan] = next_version
+                # unavailable channels can't trigger tasks, so don't add them
+                # 如果 channel 可读取,加入 updated_channels
+                if channels[chan].is_available():
+                    updated_channels.add(chan)
+
+    # Channels that weren't updated in this step are notified of a new step
+    # 对其他通道执行 empty 更新（用于触发 step 推进）
+    if bump_step:
+        for chan in channels:
+            # 处理 NamedBarrierValue，多个节点触发 NamedBarrierValue 更新之后，需要检查是否所有节点都触发了
+            if channels[chan].is_available() and chan not in updated_channels:
+                # 写入空值会触发一些 `Channel` 的内部状态清理或触发机制。
+                if channels[chan].update(EMPTY_SEQ) and next_version is not None:
+                    checkpoint["channel_versions"][chan] = next_version
+                    # unavailable channels can't trigger tasks, so don't add them
+                    # 如果 channel 可读取,加入 updated_channels
+                    if channels[chan].is_available():
+                        updated_channels.add(chan)
+
+    # If this is (tentatively) the last superstep, notify all channels of finish
+    if bump_step and updated_channels.isdisjoint(trigger_to_nodes):
+        for chan in channels:
+            # 对所有通道调用 `finish()` 判断延迟节点是否可用
+            if channels[chan].finish() and next_version is not None:
+                checkpoint["channel_versions"][chan] = next_version
+                # unavailable channels can't trigger tasks, so don't add them
+                if channels[chan].is_available():
+                    updated_channels.add(chan)
+
+    # Return managed values writes to be applied externally
+    return updated_channels
+```
+
+apply_writes 被调用的位置位于 PregelLoop，其中:
+1. `self.tasks` 是 prepare_next_tasks 返回的本轮需要执行的任务，类型为: `dict[str, PregelExecutableTask]`
+    - `task.triggers` 表示哪些 channel 触发了当前 task
+2. `self.trigger_to_nodes` 是 channel 到 node 的触发关系，值为 `{ch1: [node1, node2]}`，表示一个 channel 将触发哪些 node 的执行。
+
+```python
+class PregelLoop:
+    def after_tick(self) -> None:
+        # finish superstep
+        writes = [w for t in self.tasks.values() for w in t.writes]
+        # all tasks have finished
+        self.updated_channels = apply_writes(
+            self.checkpoint,
+            self.channels,
+            self.tasks.values(),
+            self.checkpointer_get_next_version,
+            self.trigger_to_nodes,
+        )
+
+```
+
+我们举一个文档里的示例:
+
+```python
+import operator
+from typing import Annotated, Any
+from typing_extensions import TypedDict
+from langgraph.graph import StateGraph, START, END
+
+
+class State(TypedDict):
+    # The operator.add reducer fn makes this append-only
+    aggregate: Annotated[list, operator.add]
+
+
+def a(state: State):
+    print(f'Adding "A" to {state["aggregate"]}')
+    return {"aggregate": ["A"]}
+
+
+def b(state: State):
+    print(f'Adding "B" to {state["aggregate"]}')
+    return {"aggregate": ["B"]}
+
+
+def b_2(state: State):
+    print(f'Adding "B_2" to {state["aggregate"]}')
+    return {"aggregate": ["B_2"]}
+
+
+def c(state: State):
+    print(f'Adding "C" to {state["aggregate"]}')
+    return {"aggregate": ["C"]}
+
+
+def d(state: State):
+    print(f'Adding "D" to {state["aggregate"]}')
+    return {"aggregate": ["D"]}
+
+
+builder = StateGraph(State)
+builder.add_node(a)
+builder.add_node(b)
+builder.add_node(b_2)
+builder.add_node(c)
+builder.add_node(d, defer=True)
+builder.add_edge(START, "a")
+builder.add_edge("a", "b")
+builder.add_edge("a", "c")
+builder.add_edge("b", "b_2")
+builder.add_edge("b_2", "d")
+builder.add_edge("c", "d")
+builder.add_edge("d", END)
+graph = builder.compile()
+graph.invoke({"aggregate": []})
+
+
+# 输出
+Adding "A" to []
+Adding "B" to ['A']
+Adding "C" to ['A']
+Adding "B_2" to ['A', 'B', 'C']
+Adding "D" to ['A', 'B', 'C', 'B_2']
+```
+
+我们重点关注 D 被触发的时机，我们对 apply_writes 320 行打上断点，可以看到 apply_writes 调用时有如下参数:
+
+```python
+# trigger_to_nodes 可以看到 触发 node 的都是独立的 channel
+trigger_to_nodes = {'__start__': ['__start__'], 'branch:to:a': ['a'], 'branch:to:b': ['b'], 'branch:to:b_2': ['b_2'], 'branch:to:c': ['c'], 'branch:to:d': ['d']}
+# 表示 B_2 的执行触发了 aggregate 的更新 和 D 节点的执行
+pending_writes_by_channel={'aggregate': [['B_2']], 'branch:to:d': [None]}
+# updated_channels 不包括 branch:to:d 是因为 D 节点 defer=True，
+# branch:to:d 对应的 channel 类型为 LastValueAfterFinish，这个channel，被调用 finish() 之前 channel 不可见
+updated_channels={'aggregate'}
+# 此时 updated_channels.isdisjoint(trigger_to_nodes) 就是 True
+# apply_writes 会把可以 finish 的，并且可用的 channel 放到 updated_channel，这个时候就包括 branch:to:d
+# 此时 D 节点就会被触发
+if bump_step and updated_channels.isdisjoint(trigger_to_nodes):
+    for chan in channels:
+        if channels[chan].finish() and next_version is not None:
+            checkpoint["channel_versions"][chan] = next_version
+            # unavailable channels can't trigger tasks, so don't add them
+            if channels[chan].is_available():
+                updated_channels.add(chan)
+```
+
+
+
 ## 2. Pregel 的崩溃恢复
 
 ### 2.1 Pregel 初始化
@@ -693,4 +934,211 @@ class Pregel:
                         get_waiter=get_waiter,
                         schedule_task=loop.accept_push,
                     ):
+```
+
+
+## 3. Stream 流失输出
+要清楚 Langgraph 中的流处理，我们需要先弄清楚 langchain 中 stream 的执行逻辑。
+
+### 3.1 langchain stream 实现
+我们看下面的示例，在这个示例里，我们需要理清以下几个问题:
+2. RunnableSequence 的执行流程
+2. JsonOutputParser 如何解析输出不完整的 message
+
+```python
+import asyncio
+from typing import Annotated
+from dotenv import load_dotenv, find_dotenv
+from langchain_community.chat_models import ChatTongyi
+
+_ = load_dotenv(find_dotenv())  # read local .env file
+
+llm = ChatTongyi(temperature=0.0)
+
+
+from langchain_core.output_parsers import JsonOutputParser
+
+chain = (
+    llm | JsonOutputParser()
+)  # 由于较旧版本的 Langchain 中存在的 bug，JsonOutputParser 未从某些模型中流式传输结果
+
+
+def main():
+    for text in chain.stream(
+        '以 JSON 格式输出一个包含法国、西班牙和日本以及它们的人口的国家列表。使用一个 key 为 "countries"、包含一个国家列表的字典。每个国家应该具有 "name" 和 "population" key'
+    ):
+        print(text, flush=True)
+
+```
+
+#### RunnableSequence
+
+`llm | JsonOutputParser()` 返回的是 RunnableSequence 对象，chain.stream 调用的是 RunnableSequence 的 stream 方法。
+
+```bash
+RunnableSequence
+    stream
+        yield from self.transform(iter([input]), config, **kwargs)
+            self._transform_stream_with_config
+                self._transform
+```
+
+显然 RunnableSequence.stream 业务逻辑执行位于 `_transform`，从中可以看到:
+1. 调用过程会依次调用 model 和 JsonOutputParser 的 transform 方法。
+2. input 传给 model，model 返回的结果传递给 JsonOutputParser 的 transform 方法
+2. stream 传递的都是迭代器
+
+所以我们要依次看看 model 和 JsonOutputParser 的 transform 方法。
+
+```python
+class RunnableSequence(RunnableSerializable[Input, Output]):
+    @override
+    def transform(
+        self,
+        input: Iterator[Input],
+        config: Optional[RunnableConfig] = None,
+        **kwargs: Optional[Any],
+    ) -> Iterator[Output]:
+        yield from self._transform_stream_with_config(
+            input,
+            self._transform,
+            patch_config(config, run_name=(config or {}).get("run_name") or self.name),
+            **kwargs,
+        )
+
+    def _transform(
+        self,
+        inputs: Iterator[Input],
+        run_manager: CallbackManagerForChainRun,
+        config: RunnableConfig,
+        **kwargs: Any,
+    ) -> Iterator[Output]:
+        from langchain_core.beta.runnables.context import config_with_context
+
+        steps = [self.first, *self.middle, self.last]
+        config = config_with_context(config, self.steps)
+
+        # transform the input stream of each step with the next
+        # steps that don't natively support transforming an input stream will
+        # buffer input in memory until all available, and then start emitting output
+        final_pipeline = cast("Iterator[Output]", inputs)
+        for idx, step in enumerate(steps):
+            config = patch_config(
+                config, callbacks=run_manager.get_child(f"seq:step:{idx + 1}")
+            )
+            if idx == 0:
+                final_pipeline = step.transform(final_pipeline, config, **kwargs)
+            else:
+                final_pipeline = step.transform(final_pipeline, config)
+
+        yield from final_pipeline
+```
+
+
+llm stream 的调用链如下:
+
+```bash
+Runnable
+    transform
+        BaseChatModel
+            stream
+                _stream # yield ChatGenerationChunk
+```
+
+JsonOutputParser 的 transform 的调用链如下:
+
+```bash
+JsonOutputParser
+    transform
+        _transform_stream_with_config
+            _transform
+                parse_result
+```
+
+#### JsonOutputParser 如何处理不完整的输出
+
+JsonOutputParser 处理 stream 的逻辑位于其继承的 BaseCumulativeTransformOutputParser 的 _transformer 方法。其通过 acc_gen 将 model 输出的 chunk 进行累加，然后调用 parse_result 方法解析输出。
+
+```python
+    def _transform(self, input: Iterator[Union[str, BaseMessage]]) -> Iterator[Any]:
+        prev_parsed = None
+        acc_gen: Union[GenerationChunk, ChatGenerationChunk, None] = None
+        for chunk in input:
+            chunk_gen: Union[GenerationChunk, ChatGenerationChunk]
+            if isinstance(chunk, BaseMessageChunk):
+                chunk_gen = ChatGenerationChunk(message=chunk)
+            elif isinstance(chunk, BaseMessage):
+                chunk_gen = ChatGenerationChunk(
+                    message=BaseMessageChunk(**chunk.model_dump())
+                )
+            else:
+                chunk_gen = GenerationChunk(text=chunk)
+
+            acc_gen = chunk_gen if acc_gen is None else acc_gen + chunk_gen  # type: ignore[operator]
+
+            parsed = self.parse_result([acc_gen], partial=True)
+            if parsed is not None and parsed != prev_parsed:
+                if self.diff:
+                    yield self._diff(prev_parsed, parsed)
+                else:
+                    yield parsed
+                prev_parsed = parsed
+```
+
+
+### 3.2 langgraph 模型 stream 实现
+
+Langgraph stream 的实现核心包括以下几点:
+1. Langgraph 的 stream 方法在执行前会创建一个 SyncQueue 消息队列
+2. Langgraph 会在执行过程中往 SyncQueue 写入信息，这些信息就是要流式输出的消息
+3. 在每个超级步骤执行完会从 SyncQueue 读取消息，yield 出去，形成 Langgraph 输出的流
+
+如果 stream_modes 中包含 "messages"，就会添加 StreamMessagesHandler 到 run_manager.inheritable_handlers 中。
+
+```python
+class Pregel():
+    def stream():
+            if "messages" in stream_modes:
+                run_manager.inheritable_handlers.append(
+                    StreamMessagesHandler(stream.put, subgraphs)
+                )
+```
+
+run_manager 定义了很多钩子函数，会在各个地方被调用，对于 model 其输出 message 时会调用 on_llm_new_token 方法:
+
+```python
+class BaseChatModel(BaseLanguageModel[BaseMessage], ABC):
+    def stream():
+                    run_manager.on_llm_new_token(
+                        cast("str", chunk.message.content), chunk=chunk
+                    )
+```
+
+StreamMessagesHandler 的 on_llm_new_token 会调用 SyncQueue 的 put 方法，将 message 写入队列。
+
+```python
+class StreamMessagesHandler(BaseCallbackHandler, _StreamingCallbackHandler):
+    def on_llm_new_token(
+        self,
+        token: str,
+        *,
+        chunk: ChatGenerationChunk | None = None,
+        run_id: UUID,
+        parent_run_id: UUID | None = None,
+        tags: list[str] | None = None,
+        **kwargs: Any,
+    ) -> Any:
+        if not isinstance(chunk, ChatGenerationChunk):
+            return
+        if meta := self.metadata.get(run_id):
+            self._emit(meta, chunk.message)
+
+    def _emit(self, meta: Meta, message: BaseMessage, *, dedupe: bool = False) -> None:
+        if dedupe and message.id in self.seen:
+            return
+        else:
+            if message.id is None:
+                message.id = str(uuid4())
+            self.seen.add(message.id)
+            self.stream((meta[0], "messages", (message, meta[1])))
 ```
