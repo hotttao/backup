@@ -531,13 +531,35 @@ class Context(Runnable[Input, Output]):
 从类的继承关系上，可以看到 ContextSet， ContextGet 都是 Runnable 的子类。
 ![context](/images/langchain/context.svg)
 
-ContextSet， ContextGet 的 invoke 需要结合 langchain_core.beta.runnables.context. config_with_context 函数。
+ContextSet， ContextGet 的 invoke 需要结合 langchain_core.beta.runnables.context.config_with_context 函数。
 
 ### 5.1 config_with_context
 
 config_with_context 的核心是在 config configurable 中添加 context key 对应的设置和获取函数。
 
 ```python
+class RunnableSequence(RunnableSerializable[Input, Output]):
+    @override
+    def invoke(
+        self, input: Input, config: Optional[RunnableConfig] = None, **kwargs: Any
+    ) -> Output:
+        from langchain_core.beta.runnables.context import config_with_context
+
+        # setup callbacks and context
+        config = config_with_context(ensure_config(config), self.steps)
+
+
+def _setter(done: threading.Event, values: Values, value: T) -> T:
+    values[done] = value
+    done.set()
+    return value
+
+
+def _getter(done: threading.Event, values: Values) -> Any:
+    done.wait()
+    return values[done]
+
+
 def config_with_context(
     config: RunnableConfig,
     steps: list[Runnable],

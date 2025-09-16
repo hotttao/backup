@@ -901,6 +901,88 @@ def compile(
 
 ## 3. ToolNode
 
+使用 ToolNode 时，通常我们会像下面这样:
+
+```python
+from langchain.chat_models import init_chat_model
+from langgraph.prebuilt import ToolNode
+from langgraph.graph import StateGraph, MessagesState, START, END
+import asyncio
+from typing import Annotated
+from dotenv import load_dotenv, find_dotenv
+from langchain_community.chat_models import ChatTongyi
+from langgraph.config import get_stream_writer
+
+
+_ = load_dotenv(find_dotenv())  # read local .env file
+
+llm = ChatTongyi(temperature=0.0)
+
+
+def get_weather(location: str):
+    """Call to get the current weather."""
+    if location.lower() in ["sf", "san francisco"]:
+        return "It's 60 degrees and foggy."
+    else:
+        return "It's 90 degrees and sunny."
+
+
+tool_node = ToolNode([get_weather])
+
+model = llm
+model_with_tools = model.bind_tools([get_weather])
+
+
+def should_continue(state: MessagesState):
+    messages = state["messages"]
+    last_message = messages[-1]
+    if last_message.tool_calls:
+        return "tools"
+    return END
+
+
+def call_model(state: MessagesState):
+    messages = state["messages"]
+    response = model_with_tools.invoke(messages)
+    return {"messages": [response]}
+
+
+builder = StateGraph(MessagesState)
+
+# Define the two nodes we will cycle between
+builder.add_node("call_model", call_model)
+builder.add_node("tools", tool_node)
+
+builder.add_edge(START, "call_model")
+builder.add_conditional_edges("call_model", should_continue, ["tools", END])
+builder.add_edge("tools", "call_model")
+
+graph = builder.compile()
+
+graph.invoke({"messages": [{"role": "user", "content": "what's the weather in sf?"}]})
+
+```
+
+当调用 `builder.add_node("tools", tool_node)` add_node 会做如下判断:
+1. tool_node 不是可调用对象，所以不会尝试从参数中解析出 input_schema，因此 inferred_input_schema = None
+2. input_schema 没有传入也是 None
+3. 因此 add_node 对于 tool_node 会走如下的默认逻辑，input_schema 默认是 state_schema
+
+因此 tool_node.invoke 等方法的 input 参数，就是 state_schema。
+
+```python
+            self.nodes[node] = StateNodeSpec[StateT, ContextT](
+                coerce_to_runnable(action, name=node, trace=False),  # type: ignore[arg-type]
+                metadata,
+                input_schema=self.state_schema,
+                retry_policy=retry_policy,
+                cache_policy=cache_policy,
+                ends=ends,
+                defer=defer,
+            )
+```
+
+
 ### 3.1 初始化
 在调用 `graph_builder.add_node("tools", tool_node)` 时:
 1. tool_node 不是可调用对象，所以不会尝试从参数中解析出 input_schema
@@ -1153,6 +1235,19 @@ def _get_store_arg(tool: BaseTool) -> Optional[str]:
         # "__type": "tool_call_with_context",
         # "state": {...}
         # }
+        # 这个特殊处理主要是源自 prebuilt的  create_react_agent 函数
+        #   if pending_tool_calls:
+                # return [
+                #     Send(
+                #         "tools",
+                #         ToolCallWithContext(
+                #             __type="tool_call_with_context",
+                #             tool_call=tool_call,
+                #             state=state,
+                #         ),
+                #     )
+                #     for tool_call in pending_tool_calls
+                # ]
         if isinstance(input, dict) and input.get("__type") == "tool_call_with_context":
             state = input["state"]
         else:
@@ -1203,6 +1298,68 @@ def _get_store_arg(tool: BaseTool) -> Optional[str]:
 总结一下:
 1. inject_store, inject_state 是把 State 的字段映射进 tool_call 的 arg 参数内，发生在 ToolNode 中
 2. InjectedToolCallId 是往 Tool.func 传入 tool_id，发生在 tool.run 方法内。
+
+这些 Inject 的参数会在 Tool 的 tool_call_schema 方法中被过滤，不会保存在到传递给大模型的 tool 参数中。
+
+```python 
+    @property
+    def tool_call_schema(self) -> ArgsSchema:
+        """Get the schema for tool calls, excluding injected arguments.
+
+        Returns:
+            The schema that should be used for tool calls from language models.
+        """
+        if isinstance(self.args_schema, dict):
+            if self.description:
+                return {
+                    **self.args_schema,
+                    "description": self.description,
+                }
+
+            return self.args_schema
+        full_schema = self.get_input_schema()
+        fields = []
+        for name, type_ in get_all_basemodel_annotations(full_schema).items():
+            # 过滤掉 Injected 类型的参数，所有的 Inject 类型都继承自 InjectedToolArg
+            if not _is_injected_arg_type(type_):
+                fields.append(name)
+        return _create_subset_model(
+            self.name, full_schema, fields, fn_description=self.description
+        )
+```
+
+将 Tool 转换为 OpenAI Tool 格式调用的是 `langchain_core.utils.function_calling.convert_to_openai_tool` 函数。这个函数内部会调用 too_call_schema
+
+```python
+def _format_tool_to_openai_function(tool: BaseTool) -> FunctionDescription:
+    """Format tool into the OpenAI function API.
+
+    Args:
+        tool: The tool to format.
+
+    Returns:
+        The function description.
+    """
+    from langchain_core.tools import simple
+
+    is_simple_oai_tool = isinstance(tool, simple.Tool) and not tool.args_schema
+    if tool.tool_call_schema and not is_simple_oai_tool:
+        # 只通过 tool_call_schema 获取 tool 的参数
+        if isinstance(tool.tool_call_schema, dict):
+            return _convert_json_schema_to_openai_function(
+                tool.tool_call_schema, name=tool.name, description=tool.description
+            )
+        if issubclass(tool.tool_call_schema, (BaseModel, BaseModelV1)):
+            return _convert_pydantic_to_openai_function(
+                tool.tool_call_schema, name=tool.name, description=tool.description
+            )
+        error_msg = (
+            f"Unsupported tool call schema: {tool.tool_call_schema}. "
+            "Tool call schema must be a JSON schema dict or a Pydantic model."
+        )
+        raise ValueError(error_msg)
+```
+
 
 ### 3.2 _func
 ToolNode 继承自 RunnableCallable，ToolNode.invoke 将调用 ToolNodel._func。
