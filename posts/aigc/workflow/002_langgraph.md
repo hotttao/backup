@@ -1,28 +1,29 @@
 ---
 weight: 2
 title: "LangGraph"
-date: 2026-08-06T22:00:00+08:00
-lastmod: 2026-08-06T22:00:00+08:00
+date: 2026-05-02T22:00:00+08:00
+lastmod: 2026-05-02T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "LangGraph 对 Workflow 的抽象"
-featuredImage: 
+featuredImage:
 
 tags: ["workflow"]
 categories: ["Agent"]
 
 lightgallery: true
-
 ---
 
-前面我们介绍了第一个 Agent Framework - Pocket Flow。并且说道，大多数 Agent Framework 的核心是提供了对 Workflow 的抽象-Graph。今天我们来介绍另一个 Agent Framework - LangGraph。并依旧重点关注 Graph 实现的三个问题：
+前面我们介绍了第一个 Agent Framework - Pocket Flow。并且说道，大多数 Agent Framework 的核心是提供了对 Workflow 的抽象-Graph。今天我们来介绍另一个 Agent Framework - LangGraph。并依旧重点关注 Graph 实现的四个问题：
 
 1. 如何表示 Graph 中的节点以及节点的触发关系
 2. 如何在节点之间传递共享数据
 3. Graph 如何被驱动执行
+4. 状态存储和异常恢复
 
 Langgraph 比 Pocket Flow 代码复杂的多，主要有如下几个原因:
+
 1. Langgraph 定义的 Graph 所能表达的语义更加丰富。在 Pocket Flow 中，一个 action 只能触发一个节点，Langgraph 中一次可以触发多个节点，一节点也可以定义对多个节点的依赖。
 2. Langgraph 支持节点的并发执行，功能也更加完善
 
@@ -611,13 +612,13 @@ for branch in branches:
 
 具体的转换关系如下：
 
-| 用户代码 | `StateGraph` 中的结构 | 编译后的运行时结构 |
-| --- | --- | --- |
-| `State` 字段 | `channels` | `LastValue` 或带 reducer 的数据 Channel |
-| `add_node()` | `StateNodeSpec` | 包含 `channels/triggers/bound/writers` 的 `PregelNode` |
-| `add_edge(A, B)` | `edges` | A 的 writer 与 B 的 trigger 连接同一个控制 Channel |
-| `add_edge([A, B], C)` | `waiting_edges` | writers 写入、C 订阅的 Barrier Channel |
-| `add_conditional_edges()` | `BranchSpec` | 根据路由结果写入目标控制 Channel |
+| 用户代码                  | `StateGraph` 中的结构 | 编译后的运行时结构                                     |
+| ------------------------- | --------------------- | ------------------------------------------------------ |
+| `State` 字段              | `channels`            | `LastValue` 或带 reducer 的数据 Channel                |
+| `add_node()`              | `StateNodeSpec`       | 包含 `channels/triggers/bound/writers` 的 `PregelNode` |
+| `add_edge(A, B)`          | `edges`               | A 的 writer 与 B 的 trigger 连接同一个控制 Channel     |
+| `add_edge([A, B], C)`     | `waiting_edges`       | writers 写入、C 订阅的 Barrier Channel                 |
+| `add_conditional_edges()` | `BranchSpec`          | 根据路由结果写入目标控制 Channel                       |
 
 到这里，开头的三个问题可以统一到同一个模型中：
 

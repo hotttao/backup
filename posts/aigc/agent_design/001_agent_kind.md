@@ -1,20 +1,20 @@
 ---
 weight: 1
 title: "Agent 的分类"
-date: 2026-08-01T22:00:00+08:00
-lastmod: 2026-08-01T22:00:00+08:00
+date: 2026-06-01T22:00:00+08:00
+lastmod: 2026-06-01T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "Agent 的分类"
-featuredImage: 
+featuredImage:
 
 tags: ["agent 设计模式"]
 categories: ["Agent"]
 
 lightgallery: true
-
 ---
+
 市面上现在已经有很多 AI 开发框架和通用 Agent(类似 codex、claude code)，当我们需要开发一个 Agent 的时候，第一步就是选型。选型的前提是我们需要弄清楚，我们要开发的是一个什么 Agent，这些 AI 开发框架和通用 Agent 都提供了什么能力，适合开发什么样的 Agent。
 
 <!-- more -->
@@ -22,6 +22,7 @@ lightgallery: true
 ## 1. Agent 分类
 
 我们可以将 agent 分成两层:
+
 1. 通用能力: 通用的 system prompt、通用基础 tools(读写文件、执行shell)、通用的能力(上下文自动压缩、subagent 等等)
 2. 业务需求： 比如怎么做客服，怎么查知识库
 
@@ -29,8 +30,8 @@ lightgallery: true
 ┌───────────────┐  ┌───────────────┐  ┌───────────────┐
 │ system prompt │  │    skills     │  │      MCP      │
 └───────────────┘  └───────────────┘  └───────────────┘             业务需求
-───────────────────────────────────────────────────────────────────────────────────   
-                              
+───────────────────────────────────────────────────────────────────────────────────
+
 ┌─────────────────────────────────────────────────────────┐         通用能力
 │  ┌───────────────┐  ┌───────────────┐  ┌────────────┐  │
 │  │ system prompt │  │     tools     │  │   能力     │  │
@@ -49,42 +50,49 @@ lightgallery: true
                                            ↓
 
 ```
+
 按照是否提供通用能力，我们可以将 agent 分成两类:
-1. Agent Core: 
-    - 也就是通用 agent，提供完整的 agent 通用能力
-    - 通过三大件(system prompt、skills、mcp) 来定义业务行为
+
+1. Agent Core:
+   - 也就是通用 agent，提供完整的 agent 通用能力
+   - 通过三大件(system prompt、skills、mcp) 来定义业务行为
 2. Agent Framework:
-    - 提供 AI 开发的抽象，但是不会提供 agent 所需的通用能力，但是 Framework 通常会提供另一种能力，即对 Workflow 的抽象 
+   - 提供 AI 开发的抽象，但是不会提供 agent 所需的通用能力，但是 Framework 通常会提供另一种能力，即对 Workflow 的抽象
 
 通常开发 Agent 通用能力是一个非常复杂的过程。从商业 Agent 来看，Agent 通用能力实现都是非常重、非常复杂、非常完善的，而且是持续迭代的。
 那这个是不是意味着，我们只要无脑选择 Agent Core 就行了呢。当然也不是，问题的核心是，什么时候我们更关注 Agent 通用能力，什么时候我们更需要 Agent Frame 提供的 Workflow 抽象。
 
 通用 Agent 和 Workflow 在业务形态上存在明显区别:
 
-|特点|workflow|通用 agent|
-|:---|:---|:---|
-|上下文|有明显的结束时间，两次对话有明显的界限|无线时长，agent 不会主动退出|
-|workflow支持|agent 本身就有对 flow 的抽象，flow 包含确定的有限的分支|通用 agent 也会有典型工作流，但是这些工作流由用户确定，并在 system prompt 约束|
-|用户交互|弱化用户交互，用户几乎不参与决定 flow 的执行过程|强用户交互，通常我们想开发一个通用 Agent，当下就是为了实现更好的人机协同 |、
-|通用能力|Workflow 本身就是针对特定业务场景，范围有限，很大程度上不需要 agent 提供的各种通用能力|满足通用需求，所以通用能力月完善，agent 越智能|
+| 特点         | workflow                                                                               | 通用 agent                                                                     |
+| :----------- | :------------------------------------------------------------------------------------- | :----------------------------------------------------------------------------- | --- |
+| 上下文       | 有明显的结束时间，两次对话有明显的界限                                                 | 无线时长，agent 不会主动退出                                                   |
+| workflow支持 | agent 本身就有对 flow 的抽象，flow 包含确定的有限的分支                                | 通用 agent 也会有典型工作流，但是这些工作流由用户确定，并在 system prompt 约束 |
+| 用户交互     | 弱化用户交互，用户几乎不参与决定 flow 的执行过程                                       | 强用户交互，通常我们想开发一个通用 Agent，当下就是为了实现更好的人机协同       | 、  |
+| 通用能力     | Workflow 本身就是针对特定业务场景，范围有限，很大程度上不需要 agent 提供的各种通用能力 | 满足通用需求，所以通用能力月完善，agent 越智能                                 |
 
 如何确定我们要开发的是一个通用 Agent 还是一个 workflow，通常需要明确一下两个问题:
+
 1. 针对我们要解决的业务场景，是不是可以抽象出一个 workflow
 2. 业务场景需要哪些通用能力，是不是多到开发成本很大，不如直接使用 Agent Core
 
-当然我们选择使用 Agent Core 也不意味着，完全抛弃 Workflow，Workflow 完全可以用于构建 Agent 可以使用的 Tools，让 Agent 更加智能。毕竟如果你能将某一个业务的最佳实践抽象为一个 Workflow，这种程序确定性的 Workflow 肯定是比 Prompt 编排的 Workflow 更加快速、高效和节省成本。 
+当然我们选择使用 Agent Core 也不意味着，完全抛弃 Workflow，Workflow 完全可以用于构建 Agent 可以使用的 Tools，让 Agent 更加智能。毕竟如果你能将某一个业务的最佳实践抽象为一个 Workflow，这种程序确定性的 Workflow 肯定是比 Prompt 编排的 Workflow 更加快速、高效和节省成本。
 
 **我们也可以选择使用 Agent Framework 开发一个 Agent Core，甚至从头开发一个 Agent Core，这个时候需要重点关注如何实现 agent 与用户之间的交互**。后面我们会专门来讨论 Copilot 模式。
 
 ## 2. 通用 Agent
+
 通用 Agent 现在分为两类:
+
 1. 模型厂商: 作为第一方开发的，比如 codex， claude code
 2. 第三方: 比如 goose，pi，opencode
 
 ### 2.1 第三方 Agent 的局限性
+
 通用 Agent 有个很重要的问题: **Agent 与模型的适配问题**。
 
 通常我们会觉得 codex 或者 claude code 很好用，有两个核心原因:
+
 1. 模型更高级
 2. 他们在 Agent System Prompt 和 tools 设计上有更加丰富的经验。无论是第三方还是其他模型厂商，他们都在参考 claude code 的实现。
 
@@ -97,6 +105,7 @@ lightgallery: true
 同样的，现在第三方模型在 claude code 中能很好的工作，同样也是因为 claude code 很多功能都是在客户端可见的。但是这个在未来是会被打破的，现在来看 claude code 和 codex 很多新功能(比如 auto mode)是放在服务端来做的。一旦 claude code 把更多的能力移动到服务后台，第三方模型很难和 claude code 配合，因为你都不知道应该怎么跟他配合。
 
 所以未来，国内的模型厂商大概率会以第一方的方式来发布一些成熟通用的 agent。原因有几点:
+
 1. 用户对模型的忠诚度非常低
 2. 用户更容易在通用 agent 的使用上建立习惯。
 3. claude code 很可能将功能移动到服务端，第三方模型将无法接入到 claude code
@@ -104,9 +113,11 @@ lightgallery: true
 发布通用 agent 不仅仅是发布一些 cli，而是要在系统提示词和工具方面跟他们的模型做紧密的配合和深度集成。
 
 ### 2.3 Agent 平台
+
 模型厂商希望用户跟厂商深度绑定，但是作为用户我们希望是能跟模型厂商解耦。所以即便我们依赖通用 agent 去开发我们的 agent，我们也要能做到灵活切换通用 agent。
 
 我们需要做的是在业务和依赖的 agent core 之间做一层抽象:
+
 1. 将通用能力在平台和 agent 之间做一个切分，只依赖 agent core 最基础最核心的能力
 2. 对依赖的最基础和最核心的能力做一层抽象，让 agent core 以插件的形式接入，实现对 agent core 的解耦。
 
@@ -128,6 +139,6 @@ lightgallery: true
 /
 ```
 
-
 ## 参考阅读
+
 1. [Claude Code 后门事件引发思考，我们应该如何开发 Agent](https://www.bilibili.com/video/BV1pngb6mEjc/)

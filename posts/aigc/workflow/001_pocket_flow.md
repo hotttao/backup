@@ -1,19 +1,18 @@
 ---
 weight: 1
 title: "Pocket Flow"
-date: 2026-06-01T22:00:00+08:00
-lastmod: 2026-06-01T22:00:00+08:00
+date: 2026-05-01T22:00:00+08:00
+lastmod: 2026-05-01T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "Pocket Flow 流的抽象"
-featuredImage: 
+featuredImage:
 
 tags: ["workflow"]
 categories: ["Agent"]
 
 lightgallery: true
-
 ---
 
 今天我们来介绍第一个 Agent Framework [Pocket Flow](https://github.com/The-Pocket/PocketFlow/blob/main/cookbook/pocketflow-batch/translations/README_CHINESE.md)
@@ -25,17 +24,24 @@ lightgallery: true
 个人认为，大多数 AI Framework 最大的价值就是提供了对 Workflow 的抽象，这个抽象基本上就是 Grap。因为 Grap 表达能力最强，能够支持很多流行的 [Agent 设计模式](https://the-pocket.github.io/PocketFlow/)。
 
 无论是今天要讲的 Pocket Flow，还是后面我们会介绍的 Langgraph。我们要弄清楚这些框架，无非就是搞清楚 Grap 所要实现的以下内容:
+
 1. 如何表示 Graph 中节点以及节点的触发关系
 2. 如何在节点传递共享数据
 3. Grap 被驱动执行的过程
+4. 状态存储和异常恢复
 
 那为什么要先介绍 Pocket Flow 呢？因为 Pocket Flow 足够简单。在 Pocket Flow 上面 Grap 对应为以下三个概念:
+
 1. Node + Action
 2. Shared Store
 3. Flow
 
+Pocket Flow 本身并没有提供状态存储和异常恢复的机制。这里我们暂时不做介绍。但是通常如果你理解了 Grap 前三个问题，你就能理解如何对 Workflow 做状态存储和异常。这一个问题反过来也可以更好的帮助我们理解前三个问题。
+
 ## 2. Node
+
 [Node](https://the-pocket.github.io/PocketFlow/core_abstraction/node.html) 包含三个步骤: **prep -> exec -> post**
+
 1. prep: 从 shared store 中读取数据，传递给 exec
 2. exec: 执行节点的计算逻辑
 3. post: 更新 shared store，并返回 action 决定下一步触发的节点。
@@ -43,6 +49,7 @@ lightgallery: true
 ![Node Steps](/images/aigc/workflow/pocket_flow_node.png)
 
 ### 节点依赖关系
+
 节点依赖关系通过 `src_node -> action -> tgt_node` 来表示。代码里定义了 `__sub__` 和 `__rshift__` 方法，可以像下面这样，直接表达节点之间的触发关系:
 
 ```python
@@ -62,9 +69,11 @@ class BaseNode:
 ```
 
 ## 3. Shared Store
+
 Share Store 是一个自定义的全局对象，完全由用户定义。在 Flow.run 中传入，由 Flow 负责在所有节点之间共享传递。
 
 ## 4. Flow
+
 Flow 驱动 Graph 执行。
 
 ```python
@@ -88,8 +97,8 @@ Flow 驱动 Graph 执行的核心是 run 方法:
 ```python
 class BaseNode:
     def _run(self,shared): p=self.prep(shared); e=self._exec(p); return self.post(shared,p,e)
-    def run(self,shared): 
-        if self.successors: warnings.warn("Node won't run successors. Use Flow.")  
+    def run(self,shared):
+        if self.successors: warnings.warn("Node won't run successors. Use Flow.")
         return self._run(shared)
 
 class Flow(BaseNode):
@@ -105,7 +114,7 @@ class Flow(BaseNode):
         # curr._run 执行 BaseNode._run 方法，
             # 内部调用 Node 定义的钩子函数 prep, exec, post
             # post 返回 action 决定下一步触发的节点
-        # get_next_node 从 src_node 获取下一个执行的 node 
+        # get_next_node 从 src_node 获取下一个执行的 node
         while curr: curr.set_params(p); last_action=curr._run(shared); curr=copy.copy(self.get_next_node(curr,last_action))
         return last_action
     def _run(self,shared): p=self.prep(shared); o=self._orch(shared); return self.post(shared,p,o)
@@ -113,17 +122,52 @@ class Flow(BaseNode):
 ```
 
 Flow 继承自 BaseNode，所以 Flow 也可以作为节点。作为节点执行 Flow 的执行顺序:
+
 1. Flow.prep(): 继承自 BaseNode 的空函数
-2. Flow._run(): 执行子 Flow，返回最终的 last_action
-3. Flow.post(): exec_res 接收的是 _run 返回的 last_action，所以直接 return exec_res，作为触发下一个节点的 action。
+2. Flow.\_run(): 执行子 Flow，返回最终的 last_action
+3. Flow.post(): exec_res 接收的是 \_run 返回的 last_action，所以直接 return exec_res，作为触发下一个节点的 action。
 
 ## 5. 使用示例
+
 官网提供了很多基于 Pocket Flow 实现的 Agent 设计模式:
+
 1. [Agent](https://the-pocket.github.io/PocketFlow/design_pattern/agent.html)
 2. [Multi-Agents](https://the-pocket.github.io/PocketFlow/design_pattern/multi_agent.html)
-3. [通用 Deep Coder](https://github.com/Yuyz0112/cloudtower-api-ai-coder/tree/main)
+
+也有一些具体的使用示例: 3. [通用 Deep Coder](https://github.com/Yuyz0112/cloudtower-api-ai-coder/tree/main) 4. [强化 Copilot 模式，打造更灵活的 DeepWiki 开源替代](https://github.com/Yuyz0112/koala-code-reader)
+
+我们会介绍这几个具体示例里 workflow 设计。目的有两个:
+
+1. 更好的展示，什么时候我们应该使用 Agent Framework
+2. 如何思考和设计 workflow
+
+### 5.1 Deep Coder
+
+Deep Coder 是一个基于 OpenAPI 生成通用代码的工具。这个 Workflow 遵循跟人类 Coder 一样的开发流程
+
+```mermaid
+graph LR
+    subgraph Flow
+        N2["RequirementAnalysisNode<br/>需求分析"]
+        N3["AskClarificationNode<br/>询问澄清"]
+        N4["ReadApiDocNode<br/>阅读接口文档"]
+        N5["WriteDesignDocNode<br/>编写设计文档"]
+        N6["WriteCodeNode<br/>代码编写"]
+        N7["ExportToFileNode<br/>导出文件"]
+
+        N2 --> N3
+        N3 --> N2
+        N2 --> N4
+        N4 --> N5
+        N5 --> N6
+        N6 --> N7
+    end
+```
+
+这里面比较复杂的节点是 N4，思想类似于 skills，通过文档分级和索引，分步骤缩小搜索范围，最终找到完成用户需求所需要的文档。
 
 ## 6. Pocket Flow 的设计理念
+
 总结一下，Pocket Flow 本身设计非常简介，基于 Pocket Flow 构建的项目也非常清晰:
 
 ```shell
@@ -145,5 +189,6 @@ my_project/
 虽然当时项目创建的时候， Harness 相关概念还未被提出，但是项目就已经体现了 [Harness 的设计思想](https://the-pocket.github.io/PocketFlow/guide.html)。
 
 ## 7. 参考阅读
+
 1. [OpenAPI × Pocket Flow：做一个通用 Deep Coder](https://app.koala-oss.club/videos/e20db357-4c08-4f8d-8e23-34046fb299de)
 2. [最精简的 LLM 应用框架是怎样练成的](https://app.koala-oss.club/videos/fe043734-d5ea-48f3-9e3c-8b0167eb3558)
