@@ -62,6 +62,8 @@ lightgallery: true
 通常开发 Agent 通用能力是一个非常复杂的过程。从商业 Agent 来看，Agent 通用能力实现都是非常重、非常复杂、非常完善的，而且是持续迭代的。
 那这个是不是意味着，我们只要无脑选择 Agent Core 就行了呢。当然也不是，问题的核心是，什么时候我们更关注 Agent 通用能力，什么时候我们更需要 Agent Frame 提供的 Workflow 抽象。
 
+### 1.1 通用 Agent Vs Workflow
+
 通用 Agent 和 Workflow 在业务形态上存在明显区别:
 
 | 特点         | workflow                                                                               | 通用 agent                                                                     |
@@ -71,14 +73,20 @@ lightgallery: true
 | 用户交互     | 弱化用户交互，用户几乎不参与决定 flow 的执行过程                                       | 强用户交互，通常我们想开发一个通用 Agent，当下就是为了实现更好的人机协同       | 、  |
 | 通用能力     | Workflow 本身就是针对特定业务场景，范围有限，很大程度上不需要 agent 提供的各种通用能力 | 满足通用需求，所以通用能力月完善，agent 越智能                                 |
 
+### 1.2 选择通用 Agent 还是 Workflow
+
 如何确定我们要开发的是一个通用 Agent 还是一个 workflow，通常需要明确一下两个问题:
 
 1. 针对我们要解决的业务场景，是不是可以抽象出一个 workflow
 2. 业务场景需要哪些通用能力，是不是多到开发成本很大，不如直接使用 Agent Core
 
-当然我们选择使用 Agent Core 也不意味着，完全抛弃 Workflow，Workflow 完全可以用于构建 Agent 可以使用的 Tools，让 Agent 更加智能。毕竟如果你能将某一个业务的最佳实践抽象为一个 Workflow，这种程序确定性的 Workflow 肯定是比 Prompt 编排的 Workflow 更加快速、高效和节省成本。
+当然我们选择使用 Agent Core 也不意味着，完全抛弃 Workflow，Workflow 完全可以用于构建 Agent 可以使用的 Tools，让 Agent 更加智能。毕竟如果你能将某一个业务的最佳实践抽象为一个 Workflow，**这种程序确定性的 Workflow 肯定是比 Prompt 编排的 Workflow 更加快速、高效和节省成本**。
 
 **我们也可以选择使用 Agent Framework 开发一个 Agent Core，甚至从头开发一个 Agent Core，这个时候需要重点关注如何实现 agent 与用户之间的交互**。后面我们会专门来讨论 Copilot 模式。
+
+### 1.3 2026.07 新思考
+
+是选择**程序确定性的 Workflow** 还是 **Prompt 编排由大模型引导的 Workflow**，在大模型智能不断提升的当下，貌似后者越来越成为更优的选择。大模型可以在完全遵循 Workflow 流程的前提下，提供非常大的灵活性。这种灵活性不仅仅应对用户输入的灵活性，也表现在优化 Workflow 的灵活性上。直接改提示词就行了，相反代码编写的 Workflow 就显得笨重非常多。
 
 ## 2. 通用 Agent
 
