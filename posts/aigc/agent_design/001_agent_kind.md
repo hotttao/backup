@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Agent 的分类"
 featuredImage:
 
-tags: ["agent 设计模式"]
+tags: ["agent 设计"]
 categories: ["Agent"]
 
 lightgallery: true

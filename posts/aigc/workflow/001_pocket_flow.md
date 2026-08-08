@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "Pocket Flow"
-date: 2026-05-01T22:00:00+08:00
-lastmod: 2026-05-01T22:00:00+08:00
+date: 2026-05-01T08:00:00+08:00
+lastmod: 2026-05-01T08:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -134,41 +134,19 @@ Flow 继承自 BaseNode，所以 Flow 也可以作为节点。作为节点执行
 1. [Agent](https://the-pocket.github.io/PocketFlow/design_pattern/agent.html)
 2. [Multi-Agents](https://the-pocket.github.io/PocketFlow/design_pattern/multi_agent.html)
 
-也有一些具体的使用示例: 3. [通用 Deep Coder](https://github.com/Yuyz0112/cloudtower-api-ai-coder/tree/main) 4. [强化 Copilot 模式，打造更灵活的 DeepWiki 开源替代](https://github.com/Yuyz0112/koala-code-reader)
+也有一些具体的使用示例:
+
+1. [通用 Deep Coder](https://github.com/Yuyz0112/cloudtower-api-ai-coder/tree/main)
+2. [强化 Copilot 模式，打造更灵活的 DeepWiki 开源替代](https://github.com/Yuyz0112/koala-code-reader)
 
 我们会介绍这几个具体示例里 workflow 设计。目的有两个:
 
 1. 更好的展示，什么时候我们应该使用 Agent Framework
 2. 如何思考和设计 workflow
 
-### 5.1 Deep Coder
-
-Deep Coder 是一个基于 OpenAPI 生成通用代码的工具。这个 Workflow 遵循跟人类 Coder 一样的开发流程
-
-```mermaid
-graph LR
-    subgraph Flow
-        N2["RequirementAnalysisNode<br/>需求分析"]
-        N3["AskClarificationNode<br/>询问澄清"]
-        N4["ReadApiDocNode<br/>阅读接口文档"]
-        N5["WriteDesignDocNode<br/>编写设计文档"]
-        N6["WriteCodeNode<br/>代码编写"]
-        N7["ExportToFileNode<br/>导出文件"]
-
-        N2 --> N3
-        N3 --> N2
-        N2 --> N4
-        N4 --> N5
-        N5 --> N6
-        N6 --> N7
-    end
-```
-
-这里面比较复杂的节点是 N4，思想类似于 skills，通过文档分级和索引，分步骤缩小搜索范围，最终找到完成用户需求所需要的文档。
-
 ## 6. Pocket Flow 的设计理念
 
-总结一下，Pocket Flow 本身设计非常简介，基于 Pocket Flow 构建的项目也非常清晰:
+总结一下，Pocket Flow 本身设计非常简洁，基于 Pocket Flow 构建的项目也非常清晰:
 
 ```shell
 my_project/
@@ -186,7 +164,15 @@ my_project/
 
 这种代码组织方式，职责清晰，和原始需求及设计完全对齐。通过把复杂的具体的业务逻辑以工具函数的方式抽象到具体的位置上，让节点的实现变得只跟数据交互相关。
 
-虽然当时项目创建的时候， Harness 相关概念还未被提出，但是项目就已经体现了 [Harness 的设计思想](https://the-pocket.github.io/PocketFlow/guide.html)。
+虽然当时项目创建的时候， Harness 相关概念还未被提出，但是项目就已经体现了 [Harness 的设计思想](https://the-pocket.github.io/PocketFlow/guide.html)。结构清晰、依赖清晰、功能内聚。人做设计、AI 负责 Code。
+
+在这种架构的引导下，我们思考如何实现一个 Workflow 也会有迹可循:
+
+1. 参考人类思考流程，规划 Workflow
+2. 逐个节点，定义节点的输入和输出
+3. 考虑 Workflow 中的需要累加和压缩的内容
+4. 综合 2和3 定义 Storage
+5. 参考目录结构和设计一对一的实现代码
 
 ## 7. 参考阅读
 

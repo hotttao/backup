@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "Agent Copilot 实现  Agent 与 User 人机协作"
 featuredImage:
 
-tags: ["agent 设计模式"]
+tags: ["agent 设计"]
 categories: ["Agent"]
 
 lightgallery: true
