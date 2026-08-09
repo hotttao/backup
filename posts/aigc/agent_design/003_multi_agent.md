@@ -29,16 +29,15 @@ lightgallery: true
 
 ### 1.1 Single-Agent 核心架构
 
-从下面的架构图可以看出，Single-Agent 核心由如下部分组成：
+从下面的架构图可以看出，一个 Single-Agent 由如下部分组成：
+
 1. task prompts
 2. tools definitions
 3. context
-4. tools executors
-5. LLM 模型
-
-而 Agent 运行有两个核心过程:
-1. meessage 的累加
-2. Loop 的终止条件
+4. LLM 模型
+5. AgentLoop:
+   - tools executors
+   - Loop 的终止条件
 
 ```mermaid
 %%{init: { 'flowchart':{'nodeSpacing':35}, 'theme':'neutral'}}%%
