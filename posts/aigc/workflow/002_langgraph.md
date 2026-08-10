@@ -628,7 +628,154 @@ for branch in branches:
 
 > **Node 负责计算，writer 负责写 Channel，trigger 负责订阅 Channel，Pregel 负责在相邻轮次之间完成匹配和调度。**
 
-## 8. 源码阅读
+## 8. Graph 的持久化与恢复
+
+Pregel 在 Superstep 的 Update 阶段结束后创建 Checkpoint。Checkpoint 保存的不只是 State，还保存恢复调度所需的 Channel 版本和节点消费位置。
+
+继续使用开头的 Graph。我们配置一个 Checkpointer，并在 `review` 执行前暂停：
+
+```python
+from langgraph.checkpoint.memory import InMemorySaver
+
+
+checkpointer = InMemorySaver()
+graph = builder.compile(
+    checkpointer=checkpointer,
+    interrupt_before=["review"],
+)
+
+config = {
+    "configurable": {
+        "thread_id": "article-1",
+    }
+}
+
+# 执行到 review 之前暂停
+graph.invoke({"topic": "LangGraph Workflow"}, config)
+```
+
+此时已经完成：
+
+```text
+START -> plan -> writer_a / writer_b -> Update
+                                         ↓
+                                  checkpoint
+                                         ↓
+                                下一个节点是 review
+```
+
+### 8.1 Checkpoint 保存哪些值
+
+可以通过 `get_state()` 查看恢复所需的公开状态，也可以直接从 Checkpointer 读取底层记录：
+
+```python
+snapshot = graph.get_state(config)
+saved = checkpointer.get_tuple(config)
+checkpoint = saved.checkpoint
+```
+
+底层 Checkpoint 的核心结构可以简化为：
+
+```python
+checkpoint = {
+    "id": "checkpoint-id",
+    "ts": "...",
+
+    "channel_values": {
+        "topic": "LangGraph Workflow",
+        "outline": "LangGraph Workflow：定义、实现、执行",
+        "drafts": ["版本 A：...", "版本 B：..."],
+        "join:writer_a+writer_b:review": {"writer_a", "writer_b"},
+    },
+
+    "channel_versions": {
+        "topic": "v1",
+        "outline": "v2",
+        "drafts": "v3",
+        "join:writer_a+writer_b:review": "v3",
+        # 还会包含已经消费、当前为空的控制 Channel 的版本
+    },
+
+    "versions_seen": {
+        "plan": {"branch:to:plan": "v1"},
+        "writer_a": {"branch:to:writer_a": "v2"},
+        "writer_b": {"branch:to:writer_b": "v2"},
+        # review 尚未执行，所以还没有消费 Barrier 的 v3
+    },
+
+    "updated_channels": [
+        "drafts",
+        "join:writer_a+writer_b:review",
+    ],
+}
+```
+
+上面使用 `v1/v2/v3` 简化实际版本字符串。各字段的作用是：
+
+| 字段 | 持久化内容 | 恢复时的用途 |
+| --- | --- | --- |
+| `channel_values` | 数据 Channel 和当前可用的控制 Channel 的快照 | 重建每个 Channel 的当前值 |
+| `channel_versions` | 每个 Channel 的当前版本 | 判断 Channel 当前是哪一次更新 |
+| `versions_seen` | 每个节点已经处理到的 Trigger 版本 | 避免恢复后重复执行已完成节点 |
+| `updated_channels` | 最近一个 Superstep 更新且可用的 Channel | 快速找出下一步候选节点 |
+| `id`、`ts` | Checkpoint 标识和时间 | 定位、排序和选择恢复点 |
+
+并非所有 Channel 都会出现在 `channel_values` 中。比如 `branch:to:writer_a` 使用 `EphemeralValue`，被消费后已经为空，因此没有可保存的值；但它的版本仍保留在 `channel_versions` 中。
+
+`thread_id` 不在 Checkpoint 内容内部，它是 Checkpointer 查找这条执行记录的键。同一个 `thread_id` 下可以保存按 `checkpoint_id` 串联起来的多个 Checkpoint。
+
+完整的持久化记录是一个 CheckpointTuple。除上面的 checkpoint 外，它还包含：
+
+- config：thread_id、checkpoint_id 和 checkpoint namespace
+- metadata：本记录来自输入、普通循环还是手工更新，以及 step、parents 等信息
+- parent_config：上一个 Checkpoint，用于形成执行历史
+- pending_writes：当前 Superstep 中已经完成的 Task Writes
+
+### 8.2 如何从 Checkpoint 恢复
+
+在同一进程中可以继续使用上面的 checkpointer 和相同的 thread_id；下面重新编译 Graph 来模拟恢复：
+
+```python
+
+graph = builder.compile(checkpointer=checkpointer)
+
+config = {
+    "configurable": {
+        "thread_id": "article-1",
+    }
+}
+
+# None 表示不提交新输入，从已有 Checkpoint 继续
+result = graph.invoke(None, config)
+```
+
+真实跨进程场景不能新建一个空的 `InMemorySaver`，应使用保存了原记录的数据库 Checkpointer；这里的关键是 Graph 获得同一份持久化记录。
+
+恢复过程如下：
+
+```text
+1. Checkpointer 根据 thread_id 读取最新 Checkpoint
+2. channels_from_checkpoint() 用 channel_values 重建 Channels
+3. 恢复 channel_versions、versions_seen 和 updated_channels
+4. updated_channels 中的 Barrier Channel 映射到候选节点 review
+5. 比较 Barrier 当前版本 v3 与 review 的 versions_seen
+6. review 尚未见过 v3，因此创建 review Task
+7. review 读取已恢复的 topic、outline、drafts，Graph 继续执行
+```
+
+因此恢复后不会重新执行 `plan`、`writer_a` 和 `writer_b`：它们的 Trigger 版本已经记录在 `versions_seen` 中。`review` 尚未消费 Barrier 的当前版本，所以从 `review` 继续。
+
+这说明 LangGraph 持久化的不是单独一个 State 字典，而是一个能够重新启动 Pregel 调度的运行时快照：
+
+> **Channel Values 恢复数据，Channel Versions 和 Versions Seen 恢复执行位置，Updated Channels 帮助快速找到下一批节点。**
+
+### 8.3 Superstep 中途失败
+
+Checkpoint 保存的是 Superstep 边界状态。如果一个 Superstep 内有多个并行 Task，LangGraph 还可以把已完成 Task 的 Writes 作为 `pending_writes` 单独保存。
+
+恢复时，已成功 Task 的 Writes 会重新挂回对应 Task；Runner 只执行尚无 Writes 的失败或未完成 Task。等本轮全部 Task 完成后，再统一 `apply_writes()` 并创建新的 Checkpoint。这样可以避免并行步骤中已经成功的节点被重复执行。
+
+## 9. 源码阅读
 
 本文基于 LangGraph `1.2.10`、commit `658541c4960f329864a2523fc7d52427e8190bed`：
 
@@ -639,3 +786,6 @@ for branch in branches:
 5. [Trigger 的 Channel 版本检查](https://github.com/langchain-ai/langgraph/blob/658541c4960f329864a2523fc7d52427e8190bed/libs/langgraph/langgraph/pregel/_algo.py#L1260-L1277)
 6. [Update 阶段的 `apply_writes()`](https://github.com/langchain-ai/langgraph/blob/658541c4960f329864a2523fc7d52427e8190bed/libs/langgraph/langgraph/pregel/_algo.py#L232-L345)
 7. [Version 生成接口 get_next_version()](https://github.com/langchain-ai/langgraph/blob/658541c4960f329864a2523fc7d52427e8190bed/libs/checkpoint/langgraph/checkpoint/base/__init__.py#L692-L711)
+8. [Checkpoint 数据结构](https://github.com/langchain-ai/langgraph/blob/658541c4960f329864a2523fc7d52427e8190bed/libs/checkpoint/langgraph/checkpoint/base/__init__.py#L92-L146)
+9. [创建和恢复 Channel Checkpoint](https://github.com/langchain-ai/langgraph/blob/658541c4960f329864a2523fc7d52427e8190bed/libs/langgraph/langgraph/pregel/_checkpoint.py#L149-L277)
+10. [每个 Superstep 保存 Checkpoint](https://github.com/langchain-ai/langgraph/blob/658541c4960f329864a2523fc7d52427e8190bed/libs/langgraph/langgraph/pregel/_loop.py#L1081-L1219)

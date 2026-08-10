@@ -256,6 +256,9 @@ Context 的设计里，我们预期 Context 里存的消息是为整个应用服
 
 **这个实现最大的优点是所有的状态都是从 model messages 派生出来的，包括 Agent App 里的 UI 状态。这种数据来源的单一和状态的简单，使得 Agent 的实现更加简单和可维护。异常恢复的逻辑也变得更加简单。**
 
+
+### 4.3 agent loop 实现
+
 ```python
 class AgentLoop:
     def __init__(
@@ -302,6 +305,65 @@ class AgentLoop:
         #   last message is assistant -> actor = user
         #   有 tool call              -> actor = model
         # 4. 将 tool executor 结果或者 llm response 加入消息列表
+```
+
+### 4.4 Agent App 实现
+Agent App 的 Hook 提供了 doNext，用来驱动 AgentLoop 的执行。
+
+doNext:
+1. AgentLoop.next 是单独的，doNext 是一个潜在多步
+2. 每次调用 next 方法后，同步  AgentLoop 状态到 Agent App
+3. doNext 驱动 Loop 执行直到 actor 为 user 
+
+可以看到在 doNext 的循环内，我们可以拿到每一步的状态。
+
+```js
+  const doNext = useCallback(async () => {
+    if (!agentLoopRef.current) {
+      await initAgentLoop();
+    }
+
+    setCurrentActor("agent");
+
+    while (runningRef.current && agentLoopRef.current) {
+      try {
+        // 1. 执行一个轮次，然后同步 AgentLoop 状态到 Agent App
+        const agentResponse = await agentLoopRef.current.next();
+
+        if (agentResponse.copilotRequests.length > 0) {
+          setCopilotRequests(agentResponse.copilotRequests);
+          break;
+        }
+
+        setCurrentActor(agentResponse.actor);
+
+        const newMessages = await agentLoopRef.current.getMessages();
+        setMessages(newMessages.slice());
+
+        setUnprocessedToolCalls(agentResponse.unprocessedToolCalls);
+
+
+        if (agentResponse.actor === "user") {
+          break;
+        }
+      } catch (error) {
+        const isAbortError =
+          error instanceof Error && error.name === "AbortError";
+        if (!isAbortError) {
+          console.error("Error in agent loop:", error);
+        }
+        runningRef.current = false;
+        setCurrentActor("user");
+        break;
+      }
+    }
+  }, [
+    initAgentLoop,
+    setCurrentActor,
+    setMessages,
+    setUnprocessedToolCalls,
+    setCopilotRequests,
+  ]);
 ```
 
 至此，我们还有三个部分内容未处理:

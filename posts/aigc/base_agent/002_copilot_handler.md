@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "Base Agent Copilot Handler"
-date: 2026-07-01T22:00:00+08:00
-lastmod: 2026-07-01T22:00:00+08:00
+date: 2026-07-02T22:00:00+08:00
+lastmod: 2026-07-02T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -79,13 +79,13 @@ Translate 工具里会校验 src_string 是否在原文中，以及出现的次�
 
 ### 1.4 总结
 
-至此我们对如何定义一个支持 Copilot Handler 的工具做一个总结:
+至此我们对**支持 Copilot Handler 的工具**的实现做一个总结:
 
-1. 模型输入什么
+1. 模型输入什么，包括对模型输入的限定规则
 2. 用户反馈什么
 3. 模型对用户反馈的处理
 4. 系统如何使用工具
-5. 工具实现要校验模型输入是否合法
+5. 工具的实现要校验模型输入是否合法，输入校验是否合法可以在工具内，也可以在应用侧，因为应用侧也能拿到 Copilot Request。无论在哪里实现，最终校验失败的反馈都是 Copilot Response 提交给模型
 
 ## 2. 如何实现 Copilot
 
