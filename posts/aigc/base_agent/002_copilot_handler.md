@@ -363,12 +363,432 @@ Promise.race([p1, p2])：传入多个 Promise，返回一个新 Promise。哪个
 ### 4.3 Promise.race 问题
 1. 打破了 AgentLoop 每次执行一轮的语义。这是 Promise.race 和多轮调用的核心区别，在多轮调用里，AgentLoop 是正常返回的。
 2. 每次只能处理一个 Copilot Handler
-3. 代码复杂
+3. Cli 和 Web 模式下 AgentLoop 实现存在差异，他们需要传入不同的 Copilot Handler
 
 ## 5. 多轮调用
 多轮调用里，AgentLoop 内将 Tool 的执行从两阶段变成三阶段:
 
 1. tool call
-2. tool exec 返回 Copilot Request。第一次 Loop 结束，此时 actor="user"。
-3. 第二次 Loop，Copilot Response 作为参数传给 tool exec。 tool 执行完成返回 result。
+2. tool exec 返回 Copilot Request 作为结果。第一次 Loop 结束，此时 actor="user"。
+3. 第二次 Loop 发起，用户传入 Copilot Response，其作为参数传给 tool exec。 tool 执行完成返回 result。
 
+因此 AgentLoop 就需要维护已经发出的 Copilot Request，并在接受到 Copilot Response 后，将它们匹配，并作为传递给 Tool。
+
+接下来我们将分成三个部分讲解多轮调用的实现:
+1. Tool 工具的实现
+2. AgentLoop 改造
+
+
+### 5.1 Translate 实现
+Translate:
+1. 接受 CopilotResponse 作为参数
+2. 返回两种结果:
+   - CopilotRequestResult: 第一次调用，返回 Copilot Request
+   - ToolResult: 第二次调用，返回正常 Response
+3. 两种响应结果通过 type 字段区分，exector 根据 type 区分是不是 Copilot 的请求。
+4. CopilotRequest 包含 tool 调用信息，Copilot Response 会带上调用信息，用于与 Tool 匹配。AgentLoop 里面我们就能看到这个匹配过程。
+
+
+```python
+class ToolCallOptions(StrictModel):
+    name: str
+    call_id: str = Field(alias="callId")
+
+
+class CopilotRequest(StrictModel):
+    tool: ToolCallOptions
+    src_string: str
+    translate_string: str
+    file_id: str
+
+@dataclass(frozen=True, slots=True)
+class CopilotRequestResult:
+    payload: CopilotRequest
+    type: Literal["copilot-request"] = "copilot-request"
+
+
+@dataclass(frozen=True, slots=True)
+class ToolResult:
+    payload: BaseModel | JsonValue
+    type: Literal["tool-result"] = "tool-result"
+
+@dataclass(slots=True)
+class TranslateExecutor:
+    writer: TranslateWriter
+
+    async def __call__(
+        self,
+        input_data: Mapping[str, Any],
+        context: ToolExecutionContext,
+        copilot_response: CopilotResponse | None = None,
+    ) -> CopilotRequestResult | ToolResult:
+        try:
+            input_value = TranslateInput.model_validate(input_data)
+        except ValidationError as exc:
+            if any(
+                error["type"] == "string_too_long"
+                and error["loc"] == ("src_string",)
+                for error in exc.errors()
+            ):
+                return ToolResult(
+                    payload=TranslateOutput(
+                        translated_string="",
+                        status="reject",
+                        reason="Source string exceeds maximum length of 300 characters",
+                    )
+                )
+            raise
+
+        request = CopilotRequest(
+            tool=ToolCallOptions(name=context.name, call_id=context.call_id),
+            file_id=input_value.file_id,
+            src_string=input_value.src_string,
+            translate_string=input_value.translate_string,
+        )
+        if copilot_response is None:
+            return CopilotRequestResult(payload=request)
+
+        if copilot_response.tool != request.tool:
+            raise ValueError("Copilot response does not match the pending tool call")
+
+        if copilot_response.status in ("approve", "refined"):
+            await self.writer(
+                TranslateWrite(
+                    translated_string=copilot_response.translated_string,
+                    file_id=input_value.file_id,
+                )
+            )
+
+        if copilot_response.status != "approve" and context.memory is not None:
+            await context.memory.extract_memory(req=request, res=copilot_response)
+
+        output = TranslateOutput(
+            translated_string=copilot_response.translated_string,
+            status=copilot_response.status,
+            reason=copilot_response.reason,
+        )
+        return ToolResult(payload=output)
+```
+
+### 5.2 AgentLoop 改造
+#### 维护 Copilot Request
+
+AgentLoop 需要再 Context 维护已经收到的 Copilot Response。Copilot Request 是不需要维护的，因为他们保存模型发起的 tool call message 内。
+
+```python
+class AgentLoop:
+    """A single-step agent state machine built directly on Pydantic AI's model layer."""
+
+    def __init__(
+        self,
+        options: AgentLoopOptions | None = None,
+        messages: Sequence[ModelMessage] = (),
+    ) -> None:
+        self.options = options or AgentLoopOptions()
+        self.context = Context(messages)
+        self.model = self.options.model or models.translator
+        self.tool_defs = self._normalize_tool_defs(self.options.tool_defs)
+        self.tool_executors = dict(self.options.tool_executors)
+
+
+    async def user_input(self, messages: Sequence[ModelRequest] | str) -> None:
+        if isinstance(messages, str):
+            self.context.add_messages([ModelRequest(parts=[UserPromptPart(messages)])])
+        else:
+            self.context.add_messages(messages)
+
+    async def add_copilot_responses(self, responses: Sequence[CopilotResponse]) -> None:
+        self.context.add_copilot_responses(responses)
+
+class Context:
+    def __init__(self, messages: Sequence[ModelMessage] = ()) -> None:
+        self._messages: list[ModelMessage] = list(messages)
+        self._copilot_responses: list[CopilotResponse] = []
+        self._active_messages: list[ModelMessage] = list(messages)
+
+    def add_messages(self, messages: Sequence[ModelMessage]) -> None:
+        self._messages.extend(messages)
+        self._active_messages.extend(messages)
+
+    def add_copilot_responses(self, responses: Sequence[CopilotResponse]) -> None:
+        self._copilot_responses.extend(responses)
+
+    def get_messages(self) -> list[ModelMessage]:
+        return list(self._messages)
+
+    def get_copilot_responses(self, tool_call_ids: Sequence[str]) -> list[CopilotResponse]:
+        ids = set(tool_call_ids)
+        return [response for response in self._copilot_responses if response.tool.call_id in ids]
+```
+
+#### AgentLoop 执行
+在 AgentLoop next 的一轮执行里:
+1. 返回的结果单独保存了 Copilot Request
+2. 工具的执行会先匹配用户已经反馈的 Copilot Response，并将匹配的参数传递给 Tool Executor
+
+```python
+class AgentLoop:
+    async def next(self) -> AgentStepResult:
+        result = await self._next()
+        self.context.add_messages(result.messages)
+        return AgentStepResult(
+            actor=result.actor,
+            unprocessed_tool_calls=self.get_unprocessed_tool_calls(),
+            copilot_requests=result.copilot_requests,
+            messages=result.messages,
+            finish_reason=result.finish_reason,
+        )
+
+    async def _next(self) -> _NextResult:
+        self._check_cancelled()
+        model_messages = self.context.to_model_messages()
+        if not model_messages:
+            return _NextResult(messages=[], copilot_requests=[], actor="user")
+        # 1. 执行未完成的 tool call
+        pending_calls = self.get_unprocessed_tool_calls()
+        if pending_calls:
+            # 2. 查询哪些未完成的 tool call，用户已经反馈了 Copilot Response
+            response_map = {
+                response.tool.call_id: response
+                for response in self.context.get_copilot_responses(
+                    [call.tool_call_id for call in pending_calls]
+                )
+            }
+            executed = await asyncio.gather(
+                *(
+                    # 3. 执行 tool call，传递匹配的 Copilot Response
+                    self.execute_tool(call, response_map.get(call.tool_call_id))
+                    for call in pending_calls
+                )
+            )
+            tool_returns: list[ToolReturnPart] = []
+            copilot_requests: list[CopilotRequest] = []
+            for result in executed:
+                # 4. 区分 tool call 正常返回和 Copilot Request
+                if isinstance(result, CopilotRequest):
+                    copilot_requests.append(result)
+                else:
+                    tool_returns.append(result)
+
+            messages: list[ModelMessage] = []
+            # 5. 处理 Copilot Request，直接返回
+            if copilot_requests:
+                # Keep copilot requests in a separate iteration, matching the
+                # TypeScript loop. Tool returns are not committed until every
+                # pending call can complete without human input.
+                return _NextResult(
+                    messages=[],
+                    copilot_requests=copilot_requests,
+                    actor="agent",
+                )
+
+            return _NextResult(
+                messages=[ModelRequest(parts=tool_returns)],
+                copilot_requests=[],
+                actor="agent",
+            )
+        # 5. 没有未完成的 tool call，本轮发起新的模型调用
+        request_parameters = ModelRequestParameters(
+            function_tools=list(self.tool_defs.values()),
+            output_mode="text",
+        )
+        system = system_workflow(
+            current_memory=self.options.memory.provide_memory() if self.options.memory else "",
+            skills_prompt=self.options.skills_prompt,
+        )
+        request_messages: list[ModelMessage] = [
+            ModelRequest(parts=[SystemPromptPart(system)]),
+            *model_messages,
+        ]
+        wire_messages = self.model.prepare_messages(request_messages, request_parameters)
+        response = await self.model.request(
+            wire_messages,
+            self.options.model_settings,
+            request_parameters,
+        )
+        self._check_cancelled()
+
+        actor: NextActor = "agent" if response.tool_calls else "user"
+        return _NextResult(
+            messages=[response],
+            copilot_requests=[],
+            actor=actor,
+            finish_reason=response.finish_reason,
+        )
+
+```
+
+### 5.3 Agent API 
+API 接口内，根据用户输入的 userInput 或 CopilotResponses，更新 Session 并执行 AgentLoop 的 next 方法。
+
+**CopilotResponses** 作为新的状态，需要被 Session 维护，用于会话的恢复。
+
+```js
+export async function POST(req: Request) {
+  try {
+    const {
+      copilotResponses,
+      sessionId,
+      userInput,
+    }: {
+      sessionId?: string;
+      userInput?: string;
+      copilotResponses?: CopilotResponse[];
+    } = await req.json();
+
+    const { env } = getCloudflareContext();
+    const storage = new D1SessionStorage(env.DB);
+    const sessionManager = new SessionManager(storage);
+
+    const session = sessionId
+      ? await sessionManager.getSession(sessionId)
+      : await sessionManager.createSession();
+
+    if (!session) {
+      return new Response(`Session "${sessionId}" not found`, { status: 404 });
+    }
+
+    const agentLoop = new AgentLoop(
+      {
+        abortSignal: req.signal,
+      },
+      session.messages,
+    );
+
+    if (userInput) {
+      const userMessages: UserModelMessage[] = [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: userInput,
+            },
+          ],
+        },
+      ];
+      await sessionManager.addMessages(session.id, userMessages);
+      await agentLoop.userInput(userMessages);
+    }
+
+    if (copilotResponses) {
+      await sessionManager.addCopilotResponses(session.id, copilotResponses);
+      await agentLoop.addCopilotResponses(copilotResponses);
+    }
+
+    const res = await agentLoop.next();
+
+    await sessionManager.addMessages(session.id, res.messages);
+
+    return new Response(
+      JSON.stringify({
+        sessionId: session.id,
+        agentResponse: res,
+      }),
+      { status: 200 },
+    );
+  } catch (error) {
+    return new Response(
+      JSON.stringify({
+        error: error instanceof Error ? error.message : "Unknown error",
+      }),
+      { status: 500 },
+    );
+  }
+}
+```
+
+### 5.4 Agent UI 
+
+UI 实现的 doNext 方法，驱动 AgentLoop 的执行。这个逻辑与 TUI 是一样的。doNext 会在两个地方 break:
+1. `agentResponse.copilotRequests.length > 0`，说明还有 Copilot Request 未处理，需要等待用户反馈。
+2. `agentResponse.actor === "user"`，说明没有未处理的 tool call，本轮发起新的模型调用。
+
+这里跟我之前理解的不一样，存在 Copilot Request的时候，并没有把 actor 设置为 "user"。我个人感觉，判断 `agentResponse.copilotRequests.length > 0` 没问题，但是 actor 应该改成 "user"
+
+```js
+const doNext = async (
+    params:
+      | { type: "userInput"; input: string }
+      | { type: "copilot"; responses: CopilotResponse[] },
+  ) => {
+    setCurrentActor("agent");
+
+    let round = 1;
+
+    while (runningRef.current) {
+      try {
+        const body = {
+          sessionId: sessionIdRef.current,
+        };
+        if (round === 1) {
+          Object.assign(body, {
+            userInput: params.type === "userInput" ? params.input : undefined,
+            copilotResponses:
+              params.type === "copilot" ? params.responses : undefined,
+          });
+        }
+
+        const { sessionId, agentResponse } = await fetch("/api/next", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(body),
+          signal: abortController.current?.signal,
+        }).then(
+          (res) =>
+            res.json() as Promise<{
+              sessionId: string;
+              agentResponse: AgentResponse;
+            }>,
+        );
+
+        round++;
+
+        sessionIdRef.current = sessionId;
+        // 1. 根据服务端结果同步客户端状态
+        if (
+          agentResponse.copilotRequests &&
+          agentResponse.copilotRequests.length > 0
+        ) {
+          setCopilotRequests(agentResponse.copilotRequests);
+          break;
+        } else {
+          setCurrentActor(agentResponse.actor);
+
+          addMessages(agentResponse.messages);
+
+          setUnprocessedToolCalls(agentResponse.unprocessedToolCalls);
+
+          if (agentResponse.actor === "user") {
+            break;
+          }
+        }
+      } catch (error) {
+        const isAbortError =
+          error instanceof Error && error.name === "AbortError";
+        if (!isAbortError) {
+          console.error("Error in agent loop:", error);
+        }
+        runningRef.current = false;
+        setCurrentActor("user");
+        break;
+      }
+    }
+  };
+```
+
+### 5.5 轮动调用处理流程:
+至此，我们就可以完成来看多轮调用的完整流程:
+
+**第一次调用，没有 Copilot Response**
+1. AgentLoop.next() 执行工具调用，工具内部返回 Copilot Request。
+2. post 请求返回 Copilot Request
+3. UI 处理 Copilot Request，等待用户反馈。
+
+**第二次调用，有 Copilot Response**
+1. Post 请求包含 Copilot Response，AgentLoop.next() 匹配到 Copilot Response 之后，传递给 Tool，工具正常执行返回
+2. AgentLoop 进入到正常的轮次，进行响应
+
+整个逻辑清晰，简单，支持同事处理多个 Copilot Request。
