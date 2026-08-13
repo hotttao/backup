@@ -7,11 +7,16 @@ draft: false
 author: "tao"
 description: "通过用户下单、支付和创建物流的例子，理解 Temporal 的 Workflow、Activity、数据持久化与恢复过程"
 
-tags: ["workflow", "temporal", "durable-execution"]
+tags: ["workflow"]
 categories: ["Agent"]
 
 lightgallery: true
 ---
+
+
+<!-- more -->
+
+## 1. 需求背景
 
 假设用户下单后，系统需要依次完成：
 
@@ -37,7 +42,7 @@ Temporal 是一个**持久化工作流运行时**。它允许我们把流程写�
 
 <!-- more -->
 
-## 1. Temporal 在系统中的位置
+## 2. Temporal 在系统中的位置
 
 一个最小的 Temporal 应用包含三部分：
 
@@ -69,9 +74,9 @@ flowchart LR
 
 Temporal Service 不执行我们的 Python 代码，也不会替我们访问库存、支付或物流系统。真正执行代码的是 Worker。Temporal Service 更像一个持久化的流程协调器。
 
-## 2. Workflow 与 Activity
+## 3. Workflow 与 Activity
 
-### 2.1 Workflow 定义流程
+### 3.1 Workflow 定义流程
 
 Workflow 描述业务步骤之间的关系：
 
@@ -118,7 +123,7 @@ class OrderWorkflow:
 
 Workflow 代码只负责流程控制，不应该直接请求支付接口或写数据库。原因是 Workflow 会被重复执行，也就是后面要介绍的 Replay。
 
-### 2.2 Activity 接触外部世界
+### 3.2 Activity 接触外部世界
 
 Activity 是真正执行副作用的函数：
 
@@ -158,7 +163,7 @@ Activity：真正把这一步做掉
 Temporal：记录已经决定了什么、已经完成了什么
 ```
 
-## 3. 一次订单 Workflow 如何启动
+## 4. 一次订单 Workflow 如何启动
 
 订单服务作为 Client 启动 Workflow：
 
@@ -209,7 +214,7 @@ Client 请求到达 Temporal Service 后，Temporal 创建一个 Workflow Execut
 
 此时订单处理代码甚至还没有开始执行，但启动参数已经保存在 Temporal 的持久化存储中。Client 可以退出，启动请求不会因此消失。
 
-## 4. Workflow 如何驱动每一步执行
+## 5. Workflow 如何驱动每一步执行
 
 Temporal 通过两类 Task 驱动程序：
 
@@ -220,7 +225,7 @@ Temporal 通过两类 Task 驱动程序：
 
 下面沿订单流程逐步观察数据流转。
 
-### 4.1 执行 Workflow，调度库存 Activity
+### 5.1 执行 Workflow，调度库存 Activity
 
 Temporal 把一个 Workflow Task 放入 `orders` Task Queue。Worker 长轮询这个 Task Queue，取到任务后开始执行：
 
@@ -262,7 +267,7 @@ Temporal 接收 Command 后，在 Event History 中追加：
 
 这说明 **Activity 的参数是在调度 Activity 时写入 Event History 的**。之后即使原 Worker 退出，Temporal 仍然知道要执行哪个 Activity，以及应该传入什么参数。
 
-### 4.2 执行库存 Activity，保存返回值
+### 5.2 执行库存 Activity，保存返回值
 
 Temporal 创建 Activity Task，并通过 Task Queue 匹配给 Worker。Worker 这时才真正调用：
 
@@ -288,7 +293,7 @@ Worker 把结果上报给 Temporal。Temporal 在 History 中追加：
 
 此时 `reservation_id` 已经成为持久化事件的一部分。它不再只存在于某个 Python 进程的局部变量中。
 
-### 4.3 再次执行 Workflow，调度支付 Activity
+### 5.3 再次执行 Workflow，调度支付 Activity
 
 库存 Activity 完成以后，Temporal 创建新的 Workflow Task。Worker 再次运行 `OrderWorkflow.run()`。
 
@@ -348,7 +353,7 @@ Temporal 将支付参数写入新的 `ActivityTaskScheduled` 事件：
 }
 ```
 
-### 4.4 创建物流单并完成 Workflow
+### 5.4 创建物流单并完成 Workflow
 
 支付完成后，Temporal 再次创建 Workflow Task。Workflow 重放前面的历史，恢复出：
 
@@ -393,41 +398,6 @@ Client 可以通过 Workflow Handle 等待并取得这个结果：
 ```python
 shipment_id = await handle.result()
 ```
-
-## 5. 完整的 Event History
-
-省略 Workflow Task 自身的 Scheduled、Started 和 Completed 等内部事件后，订单的业务主干可以简化为：
-
-```text
-WorkflowExecutionStarted
-  input = OrderInput(order_id="1001", ...)
-
-ActivityTaskScheduled
-  type = reserve_inventory
-  input = OrderInput(order_id="1001", ...)
-
-ActivityTaskCompleted
-  result = "reservation-1001"
-
-ActivityTaskScheduled
-  type = charge_payment
-  input = ChargeInput(order_id="1001", amount=9900)
-
-ActivityTaskCompleted
-  result = "payment-1001"
-
-ActivityTaskScheduled
-  type = create_shipment
-  input = ShipmentInput(order_id="1001", address="Shanghai")
-
-ActivityTaskCompleted
-  result = "shipment-1001"
-
-WorkflowExecutionCompleted
-  result = "shipment-1001"
-```
-
-它描述了这次订单 Workflow 已经发生的事实。Worker 无论重启多少次，只要取得相同的 History 并执行兼容的 Workflow 代码，就能重建相同的流程状态。
 
 ## 6. Temporal 到底持久化了什么
 
