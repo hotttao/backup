@@ -1,8 +1,8 @@
 ---
 weight: 1
 title: "Base Agent - API 形态实现"
-date: 2026-07-02T22:00:00+08:00
-lastmod: 2026-07-02T22:00:00+08:00
+date: 2026-07-04T22:00:00+08:00
+lastmod: 2026-07-04T22:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
