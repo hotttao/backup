@@ -15,7 +15,7 @@ categories: ["Agent"]
 lightgallery: true
 ---
 
-这一节我们来学习 [Claude Code Tool 设计](https://github.com/Yuyz0112/claude-code-reverse/blob/main/results/tools/)。
+这一节我们来学习 [Claude Code 实现的通用基础工具](https://github.com/Yuyz0112/claude-code-reverse/blob/main/results/tools/)。
 
 <!-- more -->
 
