@@ -10,7 +10,7 @@ description: "Base Agent 如何实现记忆提取"
 featuredImage:
 
 tags: ["base_agent"]
-categories: ["agent_core"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

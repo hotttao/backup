@@ -10,7 +10,7 @@ description: "Base Agent 抽象"
 featuredImage:
 
 tags: ["base_agent"]
-categories: ["agent_core"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

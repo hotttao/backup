@@ -10,7 +10,7 @@ description: "Base Agent 如何集成 Copilot Handler"
 featuredImage:
 
 tags: ["base_agent"]
-categories: ["agent_core"]
+categories: ["Agent"]
 
 lightgallery: true
 ---
