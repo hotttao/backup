@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:43+08:00
+lastmod: 2026-08-17T13:07:45+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -41,6 +41,7 @@ toc:
 | ccstatusline | 为 Claude Code CLI 打造的高度可自定义终端状态栏（status line）格式化工具，基于 Claude Code 的 Status Line API，可展示模型、Git 分支、Token 用量、Agent 运行状态与进度等指标。 | 2025-08-08 | 仅作功能介绍，未给出明确评价。 | [BV1WbXUBGEJr · 01:56](https://www.bilibili.com/video/BV1WbXUBGEJr?t=116) | [GitHub](https://github.com/sirmalloc/ccstatusline) |
 | TUI Studio | 类似 Figma 的可视化终端 UI（TUI）编辑器，可拖拽 20 余种预置组件、实时 ANSI 预览，支持 Absolute/Flexbox/Grid 布局与多种配色主题，项目保存为可版本控制的 .tui JSON 并可导出到 Ink、Bubble Tea 等主流 TUI 框架。 | 2026-02-14 | 考拉认为终端 UI 开发长期是纯代码驱动的领域，TUI Studio 试图用可视化编辑降低门槛，想法很有吸引力，毕竟如今越来越多的 TUI 项目也需要设计。 | [BV1WbXUBGEJr · 02:52](https://www.bilibili.com/video/BV1WbXUBGEJr?t=172) | [GitHub](https://github.com/jalonsogo/tui-studio) |
 | Ki Editor | 多光标结构化模态编辑器，直接操作语法树上的节点（函数、循环、表达式可作为整体选中、移动、替换）而非逐字符编辑；配合多光标机制可批量重构多个语法节点，并统一了按词、按行、按语法结构移动的模态编辑粒度。 | 2023-04-04 | 考拉认为结构化编辑的概念并不新鲜，ParEdit 在 Lisp 社区已验证多年，但推广到通用语言一直是难题；另外在 Agent Coding 盛行的当下，编辑器领域的创新看起来更像是学术研究而非生产力工具。 | [BV1ivAMzGEv5 · 04:17](https://www.bilibili.com/video/BV1ivAMzGEv5?t=257) | [GitHub](https://github.com/ki-editor/ki-editor) |
+| Bubble Tea | Charm 团队推出的 Go 语言 TUI（终端 UI）框架，v2 为六年来首次重大更新：渲染性能提升 10 倍以上，API 由命令式转向声明式；已在 AI 编程助手等生产环境验证。 | 2026-02-24 | 考拉认为终端不再是复古玩具，而是 AI 时代人机交互的重要界面；v2 的声明式 API 设计让状态管理更清晰，性能优化直接降低了 SSH 场景下的带宽成本。2.5 万个依赖项目的迁移压力不小，但 Charm 提供了详尽升级指南，甚至为 LLM 准备了专用提示词。 | [BV1txNKztENM · 01:26](https://www.bilibili.com/video/BV1txNKztENM?t=86) | [GitHub](https://github.com/charmbracelet/bubbletea) |
 
 ## 代码质量与 Code Review
 
@@ -50,6 +51,7 @@ toc:
 | GitHub Stacked Pull Requests | 通过 `gh stack` 把大改动拆成相互依赖、可独立评审和合并的小 PR | 2026-02-06 | Agent 生成的代码量暴涨后，评审正成为新瓶颈；把大改动切成可消化的小块正好对症。 | [BV1Fz3X62ETW · 02:35](https://www.bilibili.com/video/BV1Fz3X62ETW?t=155) | [GitHub](https://github.com/github/gh-stack) |
 | sem | 基于 Git 的语义级版本控制/差异工具，从函数、类等实体层面（而非逐行）理解一次提交改了什么，提供 sem diff、sem blame、sem impact 命令，面向 AI 编程 Agent 输出结构化变更信息。 | 2026-02-06 | 传统行 diff 是给人看的，但在 AI 写代码的时代，Agent 需要的是结构化、语义化的变更信息；sem 通过代码静态分析，希望提供这种对 Agent 更友好的新格式。 | [BV1CWJF6xE1d · 00:01](https://www.bilibili.com/video/BV1CWJF6xE1d?t=1) | [GitHub](https://github.com/Ataraxy-Labs/sem) |
 | DiffsHub | GitHub 代码差异查看器，把 URL 里的 github.com 换成 diffshub.com 即可打开，用虚拟化渲染撑住超大规模 diff，PR、commit、compare、patch 等页面都能接管，宣称能流畅打开 Linux 内核版本间的对比。 | 2026-05-20 | 考拉认为背后的公司 Pierre 之前介绍过他们的两个底层组件 FileTree 和 Diff，DiffsHub 就是基于这两个组件搭出来的上层产品，可以看出他们在往 Patch Review 这个垂直方向深耕；这个时机也很合理——AI 让代码产出速度爆炸增长，Code Review 的工具体验反而成了瓶颈，GitHub 原生 diff 在大 PR 下卡顿是公认痛点，垂直工具用更好的工程实现来抢占体验是个合理的切入角度。 | [BV1yYG76oESe · 01:28](https://www.bilibili.com/video/BV1yYG76oESe?t=88) | [官网](https://diffshub.com/) |
+| dependency-cruiser | 通过配置文件定义依赖规则（如禁止客户端代码引用服务端模块），在 CI 中自动检查依赖违规，并能生成可可视化的依赖图，帮助理解代码结构。 | 2016-11-20 | 考拉认为在 AI 参与开发的项目中架构越发重要；该工具把原本靠 Code Review 人工把关的事自动化了；声明式配置易纳入现有工作流，但规则设计需要团队对架构有清晰共识，否则易流于形式。 | [BV1txNKztENM · 02:53](https://www.bilibili.com/video/BV1txNKztENM?t=173) | [GitHub](https://github.com/sverweij/dependency-cruiser) |
 
 ## Web 与 JavaScript 开发
 
@@ -74,6 +76,7 @@ toc:
 | Cult UI | 基于 shadcn/ui 的开源动效组件库，提供 78+ 可复制动画组件与 100+ AI Agent 交互模式/区块，技术栈 React + Tailwind + TypeScript，可一键复制或直接用 shadcn 安装。 | 2024-05-29 | 仅作功能介绍，未给出明确评价。 | [BV1rLD5BKEtE · 03:16](https://www.bilibili.com/video/BV1rLD5BKEtE?t=196) | [官网](https://cult-ui.com) |
 | Vite+ | VoidZero 推出的统一前端工具链，将 Vite、Vitest、Rolldown、Oxlint、Oxfmt、tsdown 整合为单一 CLI（vp），一个命令即可管理 Node 版本、开发、测试、构建、代码检查与格式化。 | 2026-03-13 | 考拉认为前端工具链碎片化一直是开发者的痛点，VoidZero 试图用 Rust 重写的高性能工具统一整个链路，野心不小；从 Alpha 阶段看各子项目成熟度参差不齐，Rolldown 和 Oxlint 已有不少生产验证，但 tsdown 和 Vite Task 还比较早期；能否真正取代现有工具链取决于生态兼容性和社区意愿。 | [BV1ivAMzGEv5 · 00:01](https://www.bilibili.com/video/BV1ivAMzGEv5?t=1) | [GitHub](https://github.com/voidzero-dev/vite-plus) |
 | Element Source | 在运行时定位任意 DOM 元素对应源文件位置的零配置库，返回文件名、行号、列号与完整组件调用栈，支持 React、Preact、Vue、Svelte、Solid 五大框架，初衷是为 AI 编程助手提供精准的代码上下文。 | 2026-03-11 | 考拉认为这个工具切中了一个很实际的痛点——AI 编程助手最大的瓶颈之一就是缺乏精准的上下文，而 Element Source 从 UI 层反向追溯到源码，相当于给 Agent 装了一双眼睛；作者之前发布过 React 生态的多个类似工具，本次则支持了更多不同框架。 | [BV1ivAMzGEv5 · 01:54](https://www.bilibili.com/video/BV1ivAMzGEv5?t=114) | [GitHub](https://github.com/aidenybai/element-source) |
+| Oxfmt | Oxc（The JavaScript Oxidation Compiler）项目下的 Rust 代码格式化工具，完全兼容 Prettier 且速度快 30 倍以上，内置 import 排序与 Tailwind CSS 支持，迁移命令一行即可完成。 | 2026-02-24 | 考拉认为 JavaScript 工具链的 Rust 化已成定局；Oxfmt 没有试图重新定义格式标准，而是选择完全兼容 Prettier，这种务实让社区可以无痛迁移。随着 Agent 与 Harness 工程流程的发展，智能化工具链的性能都需有更高追求。 | [BV1txNKztENM · 02:24](https://www.bilibili.com/video/BV1txNKztENM?t=144) | [GitHub](https://github.com/oxc-project/oxc) |
 
 ## 测试与质量保障
 
@@ -82,6 +85,7 @@ toc:
 | Vitest 4.0 | 支持浏览器模式和视觉回归测试的测试框架 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [项目文档](https://vitest.dev/guide/) |
 | Happy DOM | 用 TypeScript 实现的 Headless 浏览器/DOM 环境，提供完整的 DOM API（Custom Elements、Shadow DOM、Mutation Observer、Fetch 等），被 Vitest、Jest、Bun 等测试框架作为默认或可选的 DOM 环境，支持 React、Vue 等主流框架的测试。 | 2019-09-09 | 考拉认为：长期以来 jsdom 几乎是 Node 测试 DOM 的唯一选择，但它相对笨重、维护节奏缓慢；Happy DOM 选择重写一套更轻量的实现，Vitest 默认推荐它作为环境就是最好的背书；在前端基础设施越来越追求速度的当下，Bun 和 Vite 带起的这波提速浪潮里，Happy DOM 是基础设施层的关键一环；局限是 API 覆盖度仍不如 jsdom 全面，遇到冷门 DOM 特性偶尔需要绕路。 | [BV1qmoFBzE1e · 01:50](https://www.bilibili.com/video/BV1qmoFBzE1e?t=110) | [GitHub](https://github.com/capricorn86/happy-dom) |
 | AIMock | CopilotKit 推出的开源确定性 Mock 基础设施，用单一端口模拟 LLM、MCP、A2A、向量数据库与多模态 API，核心是录制回放，并支持漂移检测与混沌测试。 | 2026-03-03 | 考拉认为，AI 应用的测试一直是个痛点，依赖外部 API、输出不稳定、成本高。AIMock 把传统软件测试中成熟的录制回放模式引入 AI 领域；随着 Agent 开发逐步走向工程化，从能跑就行到可测试可复现，这类基础测试工具会越来越重要。 | [BV1HzDSBqEgd · 03:50](https://www.bilibili.com/video/BV1HzDSBqEgd?t=230) | [GitHub](https://github.com/CopilotKit/aimock) |
+| Promptfoo | 开源的 LLM/提示词测试框架，用声明式配置定义测试用例，自动对比多个模型输出，并检测提示注入等安全风险；支持接入 CI/CD 并输出合规报告（可映射到 OWASP、NIST 等标准）。 | 2023-04-28 | 考拉认为 LLM 应用进入生产环境后，可观测性与测试覆盖是两大痛点；Promptfoo 把传统软件测试方法论引入 AI 领域，比单纯依赖人工评估更可持续。Anthropic 博客提到其内部也在用该工具做 Agent 质量评估，使其获得更多关注。 | [BV1txNKztENM · 00:28](https://www.bilibili.com/video/BV1txNKztENM?t=28) | [GitHub](https://github.com/promptfoo/promptfoo) |
 
 ## 运维、部署与基础设施
 
@@ -100,6 +104,7 @@ toc:
 | Open Source Security at Astral | Ruff/uv/ty 的开发团队 Astral 发布的一篇开源供应链安全实践指南，系统梳理 CI/CD 安全、仓库管控、发布流程与依赖管理四大维度的措施。 | 2026-04-08 | 考拉认为，Astral 提出的一系列实践是对近期几起恶性供应链攻击问题的回应，一方面向社区输出安全最佳实践，另一方面也体现了团队的专业性。 | [BV1HzDSBqEgd · 05:43](https://www.bilibili.com/video/BV1HzDSBqEgd?t=343) | [官网](https://astral.sh/blog/open-source-security-at-astral) |
 | Portless | Vercel Labs 开源的本地开发工具，用稳定的命名 .localhost 域名（如 https://myapp.localhost）替换易变的 localhost 端口，自动生成并信任本地 CA 实现 HTTPS，支持 Git worktree 按分支分配子域名，并为 Vite、Astro 等框架自动注入兼容参数。 | 2026-02-15 | 考拉认为同类产品很多，但 Vercel 将多年在开发体验方面的深度积累融入到默认配置中，减少了用户踩坑的概率。 | [BV1WbXUBGEJr · 03:45](https://www.bilibili.com/video/BV1WbXUBGEJr?t=225) | [GitHub](https://github.com/vercel-labs/portless) |
 | AgentSafeHouse | 基于 macOS 原生 sandbox-exec 的本地 AI 编程代理沙箱工具，采用默认拒绝（deny-first）模型，仅放行项目目录与工具链的读写权限，从内核层面阻止代理访问 ~/.ssh、~/.aws 等敏感路径；内置 Claude Code、Cursor 等十多种代理的预置配置，Homebrew 一键安装。 | 2026-02-09 | 考拉认为 AI 代理安全仍是个被严重低估的问题，当让 Agent 全权操作文件系统时，一个幻觉就可能删掉关键文件；AgentSafeHouse 选择在操作系统层面做隔离，比应用层的权限控制更可靠；不过 SandboxExec 本身是 macOS 未公开文档的 API，苹果随时可能调整行为，长期维护存在不确定性。 | [BV1ivAMzGEv5 · 02:51](https://www.bilibili.com/video/BV1ivAMzGEv5?t=171) | [GitHub](https://github.com/eugene1g/agent-safehouse) |
+| gws | Google 推出的统一命令行工具（Rust 编写），用一条命令控制 Drive、Gmail、Calendar、Sheets、Docs、Chat 等全部 Workspace 服务；运行时读取 Google Discovery Service 动态生成命令，内置 40+ Agent 技能与 MCP 服务器。 | 2026-03-02 | 考拉认为 gws 是帮助 Workspace 服务融入 Agent 生态的重要手段，凭借庞大的用户群和办公场景有望解锁更多 Agent 办公场景；其动态服务发现机制设计用心，比不少第三方 MCP 形态集成方案更胜一筹。 | [BV1txNKztENM · 00:01](https://www.bilibili.com/video/BV1txNKztENM?t=1) | [GitHub](https://github.com/googleworkspace/cli) |
 
 ## AI 模型与推理
 
@@ -141,6 +146,7 @@ toc:
 | Claude Code | Anthropic 推出的终端 AI 编程智能体，可理解代码库、执行命令、编辑文件并处理 git 工作流，通过自然语言完成软件工程任务。 | 2025-02-24 | 考拉认为，这一议题触及了 AI 工具商业化的核心矛盾——推理成本优化与输出质量之间的博弈。当厂商为了降本而缩减思维链深度，又通过遮蔽让性能退化变得不可见时，用户只能感受到模型变笨了，却无法诊断原因。 | [BV1HzDSBqEgd · 00:02](https://www.bilibili.com/video/BV1HzDSBqEgd?t=2) | [GitHub](https://github.com/anthropics/claude-code) |
 | nono | 开源的 AI Agent 运行时安全框架，由 Sigstore 创建者打造，提供内核级隔离（Landlock/Seatbelt）、文件快照回滚、审计、供应链签名验证与动态权限审批，提供 Python/TypeScript/Rust/C 多语言 SDK。 | 2026-01-31 | 考拉认为，这个项目的技术深度远超简单沙箱，但 Agent 的生态尚早，开发者安全投入意愿有限，能否在安全和便捷间取得平衡，以及支持大规模云化部署是一个关键问题。 | [BV1rLD5BKEtE · 02:21](https://www.bilibili.com/video/BV1rLD5BKEtE?t=141) | [官网](https://nono.sh) |
 | Autoresearch | Karpathy 开源的自主 AI 研究框架，让 AI Agent 在夜间自动开展机器学习实验，在受限环境下验证 Agent 能否做出有意义的研究迭代。 | 2026-03-06 | 考拉认为这是 AI 辅助研究从工具走向自主研究者的早期信号，但当前仍需人类定义实验方向，离真正自主研究尚有距离；项目总能精准把握 AI 社区脉搏，5 分钟训练预算与单文件约束的设计非常克制，既控制了风险又保证了可复现性。 | [BV1WbXUBGEJr · 00:01](https://www.bilibili.com/video/BV1WbXUBGEJr?t=1) | [GitHub](https://github.com/karpathy/autoresearch) |
+| Jido | 基于 Elixir/OTP 的自治多智能体框架，Agent 为纯函数式数据结构，状态变更通过指令描述，副作用由 OTP 运行时执行；内置 Supervisor 树可自动恢复崩溃的 agent，并支持热更新。 | 2026-02-22 | 考拉认为当 Python 和 Go 几乎垄断 AI 开发时，Jido 提供了另一种思路；Elixir 的并发模型与容错机制适合构建高可靠 Agent 系统，但生态成熟度仍有差距，适合对性能与稳定性有极致要求、且愿意接受函数式编程思维的团队。Jido 2.0 的代码设计对想深入 Agent 实现的开发者很有参考价值。 | [BV1txNKztENM · 03:52](https://www.bilibili.com/video/BV1txNKztENM?t=232) | [GitHub](https://github.com/agentjido/jido) |
 
 ## 数据工程与存储
 
