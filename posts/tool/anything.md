@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:31+08:00
+lastmod: 2026-08-17T13:07:33+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -61,6 +61,8 @@ toc:
 | Extend UI | Extend 开源的 React 组件库（shadcn 风格注册表），面向文档类产品，提供 PDF/DOCX/XLSX/CSV 查看与编辑、边界框引用、文件上传、电子签名等 14 个可定制组件，MIT 许可。 | 2026-05-12 | 通用 UI 组件库已经红海一片，Extend UI 聪明地选择了文档处理这个细分赛道；这类组件又重又琐碎（PDF 渲染、表格编辑、签名都是硬骨头），现成高质量开源方案不多；Extend AI 做文档智能处理，把内部打磨的能力开源出来，既是技术品牌建设也是给开发者获客的入口。 | [BV1CWJF6xE1d · 03:18](https://www.bilibili.com/video/BV1CWJF6xE1d?t=198) | [GitHub](https://github.com/extend-hq/ui) |
 | The Website Specification | 一份平台无关的网站技术标准/规范，把优质网站应具备的特性归纳为十大类（基础结构、SEO、无障碍、安全、性能、隐私、国际化、Well-Known URIs、Agent 可读性等，共约 128 项），每条均链接到 W3C/IETF/WCAG 等权威来源，并提供公开 MCP 服务器供 Agent 查询。 | 2026-05-29 | 这份规范的价值在于把碎片化的最佳实践系统化，并坚持用标准（W3C、IETF 等）作背书，可信度比一般的经验清单更高；其中专门列出「Agent 可读性」类别，反映出网站的读者不再只是人类，还有越来越多的 AI 智能体，能否被 Agent 正确理解和调用正成为网站建设的新考量。 | [BV1GpEs6gEAA · 01:26](https://www.bilibili.com/video/BV1GpEs6gEAA?t=86) | [GitHub](https://github.com/jdevalk/specification.website) |
 | @pierre/trees | Pierre Computer 开源的文件树渲染库，提供开箱即用的高性能文件树组件，支持 Git 状态着色、上百种文件图标、可配置布局与细粒度 CSS 变量主题，可用于 PR Review 与 Web IDE。 | 2025-09-19 | 认为该团队此前做过 Diff UI 库（@pierre/diffs），本次坚持类似设计理念——只做文件树但做到极致；在 AI 大量生成代码、做 PR Review 和 Web IDE 的项目越来越多的当下，一个开箱即用的文件树组件比自己用 react-arborist 拼一遍省心得多。 | [BV1VsLJ6QEbN · 02:22](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=142) | [GitHub](https://github.com/pierrecomputer/pierre) |
+| dev3000 | Vercel Labs 开源的 Web 应用调试工具（CLI 名为 d3k），用 Chrome DevTools Protocol 监控浏览器，把服务器日志、浏览器控制台、网络请求、用户交互与自动截图按时间戳汇总到一份统一信息流，供 AI 助手调试。 | 2025-09-02 | 认为这个工具的定位是给 AI 看的上下文采集器；AI 写代码的瓶颈早就不是生成能力，而是稀疏获取——让模型去猜浏览器报什么错、网络请求返回什么，效率上不去。dev3000 让 AI 能像人一样看到全貌。 | [BV1SZ5j6BEom · 00:01](https://www.bilibili.com/video/BV1SZ5j6BEom?t=1) | [GitHub](https://github.com/vercel-labs/dev3000) |
+| AnimateIcons | 开源的 React 动画图标库，提供 281 个免费动画 SVG 图标组件，分 Lucide 与 Huge 两套设计风格，动画在 SVG path 级别精修，支持 hover/focus/程序触发，构建支持 tree-shaking，底层用 Motion 做动画。 | 2025-07-29 | 认为 AnimateIcons 把微动画做成图标的一等公民；现代 Web 应用越来越追求 motion design 的细节，按钮、菜单、状态切换都要有过渡，以前要么手写 SVG path 动画、要么用 Lottie，前者麻烦后者太重，AnimateIcons 填上了这两种方案的中间地带。 | [BV1SZ5j6BEom · 01:55](https://www.bilibili.com/video/BV1SZ5j6BEom?t=115) | [GitHub](https://github.com/Avijit07x/animateicons) |
 
 ## 测试与质量保障
 
@@ -80,6 +82,7 @@ toc:
 | container | 苹果官方开源的命令行工具，在 Apple 芯片 Mac 上以轻量虚拟机方式运行 Linux 容器，完全用 Swift 编写，底层基于 Containerization 包，兼容 OCI 标准镜像与现有容器生态。 | 2026-06-09 | 长期以来 Mac 上跑容器主要靠 Docker Desktop（背后是一个大虚拟机）；苹果这次的思路是给每个容器分配独立的轻量虚拟机，隔离性更好、启动更快，并深度绑定 Apple 芯片做优化。 | [BV1CWJF6xE1d · 01:54](https://www.bilibili.com/video/BV1CWJF6xE1d?t=114) | [GitHub](https://github.com/apple/container) |
 | ArtifactFS | Cloudflare 开源的 FUSE 文件系统驱动，把 Git 仓库挂载为本地目录而跳过完整 clone 的等待，目录树立即可见，文件内容按需后台拉取，并支持 git log、commit、checkout 等标准操作。 | 2026-03-29 | 考拉认为在 Agentic Coding 时代 Git Clone 次数正在指数级上升，对大型仓库成为不可忽视的成本；Cloudflare 把它放进 ArtifactFS，意图明显是提升自家 Workers 产品的竞争力；局限也明显——git status 等遍历操作开销极大，非 Linux 环境兼容性也不好，短期内更适合容器化的 Agent 环境，做本地日常开发还不如直接 Clone。 | [BV15iVV6AE6U · 03:57](https://www.bilibili.com/video/BV15iVV6AE6U?t=237) | [GitHub](https://github.com/cloudflare/artifact-fs) |
 | boring | 命令行 SSH 隧道管理器，用 TOML 文件集中管理本地端口转发、远程转发与 SOCKS5 动态代理，兼容 SSH config 与 ssh-agent，支持 Unix 套接字、断线自动重连与分组批量启停。 | 2024-09-21 | 认为传统做法要么手敲一长串 SSH 参数，要么靠 autossh 加 systemd 凑守护进程；Boring 把这些零散动作收进一个 TOML 配置，外加分组批量启停和重连兜底，对长期挂多条隧道的开发者很实用。 | [BV1VsLJ6QEbN · 01:27](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=87) | [GitHub](https://github.com/alebeck/boring) |
+| Alchemy | 基于 TypeScript 的 IaC（基础设施即代码）框架，所有云资源、IAM 权限、环境变量在一个 TS 文件里定义并自动类型推导，支持本地热重载与每 PR 临时环境；V2 把 Effect 库改为可选。 | 2025-10-22 | 认为 Alchemy 的差异化在于把 IAM 策略和资源绑定做成编译期检查，能避免一类常见部署事故；但 Trade-off 明显——前期样板代码多、学习曲线比 Terraform 陡，不熟悉 Effect 的团队在 V1 几乎被强制依赖 Effect 的函数式风格；V2 把 Effect 改成可选是务实修正，目前还在 Beta 阶段，生产环境要谨慎。 | [BV1SZ5j6BEom · 02:23](https://www.bilibili.com/video/BV1SZ5j6BEom?t=143) | [GitHub](https://github.com/alchemy-run/alchemy) |
 
 ## AI 模型与推理
 
@@ -113,6 +116,7 @@ toc:
 | kubernetes-skill | 面向 Claude Code、Codex 等编程智能体的开源 Kubernetes Skill，用 failure-mode-first（先诊断六类已知故障模式再生成 YAML）的方法论解决 LLM 生成 K8s 配置时标签不对齐、端口不一致、安全默认值缺失等问题，配套二十余份按需加载的参考文档。 | 2026-04-12 | 考拉认为作者对 Skill 机制的理解相当不错，把领域知识按需加载，激活成本压到几百 token；比起单纯让 LLM 记住 K8s 最佳实践，failure-mode-first 这种先验证再生成的工作流更可靠；虽然 LLM 对 K8s 通识不错，但结合这样的专家型 Skill 还能进一步提升可靠性。 | [BV1yYG76oESe · 03:51](https://www.bilibili.com/video/BV1yYG76oESe?t=231) | [GitHub](https://github.com/LukasNiessen/kubernetes-skill) |
 | Mirage | 面向 AI Agent 的统一虚拟文件系统，将 S3、Google Drive、GitHub、Slack、Postgres、Redis 等后端挂载到同一根目录，Agent 用熟悉的 cat/grep/管道即可跨服务操作，并支持快照、克隆与回滚。 | 2026-05-06 | 认为 MCP 之后大家在想 Agent 接入外部世界更优雅的方式，Mirage 的思路很取巧——既然 LLM 早就熟悉 Bash，就把所有东西伪装成文件，省去学新工具的成本；优势是 Agent 计算复用，劣势是潜在性能问题与运维复杂度。 | [BV1VsLJ6QEbN · 00:58](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=58) | [GitHub](https://github.com/strukto-ai/mirage) |
 | Flue | Astro 团队开源的 TypeScript Agent Harness 框架，将架构拆为模型层（Token/Prompt/Tools）、工具层（Skill/Memory/Session）、沙箱层（Bash/网络/权限）与文件系统层（read/write/grep/glob），可部署到 Node.js 与 Cloudflare Workers。 | 2026-02-07 | 认为这个项目的 API 设计有一定创新性，但仍偏向编程的范畴；在模型驱动占主导地位的今天，也许该框架的适用场景是由模型而非人类开发者来编写业务逻辑；总体是有趣的尝试，但适用场景仍需探索。 | [BV1VsLJ6QEbN · 03:50](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=230) | [GitHub](https://github.com/withastro/flue) |
+| Tilde | 让 AI Agent 安全访问生产数据的运行平台（由 lakeFS 团队 Treeverse 出品），核心理念是把每次 Agent 执行变成一个事务：GitHub 代码、S3 数据、Google Drive 文档统一挂载到单一版本化文件系统，默认拦截网络请求并记录，关键操作可加审批，支持时间旅行审计与回滚。 | 2026-05-07 | 认为 Tilde 是一个封装更进一步的 Agent 沙箱，但强大的功能也代表着更高的复杂度，稳定性还需要实际测试。 | [BV1SZ5j6BEom · 03:49](https://www.bilibili.com/video/BV1SZ5j6BEom?t=229) | [官网](https://tilde.run) |
 
 ## 数据工程与存储
 
@@ -136,6 +140,8 @@ toc:
 | Mattermost | 开源、自托管的团队协作平台（Slack 替代品），提供实时聊天、工作流自动化、语音通话、屏幕共享与 AI 集成；Go 后端 + React 前端，单 Linux 二进制运行，数据存 PostgreSQL，MIT 许可，支持 Docker/Kubernetes/Helm 部署。 | 2015-10-02 | Mattermost 没有正面去拼 Slack 的消费级体验，而是聚焦研发和安全运营场景，把自己嵌进 DevSecOps 工具链，这个差异化定位让它在企业市场站稳了脚跟。 | [BV1CWJF6xE1d · 02:20](https://www.bilibili.com/video/BV1CWJF6xE1d?t=140) | [GitHub](https://github.com/mattermost/mattermost) |
 | FablePool | 众包式 AI 开发平台：用户提交软件构想并众筹积分，达标后由 AI Agent 按里程碑公开构建，全程支出、日志与产出记录在公开账本上，成果以 MIT 开源。 | 2026-06-12 | 这是一个相当有趣的实验，把 Agent 当成更加平等的生产力，也让众筹所得的用途非常透明。 | [BV1CWJF6xE1d · 04:13](https://www.bilibili.com/video/BV1CWJF6xE1d?t=253) | [官网](https://fablepool.com) |
 | Hocuspocus | 由 Tiptap（ueberdosis）团队开源的即插即用实时协作后端，基于 Yjs/CRDT，用 WebSocket 封装多人实时编辑的同步逻辑，让多用户同时改一份文档时自动合并、互不覆盖；可接 SQLite 等做持久化，也提供云托管服务 Tiptap Collab，并支撑 Tiptap 编辑器的协同功能。 | 2020-12-02 | 在线协作几乎成了文档、白板、笔记类产品的标配，但自己从零实现 OT 或 CRDT 同步门槛很高；Hocuspocus 把这块基础设施做成开箱即用的后端，并且和富文本编辑器 Tiptap 同源，生态衔接顺滑。 | [BV1GpEs6gEAA · 02:51](https://www.bilibili.com/video/BV1GpEs6gEAA?t=171) | [GitHub](https://github.com/ueberdosis/hocuspocus) |
+| Agentic Inbox | Cloudflare 开源的自托管邮件客户端与 AI Agent 参考实现，完全运行在 Cloudflare Workers 上，每封邮件隔离在独立 Durable Object 中，配 D1 数据库、R2 附件存储，并用 Cloudflare Agents SDK 调用 9 个邮件工具、以 Kimi K2.5 自动起草回复。 | 2026-04-10 | 认为单看产品它只是一个邮件客户端，但放到 Cloudflare 的版图里看就是另一回事——这套实现把多个平台功能串到一起，用一个开源项目把自家平台能力全部展示一遍，也起到了推广其 Agents SDK 的效果。 | [BV1SZ5j6BEom · 00:31](https://www.bilibili.com/video/BV1SZ5j6BEom?t=31) | [GitHub](https://github.com/cloudflare/agentic-inbox) |
+| gh-dashboard | 开源的 GitHub 数据聚合面板，把仓库、Issue、PR、流量、CI 活动这些分散在 GitHub 不同页面的数据聚合到一个 Web 界面，后端处理 OAuth 并代理 REST 与 GraphQL 调用（项目后更名为 Gitdeck）。 | 2026-04-29 | 认为这几年 GitHub 自己的 UI 扩张得很厉害，但跨仓库聚合一直是短板，跨多个项目开发的人得在一堆标签页之间跳；GH Dashboard 解决的就是这个具体痛点，思路类似 gh-dash 但用 Web 而非 TUI，受众更广。 | [BV1SZ5j6BEom · 01:25](https://www.bilibili.com/video/BV1SZ5j6BEom?t=85) | [GitHub](https://github.com/debba/gh-dashboard) |
 
 ## 多媒体与图形
 
