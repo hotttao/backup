@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:56+08:00
+lastmod: 2026-08-17T13:07:58+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -44,6 +44,7 @@ toc:
 | Bubble Tea | Charm 团队推出的 Go 语言 TUI（终端 UI）框架，v2 为六年来首次重大更新：渲染性能提升 10 倍以上，API 由命令式转向声明式；已在 AI 编程助手等生产环境验证。 | 2026-02-24 | 考拉认为终端不再是复古玩具，而是 AI 时代人机交互的重要界面；v2 的声明式 API 设计让状态管理更清晰，性能优化直接降低了 SSH 场景下的带宽成本。2.5 万个依赖项目的迁移压力不小，但 Charm 提供了详尽升级指南，甚至为 LLM 准备了专用提示词。 | [BV1txNKztENM · 01:26](https://www.bilibili.com/video/BV1txNKztENM?t=86) | [GitHub](https://github.com/charmbracelet/bubbletea) |
 | diffnav | 由 gh-dash 作者 dlvhdr 开发的 git diff 分页器，基于 delta 渲染 diff 并叠加 GitHub 风格侧边文件树，支持文件跳转与搜索，解决命令行查看大量文件变更时容易迷失的问题。 | 2024-09-18 | 考拉认为这是一个小工具；作者 dlvhdr 此前做过 gh-dash，对开发者工作流理解很深。在当前 AI 高速生成代码的阶段，如何 Review 代码、是否 Review 代码都在激烈讨论中，任何能提升生产力的工具都可能获得用户。 | [BV1MkAiz3E7k · 03:21](https://www.bilibili.com/video/BV1MkAiz3E7k?t=201) | [GitHub](https://github.com/dlvhdr/diffnav) |
 | Mole | 一款免费的 Mac 命令行清理工具，覆盖缓存清理、残留卸载、磁盘分析与系统状态监控，支持 TouchID 授权与 Recast 快速调用，单文件部署，是 CleanMyMac 的命令行替代品。 | 2025-09-23 | Mole 是一个需要命令行（command line）的 Mac 清理工具，功能覆盖缓存清理、残留卸载、磁盘分析和系统状态监控，基本是 CleanMyMac 的命令行平替；支持 TouchID 授权，还能对接 Recast 快速调用；免费开源且单文件部署是核心卖点，开源属性证明开发者对付费清理软件的不满是真实的。Mole 清理足够自动与全面，但系统清理类工具始终有风险，建议先用 Dry Run（演练）预览，重要数据做好备份。 | [BV1NozxBmEe3 · 00:32](https://www.bilibili.com/video/BV1NozxBmEe3?t=32) | [GitHub](https://github.com/tw93/Mole) |
+| Worktrunk | 用于 Git worktree 管理的命令行工具(CLI),面向并行 AI Agent 工作流。用三个核心命令把 worktree 操作变得像切换分支一样自然,一行命令即可新建 worktree 并启动 Claude Code 等 Agent;定位清晰,为并行 AI Agent 而生,hooks 系统与提交信息管理使其超越简单的目录切换工具。 | 2025-10-17 | 考拉介绍,Worktrunk 让原生 Git worktree 的 UX 对初学者也高效,一行命令即可新建 worktree 并启动 AI 编码代理,为并行 AI Agent 而生;其 hooks 系统与提交信息管理让它超越简单的目录切换工具。 | [BV1h56SBtEzh · 00:01](https://www.bilibili.com/video/BV1h56SBtEzh?t=1) | [GitHub](https://github.com/max-sixty/worktrunk) |
 
 ## 代码质量与 Code Review
 
@@ -54,6 +55,7 @@ toc:
 | sem | 基于 Git 的语义级版本控制/差异工具，从函数、类等实体层面（而非逐行）理解一次提交改了什么，提供 sem diff、sem blame、sem impact 命令，面向 AI 编程 Agent 输出结构化变更信息。 | 2026-02-06 | 传统行 diff 是给人看的，但在 AI 写代码的时代，Agent 需要的是结构化、语义化的变更信息；sem 通过代码静态分析，希望提供这种对 Agent 更友好的新格式。 | [BV1CWJF6xE1d · 00:01](https://www.bilibili.com/video/BV1CWJF6xE1d?t=1) | [GitHub](https://github.com/Ataraxy-Labs/sem) |
 | DiffsHub | GitHub 代码差异查看器，把 URL 里的 github.com 换成 diffshub.com 即可打开，用虚拟化渲染撑住超大规模 diff，PR、commit、compare、patch 等页面都能接管，宣称能流畅打开 Linux 内核版本间的对比。 | 2026-05-20 | 考拉认为背后的公司 Pierre 之前介绍过他们的两个底层组件 FileTree 和 Diff，DiffsHub 就是基于这两个组件搭出来的上层产品，可以看出他们在往 Patch Review 这个垂直方向深耕；这个时机也很合理——AI 让代码产出速度爆炸增长，Code Review 的工具体验反而成了瓶颈，GitHub 原生 diff 在大 PR 下卡顿是公认痛点，垂直工具用更好的工程实现来抢占体验是个合理的切入角度。 | [BV1yYG76oESe · 01:28](https://www.bilibili.com/video/BV1yYG76oESe?t=88) | [官网](https://diffshub.com/) |
 | dependency-cruiser | 通过配置文件定义依赖规则（如禁止客户端代码引用服务端模块），在 CI 中自动检查依赖违规，并能生成可可视化的依赖图，帮助理解代码结构。 | 2016-11-20 | 考拉认为在 AI 参与开发的项目中架构越发重要；该工具把原本靠 Code Review 人工把关的事自动化了；声明式配置易纳入现有工作流，但规则设计需要团队对架构有清晰共识，否则易流于形式。 | [BV1txNKztENM · 02:53](https://www.bilibili.com/video/BV1txNKztENM?t=173) | [GitHub](https://github.com/sverweij/dependency-cruiser) |
+| Diffs (@pierre/diffs) | 由 The Pierre Computer Company 开源的 diff 与代码渲染库,基于 Shiki 3 实现语法高亮与主题(自动浅色/深色),提供 split(并排)与 stacked(合并)两种布局、词级差异高亮、自定义 hunk 分隔与头部、合并冲突解决 UI、评论线程、行选择(点击拖拽)与 token hover 回调等原语;提供 Web Components、React、SSR、Cloudflare Worker 多种入口,不捆绑任何上层产品,作为独立工具维护。 | 2025-12-10 | 考拉认为,在 AI Coding 盛行的时代,开发者对 AI 产出的代码进行 Code Review 越来越重要,更智能的 Dev 工具是大势所趋。Diffs 让 Review 的关注点更加集中,未来我们还可能看到这个领域的更多创新。 | [BV1h56SBtEzh · 01:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=115) | [GitHub](https://github.com/pierrecomputer/pierre) |
 
 ## Web 与 JavaScript 开发
 
@@ -120,6 +122,8 @@ toc:
 | Zedis | 用 Rust 结合 GPUI（Zed 编辑器同款 GPU 渲染引擎）构建的原生 Redis GUI 客户端，支持 Gzip/ZSTD 自动解压、MessagePack 反序列化、图片预览、十六进制查看，并自动识别 Standalone / Cluster / Sentinel 拓扑。 | 2025-11-09 | 考拉认为 Redis GUI 工具市场并不缺选手，但贴心的功能设计与 GPUI 的技术选型，适合对性能有追求的重度 Redis GUI 用户。 | [BV1Ny6xBSEpb · 00:31](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=31) | [GitHub](https://github.com/vicanso/zedis) |
 | Convex | 全栈后端平台（响应式数据库 + 服务端 TypeScript 函数），主打实时数据同步与端到端 TypeScript 类型安全，用纯 TypeScript 定义数据库 schema、query 与 API，前端通过 React Hooks 自动订阅数据变化，并支持 Cron 任务、AI 工作流与组件生态，可自托管。 | 2023-09-14 | 考拉认为定位上像是 Firebase 该有的样子，开发者体验确实很丝滑；但作为托管服务，长期成本和数据迁移成本需要提前考虑。 | [BV1Ny6xBSEpb · 01:58](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=118) | [GitHub](https://github.com/get-convex/convex-backend) |
 | eBPF.party | 将复杂的内核 eBPF 编程搬到网页沙盒中的交互式教学项目。教程分章节推进,从基础概念到内核探针,每一步都能直接写代码、编译、运行,无需本地搭建环境,降低 eBPF 上手的门槛。 | 2025-12-26 | 考拉认为,这种交互式学习并不新鲜,但针对 eBPF 这么底层的领域做成零配置体验,确实下了功夫。目前内容还在扩充,但对于想快速上手、又不想折腾虚拟机的人来说,算是一个不错的切入点,也帮助了 eBPF 技术的推广。 | [BV1tSkWBWEoU · 02:57](https://www.bilibili.com/video/BV1tSkWBWEoU?t=177) | [GitHub](https://github.com/DavidVentura/ebpf.party) |
+| docker-android | 用 Alpine Linux 把 Android 模拟器压缩到最小体积的 Docker 镜像,便于在 CI 流水线中运行安卓测试。APR28 版本约需 1.46GB,KVM 原生支持让其在容器内也能硬件加速,配合 scrcpy 可远程操控屏幕;可自定义 API 级别、架构与变体类型,并支持将 SDK 挂载到外部存储以避免重复下载。 | 2023-02-08 | 考拉认为,除了应用开发测试场景,未来更多移动端 Agent 的场景也可以基于这个项目,构建安全、可大规模启动的安卓自动化环境。 | [BV1h56SBtEzh · 01:29](https://www.bilibili.com/video/BV1h56SBtEzh?t=89) | [GitHub](https://github.com/HQarroum/docker-android) |
+| taws | 用 Rust 编写的、类 k9s 的 AWS 交互式终端界面(TUI),让你在终端里快速浏览 EC2、S3 等资源;安全方面离线处理凭证,无第三方数据上传。 | 2026-01-04 | 考拉认为,TAWS 的价值不在功能全面,而在把高频操作的速度提升一个数量级;参考 k9s 在 Kubernetes 生态中的地位,TAWS 有望成为 AWS 重度用户的必备工具。 | [BV1h56SBtEzh · 02:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=175) | [GitHub](https://github.com/huseyinbabal/taws) |
 
 ## AI 模型与推理
 
@@ -174,6 +178,7 @@ toc:
 | Agent Browser | Vercel Labs 开发的面向 AI Agent 的浏览器自动化 CLI，采用 Rust CLI + Node.js Daemon 架构，通过 snapshot 输出无障碍树（accessibility tree）并生成极简元素引用（@eN），让 AI 用 click @e3、fill @e5 等命令精准操作页面，免去 CSS 选择器，支持 Session 隔离、实时视频预览与 CDP 协议连接。 | 2026-01-11 | 几天之前 Wassail（Vercel）的工程师推出了 Agent Browser 项目，定位于为 AI Agent 操作浏览器；选择 Rust + Node.js 混合架构，核心卖点是 snapshot 命令输出的无障碍树，AI 可以用元素引用直接操作，不用纠结 CSS 选择器；还支持 Session 隔离、实时视频预览和 CDP 协议连接。目前 AI 操作浏览器的方案还远不如 AI 编程成熟，各方都在推出更好的方案抢夺这一市场。 | [BV1NozxBmEe3 · 02:29](https://www.bilibili.com/video/BV1NozxBmEe3?t=149) | [GitHub](https://github.com/vercel-labs/agent-browser) |
 | Agentation | 一款轻量的 React 组件，让用户在 React 应用中点击或框选指定区域并添加标注，生成结构化 Markdown（含 CSS 选择器、位置、组件树等上下文）反馈给 AI 编程 Agent，从而精准定位代码；支持多选、区域框选，以及暂停 CSS 动画来捕捉特定状态。 | 2026-01-18 | Agentation 是一个轻量的 React 组件，让用户可以在 React 应用中选择指定区域并标记信息；主要使用场景是使用 AI Agent 编程时，可以从开发的 UI 界面中快速反馈，让 Agent 进行修改；除了基本的点击之外，还支持多选、区域框选，甚至暂停 CSS 动画来捕捉特定状态。Agentation 是一款非常垂直的工具，解决的是 AI Coding 工作流中沟通效率问题，与其用文字描述右边那个蓝色按钮，不如直接给一个 Sidebar Button Primary；特别对于没有代码能力的 vibe coding 用户来说，值得一试。 | [BV1NozxBmEe3 · 03:22](https://www.bilibili.com/video/BV1NozxBmEe3?t=202) | [GitHub](https://github.com/benjitaylor/agentation) |
 | AgentFS | 为 AI Agent 提供隔离的文件系统层。Agent 的所有文件读写操作都记录在独立的隔离文件中,原始项目文件不受影响;天然支持快照、回滚与 fork,便于审计和调试,Agent 可安全调用 CLI 工具读写文件,最终由人类审核后决定是否合并回真实文件系统。 | 2025-10-24 | 考拉认为,把文件系统做成隔离文件(写时复制)的思路很巧,完美复用了底层文件系统的写时复制(Copy-on-Write)与事务特性。如果能在性能上不遇到瓶颈,会是一个很有趣的尝试。 | [BV1tSkWBWEoU · 00:01](https://www.bilibili.com/video/BV1tSkWBWEoU?t=1) | [GitHub](https://github.com/tursodatabase/agentfs) |
+| Vibe Kanban | 基于 Git Worktree 的 AI 编码看板产品。把任务看板、代码审查与并行调度打包成一体,让你从终端监控中解放出来,专注在规划与质量把控;内置审查工具让代码审查回归人性,适合管理多个同时工作的 AI 编码代理。 | 2025-06-14 | 考拉认为,当代理可靠性越过临界点后,工程师的角色正从写代码转向编排代理。Vibe Kanban 抓住了这个转型期的核心痛点;相比 Worktrunk 的轻量工具定位,它更像是一个完整的生产环境解决方案,但这也意味着更高的学习成本与锁定风险。 | [BV1h56SBtEzh · 00:32](https://www.bilibili.com/video/BV1h56SBtEzh?t=32) | [GitHub](https://github.com/BloopAI/vibe-kanban) |
 
 ## 数据工程与存储
 
@@ -244,6 +249,7 @@ toc:
 | Hucre | 纯 TypeScript 编写的零依赖电子表格引擎，支持 XLSX/CSV/ODS 的读写、Schema 校验、流式处理与往返保留，gzip 后约 18KB，可用于边缘运行时。 | 2026-03-24 | 考拉认为，在 SheetJS 长期统治电子表格处理领域的背景下，Hucre 用零依赖以及更开放的 license 开辟了差异化空间。这种小而精、专注解决一个问题的开源项目，正是社区最需要的创新方向。 | [BV1HzDSBqEgd · 01:58](https://www.bilibili.com/video/BV1HzDSBqEgd?t=118) | [GitHub](https://github.com/productdevbook/hucre) |
 | Email.md | 用 Markdown 语法编写并生成响应式、邮件安全的 HTML（及纯文本）的开源邮件构建工具，内置 npm 包、CLI、可视化编辑器与实时预览，底层基于 MJML。 | 2026-02-16 | 考拉认为邮件 HTML 开发一直是前端领域的老大难问题，各邮件客户端对 CSS 支持参差不齐、开发体验停留在十年前；Email.md 用 Markdown 抽象掉底层兼容细节，对 Agent 也更加友好。 | [BV1WbXUBGEJr · 02:23](https://www.bilibili.com/video/BV1WbXUBGEJr?t=143) | [GitHub](https://github.com/anypost/emailmd) |
 | Flameshot | 跨平台开源截图软件，支持 Linux、macOS 与 Windows，提供截图编辑、自定义外观、接口扩展（如 Lua 脚本）与多种图床上传。 | 2017-05-10 | 考拉认为如果在 Linux 上找一款好用的截图工具，Flameshot 仍然是第一选择；在 macOS 和 Windows 上也能用，但可能不如原生工具顺手。 | [BV1Ny6xBSEpb · 02:27](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=147) | [GitHub](https://github.com/flameshot-org/flameshot) |
+| Memos | 自托管的轻量级笔记中心,纯 Markdown 存储,无隐私追踪,MIT 授权,承诺永久免费;提供轻量、易部署的笔记体验,适合想快速记录、不愿在复杂编辑器上折腾的技术用户。 | 2021-12-08 | 考拉认为,自托管不该成为折腾的代名词。Memos 在极简与可用性之间找到平衡点,特别适合那些想逃离(Notion)绑架、又不愿投入大量时间维护的技术用户;真正的隐私工具,应让人忘记隐私设置的存在。 | [BV1h56SBtEzh · 03:24](https://www.bilibili.com/video/BV1h56SBtEzh?t=204) | [GitHub](https://github.com/usememos/memos) |
 
 ## 开发者认证与招聘
 
