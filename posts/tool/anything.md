@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:41+08:00
+lastmod: 2026-08-17T18:39:44+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -48,6 +48,7 @@ toc:
 | Kando | 一款让你在毫秒间选择常用工具和操作的桌面端手势识别 / 径向菜单工具。它通过将整个屏幕变成可点击目标，让你无需精准瞄准小按钮，只需大致方向即可完成操作，兼具速度与准确性；支持 Windows、macOS、Linux 多平台，代码开源。 | 2023-04-16 | 认为 Kando 上手之后可以极大提升操作效率，特别适合手速快、脑速更快的极客们。 | [BV1nrrPYdEHH · 00:45](https://www.bilibili.com/video/BV1nrrPYdEHH?t=45) | [GitHub](https://github.com/kando-menu/kando) |
 | Scripton | 具备实时可视化能力的 Python IDE，集成 Plotly / Observable Plot 与 2D 画布、REPL，目前仅支持 macOS。 | 2025-01-28 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 01:26](https://www.bilibili.com/video/BV1G5ASetENw?t=86) | [官网](https://scripton.dev) |
 | Presenterm | 终端里的 Markdown 幻灯片工具，用 Markdown 编写演示文稿并在终端全屏放映，支持代码高亮、主题与动画，适合开发者的技术演示。 | 2023-08-27 | Koala 介绍 Presenterm 是一个终端里的 Markdown 幻灯片工具，直接用 Markdown 写演示文稿、在终端中全屏放映，并支持代码高亮、主题与动画，非常适合开发者在终端环境下做技术演示。 | [BV1UYQbYeELx · 01:29](https://www.bilibili.com/video/BV1UYQbYeELx?t=89) | [GitHub](https://github.com/mfontanini/presenterm) |
+| ttyd | ttyd 是一个基于 libwebsockets 与 xterm.js 的命令行工具，可通过网页分享并操作终端，支持 CJK 等宽字符、文件上传下载与基础鉴权。 | 2016-09-13 | 认为用 ttyd 远程管理服务器或与同事分享终端操作更加方便，对多人协同和远程 debug 等场景比较有用，但前提是做好足够的安全防护措施。 | [BV1A3ZBYAE8a · 00:32](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=32) | [GitHub](https://github.com/tsl0922/ttyd) |
 
 ## 代码质量与 Code Review
 
@@ -110,6 +111,8 @@ toc:
 | Swapy | 框架无关的轻量库，用少量代码即可把任意布局变成可拖拽互换（drag-to-swap）的布局，方便为原型或产品加入可定制的位置互换交互。 | 2024-07-15 | Koala 介绍 Swapy 是一个让 UI 元素可以拖拽互换的轻量库，开发者无需写复杂的布局逻辑，就能为原型或产品加入拖拽排序、互换位置的交互，适合做可定制的仪表盘或落地页。 | [BV1UYQbYeELx · 02:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=120) | [GitHub](https://github.com/TahaSh/swapy) |
 | Goravel | 受 Laravel 启发的 Go 语言 Web 框架（full-featured Golang framework skeleton），提供路由、ORM、队列、认证等开箱即用的组件，让 Go 开发者也能获得类似 Laravel 的优雅开发体验。 | 2022-10-10 | Koala 介绍 Goravel 是一个受 Laravel 启发的 Go 语言 Web 框架，提供了路由、ORM、队列、认证等开箱即用的组件，让 Go 开发者也能享受类似 Laravel 的优雅开发体验。 | [BV1vXXhYpEbK · 02:27](https://www.bilibili.com/video/BV1vXXhYpEbK?t=147) | [GitHub](https://github.com/goravel/goravel) |
 | Motion for Vue | 热门动画库 Motion（原 Framer Motion）的 Vue 移植版，为 Vue 应用带来声明式的动画与过渡能力，方便实现流畅的组件动效。 | 2024-11-15 | Koala 介绍 Motion for Vue 是热门动画库 Motion（原 Framer Motion）的 Vue 移植版，为 Vue 应用带来声明式的动画与过渡能力，方便实现流畅的组件动效。 | [BV1vXXhYpEbK · 03:26](https://www.bilibili.com/video/BV1vXXhYpEbK?t=206) | [GitHub](https://github.com/motiondivision/motion-vue) |
+| Simple AI | Simple AI 是一套基于 shadcn/ui 与 Vercel AI SDK 构建的开源 AI 场景 UI 组件库，包含聊天对话与 React Flow 工作流组件，可加速 AI 应用界面开发。 | 2024-12-26 | 认为如果你正在用 React 开发包含聊天对话与 AI 工作流场景的 AI 应用，Simple AI 能帮你节省不少时间，快速构建出美观又实用的界面。 | [BV1A3ZBYAE8a · 01:57](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=117) | [GitHub](https://github.com/techronin/simple-ai) |
+| Valibot | Valibot 是一个模块化、类型安全的 TypeScript schema 校验库，类似 Zod 但包体积极小（最小可低于 700 字节），支持 100% 测试覆盖率。 | 2023-07-07 | 认为与 Zod 相比，Valibot 在开发体验和打包体积上有一定优势，可根据项目需求灵活选用。 | [BV1A3ZBYAE8a · 02:52](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=172) | [GitHub](https://github.com/fabian-hiller/valibot) |
 
 ## 测试与质量保障
 
@@ -185,6 +188,7 @@ toc:
 | Orate | 参考 Vercel AI SDK 设计的 TypeScript 语音 AI SDK 封装，以统一 API 实现语音转文字、文字转语音、语音变声与语音处理，整合 OpenAI、ElevenLabs、AssemblyAI 等厂商，让开发者用一套接口调用各家能力。 | 2024-08-01 | 仅作功能介绍，未给出明确评价。（字幕介绍其参考 AI SDK 实现、统一调用 OpenAI/ElevenLabs 等、可省去语音应用开发麻烦，无『Koala 认为』式主观评价） | [BV1QyAueyEjX · 03:50](https://www.bilibili.com/video/BV1QyAueyEjX?t=230) | [官网](https://orate.dev) |
 | Unsloth | 让微调大语言模型速度翻倍并节省约 70% 显存、对新手友好的训练框架。 | 2023-11-29 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:29](https://www.bilibili.com/video/BV1G5ASetENw?t=29) | [GitHub](https://github.com/unslothai/unsloth) |
 | Mistral OCR | Mistral 推出的文档理解/解析服务，以低成本、极高准确度将 PDF、扫描件等多页文档解析为结构化 Markdown，支持表格、公式、图片等复杂排版，号称 OCR 新标杆。 | 2025-03-06 | Koala 介绍 Mistral OCR 是文档 OCR 的新标杆，能以极低成本、极高准确度把 PDF、扫描件这类多页复杂文档解析成结构化 Markdown，表格、公式、图片等都能很好地保留；相比传统 OCR 方案，它在复杂排版上的表现尤为突出。 | [BV1gLR8Y2E8W · 00:01](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=1) | [官网](https://mistral.ai/news/mistral-ocr) |
+| Lorax | Lorax（LoRAX）是 Predibase 开发的多 LoRA 推理服务器，可在单张 GPU 上动态加载并服务成百上千个微调适配器（来自 Hugging Face、Predibase 或本地），兼顾吞吐与延迟。 | 2023-10-20 | 认为 Predibase 近期因提供类似 OpenAI 强化微调的功能而受到关注，模型微调是 AI 产品化的必经之路，而 Lorax 正是为大量微调场景设计的推理引擎。 | [BV1A3ZBYAE8a · 03:48](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=228) | [GitHub](https://github.com/predibase/lorax) |
 
 ## AI Agent 与智能体开发
 
@@ -232,6 +236,7 @@ toc:
 | Goose | Block 推出的开源通用 AI 智能体，可在本地运行，协助开发者生成测试数据、编写脚本、处理复杂部署任务，并支持连接 MCP 服务器或 API 进行扩展。 | 2024-08-23 | 考拉认为一部分已经试用过的开发者对 Goose 评价不错，他们认为 Goose 不仅提高了工作效率，还增加了开发的乐趣；它支持本地运行、保留用户对过程的完全控制，并具有可扩展性。 | [BV1mjNAe4EoR · 00:32](https://www.bilibili.com/video/BV1mjNAe4EoR?t=32) | [GitHub](https://github.com/block/goose) |
 | Mastra | 用 TypeScript 构建与部署 AI 应用（Agent、工作流、RAG、可观测）的框架。 | 2024-08-06 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:01](https://www.bilibili.com/video/BV1G5ASetENw?t=1) | [GitHub](https://github.com/mastra-ai/mastra) |
 | CodeMCP | 面向 Claude Desktop 的编码助手 MCP 服务器，让 Claude 能够直接读写本地项目文件、运行命令，从而把 Claude Desktop 变成真正可参与端到端编码任务的编程助手。 | 2025-03-09 | Koala 介绍 CodeMCP 是一个 MCP 服务器，能把 Claude Desktop 变成可以编辑本地代码的编程助手，让 Claude 直接读写项目文件、运行命令，从而真正参与端到端的编码任务。 | [BV1vXXhYpEbK · 00:29](https://www.bilibili.com/video/BV1vXXhYpEbK?t=29) | [GitHub](https://github.com/ezyang/codemcp) |
+| GhidraMCP | GhidraMCP 是一个 MCP 服务器，将 Ghidra 的反编译、重命名方法/数据、列出方法/类/导入/导出等逆向能力暴露给 LLM 与各类 MCP 客户端，实现 AI 自主逆向工程。 | 2025-03-23 | 认为该工具对安全研究人员和逆向工程师来说是福音，将 Ghidra 的能力融入其中让逆向分析更智能高效，且基于 MCP 的通用性可在代码编辑器和聊天工具等多种 MCP 客户端中使用。 | [BV1A3ZBYAE8a · 01:27](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=87) | [GitHub](https://github.com/LaurieWired/GhidraMCP) |
 
 ## 数据工程与存储
 
@@ -303,6 +308,7 @@ toc:
 | Logo Creator | 一个免费开源的 Logo 生成器，基于 Together AI 平台上的 Flux 模型，根据用户输入快速生成各种风格的 Logo，本身使用 Next.js、Shadcn UI 与 Tailwind CSS 等技术栈，便于二次开发。 | 2024-11-06 | 考拉认为 Logo Creator 让个性化 Logo 设计的门槛大幅降低，每个人都能轻松拥有美观及独特的 logo；开源特性也让它拥有无限可能。 | [BV1jjN1etEa8 · 00:55](https://www.bilibili.com/video/BV1jjN1etEa8?t=55) | [GitHub](https://github.com/Nutlope/logocreator) |
 | Eleven Reader | ElevenLabs 出品的 AI 听书/朗读应用，可将书籍、文章、PDF、ePub 甚至新闻邮件等文本用自然逼真的 AI 语音朗读出来，支持 32 种语言与多种可选声音，并内置类播客的有声化玩法。 | 2024-06-01 | Koala 认为 Eleven Reader 是通勤、健身、学习的绝佳伴侣，目前免费，建议感兴趣的用户下载体验，用耳朵享受科技乐趣。 | [BV1QyAueyEjX · 01:29](https://www.bilibili.com/video/BV1QyAueyEjX?t=89) | [官网](https://elevenreader.io) |
 | Cascii | 基于 Web 的 ASCII / Unicode 图表设计工具，可用类绘图方式创建流程图、架构图等文本图形，结果可直接复制为纯文本用于文档或代码注释。 | 2025-03-08 | Koala 介绍 Cascii 是一个基于文本的 ASCII 图表设计工具，可在浏览器里用类似绘图的方式创建流程图、架构图等 ASCII 图形，结果能直接复制为纯文本，方便放进文档或代码注释里。 | [BV1vXXhYpEbK · 00:01](https://www.bilibili.com/video/BV1vXXhYpEbK?t=1) | [GitHub](https://github.com/casparwylie/cascii-core) |
+| Blender 4.4 | Blender 是一款工业级开源 3D 创作套装；4.4 版本重点提升稳定性、修复大量 bug，并引入 Action Slots 动画系统与增强的视频序列器（VSE）。 | 2025-03-18 | 认为 Blender 4.4 是一个十分吸引人的新版本，作为工业级开源软件，其活力让人对开源软件的未来充满期待。 | [BV1A3ZBYAE8a · 00:01](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=1) | [官网](https://www.blender.org/) |
 
 ## 办公与演示
 
