@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:51+08:00
+lastmod: 2026-08-17T13:07:53+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -114,6 +114,8 @@ toc:
 | Monty | Pydantic 团队用 Rust 实现的安全 Python 子集解释器，专为安全执行 LLM 生成的代码设计；通过 WASM 内存隔离禁止文件系统/网络/环境变量访问，支持执行状态快照与恢复，微秒级启动。 | 2026-02-19 | 考拉认为 Monty 的目标精准解决未知代码执行的安全与性能矛盾；相比 Docker 容器的百毫秒级启动，微秒级延迟让实时工具调用成为可能；但受限的 Python 子集和缺失的标准库是开发者要面对的问题，复杂业务逻辑可能跑不通。 | [BV11AZZBUEeD · 00:01](https://www.bilibili.com/video/BV11AZZBUEeD?t=1) | [GitHub](https://github.com/pydantic/monty) |
 | bunqueue | 专为 Bun 设计的高性能任务队列，零外部依赖，使用 SQLite 持久化，单机性能标称约 20 万操作/秒，API 兼容 BullMQ，支持延迟任务、定时任务和死信队列，提供嵌入式与 TCP 服务器两种模式。 | 2026-01-28 | 考拉认为 Redisless 架构省去了运维成本，但 SQLite 的单节点限制是硬伤，官方也坦诚不适合多区域分布式场景；对于不想为队列单独跑 Redis 服务的小团队是个务实选择，规模扩大后的迁移成本需提前考虑。 | [BV11AZZBUEeD · 01:50](https://www.bilibili.com/video/BV11AZZBUEeD?t=110) | [GitHub](https://github.com/egeominotti/bunqueue) |
 | zerobrew | 用 Rust 重写的实验性 Homebrew 替代品（命令 zb），采用内容寻址存储等优化实现 2-20 倍提速，直接复用 Homebrew 的 CDN 与包定义，可无缝替换 brew 命令。 | 2026-01-19 | 考拉认为速度提升来自存储层优化而非协议更新，保持了很好的兼容性；但 Homebrew 的生态粘性不止于速度，那些复杂的编译依赖和包的处理才是关键。 | [BV1MgcTzXEjH · 02:23](https://www.bilibili.com/video/BV1MgcTzXEjH?t=143) | [GitHub](https://github.com/lucasgelfond/zerobrew) |
+| Zedis | 用 Rust 结合 GPUI（Zed 编辑器同款 GPU 渲染引擎）构建的原生 Redis GUI 客户端，支持 Gzip/ZSTD 自动解压、MessagePack 反序列化、图片预览、十六进制查看，并自动识别 Standalone / Cluster / Sentinel 拓扑。 | 2025-11-09 | 考拉认为 Redis GUI 工具市场并不缺选手，但贴心的功能设计与 GPUI 的技术选型，适合对性能有追求的重度 Redis GUI 用户。 | [BV1Ny6xBSEpb · 00:31](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=31) | [GitHub](https://github.com/vicanso/zedis) |
+| Convex | 全栈后端平台（响应式数据库 + 服务端 TypeScript 函数），主打实时数据同步与端到端 TypeScript 类型安全，用纯 TypeScript 定义数据库 schema、query 与 API，前端通过 React Hooks 自动订阅数据变化，并支持 Cron 任务、AI 工作流与组件生态，可自托管。 | 2023-09-14 | 考拉认为定位上像是 Firebase 该有的样子，开发者体验确实很丝滑；但作为托管服务，长期成本和数据迁移成本需要提前考虑。 | [BV1Ny6xBSEpb · 01:58](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=118) | [GitHub](https://github.com/get-convex/convex-backend) |
 
 ## AI 模型与推理
 
@@ -160,6 +162,7 @@ toc:
 | Jido | 基于 Elixir/OTP 的自治多智能体框架，Agent 为纯函数式数据结构，状态变更通过指令描述，副作用由 OTP 运行时执行；内置 Supervisor 树可自动恢复崩溃的 agent，并支持热更新。 | 2026-02-22 | 考拉认为当 Python 和 Go 几乎垄断 AI 开发时，Jido 提供了另一种思路；Elixir 的并发模型与容错机制适合构建高可靠 Agent 系统，但生态成熟度仍有差距，适合对性能与稳定性有极致要求、且愿意接受函数式编程思维的团队。Jido 2.0 的代码设计对想深入 Agent 实现的开发者很有参考价值。 | [BV1txNKztENM · 03:52](https://www.bilibili.com/video/BV1txNKztENM?t=232) | [GitHub](https://github.com/agentjido/jido) |
 | Hugging Face Skills | Hugging Face 推出的 Agent Skills 集合，把训练模型、创建数据集、运行评估等常用动作拆成独立文件夹（含 SKILL.md、脚本与模板），可被 Claude Code、Codex、Gemini CLI、Cursor 等编码 Agent 直接调用。 | 2025-11-24 | 考拉认为借助 Hugging Face 庞大的 AI 与机器学习生态，进一步迭代 Skills 能让研究者的 Agent 更聪明地使用 Hugging Face，有望让 Hugging Face 成为大家更喜爱的平台。 | [BV1MkAiz3E7k · 01:54](https://www.bilibili.com/video/BV1MkAiz3E7k?t=114) | [GitHub](https://github.com/huggingface/skills) |
 | NanoClaw | 轻量级、可理解、可定制的个人 AI 代理，将每个代理会话运行在隔离容器（Apple Container / Docker）中，支持 WhatsApp、Telegram 等消息渠道接入与定时任务。 | 2026-01-31 | 考拉认为这类项目展示了开发者对透明性和可定制性的追求，是学习与定制化实验的好材料；但作为生产工具仍需更成熟的生态支持和社区协作。 | [BV1MgcTzXEjH · 00:01](https://www.bilibili.com/video/BV1MgcTzXEjH?t=1) | [GitHub](https://github.com/nanocoai/nanoclaw) |
+| TokenTap | 通过 MITM 代理拦截 Agent 对 LLM API 的 HTTPS 流量，在终端仪表盘实时显示 token 消耗与成本估算，并自动将每次请求的 prompt 保存为 Markdown 与 JSON，主要支持 Claude Code、Codex 与 Gemini CLI。 | 2026-01-27 | 考拉认为虽然项目定位是成本核算，但更大的潜力还是用于逆向研究 Agent 的行为。 | [BV1Ny6xBSEpb · 00:58](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=58) | [GitHub](https://github.com/jmuncor/tokentap) |
 
 ## 数据工程与存储
 
@@ -174,6 +177,7 @@ toc:
 | ExtendDB | AWS 开源的 DynamoDB 兼容适配器，后端可对接 PostgreSQL 与 Cassandra，PostgreSQL 模式下单条操作延迟低于 10 毫秒，Cassandra 模式可横向扩展到每秒数千请求，便于把依赖 DynamoDB 的应用迁移到其他存储。 | 2026-05-10 | 考拉认为这是 AWS 少见的反向操作，主动帮用户把工作负载从自己的云上搬走；背后的逻辑可能是 DynamoDB 的 API 本身就是护城河，只要开发者习惯了这套接口，大规模云上负载还是会回到 AWS 生态；ExtendDB 对本地开发和合规要求严格的场景很有价值，能帮助用户将一套应用代码部署到不同场景。 | [BV15iVV6AE6U · 02:29](https://www.bilibili.com/video/BV15iVV6AE6U?t=149) | [GitHub](https://github.com/ExtendDB/extenddb) |
 | DuckLake | DuckDB 团队于 2026-04-13 发布的 1.0 版本 Lakehouse 格式规范，最大特点是将所有元数据放进一个数据库（catalog），而非像 Iceberg/Delta Lake 那样用 JSON + 元数据文件描述表状态；1.0 引入数据内联、有序表、Bucket 分区、原生 Geometry 等。 | 2026-04-13 | 考拉认为：Iceberg 标准化进展是过去两年的热点，但元数据的复杂度也是它最大的门槛，小团队跑 Iceberg 等于跑一个分布式系统；DuckLake 判断九成 Lakehouse 用例其实不需要 Iceberg 的扩展性，把元数据塞进一台数据库反而更简单可靠，是简化数据栈的典型操作，对中小数据规模团队会有真实吸引力。 | [BV1U19ZBLEcf · 02:27](https://www.bilibili.com/video/BV1U19ZBLEcf?t=147) | [GitHub](https://github.com/duckdb/ducklake) |
 | sql-tap | 数据库代理层工具，以中间人方式捕获 PostgreSQL/MySQL/TiDB 等数据库的查询流量，提供终端 UI 和 Web 界面两种实时展示，支持 N+1 查询检测、执行计划分析和事务追踪，无需修改应用代码。 | 2026-02-14 | 考拉认为 sql-tap 是数据库性能调试利器，TUI 体验流畅，代理架构比日志分析更实时、比 APM 更轻量；但生产环境引入额外网络跳点的风险需评估，建议先在开发环境使用。N+1 检测的阈值调优也是技术活，避免过度误报。 | [BV11AZZBUEeD · 01:22](https://www.bilibili.com/video/BV11AZZBUEeD?t=82) | [GitHub](https://github.com/mickamy/sql-tap) |
+| QMD | Shopify CEO Tobi Lütke 开发的本地 Markdown 搜索引擎，结合 BM25 全文检索、向量语义搜索与 LLM 重排序（RRF 融合、查询扩展等），全程通过 Ollama 本地运行，支持 MCP 协议，可集成到 Claude Desktop / Claude Code。 | 2025-12-08 | 考拉认为这个项目的亮点在于混合搜索策略设计得比较精细，包括查询扩展、RRF 融合、位置感知权重混合等；Tobi 作为 CEO 仍能保持精力写代码，也让他在技术圈中始终拥有不错的口碑。 | [BV1Ny6xBSEpb · 01:28](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=88) | [GitHub](https://github.com/tobi/qmd) |
 
 ## 协作与项目管理
 
@@ -212,6 +216,7 @@ toc:
 | Rendi | 将 FFmpeg 封装为云端服务的 API（FFmpeg as a Service），无需本地安装，直接通过 REST API 提交原生 FFmpeg 命令即可在云端处理音视频与图片；服务器无冷启动，支持 20+ 分钟的重型任务，定价透明（不按编码次数、分辨率或流量收费）。 | 2025-02-05 | 考拉认为视频处理的云端化趋势已经很明确，但大多数方案都试图用自己的 DSL 包装 FFmpeg，Rendi 反其道而行，直接接受原生 FFmpeg 命令，对开发者最友好，也意味着迁移成本几乎为零；不过纯 API 形态意味着它更适合自动化工作流集成，而非面向终端用户的场景。 | [BV1ivAMzGEv5 · 03:20](https://www.bilibili.com/video/BV1ivAMzGEv5?t=200) | [官网](https://www.rendi.dev) |
 | manim-web | 将 3Blue1Brown 的 Manim 数学动画库用 TypeScript 和 WebGL 重写并搬进浏览器，无需本地安装 Python/FFmpeg，打开网页即可实时渲染数学公式动画。 | 2026-01-29 | 考拉认为 WebGL 实时渲染比生成视频播放流畅得多；但复杂场景的 WebGL 性能消耗和移动端兼容性需实际测试。若能稳定，基于 Web 的使用场景远超原 Python 版本，会是教育场景的利器。 | [BV1MkAiz3E7k · 02:53](https://www.bilibili.com/video/BV1MkAiz3E7k?t=173) | [GitHub](https://github.com/maloyan/manim-web) |
 | Excalidraw MCP | Excalidraw 官方出品的 MCP 服务器，让 Claude、ChatGPT、VS Code 等支持 MCP 的客户端在对话中直接生成手绘风格 Excalidraw 图表，支持流畅视口控制与全屏交互编辑，可本地运行或部署到云端。 | 2026-02-04 | 考拉认为相比让 AI 生成 Mermaid 或 PlantUML，手绘风格的适用空间更广泛。 | [BV1MgcTzXEjH · 01:55](https://www.bilibili.com/video/BV1MgcTzXEjH?t=115) | [GitHub](https://github.com/excalidraw/excalidraw-mcp) |
+| beautiful-mermaid | 将 Mermaid 图表渲染为美观的 SVG / PNG / ASCII 艺术字的 TypeScript 库，内置 15+ 主题并支持自定义，覆盖流程图、时序图、状态图、类图、ER 图、XY 图等类型。 | 2026-01-28 | 考拉认为官方演示页面做得很用心，每种图表都有实际渲染效果的对比。 | [BV1Ny6xBSEpb · 00:01](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=1) | [GitHub](https://github.com/chouraycn/beautiful-mermaid) |
 
 ## 办公与演示
 
@@ -225,6 +230,7 @@ toc:
 | Polypad | 教育公司 Amplify（原 Mathigon）推出的免费在线数学操作平台，免登录、跨设备可用，把分数条、3D 多面体、天平、函数机、转盘、数据科学工具、逻辑门等几十种模块搬到屏幕上，覆盖从小学算术到中学逻辑与数据科学的全跨度。 | 2020-01-17 | 考拉认为 Polypad 内嵌的丰富模块让交互式的数学教学变为可能，原本有一定上手门槛的模块搭建过程，如果能与 Agent 结合变为自然语言交互，很有可能获得更多的落地机会。 | [BV1yYG76oESe · 03:22](https://www.bilibili.com/video/BV1yYG76oESe?t=202) | [官网](https://mathigon.org/polypad) |
 | Hucre | 纯 TypeScript 编写的零依赖电子表格引擎，支持 XLSX/CSV/ODS 的读写、Schema 校验、流式处理与往返保留，gzip 后约 18KB，可用于边缘运行时。 | 2026-03-24 | 考拉认为，在 SheetJS 长期统治电子表格处理领域的背景下，Hucre 用零依赖以及更开放的 license 开辟了差异化空间。这种小而精、专注解决一个问题的开源项目，正是社区最需要的创新方向。 | [BV1HzDSBqEgd · 01:58](https://www.bilibili.com/video/BV1HzDSBqEgd?t=118) | [GitHub](https://github.com/productdevbook/hucre) |
 | Email.md | 用 Markdown 语法编写并生成响应式、邮件安全的 HTML（及纯文本）的开源邮件构建工具，内置 npm 包、CLI、可视化编辑器与实时预览，底层基于 MJML。 | 2026-02-16 | 考拉认为邮件 HTML 开发一直是前端领域的老大难问题，各邮件客户端对 CSS 支持参差不齐、开发体验停留在十年前；Email.md 用 Markdown 抽象掉底层兼容细节，对 Agent 也更加友好。 | [BV1WbXUBGEJr · 02:23](https://www.bilibili.com/video/BV1WbXUBGEJr?t=143) | [GitHub](https://github.com/anypost/emailmd) |
+| Flameshot | 跨平台开源截图软件，支持 Linux、macOS 与 Windows，提供截图编辑、自定义外观、接口扩展（如 Lua 脚本）与多种图床上传。 | 2017-05-10 | 考拉认为如果在 Linux 上找一款好用的截图工具，Flameshot 仍然是第一选择；在 macOS 和 Windows 上也能用，但可能不如原生工具顺手。 | [BV1Ny6xBSEpb · 02:27](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=147) | [GitHub](https://github.com/flameshot-org/flameshot) |
 
 ## 开发者认证与招聘
 
