@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:25+08:00
+lastmod: 2026-08-17T18:39:27+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -96,6 +96,8 @@ toc:
 | ArkType | 一个 TypeScript 运行时的类型校验库。语法与你已熟悉的 TypeScript 完全一致，但提供了更强大的安全校验与代码补全；性能出色（比 Zod 快约 100 倍），编辑器内补全性能也令人惊艳，类型定义更简洁、错误信息更易读、悬停提示更精准，并支持深度自定义错误信息，通过集合论在运行时理解和暴露类型之间的关系。 | 2019-06-21 | 认为 ArkType 通过优化使其特别适合需要高性能和深度类型检查的 TypeScript 项目；如果你对现有类型校验库感到不满，不妨试试 ArkType。 | [BV14Vwqe2EBR · 00:32](https://www.bilibili.com/video/BV14Vwqe2EBR?t=32) | [GitHub](https://github.com/arktypeio/arktype) |
 | RetroUI | 一个具有复古/新粗野主义（NeoBrutalism）美学风格的 React + Tailwind CSS 开源组件库，内置 50+ 组件、区块与模板，方便快速搭建具有怀旧视觉风格的网页与落地页。 | 2024-08-31 | 考拉认为 RetroUI 不仅提供丰富的 UI 组件，还支持高度定制，开发者可按需调整样式与功能；其复古风格为现代应用增添一丝怀旧感，特别适合希望在视觉上脱颖而出的项目，或复古极客打造个人网站。 | [BV1dPFKeeEuw · 01:24](https://www.bilibili.com/video/BV1dPFKeeEuw?t=84) | [官网](https://retroui.dev) |
 | Tailwind CSS v4.0 | Tailwind CSS 的第四个重大版本，采用全新高性能引擎，完整构建速度提升约 5 倍、增量构建提升 100 倍以上，并以 CSS 优先配置与内置 Oxide/Vite 插件简化使用。 | 2025-01-22 | 考拉认为 Tailwind 自推出以来虽然评价不一，但使用者一直在增加也是不争的事实；这次新版本的功能非常实用，聚焦于性能和开发体验。 | [BV1dPFKeeEuw · 04:04](https://www.bilibili.com/video/BV1dPFKeeEuw?t=244) | [GitHub](https://github.com/tailwindlabs/tailwindcss) |
+| Manifest | 一个以单文件方式为前端应用提供完整后端能力的微后端工具，内置数据库、管理面板、REST API 与文件存储等核心功能，可轻松集成到任意前端/移动端框架。 | 2022-09-27 | 考拉认为 Manifest 非常适合快速构建原型或小型项目，尤其是那些希望专注于前端开发的开发者；其性能与可扩展性对于大型项目可能并不足够，但它的易用性和灵活性让人印象深刻，在适合的场景中仍值得尝试。 | [BV1mjNAe4EoR · 01:24](https://www.bilibili.com/video/BV1mjNAe4EoR?t=84) | [GitHub](https://github.com/mnfst/manifest) |
+| Onlook | 一款面向设计师的 React 网站可视化编辑器，支持实时可视化编辑并把修改同步回代码，兼容使用 Tailwind CSS 进行样式处理的 React 站点，并引入了 AI 功能。 | 2024-06-25 | 考拉认为 Onlook 在功能实现上更加重视具有 UI 设计背景用户的使用体验，帮助设计师直接将样式修改建议进一步实现为代码，加强设计与开发团队的协作能力。 | [BV1mjNAe4EoR · 01:54](https://www.bilibili.com/video/BV1mjNAe4EoR?t=114) | [GitHub](https://github.com/onlook-dev/onlook) |
 
 ## 测试与质量保障
 
@@ -139,6 +141,8 @@ toc:
 | Air | 一个专为 Go 应用开发的实时重载命令行工具。在项目根目录运行 Air 即可自动监控代码变化并重新编译运行，支持自定义构建命令、排除特定子目录、动态添加监控目录，并提供彩色日志输出，提升开发体验。 | 2017-10-12 | 认为 Air 特别适合开发阶段需要频繁修改代码的 Go 开发者（作者正是在基于 Gin 开发 Web 服务时产生开发该工具的想法）。 | [BV1nrrPYdEHH · 01:27](https://www.bilibili.com/video/BV1nrrPYdEHH?t=87) | [GitHub](https://github.com/air-verse/air) |
 | Quickwit | 一个专为可观测性设计的云原生搜索引擎，支持日志、追踪（以及即将推出的指标）数据。可作为 Datadog、Elasticsearch、Loki 和 Tempo 的开源替代方案；具备高性能与低成本，能在云存储上实现亚秒级搜索，并支持与 Elasticsearch 兼容的 API，便于迁移。 | 2021-04-13 | 认为 Quickwit 特别适合需要处理大规模日志和追踪数据的团队，其架构设计优化云存储的 I/O 路径、显著降低的成本，对已在用 Elasticsearch 的用户提供了无缝迁移路径且能享受更低运营成本；并提及近期 Datadog 宣布收购 Quickwit，二者未来融合值得关注。 | [BV1TLcgeqEQ8 · 00:32](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=32) | [GitHub](https://github.com/quickwit-oss/quickwit) |
 | Stratoshark | 基于 Wireshark 的系统调用与日志分析工具，由 Sysdig 与 Wireshark 基金会打造，可在系统调用层面探索和分析应用行为，共享 Wireshark/Falco 的解析与过滤引擎。 | 2025-01-22 | 考拉认为 Stratoshark 特别适合需要深度分析应用行为的开发者与运维（SRE）人员，尤其在云原生环境中；它良好的易用性以及与既有工具的兼容性，使其成为排查问题的强大助手。 | [BV1dPFKeeEuw · 00:29](https://www.bilibili.com/video/BV1dPFKeeEuw?t=29) | [官网](https://stratoshark.org) |
+| Perforator | Yandex 开发的现代性能分析工具，基于 eBPF 技术，可在不修改或重新编译程序的情况下，以极低开销收集大型数据中心与 Kubernetes 集群中的性能数据。 | 2025-01-29 | 考拉认为 Perforator 由 Yandex 开发并在其内部作为主要的集群级分析服务使用；它的非侵入性和强大的功能使其成为处理大规模性能监测任务的理想选择，也是 eBPF 技术的典型应用。 | [BV1mjNAe4EoR · 00:01](https://www.bilibili.com/video/BV1mjNAe4EoR?t=1) | [GitHub](https://github.com/yandex/perforator) |
+| Bunster | 一个将 shell 脚本编译为自包含静态二进制文件的工具，生成的程序不依赖任何 shell 解释器，支持静态链接与跨平台运行，并带有方便的模块系统。 | 2024-07-20 | 考拉认为 Bunster 为脚本开发者提供了一种高效且可靠的解决方案，适合需要分发脚本和确保跨平台兼容性的场景。 | [BV1mjNAe4EoR · 02:53](https://www.bilibili.com/video/BV1mjNAe4EoR?t=173) | [GitHub](https://github.com/yassinebenaid/bunster) |
 
 ## AI 模型与推理
 
@@ -201,6 +205,7 @@ toc:
 | Cline | 一个集成在 IDE 中的 AI 编程助手，能够创建和编辑文件、执行命令、使用浏览器等。基于强大的编码模型能力，可逐步处理复杂的软件开发任务；支持通过 Model Context Protocol（MCP）创建新工具、扩展能力，且在每一步操作上都需要用户授权。 | 2024-07-06 | 认为 Cline 的出现让开发者可以在自己习惯的编辑器或命令行中体验 AI 结对编程，而无需被特定编辑器绑定；下一步值得探索的是如何提供足够详细的描述让 AI 准确完成编程意图。 | [BV1TLcgeqEQ8 · 00:01](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=1) | [GitHub](https://github.com/cline/cline) |
 | Agent Recipes | 一个提供 LLM 工作流图文示例的合集网站，包含多种 LLM 工作流的示意图与代码示例（如 Prompt Chaining、Routing、Parallelization、Orchestrator-workers、Evaluator-optimizer、Autonomous Agent 等）。这些工作流设计灵感来源于 Anthropic 的研究报告，目标是帮助开发者优化 LLM 的使用效率。 | 2025-01-03 | 认为此前 Anthropic 的研究报告让大家有了 LLM 工作流的学习材料，而这一组 Recipes 则让相应知识的学习变得更加直观。 | [BV14Vwqe2EBR · 02:47](https://www.bilibili.com/video/BV14Vwqe2EBR?t=167) | [官网](https://www.agentrecipes.com/) |
 | yek | 一个用 Rust 编写的工具，用于读取代码库或目录并将文本文件序列化/分块，便于直接喂给大语言模型，遵循 .gitignore 规则、依据 Git 历史推断重要文件，并支持通过 yek.toml 配置。 | 2025-01-11 | 考拉认为将代码读取后提供给 AI 智能体，已经让 AI 变得更强大；yek 比之前的同类工具性能更好，但在代码语义理解上还没有表现出更为突出的优势。 | [BV1dPFKeeEuw · 04:59](https://www.bilibili.com/video/BV1dPFKeeEuw?t=299) | [GitHub](https://github.com/mohsen1/yek) |
+| Goose | Block 推出的开源通用 AI 智能体，可在本地运行，协助开发者生成测试数据、编写脚本、处理复杂部署任务，并支持连接 MCP 服务器或 API 进行扩展。 | 2024-08-23 | 考拉认为一部分已经试用过的开发者对 Goose 评价不错，他们认为 Goose 不仅提高了工作效率，还增加了开发的乐趣；它支持本地运行、保留用户对过程的完全控制，并具有可扩展性。 | [BV1mjNAe4EoR · 00:32](https://www.bilibili.com/video/BV1mjNAe4EoR?t=32) | [GitHub](https://github.com/block/goose) |
 
 ## 数据工程与存储
 
@@ -239,6 +244,7 @@ toc:
 | Vouch | 由 HashiCorp 创始人 Mitchell Hashimoto 开源的社区信任管理工具，通过纯文本担保名单（.td 文件）实现显式信任白名单，配合 GitHub Actions 自动关闭未被担保者的 PR/Issue，并支持跨项目信任网络。 | 2026-02-05 | 考拉认为针对 AI 生成低质 PR 的方案，Vouch 的思路粗暴但有效，显式信任模型比算法推荐更透明，适合中小规模社区；风险在于担保人的认知负荷与潜在的圈子化倾向，大社区可能面临治理困境。项目正在自用验证，值得关注实际效果。 | [BV11AZZBUEeD · 02:49](https://www.bilibili.com/video/BV11AZZBUEeD?t=169) | [GitHub](https://github.com/mitchellh/vouch) |
 | WakaTime | 一个为开发者设计的时间管理 / 生产力度量工具，通过开源插件自动记录你在编程上花费的时间，可追踪在每个项目、文件或功能上的时间，帮助分析会议与编码时间的比例、识别代码库瓶颈；还提供排行榜和目标设定功能，可与全球开发者竞争。 | 2013-07-15 | 认为 WakaTime 特别适合那些想要量化自己编码时间的开发者，其自动记录功能让你无需手动操作、只需专注代码本身；无论个人开发者还是团队，都能帮助更好地管理时间、提升效率。 | [BV1TLcgeqEQ8 · 03:20](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=200) | [官网](https://wakatime.com) |
 | SimpleGantt | 一个轻量级的项目管理工具，专为不想安装桌面端软件或使用云端应用的极简主义者设计。完全运行在浏览器中、无需安装其他软件，支持交互式甘特图渲染、任务管理、里程碑跟踪，并且可以离线使用，所有数据都保存在本地，确保隐私和安全。代码不依赖任何 JS 框架，直接使用原生 JS 在约 2000 行的文件内完成所有逻辑。 | 2024-12-18 | 认为虽然功能不如一些大型工具丰富，但对于基本需求管理来说，SimpleGantt 已经足够；其代码实现也很有趣，不借助任何 JS 框架、用原生 JS 在一个约 2000 行文件内完成，对希望提升 UI 编程能力的小伙伴也是值得学习的代码库。 | [BV14Vwqe2EBR · 03:41](https://www.bilibili.com/video/BV14Vwqe2EBR?t=221) | [GitHub](https://github.com/aerugo/simplegantt) |
+| FreeScout | 一款免费开源的工单/帮助台系统，整合来自邮件、网站表单、聊天等多渠道的客户问题并集中在单一队列，支持自动化分配规则、SLA、知识库与自动化服务。 | 2018-06-22 | 考拉认为 FreeScout 的开源特性允许高度定制化，能够适应不同企业的独特需求；如果你正在寻找一个轻量、高效且功能强大的工单系统，不妨试试 FreeScout。 | [BV1mjNAe4EoR · 03:22](https://www.bilibili.com/video/BV1mjNAe4EoR?t=202) | [GitHub](https://github.com/freescout-help-desk/freescout) |
 
 ## 多媒体与图形
 
