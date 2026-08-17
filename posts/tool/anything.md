@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:31+08:00
+lastmod: 2026-08-17T18:43:32+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -49,6 +49,7 @@ toc:
 | Scripton | 具备实时可视化能力的 Python IDE，集成 Plotly / Observable Plot 与 2D 画布、REPL，目前仅支持 macOS。 | 2025-01-28 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 01:26](https://www.bilibili.com/video/BV1G5ASetENw?t=86) | [官网](https://scripton.dev) |
 | Presenterm | 终端里的 Markdown 幻灯片工具，用 Markdown 编写演示文稿并在终端全屏放映，支持代码高亮、主题与动画，适合开发者的技术演示。 | 2023-08-27 | Koala 介绍 Presenterm 是一个终端里的 Markdown 幻灯片工具，直接用 Markdown 写演示文稿、在终端中全屏放映，并支持代码高亮、主题与动画，非常适合开发者在终端环境下做技术演示。 | [BV1UYQbYeELx · 01:29](https://www.bilibili.com/video/BV1UYQbYeELx?t=89) | [GitHub](https://github.com/mfontanini/presenterm) |
 | ttyd | ttyd 是一个基于 libwebsockets 与 xterm.js 的命令行工具，可通过网页分享并操作终端，支持 CJK 等宽字符、文件上传下载与基础鉴权。 | 2016-09-13 | 认为用 ttyd 远程管理服务器或与同事分享终端操作更加方便，对多人协同和远程 debug 等场景比较有用，但前提是做好足够的安全防护措施。 | [BV1A3ZBYAE8a · 00:32](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=32) | [GitHub](https://github.com/tsl0922/ttyd) |
+| BUSY Bar | BUSY Bar 是一款带有 LED 点阵显示屏的开源效率小工具，可帮助专注工作、屏蔽手机与电脑通知；支持高度自定义，并能通过 Matter/HomeKit 协议与 Google Home、Apple Home 等智能家居联动，还提供 HTTP API 与多语言 SDK。 | 2024-11-28 | 认为对于工作繁忙的人来说，一款高颜值的可爱工具不仅有实用性，还能带来情绪价值。 | [BV1PudqYZE8r · 02:00](https://www.bilibili.com/video/BV1PudqYZE8r?t=120) | [官网](https://busy.bar) |
 
 ## 代码质量与 Code Review
 
@@ -170,6 +171,8 @@ toc:
 | pingy | 用 Rust 编写、支持多并发与实时可视化图表的 ping 工具，适用于大规模网络性能监控。 | 2025-03-22 | 考拉认为 pingy 的亮点在于实时数据可视化与并发处理能力，特别适合网络管理员和开发者进行大规模网络性能监控；Rust 的高性能特性也让其在处理大规模 ping 请求时表现出色。 | [BV1xc9FYDED3 · 03:24](https://www.bilibili.com/video/BV1xc9FYDED3?t=204) | [GitHub](https://github.com/trinhminhtriet/pingy) |
 | Rsdoctor | Rspack / Webpack 的构建分析利器，提供可视化的构建产物分析、依赖关系图与编译耗时火焰图，帮助开发者快速定位构建瓶颈与体积问题。 | 2025-03-19 | Koala 介绍 Rsdoctor 是 Rspack / Webpack 的构建分析利器，提供可视化的构建产物分析、依赖关系图与编译耗时火焰图，帮助开发者快速定位构建瓶颈和包体积问题。 | [BV1vXXhYpEbK · 01:29](https://www.bilibili.com/video/BV1vXXhYpEbK?t=89) | [GitHub](https://github.com/web-infra-dev/rsdoctor) |
 | Pico.sh | Pico.sh 是一套仅基于 SSH 协议即可使用的开发者工具集，可通过已安装的 SSH 客户端发布静态网站/博客、建立隧道把本地服务暴露到公网、分享代码片段与接收 RSS 邮件订阅。 | 2022-08-24 | 认为如果你是喜欢用命令行搞定一切的开发者，Pico.sh 值得尝试；它简化了很多常见的开发和部署流程，让你专注于写代码而不是折腾配置；免费套餐支持所有基础功能和 25MB 存储，足够做小型实验。 | [BV1tYRiYbEt6 · 01:26](https://www.bilibili.com/video/BV1tYRiYbEt6?t=86) | [GitHub](https://github.com/picosh/pico) |
+| Coroot | Coroot 是一个开源的 APM 与可观测性工具，可作为 Datadog 和 New Relic 的替代方案，通过 eBPF 自动收集 Metrics、Logs、Traces 和 Profiles，并借助预定义的 Dashboard 与 Inspection 将其转化为可执行的洞察。 | 2022-08-22 | 认为 Coroot 能帮你轻松了解服务状态、跟踪依赖并探索一次请求的三层原因；如果你正在寻找强大的、能使用 eBPF 的开源可观测性解决方案，Coroot 值得尝试。 | [BV1PudqYZE8r · 00:01](https://www.bilibili.com/video/BV1PudqYZE8r?t=1) | [GitHub](https://github.com/coroot/coroot) |
+| Headlamp | Headlamp 是一款注重可扩展性的 Kubernetes UI，可轻松定制界面细节与颜色主题，支持 RBAC 全线控制，既可作为 Web 应用运行，也可作为桌面应用运行。 | 2019-11-08 | 认为如果你正在基于 K8s 构建产品，或者需要一个深度定制的 K8s UI，Headlamp 可以让你避免从零开始，从而更快完成目标。 | [BV1PudqYZE8r · 02:28](https://www.bilibili.com/video/BV1PudqYZE8r?t=148) | [GitHub](https://github.com/kubernetes-sigs/headlamp) |
 
 ## AI 模型与推理
 
@@ -240,6 +243,8 @@ toc:
 | Mastra | 用 TypeScript 构建与部署 AI 应用（Agent、工作流、RAG、可观测）的框架。 | 2024-08-06 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:01](https://www.bilibili.com/video/BV1G5ASetENw?t=1) | [GitHub](https://github.com/mastra-ai/mastra) |
 | CodeMCP | 面向 Claude Desktop 的编码助手 MCP 服务器，让 Claude 能够直接读写本地项目文件、运行命令，从而把 Claude Desktop 变成真正可参与端到端编码任务的编程助手。 | 2025-03-09 | Koala 介绍 CodeMCP 是一个 MCP 服务器，能把 Claude Desktop 变成可以编辑本地代码的编程助手，让 Claude 直接读写项目文件、运行命令，从而真正参与端到端的编码任务。 | [BV1vXXhYpEbK · 00:29](https://www.bilibili.com/video/BV1vXXhYpEbK?t=29) | [GitHub](https://github.com/ezyang/codemcp) |
 | GhidraMCP | GhidraMCP 是一个 MCP 服务器，将 Ghidra 的反编译、重命名方法/数据、列出方法/类/导入/导出等逆向能力暴露给 LLM 与各类 MCP 客户端，实现 AI 自主逆向工程。 | 2025-03-23 | 认为该工具对安全研究人员和逆向工程师来说是福音，将 Ghidra 的能力融入其中让逆向分析更智能高效，且基于 MCP 的通用性可在代码编辑器和聊天工具等多种 MCP 客户端中使用。 | [BV1A3ZBYAE8a · 01:27](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=87) | [GitHub](https://github.com/LaurieWired/GhidraMCP) |
+| GitMCP | GitMCP 是一个免费开源的 MCP 工具，能把任意 GitHub 项目变成 AI 助手的知识库，让 AI 直接访问仓库代码与文档以更好地理解项目、减少幻觉，无需安装任何东西。 | 2025-03-29 | 认为除阅读代码外，未来 GitMCP 如果能进一步阅读代码文件的 commit 历史以及浏览 issue 列表，会让更多问题得以解决。 | [BV1PudqYZE8r · 00:31](https://www.bilibili.com/video/BV1PudqYZE8r?t=31) | [GitHub](https://github.com/idosal/git-mcp) |
+| Browser MCP | Browser MCP 是一个 MCP 服务器，通过 MCP 协议连接 AI 助手与你的浏览器，让 AI 代表你自动执行网页任务（自动填表、读取信息、抓取数据等），可利用你现有的浏览器配置保持登录状态。 | 2025-03-28 | 认为 Browser MCP 的特点是速度快、安全性高，能利用现有浏览器配置保持登录状态，甚至避开一些反爬虫机制；在 MCP 的帮助下，它已支持 Cursor、Claude、Windsurf、VSCode 等工具。 | [BV1PudqYZE8r · 03:51](https://www.bilibili.com/video/BV1PudqYZE8r?t=231) | [GitHub](https://github.com/BrowserMCP/mcp) |
 
 ## 数据工程与存储
 
@@ -381,6 +386,7 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Ray | 面向 AI / 机器学习的分布式计算引擎，覆盖数据处理、分布式训练与模型部署。 | 2016-10-25 | 仅作功能介绍，未给出明确评价。 | [BV1xc9FYDED3 · 00:01](https://www.bilibili.com/video/BV1xc9FYDED3?t=1) | [GitHub](https://github.com/ray-project/ray) |
+| NVIDIA CUDA Python | NVIDIA 在 CUDA 中引入的原生 Python 支持（CUDA Python），让 Python 开发者无需掌握 C/C++ 或 Fortran，即可用熟悉的 Python 接口在 GPU 上编写并运行算法，大幅降低 GPU 计算门槛。 | 2025-03-18 | 认为这一变化将大大降低 GPU 计算门槛，尤其在人工智能和数据科学领域；NVIDIA 的举措会吸引更多开发者进入 GPU 加速计算世界，对 AI 开发者意味着更简单的工作流程和更高的生产力。 | [BV1PudqYZE8r · 01:31](https://www.bilibili.com/video/BV1PudqYZE8r?t=91) | [GitHub](https://github.com/NVIDIA/cuda-python) |
 
 ## 命令行工具
 
