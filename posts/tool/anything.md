@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:36+08:00
+lastmod: 2026-08-17T18:43:38+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -51,6 +51,7 @@ toc:
 | ttyd | ttyd 是一个基于 libwebsockets 与 xterm.js 的命令行工具，可通过网页分享并操作终端，支持 CJK 等宽字符、文件上传下载与基础鉴权。 | 2016-09-13 | 认为用 ttyd 远程管理服务器或与同事分享终端操作更加方便，对多人协同和远程 debug 等场景比较有用，但前提是做好足够的安全防护措施。 | [BV1A3ZBYAE8a · 00:32](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=32) | [GitHub](https://github.com/tsl0922/ttyd) |
 | BUSY Bar | BUSY Bar 是一款带有 LED 点阵显示屏的开源效率小工具，可帮助专注工作、屏蔽手机与电脑通知；支持高度自定义，并能通过 Matter/HomeKit 协议与 Google Home、Apple Home 等智能家居联动，还提供 HTTP API 与多语言 SDK。 | 2024-11-28 | 认为对于工作繁忙的人来说，一款高颜值的可爱工具不仅有实用性，还能带来情绪价值。 | [BV1PudqYZE8r · 02:00](https://www.bilibili.com/video/BV1PudqYZE8r?t=120) | [官网](https://busy.bar) |
 | Atuin Desktop | 本地优先（local-first）、可执行的可视化 Runbook 编辑器，外观像文档、运行起来像终端；支持链式脚本块、嵌入式终端、数据库客户端与 Prometheus 图表，基于 CRDT 通过 Atuin Hub 同步协作。 | 2025-04-22 | 仅作功能介绍，未给出明确评价。 | [BV1pijczvE8K · 02:44](https://www.bilibili.com/video/BV1pijczvE8K?t=164) | [GitHub](https://github.com/atuinsh/desktop) |
+| Zodest | 基于 Zod 的现代化 CLI 构建器，完全类型安全、极轻量且无运行时依赖（仅依赖 Zod），支持命令别名、嵌套命令以及全局与命令级选项，配置灵活。 | 2025-04-18 | 考拉认为，在构建 CLI 时，参数解析和校验是必不可少的环节；Zodest 基于 Zod 在类型安全与运行时参数校验上的优势可充分发挥，同时保持了轻量化。 | [BV1wQVFzREBr · 03:49](https://www.bilibili.com/video/BV1wQVFzREBr?t=229) | [GitHub](https://github.com/tunnckoCore/zodest) |
 
 ## 代码质量与 Code Review
 
@@ -131,6 +132,7 @@ toc:
 | BundleMon | 免费的包体积监控工具,通过 CI 集成在每次提交时自动比对基线与目标分支,当文件体积或涨幅百分比超出阈值时直接让构建失败;GitHub 评论会生成详细差异报告,历史数据面板支持按天回溯。提供免费托管服务,也支持自托管。 | 2020-06-19 | 考拉认为,构建失败机制比警告通知更有效,能从根本上杜绝在体积优化上的妥协。对开源项目友好,但免费版数据保留策略较严格,PR 仅记录 30 天,企业级场景建议自托管或选择付费版。 | [BV11gixBMEMs · 02:51](https://www.bilibili.com/video/BV11gixBMEMs?t=171) | [GitHub](https://github.com/LironEr/bundlemon) |
 | Lightpanda | 一个专为 headless 模式设计的开源浏览器，特别适合用于 AI 代理、网页抓取和自动化测试等场景。最大特点是极低内存占用与极快执行速度（内存占用比 Chrome 少约 9 倍、执行速度快约 11 倍），支持在页面内执行 JavaScript 和部分 Web API，并兼容 Playwright 与 Puppeteer 工具。 | 2023-02-07 | 认为 Lightpanda 的目标是提供一个轻量级、高性能的无头浏览器方案，尤其适合需要大规模并发处理的场景；虽仍处于 Beta 阶段，但已展现巨大潜力，特别是在资源受限环境中，专注 headless 场景也使其从设计之初保持轻量化。 | [BV14Vwqe2EBR · 00:01](https://www.bilibili.com/video/BV14Vwqe2EBR?t=1) | [GitHub](https://github.com/lightpanda-io/browser) |
 | Trivy | 由 Aqua Security 出品的开源、全面且通用的安全扫描器，可扫描容器镜像、文件系统、Kubernetes、代码仓库与云环境，发现漏洞（CVE）、错误配置、密钥/敏感信息与 SBOM。 | 2019-04-11 | 考拉认为，对于企业级应用，若希望保证自身代码与上游供应链安全，Trivy 是一个可靠的选择。 | [BV1pijczvE8K · 01:51](https://www.bilibili.com/video/BV1pijczvE8K?t=111) | [GitHub](https://github.com/aquasecurity/trivy) |
+| Magnitude | 开源的 AI 原生 Web 应用端到端测试框架，使用视觉 AI Agent 通过自然语言编写测试，能感知界面变化并自动适应，测试运行可被智能缓存以实现快速、低成本、可重复的执行。 | 2025-04-25 | 考拉认为，如果你的应用界面经常变化，或者觉得维护 E2E 测试的成本太高，那么 Magnitude 是一个可行的解决方案；并提到在之前的俱乐部视频中曾对比过几个热门的浏览器自动化与 AI E2E 测试工具，有兴趣的观众可进一步对比 Magnitude 与它们的差异。 | [BV1wQVFzREBr · 01:56](https://www.bilibili.com/video/BV1wQVFzREBr?t=116) | [GitHub](https://github.com/magnitudedev/magnitude) |
 
 ## 运维、部署与基础设施
 
@@ -177,6 +179,7 @@ toc:
 | Coroot | Coroot 是一个开源的 APM 与可观测性工具，可作为 Datadog 和 New Relic 的替代方案，通过 eBPF 自动收集 Metrics、Logs、Traces 和 Profiles，并借助预定义的 Dashboard 与 Inspection 将其转化为可执行的洞察。 | 2022-08-22 | 认为 Coroot 能帮你轻松了解服务状态、跟踪依赖并探索一次请求的三层原因；如果你正在寻找强大的、能使用 eBPF 的开源可观测性解决方案，Coroot 值得尝试。 | [BV1PudqYZE8r · 00:01](https://www.bilibili.com/video/BV1PudqYZE8r?t=1) | [GitHub](https://github.com/coroot/coroot) |
 | Headlamp | Headlamp 是一款注重可扩展性的 Kubernetes UI，可轻松定制界面细节与颜色主题，支持 RBAC 全线控制，既可作为 Web 应用运行，也可作为桌面应用运行。 | 2019-11-08 | 认为如果你正在基于 K8s 构建产品，或者需要一个深度定制的 K8s UI，Headlamp 可以让你避免从零开始，从而更快完成目标。 | [BV1PudqYZE8r · 02:28](https://www.bilibili.com/video/BV1PudqYZE8r?t=148) | [GitHub](https://github.com/kubernetes-sigs/headlamp) |
 | Sapphire | 用 Rust 编写的下一代 macOS 包管理器，灵感来自 Homebrew，可安装命令行工具（Formulae）与桌面应用（Casks），支持并行下载、自动依赖解析与前缀隔离；项目后更名为 sps。 | 2025-04-23 | 考拉表示可以关注这个项目，并提醒目前它还处于 Alpha 阶段，所以使用需谨慎。 | [BV1pijczvE8K · 04:09](https://www.bilibili.com/video/BV1pijczvE8K?t=249) | [GitHub](https://github.com/alexykn/sapphire) |
+| Wiredoor | 自托管的开源 ingress-as-a-service 平台，通过 WireGuard 反向 VPN 隧道并经由内置 NGINX 反向代理，将私有或本地网络中的服务安全暴露到公网，可作为 ngrok 的开源替代，支持 Kubernetes、Docker 及传统服务器。 | 2025-03-29 | 考拉认为，如果你对 ngrok、frp 等内网穿透工具比较熟悉，那么 Wiredoor 就是一个值得一试的开源替代；它简化了暴露内网服务的流程，同时保证了安全性，并且支持多种环境如 Kubernetes、Docker 和传统的服务器。 | [BV1wQVFzREBr · 02:51](https://www.bilibili.com/video/BV1wQVFzREBr?t=171) | [GitHub](https://github.com/wiredoor/wiredoor) |
 
 ## AI 模型与推理
 
@@ -202,6 +205,7 @@ toc:
 | Cloudflare AutoRAG | Cloudflare 提供的全托管检索增强生成（RAG）流水线，自动完成数据摄取、分块、向量化与存储，并支持自动更新索引，让开发者无需管理底层基础设施即可构建基于自有数据的 AI 应用。 | 2025-04-07 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:00](https://www.bilibili.com/video/BV1ij5fz2En9?t=120) | [官网](https://developers.cloudflare.com/autorag/) |
 | smartfunc | 轻量优雅的 Python 工具库，基于 LLM 库与 Jinja2 模板引擎，将函数 docstring 解析为 prompt 并自动生成对应的 LLM 函数，支持 Pydantic 结构化返回与异步调用。 | 2025-03-12 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:58](https://www.bilibili.com/video/BV1ij5fz2En9?t=178) | [GitHub](https://github.com/koaning/smartfunc) |
 | DeepWiki | 由 Cognition AI（Devin 出品方）推出的 AI 代码文档平台，通过大语言模型与代码分析自动将任意公共 GitHub 仓库转化为结构化的交互式 Wiki（含架构图、目录、模块说明），并支持自然语言问答。 | 2025-04-27 | 考拉认为，对代码库的理解是 AI 编程工具的核心竞争力，DeepWiki 团队开发此项目证明了其 AI 开发工具具备领先水平。 | [BV1pijczvE8K · 00:31](https://www.bilibili.com/video/BV1pijczvE8K?t=31) | [官网](https://deepwiki.com) |
+| OpenPipe ART | OpenPipe 开源的强化学习训练库（Agent Reinforcement Trainer），使用 GRPO 对多步智能体进行训练，可在现有代码库中运行 Agent 并将复杂的强化学习训练交给后端，支持 Qwen、Gemma、Llama 等主流 LLM。 | 2025-03-10 | 考拉认为 ART 支持市面上大多数的 LLM 模型，像是 Qwen、Gemma 等；现在已经有了使用 3B 和 7B Qwen 模型成功微调、使它们可以进行 2048、Tic-Tac-Toe 这样的小游戏的 Notebook 实例，大家可以快速上手体验。 | [BV1wQVFzREBr · 01:26](https://www.bilibili.com/video/BV1wQVFzREBr?t=86) | [GitHub](https://github.com/OpenPipe/ART) |
 
 ## AI Agent 与智能体开发
 
@@ -256,6 +260,7 @@ toc:
 | PocketFlow | 仅约 100 行代码、零依赖的极简 LLM/Agent 框架，用图（Graph）抽象表达 Agent、工作流与 RAG 等模式，让 AI Agent 构建 AI Agent。 | 2024-12-24 | 考拉认为 PocketFlow 只用约一百行代码就能实现，且不依赖任何外部库（纯净、零依赖、零厂商锁定），可以用来快速构建 Agent 应用；若觉得 LangChain 等方案过重，不妨一试，并且社区还提供 Python、TypeScript、Java、C#、Go 等多语言版本。 | [BV1pijczvE8K · 01:02](https://www.bilibili.com/video/BV1pijczvE8K?t=62) | [GitHub](https://github.com/The-Pocket/PocketFlow) |
 | Tutorial Codebase Knowledge | 由 PocketFlow 团队开发的教程项目，爬取 GitHub 代码库并构建知识库，将复杂代码转化为带清晰可视化的、初学者友好的交互式教程（类似 DeepWiki）。 | 2025-04-02 | 考拉认为 PocketFlow 的推广策略十分值得学习，其开发的 Tutorial Codebase Knowledge 让用户能快速感受用 PocketFlow 开发 Agent 内容的潜力。 | [BV1pijczvE8K · 01:30](https://www.bilibili.com/video/BV1pijczvE8K?t=90) | [GitHub](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge) |
 | ActorCore | 由 Rivet 团队出品的有状态 Serverless 框架，可部署到 Rivet、Cloudflare Workers、Bun、Node.js；每个计算单元就像一个微型服务器，在请求之间保持状态，适合构建 AI 智能体协作应用、实时应用与游戏服务器。 | 2025-02-05 | 考拉认为 ActorCore 是一个十分有趣的有状态 Serverless 应用开发方案，其核心有状态计算让计算单元像微型服务器一样在请求之间保留数据，非常适合实时性要求高的应用。 | [BV1pijczvE8K · 03:39](https://www.bilibili.com/video/BV1pijczvE8K?t=219) | [GitHub](https://github.com/rivet-gg/actor-core) |
+| TmuxAI | 常驻 tmux 会话的 AI 终端助手，能观察并理解终端面板内容，通过自然语言交互给出命令建议，支持观察模式、准备模式与监视模式，开源且可免费按自身工作流定制。 | 2025-04-19 | 考拉认为，提问式的交互方式想必是 AI 终端的第一步，未来也会有自动补全等更智能的实现功能出现。 | [BV1wQVFzREBr · 00:01](https://www.bilibili.com/video/BV1wQVFzREBr?t=1) | [GitHub](https://github.com/alvinunreal/tmuxai) |
 
 ## 数据工程与存储
 
@@ -331,6 +336,7 @@ toc:
 | Cascii | 基于 Web 的 ASCII / Unicode 图表设计工具，可用类绘图方式创建流程图、架构图等文本图形，结果可直接复制为纯文本用于文档或代码注释。 | 2025-03-08 | Koala 介绍 Cascii 是一个基于文本的 ASCII 图表设计工具，可在浏览器里用类似绘图的方式创建流程图、架构图等 ASCII 图形，结果能直接复制为纯文本，方便放进文档或代码注释里。 | [BV1vXXhYpEbK · 00:01](https://www.bilibili.com/video/BV1vXXhYpEbK?t=1) | [GitHub](https://github.com/casparwylie/cascii-core) |
 | Blender 4.4 | Blender 是一款工业级开源 3D 创作套装；4.4 版本重点提升稳定性、修复大量 bug，并引入 Action Slots 动画系统与增强的视频序列器（VSE）。 | 2025-03-18 | 认为 Blender 4.4 是一个十分吸引人的新版本，作为工业级开源软件，其活力让人对开源软件的未来充满期待。 | [BV1A3ZBYAE8a · 00:01](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=1) | [官网](https://www.blender.org/) |
 | Anime.js | Anime.js 是一个功能强大且体积小巧的 JavaScript 动画库，支持 CSS 变换、SVG 动画、时间轴（timeline）与滚动触发（scroll 触发）等效果，并内置缓动函数与 stagger 效果。 | 2025-04-03 | 认为如果你想为网站或应用添加一些吸睛的动画，Anime.js 绝对值得关注；而且新版本中库的体积被控制得很小，不会给项目增加太多性能负担。 | [BV1tYRiYbEt6 · 00:01](https://www.bilibili.com/video/BV1tYRiYbEt6?t=1) | [GitHub](https://github.com/juliangarnier/anime) |
+| ScreenRecorder.me | 浏览器内直接使用的免费在线屏幕录制工具，无需注册登录，支持录制、编辑、分享，并可自定义壁纸、屏幕样式、摄像头效果与放大动画等高级功能。 | 2025-04-28 | 考拉认为，与许多收费的录制工具相比，这款工具的功能完全不落下风；除了基础的录制之外，它还支持自定义壁纸、调整屏幕样式、配置摄像头效果以及设置放大动画等高级功能。 | [BV1wQVFzREBr · 00:57](https://www.bilibili.com/video/BV1wQVFzREBr?t=57) | [官网](https://screenrecorder.me) |
 
 ## 办公与演示
 
