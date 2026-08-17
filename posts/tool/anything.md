@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:27+08:00
+lastmod: 2026-08-17T18:39:29+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -98,6 +98,7 @@ toc:
 | Tailwind CSS v4.0 | Tailwind CSS 的第四个重大版本，采用全新高性能引擎，完整构建速度提升约 5 倍、增量构建提升 100 倍以上，并以 CSS 优先配置与内置 Oxide/Vite 插件简化使用。 | 2025-01-22 | 考拉认为 Tailwind 自推出以来虽然评价不一，但使用者一直在增加也是不争的事实；这次新版本的功能非常实用，聚焦于性能和开发体验。 | [BV1dPFKeeEuw · 04:04](https://www.bilibili.com/video/BV1dPFKeeEuw?t=244) | [GitHub](https://github.com/tailwindlabs/tailwindcss) |
 | Manifest | 一个以单文件方式为前端应用提供完整后端能力的微后端工具，内置数据库、管理面板、REST API 与文件存储等核心功能，可轻松集成到任意前端/移动端框架。 | 2022-09-27 | 考拉认为 Manifest 非常适合快速构建原型或小型项目，尤其是那些希望专注于前端开发的开发者；其性能与可扩展性对于大型项目可能并不足够，但它的易用性和灵活性让人印象深刻，在适合的场景中仍值得尝试。 | [BV1mjNAe4EoR · 01:24](https://www.bilibili.com/video/BV1mjNAe4EoR?t=84) | [GitHub](https://github.com/mnfst/manifest) |
 | Onlook | 一款面向设计师的 React 网站可视化编辑器，支持实时可视化编辑并把修改同步回代码，兼容使用 Tailwind CSS 进行样式处理的 React 站点，并引入了 AI 功能。 | 2024-06-25 | 考拉认为 Onlook 在功能实现上更加重视具有 UI 设计背景用户的使用体验，帮助设计师直接将样式修改建议进一步实现为代码，加强设计与开发团队的协作能力。 | [BV1mjNAe4EoR · 01:54](https://www.bilibili.com/video/BV1mjNAe4EoR?t=114) | [GitHub](https://github.com/onlook-dev/onlook) |
+| Ultra | 一个专为 Deno 设计的现代流式 React 框架，无需任何构建/打包步骤，基于 ESM 与导入映射，由 Deno 和浏览器直接运行源码，并通过动态导入实现按需懒加载路由。 | 2021-06-29 | 考拉认为 Ultra 尤其适合 Deno 生态系统的开发者，可以让应用的前端和后端都不再依赖构建流程；这不仅可以带来开发体验的提升，还可能在 AI 开发的时代与 AI 工具更好地结合。 | [BV1jjN1etEa8 · 03:19](https://www.bilibili.com/video/BV1jjN1etEa8?t=199) | [GitHub](https://github.com/exhibitionist-digital/ultra) |
 
 ## 测试与质量保障
 
@@ -143,6 +144,9 @@ toc:
 | Stratoshark | 基于 Wireshark 的系统调用与日志分析工具，由 Sysdig 与 Wireshark 基金会打造，可在系统调用层面探索和分析应用行为，共享 Wireshark/Falco 的解析与过滤引擎。 | 2025-01-22 | 考拉认为 Stratoshark 特别适合需要深度分析应用行为的开发者与运维（SRE）人员，尤其在云原生环境中；它良好的易用性以及与既有工具的兼容性，使其成为排查问题的强大助手。 | [BV1dPFKeeEuw · 00:29](https://www.bilibili.com/video/BV1dPFKeeEuw?t=29) | [官网](https://stratoshark.org) |
 | Perforator | Yandex 开发的现代性能分析工具，基于 eBPF 技术，可在不修改或重新编译程序的情况下，以极低开销收集大型数据中心与 Kubernetes 集群中的性能数据。 | 2025-01-29 | 考拉认为 Perforator 由 Yandex 开发并在其内部作为主要的集群级分析服务使用；它的非侵入性和强大的功能使其成为处理大规模性能监测任务的理想选择，也是 eBPF 技术的典型应用。 | [BV1mjNAe4EoR · 00:01](https://www.bilibili.com/video/BV1mjNAe4EoR?t=1) | [GitHub](https://github.com/yandex/perforator) |
 | Bunster | 一个将 shell 脚本编译为自包含静态二进制文件的工具，生成的程序不依赖任何 shell 解释器，支持静态链接与跨平台运行，并带有方便的模块系统。 | 2024-07-20 | 考拉认为 Bunster 为脚本开发者提供了一种高效且可靠的解决方案，适合需要分发脚本和确保跨平台兼容性的场景。 | [BV1mjNAe4EoR · 02:53](https://www.bilibili.com/video/BV1mjNAe4EoR?t=173) | [GitHub](https://github.com/yassinebenaid/bunster) |
+| Coolify | 一个可自托管、开箱即用的 PaaS 平台，相当于 Vercel/Heroku/Netlify 的开源替代品，提供现代化 UI 与完整 API，可一键部署静态站点、数据库、全栈应用等。 | 2021-01-25 | 考拉认为，如果你是 DevOps 工程师，或者正在寻找一款好用的自动化工具，Coolify 值得尝试；对于基础需求，它的 UI 可以让你使用起来更加轻松愉快，对复杂需求，它的 API 也能让你轻松扩展基础设施规模。 | [BV1jjN1etEa8 · 00:28](https://www.bilibili.com/video/BV1jjN1etEa8?t=28) | [GitHub](https://github.com/coollabsio/coolify) |
+| dockur/windows | 一个开箱即用的容器化运行 Windows 方案，支持自动下载 ISO、KVM 加速，并自带 Web 界面，可通过 Docker Compose/CLI 或 Kubernetes 部署，覆盖 Windows 7 到 Windows 11 等多个版本。 | 2024-01-14 | 考拉认为，如果你需要在 Linux 系统上运行 Windows，或者想在一个隔离的环境中体验 Windows，不妨试试这个项目；除 Windows 之外，dockur 还发布过在容器中运行 macOS 的方案，适合有各类桌面虚拟化需求的用户。 | [BV1jjN1etEa8 · 01:24](https://www.bilibili.com/video/BV1jjN1etEa8?t=84) | [GitHub](https://github.com/dockur/windows) |
+| Kubernetes History Inspector (KHI) | Google Cloud 发布的 Kubernetes 日志可视化工具，将海量日志转化为交互式的时间线视图，提供资源历史、多类型日志关联展示与集群资源拓扑图等能力，便于故障排查。 | 2025-01-22 | 考拉认为 KHI 特别适合在复杂的 Kubernetes 环境中进行故障排查和问题定位；它的交互式时间线和强大的过滤功能，能够帮助你快速从大量日志中找到关键信息。 | [BV1jjN1etEa8 · 02:22](https://www.bilibili.com/video/BV1jjN1etEa8?t=142) | [GitHub](https://github.com/GoogleCloudPlatform/khi) |
 
 ## AI 模型与推理
 
@@ -223,6 +227,7 @@ toc:
 | QMD | Shopify CEO Tobi Lütke 开发的本地 Markdown 搜索引擎，结合 BM25 全文检索、向量语义搜索与 LLM 重排序（RRF 融合、查询扩展等），全程通过 Ollama 本地运行，支持 MCP 协议，可集成到 Claude Desktop / Claude Code。 | 2025-12-08 | 考拉认为这个项目的亮点在于混合搜索策略设计得比较精细，包括查询扩展、RRF 融合、位置感知权重混合等；Tobi 作为 CEO 仍能保持精力写代码，也让他在技术圈中始终拥有不错的口碑。 | [BV1Ny6xBSEpb · 01:28](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=88) | [GitHub](https://github.com/tobi/qmd) |
 | CocoIndex | 面向 AI 的高性能增量数据转换 / 索引框架,Rust 核心 + Python 接口。针对传统 ETL 遇到大模型生成与知识图谱等 AI 场景,用 Rust 重写核心引擎支撑增量处理;最大卖点是流式更新能力——源数据变更时仅重新计算受影响部分,对频繁调用大模型 API 的场景能节省大量成本;内置 CocoInsight 工具让非数据工程师也能可视化理解 Pipeline。 | 2025-03-03 | 考拉认为,增量索引设计确实切中 AI 应用的核心成本痛点;一些使用案例的背书印证了其生产环境的可行性。不过作为新型框架,生态完整度与和主流向量数据库的集成深度,仍待时间检验。 | [BV11gixBMEMs · 01:25](https://www.bilibili.com/video/BV11gixBMEMs?t=85) | [GitHub](https://github.com/cocoindex-io/cocoindex) |
 | PostgreSQL Anonymizer | 一个 PostgreSQL 数据库扩展，专门用于对个人身份信息或商业敏感数据脱敏。采用声明式脱敏方法，允许在表定义中直接声明脱敏规则（“设计即脱敏”）；支持多种脱敏方法（匿名导出、静态脱敏、动态脱敏、副本脱敏、脱敏视图、脱敏数据包装器等），并提供随机化、伪造、部分打乱等多种脱敏函数。 | 2018-07-31 | 认为对于许多商业应用来说数据脱敏是刚需，使用 PostgreSQL Anonymizer 可帮助开发者快速开发出安全、健壮的脱敏逻辑。 | [BV14Vwqe2EBR · 01:58](https://www.bilibili.com/video/BV14Vwqe2EBR?t=118) | [官网](https://gitlab.com/dalibo/postgresql_anonymizer) |
+| Citus | 一个将 PostgreSQL 变为分布式数据库的扩展（而非 fork），通过分片与复制实现水平扩展，提供分布式查询引擎，支持最新 PostgreSQL 版本并完全开源。 | 2016-03-24 | 考拉认为，如果你的单机 PostgreSQL 数据库已经遇到瓶颈，并且希望通过分布式数据库解决问题，那么 Citus 是较为成熟可靠的方案。 | [BV1jjN1etEa8 · 03:48](https://www.bilibili.com/video/BV1jjN1etEa8?t=228) | [GitHub](https://github.com/citusdata/citus) |
 
 ## 协作与项目管理
 
@@ -268,6 +273,7 @@ toc:
 | MapToPoster | 一个 Python 脚本工具，输入城市名即可利用 OpenStreetMap/OSMnx 数据生成极简风格的城市地图海报，内置 17+ 种配色主题，自定义主题只需编辑一个 JSON 文件，适合做礼物或装饰品。 | 2026-01-08 | MapToPoster 是一个 Python 脚本，输入城市名则输出一张极简风格的地图海报，数据来自 OpenStreetMap，内置 17 种配色主题，从赛博朋克到日式水墨都有；代码结构简单，自定义主题只需编辑一个 JSON 文件。该项目技术复杂度不高但实用性强，适合做小礼物或装饰品，6900 多 Star 也说明这类小而美的工具依然有市场；如果你做地理相关产品，该项目使用的 OSMnx 库也值得学习研究。 | [BV1NozxBmEe3 · 01:01](https://www.bilibili.com/video/BV1NozxBmEe3?t=61) | [GitHub](https://github.com/originalankur/maptoposter) |
 | ChartGPU | 基于 WebGPU 的开源高性能图表库，使用 TypeScript 编写，将 LTTB 降采样、命中检测与渲染搬上 GPU，支持折线、面积、柱状、散点、饼图、K 线等常见类型，并提供 React 绑定（chartgpu-react），适合大规模数据可视化。 | 2026-01-17 | 浏览器端的数据可视化一直受限于 Canvas 和 SVG 的性能瓶颈，在大规模数据可视化中表现一般；ChartGPU 选择了一条不同的道路，充分利用 WebGPU 渲染图表，把更多计算任务放入 WebGPU 中；在功能层面它支持折线图、柱状图、K 线图等常见类型，类手势交互和缩放滑块；项目用 TypeScript 编写，配套的 React 绑定也已就绪。WebGPU 用于图表是个有趣的技术选型，但目前 WebGPU 的浏览器兼容性较弱，生产环境还不推荐使用；对 WebGPU API 有兴趣的小伙伴，可以通过该项目学习其中细节。 | [BV1NozxBmEe3 · 02:56](https://www.bilibili.com/video/BV1NozxBmEe3?t=176) | [GitHub](https://github.com/ChartGPU/ChartGPU) |
 | Pdftris | 一个在 PDF 文件里玩俄罗斯方块的趣味项目。作者利用现代浏览器 PDF 引擎支持 JavaScript 的特性，通过显示/隐藏、缩放字体来模拟像素点，并通过文本框实现键盘输入，在 PDF 中实现了可玩的俄罗斯方块。 | 2025-01-04 | 认为这个项目不仅有趣，还提醒我们 PDF 文件的安全性可能比想象中更复杂；虽浏览器对 PDF 中 JavaScript 执行有严格限制，但这种技术仍可能被滥用，作为一次技术探索确实让人眼前一亮。 | [BV1TLcgeqEQ8 · 01:30](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=90) | [GitHub](https://github.com/ThomasRinsma/pdftris) |
+| Logo Creator | 一个免费开源的 Logo 生成器，基于 Together AI 平台上的 Flux 模型，根据用户输入快速生成各种风格的 Logo，本身使用 Next.js、Shadcn UI 与 Tailwind CSS 等技术栈，便于二次开发。 | 2024-11-06 | 考拉认为 Logo Creator 让个性化 Logo 设计的门槛大幅降低，每个人都能轻松拥有美观及独特的 logo；开源特性也让它拥有无限可能。 | [BV1jjN1etEa8 · 00:55](https://www.bilibili.com/video/BV1jjN1etEa8?t=55) | [GitHub](https://github.com/Nutlope/logocreator) |
 
 ## 办公与演示
 
