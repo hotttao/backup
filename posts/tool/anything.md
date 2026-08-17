@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:06:41+08:00
+lastmod: 2026-08-17T13:06:43+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -69,6 +69,7 @@ toc:
 | Supapool | 为并行开发的 Agent 临时创建隔离 Supabase 实例，自动执行迁移并注入环境变量 | 2026-07-30 | 这是典型的 Agent 催生的基础设施；相比长期维护数据库分支，它主打快速、便宜、用完即抛。 | [BV1Fz3X62ETW · 03:22](https://www.bilibili.com/video/BV1Fz3X62ETW?t=202) | [官网](https://supapool.io/) |
 | evanhahn 的常用脚本 | 日常运维与自动化脚本合集 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [项目页面](https://evanhahn.com/scripts-i-wrote-that-i-use-all-the-time/) |
 | OpenShip | 开源自托管部署平台，自动识别 Node/Python/Go/Rust 等技术栈，一键配置 PostgreSQL/Redis 等服务与 SSL，部署为不可变快照、支持零停机回滚，可云服务或自有服务器自托管 | 2026-03-05 | 仅作功能介绍，未给出明确评价。 | [BV1KK3J6cE5J · 00:32](https://www.bilibili.com/video/BV1KK3J6cE5J?t=32) | [GitHub](https://github.com/oblien/openship) |
+| Iroh | 开源点对点连接工具包，用加密公钥替代 IP 地址建立设备直连，自带 QUIC 传输、NAT/防火墙穿透与无状态中继兜底。 | 2026-06-15 | 考拉认为 Iroh 用 Rust 编写、能下沉到 MCU 级别设备，定位比一般的 WebRTC 方案更底层、更通用，适合需要自己掌控连接层的团队，但要落地仍然要求开发者理解 P2P 的复杂性。 | [BV1SVj46KE3c · 02:54](https://www.bilibili.com/video/BV1SVj46KE3c?t=174) | [GitHub](https://github.com/n0-computer/iroh) |
 
 ## AI 模型与推理
 
@@ -92,6 +93,8 @@ toc:
 | Page Agent | 阿里巴巴开源的纯前端 JavaScript GUI Agent 框架，一段脚本即可让任意网页拥有自然语言操控能力，无需后端、截图或多模态模型，支持自带大模型（BYO LLM）与隐私保护，采用 MIT 协议。 | 2025-09-23 | 网页端 Agent 目前多靠浏览器插件或云端 RPA 实现；Page Agent 把能力下沉到网页自身，让开发者主动给用户提供 AI 入口，对存量 Web 应用的 AI 化改造很友好。不过纯前端方案在复杂多步任务上的可靠性还有待验证，适合先从表单填写、导航引导这类场景切入。 | [BV1SYMM6FEeT · 00:01](https://www.bilibili.com/video/BV1SYMM6FEeT?t=1) | [GitHub](https://github.com/alibaba/page-agent) |
 | AI SDK 7 | Vercel 的 TypeScript AI 工具包 7.0 版本，把重心从接入模型转向构建生产级 AI 代理，覆盖开发、运行、集成、观测全流程。 | 2026-06-25 | 考拉认为 AI SDK 的演进路径很能说明问题：从最早帮前端接 ChatGPT 做流式输出，到现在做全栈代理基础设施，本质是 Vercel 想占据 AI 应用的入口，把更多用量接入自家的基础设施。 | [BV1EWTK6iEGj · 00:58](https://www.bilibili.com/video/BV1EWTK6iEGj?t=58) | [GitHub](https://github.com/vercel/ai) |
 | Go Micro v6 | Go 生态知名的微服务框架在 v6 版本转身为 AI Agent 运行时，让每个服务方法既是 RPC 端点也自动暴露成 AI 可调用的工具。 | 2026-06-18 | 考拉认为 Go Micro 把成熟的服务发现、RPC 与工作流能力直接复用，让 Agent 真正成为生产系统的一等公民，这是一个不错的切入点。 | [BV1EWTK6iEGj · 01:56](https://www.bilibili.com/video/BV1EWTK6iEGj?t=116) | [GitHub](https://github.com/micro/go-micro) |
+| Loop Library | 一个 AI Loop 工作流配方库，收录覆盖工程、运维、内容、设计与评估场景的可复用 Agent 循环提示词，每个 Loop 都内置明确的检查点与停止条件，并附带可安装的 Skill 供编码代理查找、审计与改写 Loop。 | 2026-06-12 | 考拉认为现在大家都在追求让 Agent 长时间自主跑，但真正的难点是怎么让它跑得可靠、知道何时该停；并邀请对 Loop 工程感兴趣的观众在视频下留言，由他们来测试这些 Loop 配方是否靠谱。 | [BV1SVj46KE3c · 00:01](https://www.bilibili.com/video/BV1SVj46KE3c?t=1) | [GitHub](https://github.com/Forward-Future/loopy) |
+| eve | Vercel 开源的文件系统优先 TypeScript Agent 框架，以「一个 Agent 就是一个目录」为核心，内置持久化执行、沙箱化计算、人工审批、子代理、通道与评估能力。 | 2026-06-17 | 考拉认为 Agent 框架现在已经卷成红海，LangChain、Mastra 和各家云厂商都在抢；eve 的差异点在于把 Vercel 最擅长的开发者体验和部署一体化搬了过来，但这也意味着它和 Vercel 平台绑定较深，能否成为跨厂商的事实标准还要看社区接受度；框架打包了可观测性和评估，是值得关注的方向。 | [BV1SVj46KE3c · 00:31](https://www.bilibili.com/video/BV1SVj46KE3c?t=31) | [GitHub](https://github.com/vercel/eve) |
 
 ## 数据工程与存储
 
@@ -100,6 +103,7 @@ toc:
 | Apache Iceberg | 开放式数据湖表格式 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/apache/iceberg) |
 | ZeroFS | 开源日志结构文件系统，将 S3 兼容对象存储直接挂载为 POSIX 文件系统，支持 NFS 与 9P 协议并通过 NBD 暴露为块设备，数据以 XChaCha20-Poly1305 加密、Zstd 压缩，通过了 pjdfstest（8600+ 用例）与 Jepsen 验证，可在其上编译 Linux 内核。 | 2026-01-13 | 把对象存储当本地盘用的方案不少（如 JuiceFS、S3BucketFS），ZeroFS 的激进之处在于单进程完成所有事并直接支持块设备语义；测试投入也远超多数同类开源项目，适合用 S3 的价格拿到本地盘体验的场景，但延迟敏感型复杂场景上生产前还需要仔细加测。 | [BV1SYMM6FEeT · 02:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=147) | [GitHub](https://github.com/Barre/ZeroFS) |
 | F3 | 一种把 WebAssembly 解码器直接内嵌进每个文件的开源列式存储格式，让任何平台无需原生库即可解码数据。 | 2025-05-31 | 考拉认为 Parquet 这类格式都是为上一代硬件设计的，编码方案一旦固化就很难演进，这是整个数据湖生态的隐疾；F3 用 Wasm 把解码逻辑随数据一起分发，相当于给文件格式装上可插拔的引擎，思路很巧妙，不过把解码器塞进文件也意味着要为 Wasm 运行时开销买单；目前项目还只是研究原型，作者明确不建议上生产，但有 Wes McKinney 这样的 Arrow 核心人物背书，这个方向值得长期关注。 | [BV1EWTK6iEGj · 00:01](https://www.bilibili.com/video/BV1EWTK6iEGj?t=1) | [GitHub](https://github.com/future-file-format/F3) |
+| DBX | 基于 Rust 与 Tauri 的轻量级开源数据库客户端，把 50 多种数据库的连接管理、SQL 编辑、ER 图、Schema 对比与跨引擎数据导入导出收进一个约 15MB 的应用。 | 2026-04-29 | 考拉认为 DBX 的卖点是又全又轻，不过对单一数据库的支持未必比得过垂直工具，它更适合广度优先的全栈开发者。 | [BV1SVj46KE3c · 03:38](https://www.bilibili.com/video/BV1SVj46KE3c?t=218) | [GitHub](https://github.com/t8y2/dbx) |
 
 ## 协作与项目管理
 
@@ -107,6 +111,7 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Buzz | 基于 Nostr 事件模型的自托管协作平台，覆盖聊天、画布、代码评审和工作流 | 2026-03-06 | 选择 Nostr 很大胆：天然去中心化且可验证，但生态工具链弱于成熟 IM 协议，自托管也要求运维者理解相关概念。 | [BV1Fz3X62ETW · 04:05](https://www.bilibili.com/video/BV1Fz3X62ETW?t=245) | [GitHub](https://github.com/block/buzz) |
 | Chatto | Hendrik Mans 开源的自托管群聊平台，整个服务端是单个约 50MB 的二进制文件、零依赖一步部署，内置端到端加密的音视频通话与屏幕共享，不依赖第三方服务，提供 GraphQL 与 NATS API，房间类型覆盖自由聊天、论坛与社交信息流，符合 GDPR | 2026-07-08 | 这个赛道上有 Mattermost、Rocket.Chat 等老玩家，但它们部署起来都不轻；Chatto 用单文件零依赖把自托管门槛降到极致，很对个人开发者和小团队的胃口。 | [BV17vKB6sEYR · 04:09](https://www.bilibili.com/video/BV17vKB6sEYR?t=249) | [GitHub](https://github.com/chattocorp/chatto) |
+| Paca | 免费开源、可自托管的 AI 原生项目管理平台，把 AI Agent 当成敏捷团队的正式成员，与人类在同一块 Scrumban 看板上领取任务、更新状态并实时协作。 | 2026-03-20 | 考拉认为 Jira、ClickUp 这类工具都在往里塞 AI，但大多还是把 AI 当成辅助助手，Paca 反过来，从数据模型层面就把 Agent 当一等公民，产品理念更激进、也更贴近 Agent 协作的未来形态；当然实际落地还要看它真正解决问题的能力，把沙箱、代码变更都合在一起的设计，也可能在复杂场景中成为减分项。 | [BV1SVj46KE3c · 01:56](https://www.bilibili.com/video/BV1SVj46KE3c?t=116) | [GitHub](https://github.com/Paca-AI/paca) |
 
 ## 多媒体与图形
 
@@ -136,3 +141,4 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
+| SkillSpector | NVIDIA 开源的 AI Agent Skill 安全扫描器，在安装前用静态分析加可选的 LLM 语义评估检测提示注入、数据外泄、权限提升与供应链投毒等风险，并给出 0–100 风险评分。 | 2026-03-21 | 考拉认为 Agent Skill 和 MCP 生态在快速膨胀，但安全治理几乎是空白，一个第三方 Skill 拿到的权限可能远超想象，而 SkillSpector 能方便地接入现有 CI 安全流水线；值得注意的是它也有局限，只能做静态分析，解析不了运行时行为、加密代码和非英文内容。 | [BV1SVj46KE3c · 04:16](https://www.bilibili.com/video/BV1SVj46KE3c?t=256) | [GitHub](https://github.com/NVIDIA/SkillSpector) |
