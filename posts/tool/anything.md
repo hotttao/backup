@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:38+08:00
+lastmod: 2026-08-17T13:07:40+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -36,6 +36,7 @@ toc:
 | deno desktop | Deno 2.9 新增的官方子命令，能把一个 TypeScript 文件甚至整个 Next.js 应用直接编译成跨平台桌面应用的单个二进制文件。 | 2026-06-25 | 考拉认为复用系统 WebView 虽然省体积，但也意味着各平台渲染一致性要打个问号，这是所有走原生 WebView 路线的方案都绕不开的老问题。 | [BV1EWTK6iEGj · 03:54](https://www.bilibili.com/video/BV1EWTK6iEGj?t=234) | [官网](https://docs.deno.com/runtime/reference/cli/desktop/) |
 | driftwm | 一个实验性的 Wayland 合成器（窗口管理器），用无限画布的思路重新想象窗口管理：所有窗口以原始大小散落在无边界的二维画布上，屏幕像一台相机，通过平移和缩放在画布里游走；窗口靠近时自动吸附成组，支持触控板原生惯性滚动、捏合缩放等手势，对多显示器支持良好，还能通过 Unix socket 脚本化控制。 | 2026-02-22 | 主流窗口管理无非平铺和堆叠两条路，driftwm 把白板类应用流行的无限画布概念搬到了桌面管理层，是个少见的方向；它契合触控板时代的交互直觉，使用 Linux 桌面的极客们可以尝鲜。 | [BV1GpEs6gEAA · 03:44](https://www.bilibili.com/video/BV1GpEs6gEAA?t=224) | [GitHub](https://github.com/malbiruk/driftwm) |
 | CodeBurn | 本地优先的开源仪表盘，追踪 Claude Code、Cursor、Codex 等 20+ AI 编码工具的 Token 消耗与花费，按模型、项目、任务拆解，并提供浪费扫描与 CSV/JSON 报表导出。 | 2026-04-13 | 认为 CodeBurn 解决的是 AI 编码开销的黑盒焦虑，让钱花在哪、值不值、哪些是浪费变得更加透明；这类工具未来会向云成本管理的 FinOps 方向发展，用于优化 Agent 的成本。 | [BV1VsLJ6QEbN · 00:01](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=1) | [GitHub](https://github.com/getagentseal/codeburn) |
+| xisland | macOS 原生应用，把 MacBook 的刘海/灵动岛变成 AI 编码 agent（Claude Code、Codex、Gemini CLI、OpenCode 等）的控制面板，可实时监控会话状态、在岛内直接审批权限与回答问题，无需切换窗口。 | 2026-04-21 | 考拉认为，多 Agent 并行时频繁切窗口确实烦，灵动岛监控这个创意执行得不错。局限在于用户需要新款 MacBook，刘海屏化为悬浮条。 | [BV1rLD5BKEtE · 00:56](https://www.bilibili.com/video/BV1rLD5BKEtE?t=56) | [官网](https://xisland.app) |
 
 ## 代码质量与 Code Review
 
@@ -65,6 +66,8 @@ toc:
 | AnimateIcons | 开源的 React 动画图标库，提供 281 个免费动画 SVG 图标组件，分 Lucide 与 Huge 两套设计风格，动画在 SVG path 级别精修，支持 hover/focus/程序触发，构建支持 tree-shaking，底层用 Motion 做动画。 | 2025-07-29 | 认为 AnimateIcons 把微动画做成图标的一等公民；现代 Web 应用越来越追求 motion design 的细节，按钮、菜单、状态切换都要有过渡，以前要么手写 SVG path 动画、要么用 Lottie，前者麻烦后者太重，AnimateIcons 填上了这两种方案的中间地带。 | [BV1SZ5j6BEom · 01:55](https://www.bilibili.com/video/BV1SZ5j6BEom?t=115) | [GitHub](https://github.com/Avijit07x/animateicons) |
 | Fuse.js | 零依赖的 JavaScript 模糊搜索库，基于 Bitap 算法实现容错匹配，压缩后仅约 8KB；支持权重字段、嵌套字段、扩展搜索语法以及逻辑表达式（$and/$or），可运行在浏览器、Node.js 与 Deno 环境。 | 2012-05-28 | 考拉认为：Fuse.js 在前端本地/客户端搜索这个场景，它几乎没有对手；在 AI 问答如火如荼的今天，很多文档站点的即时搜索仍然靠它支撑，因为许多用户需要的还是毫秒级响应；即便与 AI 结合，Fuse.js 的查询能力也是很不错的基础工具。 | [BV1qmoFBzE1e · 03:43](https://www.bilibili.com/video/BV1qmoFBzE1e?t=223) | [GitHub](https://github.com/krisk/Fuse) |
 | PDFx | 基于 @react-pdf/renderer 的 React PDF 组件库，沿用 shadcn/ui 的复制即用模式，提供预制、可主题化的 PDF 组件与 CLI，无运行时依赖。 | 2026-02-14 | 考拉认为，PDF 生成在企业应用中是刚需但体验一直很差，要么用重量级商业方案，要么在底层库上从零搭建。PDFx 沿用 shadcn/ui 的复制而非安装模式，这种路线在 React 生态已被验证有效；对于需要生成发票、报告、合同等 PDF 的团队，这是一个能省不少重复劳动的实用工具。 | [BV1HzDSBqEgd · 02:56](https://www.bilibili.com/video/BV1HzDSBqEgd?t=176) | [GitHub](https://github.com/akii09/pdfx) |
+| EmDash | Cloudflare 开源的 TypeScript CMS，定位为 WordPress 的精神续作，基于 Astro 与 Cloudflare Workers，插件在独立 isolate 中沙箱运行，内置 MCP Server 让 AI Agent 直接管理内容与部署。 | 2026-04-01 | 考拉认为，技术选型现代，但 WordPress 有 43% 的市场份额和 6 万插件生态，并不是 EmDash 可以快速撬动的。但更重要的是，Cloudflare 展现出了全新的战略思路，通过搭建 Cloudflare Native 生态为自己的基础设施带货，最终加大市场占有率。相信 EmDash 只是一个开始，未来他们还会有更多同类项目推出。 | [BV1rLD5BKEtE · 00:02](https://www.bilibili.com/video/BV1rLD5BKEtE?t=2) | [GitHub](https://github.com/emdash-cms/emdash) |
+| Cult UI | 基于 shadcn/ui 的开源动效组件库，提供 78+ 可复制动画组件与 100+ AI Agent 交互模式/区块，技术栈 React + Tailwind + TypeScript，可一键复制或直接用 shadcn 安装。 | 2024-05-29 | 仅作功能介绍，未给出明确评价。 | [BV1rLD5BKEtE · 03:16](https://www.bilibili.com/video/BV1rLD5BKEtE?t=196) | [官网](https://cult-ui.com) |
 
 ## 测试与质量保障
 
@@ -99,6 +102,7 @@ toc:
 | Kimi K3 | 月之暗面（Moonshot AI）发布的开源旗舰大模型，总参数 2.8 万亿（MoE，896 专家、每步激活 16 个），采用 KDA（Kimi Delta Attention）混合线性注意力与注意力残差，原生多模态并支持百万 token（1,048,576）上下文，以 MXFP4 权重交付 | 2026-07-16 | 开源模型的参数规模第一次摸到 3T 这个量级，标志着开源阵营与闭源旗舰的差距进一步收窄；官方也坦诚整体仍略逊于 Claude Fable 5 和 GPT-5.6。真正值得关注的是 KDA 加线性注意力这套组合在百万上下文下的推理成本控制，这决定了它在大规模推理场景下的实用性。 | [BV17vKB6sEYR · 00:28](https://www.bilibili.com/video/BV17vKB6sEYR?t=28) | [Hugging Face](https://huggingface.co/moonshotai/kimi-k3) |
 | Bonsai 27B | PrismML 对阿里巴巴 Qwen3.6-27B 的极端量化产物，提供 1-bit（1.125 比特/权重、3.9GB）与三元（1.71 比特/权重、5.9GB）两个版本，首次让 27B 级模型跑进 iPhone 17 Pro，保留完整多模态能力与 262K 上下文，支持工具调用与计算机操作循环 | 2026-07-14 | 首次让 27B 级模型跑进 iPhone 17 Pro，保留完整多模态能力和 262K 上下文、支持工具调用与计算机操作循环，数学基准从 95.3 只降到 91.7；数学和工具调用这两项 Agent 关键能力在量化后保持得最好，说明选型经过仔细权衡。本地模型的竞争正从参数规模转向它们提出的“智能密度”——也就是每 GB 体积能装下多少能力。 | [BV17vKB6sEYR · 01:27](https://www.bilibili.com/video/BV17vKB6sEYR?t=87) | [Hugging Face](https://huggingface.co/collections/prism-ml/bonsai-27b) |
 | Colibri | 纯 C 语言、零运行时依赖的推理引擎，核心约 2400 行代码，能在 25GB 内存的消费级设备上运行 GLM-5.2（744B MoE）模型，将部分参数层常驻内存、2 万多个路由专家按需在 NVMe 磁盘上流式加载，配合 int4 量化与投机解码。 | 2026-07-01 | 是 llama.cpp 之后又一个极限工程实现；当前速度离生产可用还很远，但它证明了 MoE + NVMe 流式加载这条路的可行性，随着固态硬盘带宽逼近内存，专家按需加载可能会成为本地推理的常规手段。 | [BV19qNT6ZEmL · 01:25](https://www.bilibili.com/video/BV19qNT6ZEmL?t=85) | [GitHub](https://github.com/JustVugg/colibri) |
+| Gemma 4 | Google DeepMind 开源的开放模型家族，含 E2B、E4B、26B、31B 四档，全系支持音视频多模态与函数调用，覆盖 140 种语言，可端侧/本地部署。 | 2026-04-02 | 考拉认为，本次 Gemma 4 号称在 Gemma 3 的研究成果之上训练而成，有望打破 Google 内部两派模型水平差距过大的问题；但 Gemma 4 作为开源中小型模型，聚焦的仍然是本地甚至端侧部署的场景，目前竞争对手也主要是 Qwen 和 Mistral 的同规格模型。 | [BV1rLD5BKEtE · 01:23](https://www.bilibili.com/video/BV1rLD5BKEtE?t=83) | [官网](https://deepmind.google/models/gemma/gemma-4) |
 
 ## AI Agent 与智能体开发
 
@@ -127,6 +131,7 @@ toc:
 | Agent Vault | Infisical 出品的开源 HTTP 凭据代理与保险库，作为透明 MITM 代理位于 Agent 与第三方服务之间，在请求离开网络边界前注入真实凭据（Bearer Token、API Key 等），Agent 自身永远看不到密钥；支持 WebSocket 透传与白名单/拒绝模式。 | 2026-04-22 | 考拉认为：当前 Agent 调用第三方 API 普遍把密钥直接塞进环境变量或 prompt，等于把家门钥匙交给一个会犯错且可能被 prompt 注入的程序；Agent Vault 的思路是把鉴权下沉到网络层，Agent 只看到一个本地代理 URL，密钥泄漏面降到最小，这是 Infisical 从企业密钥管理延伸到 AI Agent 场景的自然延伸，方向合理，但要让 Agent 理解如何使用，尚需生态配合。 | [BV1U19ZBLEcf · 02:57](https://www.bilibili.com/video/BV1U19ZBLEcf?t=177) | [GitHub](https://github.com/Infisical/agent-vault) |
 | Open Agents | Vercel Labs 开源的后台编程 Agent 参考实现（视频中称 OpenAgent / Vocale Labs），包含 Web UI、Agent 运行时、沙箱编排与 GitHub 集成的完整栈；架构上把 Agent 与沙箱分离——Agent 在 VM 外运行，通过工具调用与 VM 内的文件系统、Shell、Git 交互，支持多步持久化执行、流式输出、快照恢复与自动提交 PR。 | 2025-12-26 | 考拉认为：这是 Vercel 对云端 Agent 这条赛道给出的开源答案，让开发者不必从零造轮子；Agent 和沙箱分离的设计是对的——这意味着 Agent 的逻辑可以独立演进，沙箱可以按需替换；对 Vercel 自己来说，这也是推广 Vercel Sandbox 产品的一种方式。 | [BV1qmoFBzE1e · 02:18](https://www.bilibili.com/video/BV1qmoFBzE1e?t=138) | [GitHub](https://github.com/vercel-labs/open-agents) |
 | Claude Code | Anthropic 推出的终端 AI 编程智能体，可理解代码库、执行命令、编辑文件并处理 git 工作流，通过自然语言完成软件工程任务。 | 2025-02-24 | 考拉认为，这一议题触及了 AI 工具商业化的核心矛盾——推理成本优化与输出质量之间的博弈。当厂商为了降本而缩减思维链深度，又通过遮蔽让性能退化变得不可见时，用户只能感受到模型变笨了，却无法诊断原因。 | [BV1HzDSBqEgd · 00:02](https://www.bilibili.com/video/BV1HzDSBqEgd?t=2) | [GitHub](https://github.com/anthropics/claude-code) |
+| nono | 开源的 AI Agent 运行时安全框架，由 Sigstore 创建者打造，提供内核级隔离（Landlock/Seatbelt）、文件快照回滚、审计、供应链签名验证与动态权限审批，提供 Python/TypeScript/Rust/C 多语言 SDK。 | 2026-01-31 | 考拉认为，这个项目的技术深度远超简单沙箱，但 Agent 的生态尚早，开发者安全投入意愿有限，能否在安全和便捷间取得平衡，以及支持大规模云化部署是一个关键问题。 | [BV1rLD5BKEtE · 02:21](https://www.bilibili.com/video/BV1rLD5BKEtE?t=141) | [官网](https://nono.sh) |
 
 ## 数据工程与存储
 
@@ -171,6 +176,7 @@ toc:
 | Open Design | 本地优先的开源 AI 设计生成平台，定位为 Claude Design 的开源替代；不内置 Agent，而是复用用户本地的 Coding Agent（Claude Code、Codex、Cursor 等），负责 Design System 注入、提示词堆栈编排与沙盒化预览渲染，并支持 HTML/PDF/PPTX 等多格式导出。 | 2026-04-28 | 考拉认为：AI 设计赛道关注度迅速上升，但闭源供应商绑定让许多团队观望；Open Design 以极快速度做出可插拔、多后端替代，并内植 71 个品牌级 Design System，本质是把 Claude Design 的工作流封装价值提取成开放工具；但作为商业产品的 Claude Design 仍能像 Claude Code 一样通过数据驱动持续改进模型与产品，这是开源项目一时难以匹敌的。 | [BV1U19ZBLEcf · 00:01](https://www.bilibili.com/video/BV1U19ZBLEcf?t=1) | [GitHub](https://github.com/nexu-io/open-design) |
 | OpenPencil | 开源的 AI 原生设计编辑器，定位为 Figma 的开源替代；可原生打开并读写 .fig 文件，内置约 90 个工具的对话式 AI（可作为 MCP Server 接入 Claude Code/Cursor），支持 WebRTC 点对点实时协作、无头 CLI，并能导出 Tailwind/HTML/CSS 等代码。 | 2026-02-27 | 考拉认为：Figma 在 AI 时代的态度一直让人琢磨不透，在 API 开放性上更是表现得十分保守；OpenPencil 尽管在兼容性上还存在一些问题，但能让 Agent 方便地读写设计稿，具有突破 Figma 固有市场的潜力；当然，本周发布的 Claude Design 更是对设计 SaaS 的一大挑战。 | [BV1qmoFBzE1e · 00:57](https://www.bilibili.com/video/BV1qmoFBzE1e?t=57) | [GitHub](https://github.com/open-pencil/open-pencil) |
 | MVIDIA | 从晶体管开始教你造 GPU 的交互式网页游戏，玩家扮演硬件工程师，从逻辑门逐步构建 ALU、处理器，最终到 GPU 与着色器编程，课程分五幕、含前置依赖的知识图谱。 | 2026-04-05 | 考拉认为，GPU 架构教育长期是个空白地带，传统课程聚焦 CPU，GPU 内部结构只能啃论文和厂商文档。MVIDIA 用游戏化方式填补了这个缺口。当前游戏内容还比较硬核，但如果学习者有足够的热情，想必可以帮助作者持续完善，让每个关卡变得更加容易理解。 | [BV1HzDSBqEgd · 04:49](https://www.bilibili.com/video/BV1HzDSBqEgd?t=289) | [官网](https://jaso1024.com/mvidia/) |
+| Semiotic | 支持流式数据的 React 可视化库，40+ 图表类型，双画布流式引擎支持 60fps 渲染，内置预测与异常检测等统计功能，并提供 MCP Server 供 LLM 生成图表。 | 2026-03-21 | 考拉认为，项目的 API 设计在 D3 和 Recharts 之间找到平衡。流式渲染和 MCP 集成是差异化所在，适合结合 LLM 的流式输出做可视化渲染。 | [BV1rLD5BKEtE · 02:49](https://www.bilibili.com/video/BV1rLD5BKEtE?t=169) | [GitHub](https://github.com/nteract/semiotic) |
 
 ## 办公与演示
 
