@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:53+08:00
+lastmod: 2026-08-17T13:07:55+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -43,6 +43,7 @@ toc:
 | Ki Editor | 多光标结构化模态编辑器，直接操作语法树上的节点（函数、循环、表达式可作为整体选中、移动、替换）而非逐字符编辑；配合多光标机制可批量重构多个语法节点，并统一了按词、按行、按语法结构移动的模态编辑粒度。 | 2023-04-04 | 考拉认为结构化编辑的概念并不新鲜，ParEdit 在 Lisp 社区已验证多年，但推广到通用语言一直是难题；另外在 Agent Coding 盛行的当下，编辑器领域的创新看起来更像是学术研究而非生产力工具。 | [BV1ivAMzGEv5 · 04:17](https://www.bilibili.com/video/BV1ivAMzGEv5?t=257) | [GitHub](https://github.com/ki-editor/ki-editor) |
 | Bubble Tea | Charm 团队推出的 Go 语言 TUI（终端 UI）框架，v2 为六年来首次重大更新：渲染性能提升 10 倍以上，API 由命令式转向声明式；已在 AI 编程助手等生产环境验证。 | 2026-02-24 | 考拉认为终端不再是复古玩具，而是 AI 时代人机交互的重要界面；v2 的声明式 API 设计让状态管理更清晰，性能优化直接降低了 SSH 场景下的带宽成本。2.5 万个依赖项目的迁移压力不小，但 Charm 提供了详尽升级指南，甚至为 LLM 准备了专用提示词。 | [BV1txNKztENM · 01:26](https://www.bilibili.com/video/BV1txNKztENM?t=86) | [GitHub](https://github.com/charmbracelet/bubbletea) |
 | diffnav | 由 gh-dash 作者 dlvhdr 开发的 git diff 分页器，基于 delta 渲染 diff 并叠加 GitHub 风格侧边文件树，支持文件跳转与搜索，解决命令行查看大量文件变更时容易迷失的问题。 | 2024-09-18 | 考拉认为这是一个小工具；作者 dlvhdr 此前做过 gh-dash，对开发者工作流理解很深。在当前 AI 高速生成代码的阶段，如何 Review 代码、是否 Review 代码都在激烈讨论中，任何能提升生产力的工具都可能获得用户。 | [BV1MkAiz3E7k · 03:21](https://www.bilibili.com/video/BV1MkAiz3E7k?t=201) | [GitHub](https://github.com/dlvhdr/diffnav) |
+| Mole | 一款免费的 Mac 命令行清理工具，覆盖缓存清理、残留卸载、磁盘分析与系统状态监控，支持 TouchID 授权与 Recast 快速调用，单文件部署，是 CleanMyMac 的命令行替代品。 | 2025-09-23 | Mole 是一个需要命令行（command line）的 Mac 清理工具，功能覆盖缓存清理、残留卸载、磁盘分析和系统状态监控，基本是 CleanMyMac 的命令行平替；支持 TouchID 授权，还能对接 Recast 快速调用；免费开源且单文件部署是核心卖点，开源属性证明开发者对付费清理软件的不满是真实的。Mole 清理足够自动与全面，但系统清理类工具始终有风险，建议先用 Dry Run（演练）预览，重要数据做好备份。 | [BV1NozxBmEe3 · 00:32](https://www.bilibili.com/video/BV1NozxBmEe3?t=32) | [GitHub](https://github.com/tw93/Mole) |
 
 ## 代码质量与 Code Review
 
@@ -163,6 +164,10 @@ toc:
 | Hugging Face Skills | Hugging Face 推出的 Agent Skills 集合，把训练模型、创建数据集、运行评估等常用动作拆成独立文件夹（含 SKILL.md、脚本与模板），可被 Claude Code、Codex、Gemini CLI、Cursor 等编码 Agent 直接调用。 | 2025-11-24 | 考拉认为借助 Hugging Face 庞大的 AI 与机器学习生态，进一步迭代 Skills 能让研究者的 Agent 更聪明地使用 Hugging Face，有望让 Hugging Face 成为大家更喜爱的平台。 | [BV1MkAiz3E7k · 01:54](https://www.bilibili.com/video/BV1MkAiz3E7k?t=114) | [GitHub](https://github.com/huggingface/skills) |
 | NanoClaw | 轻量级、可理解、可定制的个人 AI 代理，将每个代理会话运行在隔离容器（Apple Container / Docker）中，支持 WhatsApp、Telegram 等消息渠道接入与定时任务。 | 2026-01-31 | 考拉认为这类项目展示了开发者对透明性和可定制性的追求，是学习与定制化实验的好材料；但作为生产工具仍需更成熟的生态支持和社区协作。 | [BV1MgcTzXEjH · 00:01](https://www.bilibili.com/video/BV1MgcTzXEjH?t=1) | [GitHub](https://github.com/nanocoai/nanoclaw) |
 | TokenTap | 通过 MITM 代理拦截 Agent 对 LLM API 的 HTTPS 流量，在终端仪表盘实时显示 token 消耗与成本估算，并自动将每次请求的 prompt 保存为 Markdown 与 JSON，主要支持 Claude Code、Codex 与 Gemini CLI。 | 2026-01-27 | 考拉认为虽然项目定位是成本核算，但更大的潜力还是用于逆向研究 Agent 的行为。 | [BV1Ny6xBSEpb · 00:58](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=58) | [GitHub](https://github.com/jmuncor/tokentap) |
+| Remotion Skills | Remotion 推出的面向 LLM/AI 编程 Agent（如 Claude Code）的技能工具集，让开发者用自然语言指令生成、修改 React 视频动画代码，无需手写 TypeScript，并支持通过 MCP 协议与 npx skills add 集成到各类 AI 工作流。 | 2026-01-19 | Remotion 一直是用 React 做视频的标杆，这次发布了专为 AI Agent 优化的 Skills 工具包，开发者可以让 Claude Code 等 Agent 用自然语言生成动画代码，不用手写 TypeScript，还支持 MCP 协议集成，方便嵌入各类 AI 工作流；本频道一直认为程序化视频是重要的更新，也用 Remotion 制作了多期视频动画并发布教程，把视频制作门槛从会 React 降到会说话，对产品演示视频和动态内容创作者是重大利好，Skills 也降低了使用者学习 Remotion 的负担。 | [BV1NozxBmEe3 · 00:01](https://www.bilibili.com/video/BV1NozxBmEe3?t=1) | [GitHub](https://github.com/remotion-dev/skills) |
+| Playwright CLI | 微软为 AI 编程 Agent（如 Claude Code、GitHub Copilot）打造的浏览器自动化命令行工具，用 snapshot 命令获取页面的无障碍树元素引用，再以 click、fill 等命令操作页面，整个流程无需写测试代码，并可作为 Skills 安装到不同 Agent，token 消耗低。 | 2026-01-26 | 微软把 Playwright 封装成一套 CLI 命令，专门为 AI Agent 设计；用 snapshot 命令获取页面元素引用，再用 click、fill 命令操作，整个流程无需写测试代码，还能作为 Skills 安装至不同 Agent 中。Play CLI 的思路并非首创，几天之前 Wassail（Vercel）的工程师就推出了 Agent Browser 项目，定位于为 AI 操作浏览器。 | [BV1NozxBmEe3 · 02:00](https://www.bilibili.com/video/BV1NozxBmEe3?t=120) | [GitHub](https://github.com/microsoft/playwright-cli) |
+| Agent Browser | Vercel Labs 开发的面向 AI Agent 的浏览器自动化 CLI，采用 Rust CLI + Node.js Daemon 架构，通过 snapshot 输出无障碍树（accessibility tree）并生成极简元素引用（@eN），让 AI 用 click @e3、fill @e5 等命令精准操作页面，免去 CSS 选择器，支持 Session 隔离、实时视频预览与 CDP 协议连接。 | 2026-01-11 | 几天之前 Wassail（Vercel）的工程师推出了 Agent Browser 项目，定位于为 AI Agent 操作浏览器；选择 Rust + Node.js 混合架构，核心卖点是 snapshot 命令输出的无障碍树，AI 可以用元素引用直接操作，不用纠结 CSS 选择器；还支持 Session 隔离、实时视频预览和 CDP 协议连接。目前 AI 操作浏览器的方案还远不如 AI 编程成熟，各方都在推出更好的方案抢夺这一市场。 | [BV1NozxBmEe3 · 02:29](https://www.bilibili.com/video/BV1NozxBmEe3?t=149) | [GitHub](https://github.com/vercel-labs/agent-browser) |
+| Agentation | 一款轻量的 React 组件，让用户在 React 应用中点击或框选指定区域并添加标注，生成结构化 Markdown（含 CSS 选择器、位置、组件树等上下文）反馈给 AI 编程 Agent，从而精准定位代码；支持多选、区域框选，以及暂停 CSS 动画来捕捉特定状态。 | 2026-01-18 | Agentation 是一个轻量的 React 组件，让用户可以在 React 应用中选择指定区域并标记信息；主要使用场景是使用 AI Agent 编程时，可以从开发的 UI 界面中快速反馈，让 Agent 进行修改；除了基本的点击之外，还支持多选、区域框选，甚至暂停 CSS 动画来捕捉特定状态。Agentation 是一款非常垂直的工具，解决的是 AI Coding 工作流中沟通效率问题，与其用文字描述右边那个蓝色按钮，不如直接给一个 Sidebar Button Primary；特别对于没有代码能力的 vibe coding 用户来说，值得一试。 | [BV1NozxBmEe3 · 03:22](https://www.bilibili.com/video/BV1NozxBmEe3?t=202) | [GitHub](https://github.com/benjitaylor/agentation) |
 
 ## 数据工程与存储
 
@@ -217,6 +222,8 @@ toc:
 | manim-web | 将 3Blue1Brown 的 Manim 数学动画库用 TypeScript 和 WebGL 重写并搬进浏览器，无需本地安装 Python/FFmpeg，打开网页即可实时渲染数学公式动画。 | 2026-01-29 | 考拉认为 WebGL 实时渲染比生成视频播放流畅得多；但复杂场景的 WebGL 性能消耗和移动端兼容性需实际测试。若能稳定，基于 Web 的使用场景远超原 Python 版本，会是教育场景的利器。 | [BV1MkAiz3E7k · 02:53](https://www.bilibili.com/video/BV1MkAiz3E7k?t=173) | [GitHub](https://github.com/maloyan/manim-web) |
 | Excalidraw MCP | Excalidraw 官方出品的 MCP 服务器，让 Claude、ChatGPT、VS Code 等支持 MCP 的客户端在对话中直接生成手绘风格 Excalidraw 图表，支持流畅视口控制与全屏交互编辑，可本地运行或部署到云端。 | 2026-02-04 | 考拉认为相比让 AI 生成 Mermaid 或 PlantUML，手绘风格的适用空间更广泛。 | [BV1MgcTzXEjH · 01:55](https://www.bilibili.com/video/BV1MgcTzXEjH?t=115) | [GitHub](https://github.com/excalidraw/excalidraw-mcp) |
 | beautiful-mermaid | 将 Mermaid 图表渲染为美观的 SVG / PNG / ASCII 艺术字的 TypeScript 库，内置 15+ 主题并支持自定义，覆盖流程图、时序图、状态图、类图、ER 图、XY 图等类型。 | 2026-01-28 | 考拉认为官方演示页面做得很用心，每种图表都有实际渲染效果的对比。 | [BV1Ny6xBSEpb · 00:01](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=1) | [GitHub](https://github.com/chouraycn/beautiful-mermaid) |
+| MapToPoster | 一个 Python 脚本工具，输入城市名即可利用 OpenStreetMap/OSMnx 数据生成极简风格的城市地图海报，内置 17+ 种配色主题，自定义主题只需编辑一个 JSON 文件，适合做礼物或装饰品。 | 2026-01-08 | MapToPoster 是一个 Python 脚本，输入城市名则输出一张极简风格的地图海报，数据来自 OpenStreetMap，内置 17 种配色主题，从赛博朋克到日式水墨都有；代码结构简单，自定义主题只需编辑一个 JSON 文件。该项目技术复杂度不高但实用性强，适合做小礼物或装饰品，6900 多 Star 也说明这类小而美的工具依然有市场；如果你做地理相关产品，该项目使用的 OSMnx 库也值得学习研究。 | [BV1NozxBmEe3 · 01:01](https://www.bilibili.com/video/BV1NozxBmEe3?t=61) | [GitHub](https://github.com/originalankur/maptoposter) |
+| ChartGPU | 基于 WebGPU 的开源高性能图表库，使用 TypeScript 编写，将 LTTB 降采样、命中检测与渲染搬上 GPU，支持折线、面积、柱状、散点、饼图、K 线等常见类型，并提供 React 绑定（chartgpu-react），适合大规模数据可视化。 | 2026-01-17 | 浏览器端的数据可视化一直受限于 Canvas 和 SVG 的性能瓶颈，在大规模数据可视化中表现一般；ChartGPU 选择了一条不同的道路，充分利用 WebGPU 渲染图表，把更多计算任务放入 WebGPU 中；在功能层面它支持折线图、柱状图、K 线图等常见类型，类手势交互和缩放滑块；项目用 TypeScript 编写，配套的 React 绑定也已就绪。WebGPU 用于图表是个有趣的技术选型，但目前 WebGPU 的浏览器兼容性较弱，生产环境还不推荐使用；对 WebGPU API 有兴趣的小伙伴，可以通过该项目学习其中细节。 | [BV1NozxBmEe3 · 02:56](https://www.bilibili.com/video/BV1NozxBmEe3?t=176) | [GitHub](https://github.com/ChartGPU/ChartGPU) |
 
 ## 办公与演示
 
