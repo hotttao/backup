@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:35+08:00
+lastmod: 2026-08-17T18:39:37+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -103,6 +103,8 @@ toc:
 | Ultra | 一个专为 Deno 设计的现代流式 React 框架，无需任何构建/打包步骤，基于 ESM 与导入映射，由 Deno 和浏览器直接运行源码，并通过动态导入实现按需懒加载路由。 | 2021-06-29 | 考拉认为 Ultra 尤其适合 Deno 生态系统的开发者，可以让应用的前端和后端都不再依赖构建流程；这不仅可以带来开发体验的提升，还可能在 AI 开发的时代与 AI 工具更好地结合。 | [BV1jjN1etEa8 · 03:19](https://www.bilibili.com/video/BV1jjN1etEa8?t=199) | [GitHub](https://github.com/exhibitionist-digital/ultra) |
 | Dexie | 轻量（约 29KB）的 IndexedDB 封装库，提供简洁易用的 API 与响应式查询，方便在浏览器端持久化与查询数据，并易于集成 React、Vue、Svelte 等框架，让 IndexedDB 数据变化实时反映到 UI。 | 2014-02-26 | Koala 认为 Dexie 还提供 Dexie Cloud，可帮助快速搭建本地优先（local-first）应用，并通过云端服务实现设备间的数据同步，是一种有趣的商业化思路。 | [BV1QyAueyEjX · 00:31](https://www.bilibili.com/video/BV1QyAueyEjX?t=31) | [GitHub](https://github.com/dexie/Dexie.js) |
 | up-fetch | 仅 1.2KB、无依赖的 fetch 友好封装，支持模式校验、自动响应解析并兼容原生 fetch API。 | 2023-03-15 | 考拉认为 up-fetch 特别适合需要类型安全和复杂请求配置的项目，其声明式与错误处理机制让开发者更好地控制请求流程，对 zod、valibot 等校验库的集成也颇具吸引力。 | [BV1xc9FYDED3 · 01:31](https://www.bilibili.com/video/BV1xc9FYDED3?t=91) | [GitHub](https://github.com/L-Blondy/up-fetch) |
+| TanStack Form | 框架无关的表单状态管理库，提供类型安全的表单校验、高性能异步验证与轻量无依赖实现，可配合 React、Vue、Solid、Angular 等任意框架使用；1.0 正式版于 2025 年 3 月发布。 | 2025-03-03 | Koala 介绍 TanStack Form 发布了 1.0 正式版，这是一个框架无关的表单状态管理库，提供类型安全的表单校验、高性能的异步验证，且不依赖任何特定框架，可以配合 React、Vue、Solid、Angular 等一起使用，适合需要复杂表单校验的项目。 | [BV1gLR8Y2E8W · 02:27](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=147) | [GitHub](https://github.com/TanStack/form) |
+| Usertour | 开源的用户引导（产品导览）平台，是 Userflow、Appcues 的开源替代品，可在几分钟内创建应用内产品巡览、清单与调查，支持自部署以保护数据隐私。 | 2025-01-24 | Koala 介绍 Usertour 是一个开源的用户引导工具，对开发者十分友好，能在几分钟内创建应用内的产品导览、checklist 等常见引导流程，可视为 Userflow 和 Appcues 的开源替代品，支持多页面应用与自定义引导样式，并能通过 Docker 快速自部署，开源与自部署让数据隐私得到保护。 | [BV1gLR8Y2E8W · 03:22](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=202) | [GitHub](https://github.com/usertour/usertour) |
 
 ## 测试与质量保障
 
@@ -176,6 +178,7 @@ toc:
 | DeepSeek-R1 | 基于强化学习训练的推理大模型，无需依赖监督微调即可激发链式思考与推理能力，在数学、代码与推理任务上表现出色，并提供蒸馏到小模型的版本与开源权重/API。 | 2025-01-20 | 考拉认为 DeepSeek-R1 的独特之处在于它通过强化学习直接增强模型的推理能力，避免了传统方法中的一些限制；其开源版本和 API 让更多用户可以尝试，同时也展示了国产大模型的研究实力。 | [BV1dPFKeeEuw · 03:40](https://www.bilibili.com/video/BV1dPFKeeEuw?t=220) | [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
 | Orate | 参考 Vercel AI SDK 设计的 TypeScript 语音 AI SDK 封装，以统一 API 实现语音转文字、文字转语音、语音变声与语音处理，整合 OpenAI、ElevenLabs、AssemblyAI 等厂商，让开发者用一套接口调用各家能力。 | 2024-08-01 | 仅作功能介绍，未给出明确评价。（字幕介绍其参考 AI SDK 实现、统一调用 OpenAI/ElevenLabs 等、可省去语音应用开发麻烦，无『Koala 认为』式主观评价） | [BV1QyAueyEjX · 03:50](https://www.bilibili.com/video/BV1QyAueyEjX?t=230) | [官网](https://orate.dev) |
 | Unsloth | 让微调大语言模型速度翻倍并节省约 70% 显存、对新手友好的训练框架。 | 2023-11-29 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:29](https://www.bilibili.com/video/BV1G5ASetENw?t=29) | [GitHub](https://github.com/unslothai/unsloth) |
+| Mistral OCR | Mistral 推出的文档理解/解析服务，以低成本、极高准确度将 PDF、扫描件等多页文档解析为结构化 Markdown，支持表格、公式、图片等复杂排版，号称 OCR 新标杆。 | 2025-03-06 | Koala 介绍 Mistral OCR 是文档 OCR 的新标杆，能以极低成本、极高准确度把 PDF、扫描件这类多页复杂文档解析成结构化 Markdown，表格、公式、图片等都能很好地保留；相比传统 OCR 方案，它在复杂排版上的表现尤为突出。 | [BV1gLR8Y2E8W · 00:01](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=1) | [官网](https://mistral.ai/news/mistral-ocr) |
 
 ## AI Agent 与智能体开发
 
@@ -241,6 +244,7 @@ toc:
 | PostgreSQL Anonymizer | 一个 PostgreSQL 数据库扩展，专门用于对个人身份信息或商业敏感数据脱敏。采用声明式脱敏方法，允许在表定义中直接声明脱敏规则（“设计即脱敏”）；支持多种脱敏方法（匿名导出、静态脱敏、动态脱敏、副本脱敏、脱敏视图、脱敏数据包装器等），并提供随机化、伪造、部分打乱等多种脱敏函数。 | 2018-07-31 | 认为对于许多商业应用来说数据脱敏是刚需，使用 PostgreSQL Anonymizer 可帮助开发者快速开发出安全、健壮的脱敏逻辑。 | [BV14Vwqe2EBR · 01:58](https://www.bilibili.com/video/BV14Vwqe2EBR?t=118) | [官网](https://gitlab.com/dalibo/postgresql_anonymizer) |
 | Citus | 一个将 PostgreSQL 变为分布式数据库的扩展（而非 fork），通过分片与复制实现水平扩展，提供分布式查询引擎，支持最新 PostgreSQL 版本并完全开源。 | 2016-03-24 | 考拉认为，如果你的单机 PostgreSQL 数据库已经遇到瓶颈，并且希望通过分布式数据库解决问题，那么 Citus 是较为成熟可靠的方案。 | [BV1jjN1etEa8 · 03:48](https://www.bilibili.com/video/BV1jjN1etEa8?t=228) | [GitHub](https://github.com/citusdata/citus) |
 | Kestra | 通过无代码 UI 与多语言支持编排数据管道与自动化任务的开源数据编排平台。 | 2019-08-24 | 考拉认为，Kestra 通过与 CI/CD 集成、提供无代码 UI，让不同角色的工程师能在统一数据平台上协作，远离零散数据工作流管道逐渐失控的困境。 | [BV1G5ASetENw · 03:20](https://www.bilibili.com/video/BV1G5ASetENw?t=200) | [GitHub](https://github.com/kestra-io/kestra) |
+| Superglue | 自修复的数据连接器/集成代理，用自然语言构建面向长尾与企业系统的生产级集成，自动处理鉴权、分页与字段映射，并在连接器失效时自动修复，无需自建 OAuth 服务器。 | 2025-01-10 | Koala 介绍 Superglue 是一个自修复的数据连接器（self-healing data connector），能连接各种 SaaS API、数据库与文档，自动处理鉴权、分页和字段映射；当某个连接器的接口发生变化、连接失败时，它能自动修复连接器，让开发者无需自建 OAuth 服务器就能获得可靠的数据集成。 | [BV1gLR8Y2E8W · 00:58](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=58) | [GitHub](https://github.com/superglue-ai/superglue) |
 
 ## 协作与项目管理
 
@@ -360,3 +364,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | mdq | 类 jq 的命令行工具，专为提取与操作 Markdown 文档中的标题、列表、链接等内容而设计。 | 2024-05-25 | 考拉认为 mdq 特别适合需要自动化处理 Markdown 文档的场景（如 GitHub PR 模板检查），语法设计与 Markdown 高度一致，使用顺手。 | [BV1xc9FYDED3 · 02:27](https://www.bilibili.com/video/BV1xc9FYDED3?t=147) | [GitHub](https://github.com/yshavit/mdq) |
+
+## 跨平台原生 UI 框架
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Lynx | 字节跳动开源的跨平台原生 UI 开发框架，使用 React 等前端技术栈即可构建同时运行于 Android、iOS 与 Web 的高性能原生应用。 | 2025-03-05 | Koala 介绍 Lynx 是字节跳动开源的跨平台原生 UI 开发框架，开发者可以用 React 等熟悉的前端技术栈，构建同时运行在 Android、iOS 和 Web 上的原生应用；它主打原生渲染与高性能，让一套代码就能覆盖多端。 | [BV1gLR8Y2E8W · 01:28](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=88) | [官网](https://lynxjs.org) |
