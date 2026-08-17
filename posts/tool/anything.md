@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:37+08:00
+lastmod: 2026-08-17T18:39:39+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -47,6 +47,7 @@ toc:
 | Worktrunk | 用于 Git worktree 管理的命令行工具(CLI),面向并行 AI Agent 工作流。用三个核心命令把 worktree 操作变得像切换分支一样自然,一行命令即可新建 worktree 并启动 Claude Code 等 Agent;定位清晰,为并行 AI Agent 而生,hooks 系统与提交信息管理使其超越简单的目录切换工具。 | 2025-10-17 | 考拉介绍,Worktrunk 让原生 Git worktree 的 UX 对初学者也高效,一行命令即可新建 worktree 并启动 AI 编码代理,为并行 AI Agent 而生;其 hooks 系统与提交信息管理让它超越简单的目录切换工具。 | [BV1h56SBtEzh · 00:01](https://www.bilibili.com/video/BV1h56SBtEzh?t=1) | [GitHub](https://github.com/max-sixty/worktrunk) |
 | Kando | 一款让你在毫秒间选择常用工具和操作的桌面端手势识别 / 径向菜单工具。它通过将整个屏幕变成可点击目标，让你无需精准瞄准小按钮，只需大致方向即可完成操作，兼具速度与准确性；支持 Windows、macOS、Linux 多平台，代码开源。 | 2023-04-16 | 认为 Kando 上手之后可以极大提升操作效率，特别适合手速快、脑速更快的极客们。 | [BV1nrrPYdEHH · 00:45](https://www.bilibili.com/video/BV1nrrPYdEHH?t=45) | [GitHub](https://github.com/kando-menu/kando) |
 | Scripton | 具备实时可视化能力的 Python IDE，集成 Plotly / Observable Plot 与 2D 画布、REPL，目前仅支持 macOS。 | 2025-01-28 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 01:26](https://www.bilibili.com/video/BV1G5ASetENw?t=86) | [官网](https://scripton.dev) |
+| Presenterm | 终端里的 Markdown 幻灯片工具，用 Markdown 编写演示文稿并在终端全屏放映，支持代码高亮、主题与动画，适合开发者的技术演示。 | 2023-08-27 | Koala 介绍 Presenterm 是一个终端里的 Markdown 幻灯片工具，直接用 Markdown 写演示文稿、在终端中全屏放映，并支持代码高亮、主题与动画，非常适合开发者在终端环境下做技术演示。 | [BV1UYQbYeELx · 01:29](https://www.bilibili.com/video/BV1UYQbYeELx?t=89) | [GitHub](https://github.com/mfontanini/presenterm) |
 
 ## 代码质量与 Code Review
 
@@ -105,6 +106,8 @@ toc:
 | up-fetch | 仅 1.2KB、无依赖的 fetch 友好封装，支持模式校验、自动响应解析并兼容原生 fetch API。 | 2023-03-15 | 考拉认为 up-fetch 特别适合需要类型安全和复杂请求配置的项目，其声明式与错误处理机制让开发者更好地控制请求流程，对 zod、valibot 等校验库的集成也颇具吸引力。 | [BV1xc9FYDED3 · 01:31](https://www.bilibili.com/video/BV1xc9FYDED3?t=91) | [GitHub](https://github.com/L-Blondy/up-fetch) |
 | TanStack Form | 框架无关的表单状态管理库，提供类型安全的表单校验、高性能异步验证与轻量无依赖实现，可配合 React、Vue、Solid、Angular 等任意框架使用；1.0 正式版于 2025 年 3 月发布。 | 2025-03-03 | Koala 介绍 TanStack Form 发布了 1.0 正式版，这是一个框架无关的表单状态管理库，提供类型安全的表单校验、高性能的异步验证，且不依赖任何特定框架，可以配合 React、Vue、Solid、Angular 等一起使用，适合需要复杂表单校验的项目。 | [BV1gLR8Y2E8W · 02:27](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=147) | [GitHub](https://github.com/TanStack/form) |
 | Usertour | 开源的用户引导（产品导览）平台，是 Userflow、Appcues 的开源替代品，可在几分钟内创建应用内产品巡览、清单与调查，支持自部署以保护数据隐私。 | 2025-01-24 | Koala 介绍 Usertour 是一个开源的用户引导工具，对开发者十分友好，能在几分钟内创建应用内的产品导览、checklist 等常见引导流程，可视为 Userflow 和 Appcues 的开源替代品，支持多页面应用与自定义引导样式，并能通过 Docker 快速自部署，开源与自部署让数据隐私得到保护。 | [BV1gLR8Y2E8W · 03:22](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=202) | [GitHub](https://github.com/usertour/usertour) |
+| TypeScript (tsgo) | 微软用 Go 重写的 TypeScript 原生实现（代号 Project Corsa，可执行文件 tsgo），目标是用原生代码大幅提升类型检查与构建速度，早期基准显示比现有 tsc 快约 10 倍。 | 2025-03-11 | Koala 介绍 TypeScript 团队正用 Go 重写编译器（代号 Project Corsa，产物叫 tsgo），目标是大幅提升类型检查与构建速度；早期基准显示其比现有的 tsc 快大约 10 倍，未来有望显著缩短大型项目的编译等待时间。 | [BV1UYQbYeELx · 00:01](https://www.bilibili.com/video/BV1UYQbYeELx?t=1) | [GitHub](https://github.com/microsoft/TypeScript) |
+| Swapy | 框架无关的轻量库，用少量代码即可把任意布局变成可拖拽互换（drag-to-swap）的布局，方便为原型或产品加入可定制的位置互换交互。 | 2024-07-15 | Koala 介绍 Swapy 是一个让 UI 元素可以拖拽互换的轻量库，开发者无需写复杂的布局逻辑，就能为原型或产品加入拖拽排序、互换位置的交互，适合做可定制的仪表盘或落地页。 | [BV1UYQbYeELx · 02:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=120) | [GitHub](https://github.com/TahaSh/swapy) |
 
 ## 测试与质量保障
 
@@ -245,6 +248,8 @@ toc:
 | Citus | 一个将 PostgreSQL 变为分布式数据库的扩展（而非 fork），通过分片与复制实现水平扩展，提供分布式查询引擎，支持最新 PostgreSQL 版本并完全开源。 | 2016-03-24 | 考拉认为，如果你的单机 PostgreSQL 数据库已经遇到瓶颈，并且希望通过分布式数据库解决问题，那么 Citus 是较为成熟可靠的方案。 | [BV1jjN1etEa8 · 03:48](https://www.bilibili.com/video/BV1jjN1etEa8?t=228) | [GitHub](https://github.com/citusdata/citus) |
 | Kestra | 通过无代码 UI 与多语言支持编排数据管道与自动化任务的开源数据编排平台。 | 2019-08-24 | 考拉认为，Kestra 通过与 CI/CD 集成、提供无代码 UI，让不同角色的工程师能在统一数据平台上协作，远离零散数据工作流管道逐渐失控的困境。 | [BV1G5ASetENw · 03:20](https://www.bilibili.com/video/BV1G5ASetENw?t=200) | [GitHub](https://github.com/kestra-io/kestra) |
 | Superglue | 自修复的数据连接器/集成代理，用自然语言构建面向长尾与企业系统的生产级集成，自动处理鉴权、分页与字段映射，并在连接器失效时自动修复，无需自建 OAuth 服务器。 | 2025-01-10 | Koala 介绍 Superglue 是一个自修复的数据连接器（self-healing data connector），能连接各种 SaaS API、数据库与文档，自动处理鉴权、分页和字段映射；当某个连接器的接口发生变化、连接失败时，它能自动修复连接器，让开发者无需自建 OAuth 服务器就能获得可靠的数据集成。 | [BV1gLR8Y2E8W · 00:58](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=58) | [GitHub](https://github.com/superglue-ai/superglue) |
+| FilePizza | 浏览器内的 P2P 文件传输工具，发送方与接收方通过 WebRTC 直接传输文件、无需上传到中心服务器，既保护隐私又免去大文件存储成本。 | 2015-02-25 | Koala 介绍 FilePizza 是一个浏览器内的 P2P 文件传输工具，发送方与接收方通过 WebRTC 直接传输文件、无需上传到中心服务器，既保护隐私又免去大文件存储成本。 | [BV1UYQbYeELx · 02:57](https://www.bilibili.com/video/BV1UYQbYeELx?t=177) | [GitHub](https://github.com/kern/filepizza) |
+| DuckDB | 高性能嵌入式（in-process）分析型数据库；2025 年 3 月推出本地图形界面（Local UI），让用户无需命令行即可在浏览器中与 DuckDB 交互、运行 SQL 查询与浏览数据。 | 2025-03-12 | Koala 介绍 DuckDB 推出了本地图形界面（Local UI），让用户无需命令行就能在浏览器中与 DuckDB 数据库交互、运行 SQL 查询并浏览数据，降低了这款嵌入式分析数据库的使用门槛。 | [BV1UYQbYeELx · 03:27](https://www.bilibili.com/video/BV1UYQbYeELx?t=207) | [官网](https://duckdb.org) |
 
 ## 协作与项目管理
 
@@ -308,6 +313,7 @@ toc:
 | Flameshot | 跨平台开源截图软件，支持 Linux、macOS 与 Windows，提供截图编辑、自定义外观、接口扩展（如 Lua 脚本）与多种图床上传。 | 2017-05-10 | 考拉认为如果在 Linux 上找一款好用的截图工具，Flameshot 仍然是第一选择；在 macOS 和 Windows 上也能用，但可能不如原生工具顺手。 | [BV1Ny6xBSEpb · 02:27](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=147) | [GitHub](https://github.com/flameshot-org/flameshot) |
 | Memos | 自托管的轻量级笔记中心,纯 Markdown 存储,无隐私追踪,MIT 授权,承诺永久免费;提供轻量、易部署的笔记体验,适合想快速记录、不愿在复杂编辑器上折腾的技术用户。 | 2021-12-08 | 考拉认为,自托管不该成为折腾的代名词。Memos 在极简与可用性之间找到平衡点,特别适合那些想逃离(Notion)绑架、又不愿投入大量时间维护的技术用户;真正的隐私工具,应让人忘记隐私设置的存在。 | [BV1h56SBtEzh · 03:24](https://www.bilibili.com/video/BV1h56SBtEzh?t=204) | [GitHub](https://github.com/usememos/memos) |
 | Inscribed | 基于 Excalidraw 的草图转多页 PPT 工具，支持快捷键、图片导入与 Google 幻灯片导出。 | 2025-02-08 | 考拉认为，在 Excalidraw 强大功能基础上，InScribe 还增加了键盘快捷键、自定义画布大小、图片导入、集成 Google 幻灯片等更贴心的功能，是灵感爆发时的神器。 | [BV1G5ASetENw · 01:54](https://www.bilibili.com/video/BV1G5ASetENw?t=114) | [GitHub](https://github.com/chunrapeepat/inscribed) |
+| Leaflet | 轻量、无需账号即可使用的文档与发布工具，介于 Notion 与 Google Docs 之间，支持富文本块、协作编辑与一键分享，并基于 AT Protocol 实现社交化发布。 | 2024-09-26 | Koala 介绍 Leaflet 是一款快速、灵活、有趣的文档工具，无需注册账号就能直接创建和分享文档，介于 Notion 与 Google Docs 之间，支持富文本块与协作编辑，适合随手记录与发布想法。 | [BV1UYQbYeELx · 01:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=60) | [官网](https://leaflet.pub) |
 
 ## 开发者认证与招聘
 
