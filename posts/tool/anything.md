@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:40+08:00
+lastmod: 2026-08-17T13:07:42+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -37,6 +37,9 @@ toc:
 | driftwm | 一个实验性的 Wayland 合成器（窗口管理器），用无限画布的思路重新想象窗口管理：所有窗口以原始大小散落在无边界的二维画布上，屏幕像一台相机，通过平移和缩放在画布里游走；窗口靠近时自动吸附成组，支持触控板原生惯性滚动、捏合缩放等手势，对多显示器支持良好，还能通过 Unix socket 脚本化控制。 | 2026-02-22 | 主流窗口管理无非平铺和堆叠两条路，driftwm 把白板类应用流行的无限画布概念搬到了桌面管理层，是个少见的方向；它契合触控板时代的交互直觉，使用 Linux 桌面的极客们可以尝鲜。 | [BV1GpEs6gEAA · 03:44](https://www.bilibili.com/video/BV1GpEs6gEAA?t=224) | [GitHub](https://github.com/malbiruk/driftwm) |
 | CodeBurn | 本地优先的开源仪表盘，追踪 Claude Code、Cursor、Codex 等 20+ AI 编码工具的 Token 消耗与花费，按模型、项目、任务拆解，并提供浪费扫描与 CSV/JSON 报表导出。 | 2026-04-13 | 认为 CodeBurn 解决的是 AI 编码开销的黑盒焦虑，让钱花在哪、值不值、哪些是浪费变得更加透明；这类工具未来会向云成本管理的 FinOps 方向发展，用于优化 Agent 的成本。 | [BV1VsLJ6QEbN · 00:01](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=1) | [GitHub](https://github.com/getagentseal/codeburn) |
 | xisland | macOS 原生应用，把 MacBook 的刘海/灵动岛变成 AI 编码 agent（Claude Code、Codex、Gemini CLI、OpenCode 等）的控制面板，可实时监控会话状态、在岛内直接审批权限与回答问题，无需切换窗口。 | 2026-04-21 | 考拉认为，多 Agent 并行时频繁切窗口确实烦，灵动岛监控这个创意执行得不错。局限在于用户需要新款 MacBook，刘海屏化为悬浮条。 | [BV1rLD5BKEtE · 00:56](https://www.bilibili.com/video/BV1rLD5BKEtE?t=56) | [官网](https://xisland.app) |
+| Hammerspoon | 基于 Lua 脚本引擎的 macOS 桌面自动化工具，充当操作系统与 Lua 之间的桥梁，可用脚本控制窗口管理、快捷键、WiFi、电池、剪贴板等几乎所有系统功能。 | 2014-10-08 | 考拉认为 Hammerspoon 是 macOS 自动化领域的老牌项目，选用 Lua 作为脚本语言让它在性能与灵活性之间找到了不错的平衡点；相比 Shortcuts、Battertouch 2 等图形化方案上限更高，但学习曲线也更陡，适合喜欢用代码掌控一切的 Power User，不适合追求开箱即用的普通用户。 | [BV1WbXUBGEJr · 00:58](https://www.bilibili.com/video/BV1WbXUBGEJr?t=58) | [GitHub](https://github.com/Hammerspoon/hammerspoon) |
+| ccstatusline | 为 Claude Code CLI 打造的高度可自定义终端状态栏（status line）格式化工具，基于 Claude Code 的 Status Line API，可展示模型、Git 分支、Token 用量、Agent 运行状态与进度等指标。 | 2025-08-08 | 仅作功能介绍，未给出明确评价。 | [BV1WbXUBGEJr · 01:56](https://www.bilibili.com/video/BV1WbXUBGEJr?t=116) | [GitHub](https://github.com/sirmalloc/ccstatusline) |
+| TUI Studio | 类似 Figma 的可视化终端 UI（TUI）编辑器，可拖拽 20 余种预置组件、实时 ANSI 预览，支持 Absolute/Flexbox/Grid 布局与多种配色主题，项目保存为可版本控制的 .tui JSON 并可导出到 Ink、Bubble Tea 等主流 TUI 框架。 | 2026-02-14 | 考拉认为终端 UI 开发长期是纯代码驱动的领域，TUI Studio 试图用可视化编辑降低门槛，想法很有吸引力，毕竟如今越来越多的 TUI 项目也需要设计。 | [BV1WbXUBGEJr · 02:52](https://www.bilibili.com/video/BV1WbXUBGEJr?t=172) | [GitHub](https://github.com/jalonsogo/tui-studio) |
 
 ## 代码质量与 Code Review
 
@@ -92,6 +95,7 @@ toc:
 | Alchemy | 基于 TypeScript 的 IaC（基础设施即代码）框架，所有云资源、IAM 权限、环境变量在一个 TS 文件里定义并自动类型推导，支持本地热重载与每 PR 临时环境；V2 把 Effect 库改为可选。 | 2025-10-22 | 认为 Alchemy 的差异化在于把 IAM 策略和资源绑定做成编译期检查，能避免一类常见部署事故；但 Trade-off 明显——前期样板代码多、学习曲线比 Terraform 陡，不熟悉 Effect 的团队在 V1 几乎被强制依赖 Effect 的函数式风格；V2 把 Effect 改成可选是务实修正，目前还在 Beta 阶段，生产环境要谨慎。 | [BV1SZ5j6BEom · 02:23](https://www.bilibili.com/video/BV1SZ5j6BEom?t=143) | [GitHub](https://github.com/alchemy-run/alchemy) |
 | goshs | 用 Go 编写的 SimpleHTTPServer 现代替代（视频中称 Ghost）；V2 在简单文件分享之外加入了基于 ACL 的权限控制、带二维码的限时分享链接、WebDAV 与 SFTP 支持、IP 白名单与 Webhook 通知等企业级特性。 | 2020-10-02 | 考拉认为：Python SimpleHTTPServer 流行了二十年但功能止步于最基础的 HTTP，想要 HTTPS、鉴权、配额得多自己折腾；goshs 把这些杂事一次解决，从内网文件传输到对外有限分享，都能用一个二进制覆盖。 | [BV1U19ZBLEcf · 01:58](https://www.bilibili.com/video/BV1U19ZBLEcf?t=118) | [GitHub](https://github.com/goshs-labs/goshs) |
 | Open Source Security at Astral | Ruff/uv/ty 的开发团队 Astral 发布的一篇开源供应链安全实践指南，系统梳理 CI/CD 安全、仓库管控、发布流程与依赖管理四大维度的措施。 | 2026-04-08 | 考拉认为，Astral 提出的一系列实践是对近期几起恶性供应链攻击问题的回应，一方面向社区输出安全最佳实践，另一方面也体现了团队的专业性。 | [BV1HzDSBqEgd · 05:43](https://www.bilibili.com/video/BV1HzDSBqEgd?t=343) | [官网](https://astral.sh/blog/open-source-security-at-astral) |
+| Portless | Vercel Labs 开源的本地开发工具，用稳定的命名 .localhost 域名（如 https://myapp.localhost）替换易变的 localhost 端口，自动生成并信任本地 CA 实现 HTTPS，支持 Git worktree 按分支分配子域名，并为 Vite、Astro 等框架自动注入兼容参数。 | 2026-02-15 | 考拉认为同类产品很多，但 Vercel 将多年在开发体验方面的深度积累融入到默认配置中，减少了用户踩坑的概率。 | [BV1WbXUBGEJr · 03:45](https://www.bilibili.com/video/BV1WbXUBGEJr?t=225) | [GitHub](https://github.com/vercel-labs/portless) |
 
 ## AI 模型与推理
 
@@ -132,6 +136,7 @@ toc:
 | Open Agents | Vercel Labs 开源的后台编程 Agent 参考实现（视频中称 OpenAgent / Vocale Labs），包含 Web UI、Agent 运行时、沙箱编排与 GitHub 集成的完整栈；架构上把 Agent 与沙箱分离——Agent 在 VM 外运行，通过工具调用与 VM 内的文件系统、Shell、Git 交互，支持多步持久化执行、流式输出、快照恢复与自动提交 PR。 | 2025-12-26 | 考拉认为：这是 Vercel 对云端 Agent 这条赛道给出的开源答案，让开发者不必从零造轮子；Agent 和沙箱分离的设计是对的——这意味着 Agent 的逻辑可以独立演进，沙箱可以按需替换；对 Vercel 自己来说，这也是推广 Vercel Sandbox 产品的一种方式。 | [BV1qmoFBzE1e · 02:18](https://www.bilibili.com/video/BV1qmoFBzE1e?t=138) | [GitHub](https://github.com/vercel-labs/open-agents) |
 | Claude Code | Anthropic 推出的终端 AI 编程智能体，可理解代码库、执行命令、编辑文件并处理 git 工作流，通过自然语言完成软件工程任务。 | 2025-02-24 | 考拉认为，这一议题触及了 AI 工具商业化的核心矛盾——推理成本优化与输出质量之间的博弈。当厂商为了降本而缩减思维链深度，又通过遮蔽让性能退化变得不可见时，用户只能感受到模型变笨了，却无法诊断原因。 | [BV1HzDSBqEgd · 00:02](https://www.bilibili.com/video/BV1HzDSBqEgd?t=2) | [GitHub](https://github.com/anthropics/claude-code) |
 | nono | 开源的 AI Agent 运行时安全框架，由 Sigstore 创建者打造，提供内核级隔离（Landlock/Seatbelt）、文件快照回滚、审计、供应链签名验证与动态权限审批，提供 Python/TypeScript/Rust/C 多语言 SDK。 | 2026-01-31 | 考拉认为，这个项目的技术深度远超简单沙箱，但 Agent 的生态尚早，开发者安全投入意愿有限，能否在安全和便捷间取得平衡，以及支持大规模云化部署是一个关键问题。 | [BV1rLD5BKEtE · 02:21](https://www.bilibili.com/video/BV1rLD5BKEtE?t=141) | [官网](https://nono.sh) |
+| Autoresearch | Karpathy 开源的自主 AI 研究框架，让 AI Agent 在夜间自动开展机器学习实验，在受限环境下验证 Agent 能否做出有意义的研究迭代。 | 2026-03-06 | 考拉认为这是 AI 辅助研究从工具走向自主研究者的早期信号，但当前仍需人类定义实验方向，离真正自主研究尚有距离；项目总能精准把握 AI 社区脉搏，5 分钟训练预算与单文件约束的设计非常克制，既控制了风险又保证了可复现性。 | [BV1WbXUBGEJr · 00:01](https://www.bilibili.com/video/BV1WbXUBGEJr?t=1) | [GitHub](https://github.com/karpathy/autoresearch) |
 
 ## 数据工程与存储
 
@@ -189,6 +194,7 @@ toc:
 | files.md | 完全本地优先的 Markdown 笔记应用，数据不上云，内置笔记、日记、待办、习惯等结构，主打用聊天式输入快速捕捉想法再通过链接构建知识网络，官网明确反对复杂的「第二大脑」系统。 | 2023-05-23 | 考拉认为在 Obsidian、Notion、Logseq 这些越做越重的 PKM 工具大行其道时，files.md 的姿态相当反潮流；它的官网明确反对复杂的「第二大脑」系统，认为系统越完善，真正的思考反而越少，适合那些被插件、双链、模板搞得心累的用户回归本源；软件本身的交互体验也做得非常不错。 | [BV1yYG76oESe · 01:00](https://www.bilibili.com/video/BV1yYG76oESe?t=60) | [GitHub](https://github.com/zakirullin/files.md) |
 | Polypad | 教育公司 Amplify（原 Mathigon）推出的免费在线数学操作平台，免登录、跨设备可用，把分数条、3D 多面体、天平、函数机、转盘、数据科学工具、逻辑门等几十种模块搬到屏幕上，覆盖从小学算术到中学逻辑与数据科学的全跨度。 | 2020-01-17 | 考拉认为 Polypad 内嵌的丰富模块让交互式的数学教学变为可能，原本有一定上手门槛的模块搭建过程，如果能与 Agent 结合变为自然语言交互，很有可能获得更多的落地机会。 | [BV1yYG76oESe · 03:22](https://www.bilibili.com/video/BV1yYG76oESe?t=202) | [官网](https://mathigon.org/polypad) |
 | Hucre | 纯 TypeScript 编写的零依赖电子表格引擎，支持 XLSX/CSV/ODS 的读写、Schema 校验、流式处理与往返保留，gzip 后约 18KB，可用于边缘运行时。 | 2026-03-24 | 考拉认为，在 SheetJS 长期统治电子表格处理领域的背景下，Hucre 用零依赖以及更开放的 license 开辟了差异化空间。这种小而精、专注解决一个问题的开源项目，正是社区最需要的创新方向。 | [BV1HzDSBqEgd · 01:58](https://www.bilibili.com/video/BV1HzDSBqEgd?t=118) | [GitHub](https://github.com/productdevbook/hucre) |
+| Email.md | 用 Markdown 语法编写并生成响应式、邮件安全的 HTML（及纯文本）的开源邮件构建工具，内置 npm 包、CLI、可视化编辑器与实时预览，底层基于 MJML。 | 2026-02-16 | 考拉认为邮件 HTML 开发一直是前端领域的老大难问题，各邮件客户端对 CSS 支持参差不齐、开发体验停留在十年前；Email.md 用 Markdown 抽象掉底层兼容细节，对 Agent 也更加友好。 | [BV1WbXUBGEJr · 02:23](https://www.bilibili.com/video/BV1WbXUBGEJr?t=143) | [GitHub](https://github.com/anypost/emailmd) |
 
 ## 开发者认证与招聘
 
