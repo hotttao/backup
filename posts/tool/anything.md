@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:33+08:00
+lastmod: 2026-08-17T18:39:35+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -102,6 +102,7 @@ toc:
 | Onlook | 一款面向设计师的 React 网站可视化编辑器，支持实时可视化编辑并把修改同步回代码，兼容使用 Tailwind CSS 进行样式处理的 React 站点，并引入了 AI 功能。 | 2024-06-25 | 考拉认为 Onlook 在功能实现上更加重视具有 UI 设计背景用户的使用体验，帮助设计师直接将样式修改建议进一步实现为代码，加强设计与开发团队的协作能力。 | [BV1mjNAe4EoR · 01:54](https://www.bilibili.com/video/BV1mjNAe4EoR?t=114) | [GitHub](https://github.com/onlook-dev/onlook) |
 | Ultra | 一个专为 Deno 设计的现代流式 React 框架，无需任何构建/打包步骤，基于 ESM 与导入映射，由 Deno 和浏览器直接运行源码，并通过动态导入实现按需懒加载路由。 | 2021-06-29 | 考拉认为 Ultra 尤其适合 Deno 生态系统的开发者，可以让应用的前端和后端都不再依赖构建流程；这不仅可以带来开发体验的提升，还可能在 AI 开发的时代与 AI 工具更好地结合。 | [BV1jjN1etEa8 · 03:19](https://www.bilibili.com/video/BV1jjN1etEa8?t=199) | [GitHub](https://github.com/exhibitionist-digital/ultra) |
 | Dexie | 轻量（约 29KB）的 IndexedDB 封装库，提供简洁易用的 API 与响应式查询，方便在浏览器端持久化与查询数据，并易于集成 React、Vue、Svelte 等框架，让 IndexedDB 数据变化实时反映到 UI。 | 2014-02-26 | Koala 认为 Dexie 还提供 Dexie Cloud，可帮助快速搭建本地优先（local-first）应用，并通过云端服务实现设备间的数据同步，是一种有趣的商业化思路。 | [BV1QyAueyEjX · 00:31](https://www.bilibili.com/video/BV1QyAueyEjX?t=31) | [GitHub](https://github.com/dexie/Dexie.js) |
+| up-fetch | 仅 1.2KB、无依赖的 fetch 友好封装，支持模式校验、自动响应解析并兼容原生 fetch API。 | 2023-03-15 | 考拉认为 up-fetch 特别适合需要类型安全和复杂请求配置的项目，其声明式与错误处理机制让开发者更好地控制请求流程，对 zod、valibot 等校验库的集成也颇具吸引力。 | [BV1xc9FYDED3 · 01:31](https://www.bilibili.com/video/BV1xc9FYDED3?t=91) | [GitHub](https://github.com/L-Blondy/up-fetch) |
 
 ## 测试与质量保障
 
@@ -152,6 +153,9 @@ toc:
 | Kubernetes History Inspector (KHI) | Google Cloud 发布的 Kubernetes 日志可视化工具，将海量日志转化为交互式的时间线视图，提供资源历史、多类型日志关联展示与集群资源拓扑图等能力，便于故障排查。 | 2025-01-22 | 考拉认为 KHI 特别适合在复杂的 Kubernetes 环境中进行故障排查和问题定位；它的交互式时间线和强大的过滤功能，能够帮助你快速从大量日志中找到关键信息。 | [BV1jjN1etEa8 · 02:22](https://www.bilibili.com/video/BV1jjN1etEa8?t=142) | [GitHub](https://github.com/GoogleCloudPlatform/khi) |
 | BentoML | 开源的模型服务框架，用于构建推理 API、任务队列与复合 AI 系统；支持本地开发调试、与主流推理引擎集成，一键打包为 Docker 镜像部署，并内置模型管理与可观测指标，商业云支持按流量自动水平扩缩与快速冷启动。 | 2019-04-02 | 仅作功能介绍，未给出明确评价。（字幕主要介绍其简化 LLM 部署、本地调试、Docker 打包与云端自动扩缩/冷启动等能力，无『Koala 认为』式主观评价） | [BV1QyAueyEjX · 02:24](https://www.bilibili.com/video/BV1QyAueyEjX?t=144) | [GitHub](https://github.com/bentoml/BentoML) |
 | Airbroke | 轻量、兼容 Airbrake/Sentry 协议、基于 PostgreSQL 的开源异常追踪平台，用于收集与管理应用错误、在界面查看错误报告并分析；内置多种登录认证，高负载下数据库占用小，并尝试集成 AI 助手分析问题，适合小型团队自行搭建。 | 2023-05-05 | Koala 认为 Airbroke 的设计目标是简单和高效，即使在高负载下也能保持较小的数据库占用；除基本异常追踪外，还提供如用 cURL 命令重现 HTTP 异常这样的精细功能，并尝试集成 AI 助手分析问题，适合小型团队和业务自行搭建使用。 | [BV1QyAueyEjX · 03:21](https://www.bilibili.com/video/BV1QyAueyEjX?t=201) | [GitHub](https://github.com/icoretech/airbroke) |
+| DeepSeek 开源周工具集 | DeepSeek 开源周连续发布的五个生产级工具库（FlashMLA / DeepEP / DeepGEMM / DualPipe+EPLB / 3FS），覆盖内核、通信与文件存储。 | 2025-02-24 | 考拉认为 DeepSeek 的开源举措不仅展示了他们的技术深度，也进一步巩固了 DeepSeek 模型在开源界的领先地位。 | [BV1xc9FYDED3 · 00:32](https://www.bilibili.com/video/BV1xc9FYDED3?t=32) | [GitHub](https://github.com/deepseek-ai/FlashMLA) |
+| JetKVM | 开源 KVM-over-IP 方案，通过 WebRTC 提供超低延迟的远程计算机 / 服务器管理。 | 2024-10-03 | 考拉认为，作为 Kickstarter 上的明星众筹项目，JetKVM 让大家看到开发小而美的精品软件，能在给用户带来帮助的同时也收获不错的商业结果。 | [BV1xc9FYDED3 · 01:57](https://www.bilibili.com/video/BV1xc9FYDED3?t=117) | [GitHub](https://github.com/jetkvm/kvm) |
+| pingy | 用 Rust 编写、支持多并发与实时可视化图表的 ping 工具，适用于大规模网络性能监控。 | 2025-03-22 | 考拉认为 pingy 的亮点在于实时数据可视化与并发处理能力，特别适合网络管理员和开发者进行大规模网络性能监控；Rust 的高性能特性也让其在处理大规模 ping 请求时表现出色。 | [BV1xc9FYDED3 · 03:24](https://www.bilibili.com/video/BV1xc9FYDED3?t=204) | [GitHub](https://github.com/trinhminhtriet/pingy) |
 
 ## AI 模型与推理
 
@@ -344,3 +348,15 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Inko | 灵感来自 Erlang 与 Pony 的实验性并发编程语言，以类型安全并发与确定性内存管理兼顾安全与效率。 | 2015-04-07 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 02:50](https://www.bilibili.com/video/BV1G5ASetENw?t=170) | [GitHub](https://github.com/inko-lang/inko) |
+
+## GPU 与高性能计算
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Ray | 面向 AI / 机器学习的分布式计算引擎，覆盖数据处理、分布式训练与模型部署。 | 2016-10-25 | 仅作功能介绍，未给出明确评价。 | [BV1xc9FYDED3 · 00:01](https://www.bilibili.com/video/BV1xc9FYDED3?t=1) | [GitHub](https://github.com/ray-project/ray) |
+
+## 命令行工具
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| mdq | 类 jq 的命令行工具，专为提取与操作 Markdown 文档中的标题、列表、链接等内容而设计。 | 2024-05-25 | 考拉认为 mdq 特别适合需要自动化处理 Markdown 文档的场景（如 GitHub PR 模板检查），语法设计与 Markdown 高度一致，使用顺手。 | [BV1xc9FYDED3 · 02:27](https://www.bilibili.com/video/BV1xc9FYDED3?t=147) | [GitHub](https://github.com/yshavit/mdq) |
