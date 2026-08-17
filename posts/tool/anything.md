@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:33+08:00
+lastmod: 2026-08-17T13:07:34+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -83,6 +83,7 @@ toc:
 | ArtifactFS | Cloudflare 开源的 FUSE 文件系统驱动，把 Git 仓库挂载为本地目录而跳过完整 clone 的等待，目录树立即可见，文件内容按需后台拉取，并支持 git log、commit、checkout 等标准操作。 | 2026-03-29 | 考拉认为在 Agentic Coding 时代 Git Clone 次数正在指数级上升，对大型仓库成为不可忽视的成本；Cloudflare 把它放进 ArtifactFS，意图明显是提升自家 Workers 产品的竞争力；局限也明显——git status 等遍历操作开销极大，非 Linux 环境兼容性也不好，短期内更适合容器化的 Agent 环境，做本地日常开发还不如直接 Clone。 | [BV15iVV6AE6U · 03:57](https://www.bilibili.com/video/BV15iVV6AE6U?t=237) | [GitHub](https://github.com/cloudflare/artifact-fs) |
 | boring | 命令行 SSH 隧道管理器，用 TOML 文件集中管理本地端口转发、远程转发与 SOCKS5 动态代理，兼容 SSH config 与 ssh-agent，支持 Unix 套接字、断线自动重连与分组批量启停。 | 2024-09-21 | 认为传统做法要么手敲一长串 SSH 参数，要么靠 autossh 加 systemd 凑守护进程；Boring 把这些零散动作收进一个 TOML 配置，外加分组批量启停和重连兜底，对长期挂多条隧道的开发者很实用。 | [BV1VsLJ6QEbN · 01:27](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=87) | [GitHub](https://github.com/alebeck/boring) |
 | Alchemy | 基于 TypeScript 的 IaC（基础设施即代码）框架，所有云资源、IAM 权限、环境变量在一个 TS 文件里定义并自动类型推导，支持本地热重载与每 PR 临时环境；V2 把 Effect 库改为可选。 | 2025-10-22 | 认为 Alchemy 的差异化在于把 IAM 策略和资源绑定做成编译期检查，能避免一类常见部署事故；但 Trade-off 明显——前期样板代码多、学习曲线比 Terraform 陡，不熟悉 Effect 的团队在 V1 几乎被强制依赖 Effect 的函数式风格；V2 把 Effect 改成可选是务实修正，目前还在 Beta 阶段，生产环境要谨慎。 | [BV1SZ5j6BEom · 02:23](https://www.bilibili.com/video/BV1SZ5j6BEom?t=143) | [GitHub](https://github.com/alchemy-run/alchemy) |
+| goshs | 用 Go 编写的 SimpleHTTPServer 现代替代（视频中称 Ghost）；V2 在简单文件分享之外加入了基于 ACL 的权限控制、带二维码的限时分享链接、WebDAV 与 SFTP 支持、IP 白名单与 Webhook 通知等企业级特性。 | 2020-10-02 | 考拉认为：Python SimpleHTTPServer 流行了二十年但功能止步于最基础的 HTTP，想要 HTTPS、鉴权、配额得多自己折腾；goshs 把这些杂事一次解决，从内网文件传输到对外有限分享，都能用一个二进制覆盖。 | [BV1U19ZBLEcf · 01:58](https://www.bilibili.com/video/BV1U19ZBLEcf?t=118) | [GitHub](https://github.com/goshs-labs/goshs) |
 
 ## AI 模型与推理
 
@@ -117,6 +118,8 @@ toc:
 | Mirage | 面向 AI Agent 的统一虚拟文件系统，将 S3、Google Drive、GitHub、Slack、Postgres、Redis 等后端挂载到同一根目录，Agent 用熟悉的 cat/grep/管道即可跨服务操作，并支持快照、克隆与回滚。 | 2026-05-06 | 认为 MCP 之后大家在想 Agent 接入外部世界更优雅的方式，Mirage 的思路很取巧——既然 LLM 早就熟悉 Bash，就把所有东西伪装成文件，省去学新工具的成本；优势是 Agent 计算复用，劣势是潜在性能问题与运维复杂度。 | [BV1VsLJ6QEbN · 00:58](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=58) | [GitHub](https://github.com/strukto-ai/mirage) |
 | Flue | Astro 团队开源的 TypeScript Agent Harness 框架，将架构拆为模型层（Token/Prompt/Tools）、工具层（Skill/Memory/Session）、沙箱层（Bash/网络/权限）与文件系统层（read/write/grep/glob），可部署到 Node.js 与 Cloudflare Workers。 | 2026-02-07 | 认为这个项目的 API 设计有一定创新性，但仍偏向编程的范畴；在模型驱动占主导地位的今天，也许该框架的适用场景是由模型而非人类开发者来编写业务逻辑；总体是有趣的尝试，但适用场景仍需探索。 | [BV1VsLJ6QEbN · 03:50](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=230) | [GitHub](https://github.com/withastro/flue) |
 | Tilde | 让 AI Agent 安全访问生产数据的运行平台（由 lakeFS 团队 Treeverse 出品），核心理念是把每次 Agent 执行变成一个事务：GitHub 代码、S3 数据、Google Drive 文档统一挂载到单一版本化文件系统，默认拦截网络请求并记录，关键操作可加审批，支持时间旅行审计与回滚。 | 2026-05-07 | 认为 Tilde 是一个封装更进一步的 Agent 沙箱，但强大的功能也代表着更高的复杂度，稳定性还需要实际测试。 | [BV1SZ5j6BEom · 03:49](https://www.bilibili.com/video/BV1SZ5j6BEom?t=229) | [官网](https://tilde.run) |
+| Composio | 开源的 AI Agent 工具集成 SDK，预打包 1000+ 第三方应用连接器（Gmail、Slack、GitHub、Notion、HackerNews 等），自带 OAuth 与凭据管理框架，提供 TypeScript/Python 官方 SDK，并附带名为 Rube 的 MCP 服务器连通 500+ 应用。 | 2024-02-23 | 考拉认为：Agent 落地的最大瓶颈不再是模型能力，而是接入已有系统的工程量；每个 SaaS 各自的 OAuth、API 限流、错误处理重复一遍就会劝退多数团队；Composio 把这一层做成基础设施，本质上是在做 Agent 时代的 Zapier，但走的是开发者优先和开源路线。 | [BV1U19ZBLEcf · 01:00](https://www.bilibili.com/video/BV1U19ZBLEcf?t=60) | [GitHub](https://github.com/ComposioHQ/composio) |
+| Agent Vault | Infisical 出品的开源 HTTP 凭据代理与保险库，作为透明 MITM 代理位于 Agent 与第三方服务之间，在请求离开网络边界前注入真实凭据（Bearer Token、API Key 等），Agent 自身永远看不到密钥；支持 WebSocket 透传与白名单/拒绝模式。 | 2026-04-22 | 考拉认为：当前 Agent 调用第三方 API 普遍把密钥直接塞进环境变量或 prompt，等于把家门钥匙交给一个会犯错且可能被 prompt 注入的程序；Agent Vault 的思路是把鉴权下沉到网络层，Agent 只看到一个本地代理 URL，密钥泄漏面降到最小，这是 Infisical 从企业密钥管理延伸到 AI Agent 场景的自然延伸，方向合理，但要让 Agent 理解如何使用，尚需生态配合。 | [BV1U19ZBLEcf · 02:57](https://www.bilibili.com/video/BV1U19ZBLEcf?t=177) | [GitHub](https://github.com/Infisical/agent-vault) |
 
 ## 数据工程与存储
 
@@ -129,6 +132,7 @@ toc:
 | pg_durable | 微软开源的 PostgreSQL 扩展，用纯 SQL 定义多步骤、可容错的长时工作流，自动为每步打检查点，崩溃或失败后从最近检查点恢复，无需 Redis、Temporal 等外部编排服务。 | 2026-06-06 | 持久化执行这两年很火，Temporal、Resonate 等专门编排系统是主流；微软反其道而行，把这套能力塞进数据库，对本来就把状态存在 PostgreSQL 的团队，能省掉一整套 worker 和队列基础设施，运维心智负担显著降低；代价是工作流和数据库强耦合，跨语言、跨服务的复杂编排未必合适。 | [BV1CWJF6xE1d · 00:57](https://www.bilibili.com/video/BV1CWJF6xE1d?t=57) | [GitHub](https://github.com/microsoft/pg_durable) |
 | Files SDK | 一套统一的文件操作 API，覆盖 S3、R2、GCS 等 40 多个对象存储服务，上传/下载/删除/复制接口完全一致，切换云厂商只需改配置，并支持并行上传、字节级进度与字节范围下载。 | 2026-05-08 | 考拉认为多云存储的抽象层这个赛道也有不少选手，Files SDK 的差异化在于四十家适配器的覆盖范围和优雅的 API 设计以及对 Agent 的友好；在 Agent 越来越频繁处理文件的趋势下，这个切入点有一定实际优势。 | [BV15iVV6AE6U · 01:30](https://www.bilibili.com/video/BV15iVV6AE6U?t=90) | [GitHub](https://github.com/haydenbleasel/files-sdk) |
 | ExtendDB | AWS 开源的 DynamoDB 兼容适配器，后端可对接 PostgreSQL 与 Cassandra，PostgreSQL 模式下单条操作延迟低于 10 毫秒，Cassandra 模式可横向扩展到每秒数千请求，便于把依赖 DynamoDB 的应用迁移到其他存储。 | 2026-05-10 | 考拉认为这是 AWS 少见的反向操作，主动帮用户把工作负载从自己的云上搬走；背后的逻辑可能是 DynamoDB 的 API 本身就是护城河，只要开发者习惯了这套接口，大规模云上负载还是会回到 AWS 生态；ExtendDB 对本地开发和合规要求严格的场景很有价值，能帮助用户将一套应用代码部署到不同场景。 | [BV15iVV6AE6U · 02:29](https://www.bilibili.com/video/BV15iVV6AE6U?t=149) | [GitHub](https://github.com/ExtendDB/extenddb) |
+| DuckLake | DuckDB 团队于 2026-04-13 发布的 1.0 版本 Lakehouse 格式规范，最大特点是将所有元数据放进一个数据库（catalog），而非像 Iceberg/Delta Lake 那样用 JSON + 元数据文件描述表状态；1.0 引入数据内联、有序表、Bucket 分区、原生 Geometry 等。 | 2026-04-13 | 考拉认为：Iceberg 标准化进展是过去两年的热点，但元数据的复杂度也是它最大的门槛，小团队跑 Iceberg 等于跑一个分布式系统；DuckLake 判断九成 Lakehouse 用例其实不需要 Iceberg 的扩展性，把元数据塞进一台数据库反而更简单可靠，是简化数据栈的典型操作，对中小数据规模团队会有真实吸引力。 | [BV1U19ZBLEcf · 02:27](https://www.bilibili.com/video/BV1U19ZBLEcf?t=147) | [GitHub](https://github.com/duckdb/ducklake) |
 
 ## 协作与项目管理
 
@@ -154,6 +158,7 @@ toc:
 | Box3D | Box2D 作者 Erin Catto 开源的 3D 物理引擎，以 Box2D 为基底扩展三角网格/高度场/烘焙复合碰撞等 3D 特性，全部库代码使用 C17，支持连续碰撞、宽 SIMD 接触求解器、多线程钩子、跨平台确定性与录制回放。 | 2026-06-30 | Box2D 作为 2D 物理引擎近 20 年广受好评，Erin Catto 的口碑让 Box3D 天生自带信任度；3D 开源物理领域此前靠 Godot 整合站稳脚跟，Box3D 的入场会让这个长期被商业引擎主导的领域更有看头。游戏开发者值得持续关注。 | [BV1SYMM6FEeT · 01:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=87) | [GitHub](https://github.com/erincatto/box3d) |
 | dotlottie-web | LottieFiles 官方推出的网页动画播放器，基于 Rust + WebAssembly 实现，同时支持 Canvas 2D、WebGL2 与实验性的 WebGPU 后端，并原生支持 dotLottie v2 的状态机、运行时主题切换与嵌入音频，提供 Vanilla JS、React、Vue 等六套 SDK。 | 2023-10-20 | 考拉认为 Lottie 生态长期被各端实现不一致拖累，同一个动画 iOS 上正常、Web 上掉帧或样式错位是常态；LottieFiles 这次用 Rust 内核统一全平台渲染，是从根本上解决问题；dotLottie v2 加入状态机和主题切换，也把 Lottie 从「播放动画」推向「交互组件」，对设计师和前端协作流程是个升级。 | [BV1yYG76oESe · 02:23](https://www.bilibili.com/video/BV1yYG76oESe?t=143) | [GitHub](https://github.com/LottieFiles/dotlottie-web) |
 | Datatype | 开源 OpenType 可变字体，通过连字替换（ligature）把纯文本表达式（如 {b:30,70,50,90}）直接渲染成柱状图、折线图与饼图，无需 JavaScript 与图片，字体带宽度与字重两个可变轴。 | 2026-02-15 | 认为这是一个非常有想象力的工程巧思，把数据可视化压缩到一个 WOFF2 文件里，对邮件、PDF、终端、静态报表这些 JS 跑不起来的场景特别合适；但局限明显——没有交互、数据范围限制在 0–100、最多 20 个点，可理解为一种技术创意的体现。 | [BV1VsLJ6QEbN · 02:51](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=171) | [GitHub](https://github.com/franktisellano/datatype) |
+| Open Design | 本地优先的开源 AI 设计生成平台，定位为 Claude Design 的开源替代；不内置 Agent，而是复用用户本地的 Coding Agent（Claude Code、Codex、Cursor 等），负责 Design System 注入、提示词堆栈编排与沙盒化预览渲染，并支持 HTML/PDF/PPTX 等多格式导出。 | 2026-04-28 | 考拉认为：AI 设计赛道关注度迅速上升，但闭源供应商绑定让许多团队观望；Open Design 以极快速度做出可插拔、多后端替代，并内植 71 个品牌级 Design System，本质是把 Claude Design 的工作流封装价值提取成开放工具；但作为商业产品的 Claude Design 仍能像 Claude Code 一样通过数据驱动持续改进模型与产品，这是开源项目一时难以匹敌的。 | [BV1U19ZBLEcf · 00:01](https://www.bilibili.com/video/BV1U19ZBLEcf?t=1) | [GitHub](https://github.com/nexu-io/open-design) |
 
 ## 办公与演示
 
