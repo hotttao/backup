@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:23+08:00
+lastmod: 2026-08-17T18:39:25+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -94,6 +94,8 @@ toc:
 | Reka UI | 一个开源的 Vue 组件库，专注于提供无样式（unstyled）且可访问性良好的原始组件（headless primitives）。提供丰富的示例与用法，方便开发者快速集成；设计理念是让开发者自由定制样式，同时确保组件可访问性符合 WAI-ARIA 标准。 | 2023-06-22 | 认为越来越多企业尝试出海业务，产品 UI 将面临更严格的可访问性检查，Reka UI 十分适合作为基础组件库使用，其文档和示例非常详细、上手难度较低，是 Vue 生态中较优秀的组件库。 | [BV1TLcgeqEQ8 · 01:55](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=115) | [GitHub](https://github.com/unovue/reka-ui) |
 | AWS Amplify Storage Browser | 一个开源的 React 组件（AWS Amplify 的 connected component），为 Web 应用提供简单的图形界面，让用户直接浏览、下载、上传、复制和删除存储在 S3 对象存储中的数据。支持多种认证方式，包括 Amplify Auth、AWS IAM Identity Center 和自定义认证；除 AWS S3 外也能与各类兼容 S3 协议的对象存储交互。 | 2024-05-01 | 认为 S3 几乎成为互联网场景存储文件的首选，Storage Browser 这一组件非常适合需要与 S3 数据交互的应用场景，开发者无需从头适配 S3 API；虽由 AWS Amplify 团队发布，但能与各类兼容 S3 协议的对象存储交互，实用性大大增加，值得被广泛使用。 | [BV1TLcgeqEQ8 · 02:22](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=142) | [官网](https://ui.docs.amplify.aws/react/connected-components/storage/storage-browser) |
 | ArkType | 一个 TypeScript 运行时的类型校验库。语法与你已熟悉的 TypeScript 完全一致，但提供了更强大的安全校验与代码补全；性能出色（比 Zod 快约 100 倍），编辑器内补全性能也令人惊艳，类型定义更简洁、错误信息更易读、悬停提示更精准，并支持深度自定义错误信息，通过集合论在运行时理解和暴露类型之间的关系。 | 2019-06-21 | 认为 ArkType 通过优化使其特别适合需要高性能和深度类型检查的 TypeScript 项目；如果你对现有类型校验库感到不满，不妨试试 ArkType。 | [BV14Vwqe2EBR · 00:32](https://www.bilibili.com/video/BV14Vwqe2EBR?t=32) | [GitHub](https://github.com/arktypeio/arktype) |
+| RetroUI | 一个具有复古/新粗野主义（NeoBrutalism）美学风格的 React + Tailwind CSS 开源组件库，内置 50+ 组件、区块与模板，方便快速搭建具有怀旧视觉风格的网页与落地页。 | 2024-08-31 | 考拉认为 RetroUI 不仅提供丰富的 UI 组件，还支持高度定制，开发者可按需调整样式与功能；其复古风格为现代应用增添一丝怀旧感，特别适合希望在视觉上脱颖而出的项目，或复古极客打造个人网站。 | [BV1dPFKeeEuw · 01:24](https://www.bilibili.com/video/BV1dPFKeeEuw?t=84) | [官网](https://retroui.dev) |
+| Tailwind CSS v4.0 | Tailwind CSS 的第四个重大版本，采用全新高性能引擎，完整构建速度提升约 5 倍、增量构建提升 100 倍以上，并以 CSS 优先配置与内置 Oxide/Vite 插件简化使用。 | 2025-01-22 | 考拉认为 Tailwind 自推出以来虽然评价不一，但使用者一直在增加也是不争的事实；这次新版本的功能非常实用，聚焦于性能和开发体验。 | [BV1dPFKeeEuw · 04:04](https://www.bilibili.com/video/BV1dPFKeeEuw?t=244) | [GitHub](https://github.com/tailwindlabs/tailwindcss) |
 
 ## 测试与质量保障
 
@@ -136,6 +138,7 @@ toc:
 | taws | 用 Rust 编写的、类 k9s 的 AWS 交互式终端界面(TUI),让你在终端里快速浏览 EC2、S3 等资源;安全方面离线处理凭证,无第三方数据上传。 | 2026-01-04 | 考拉认为,TAWS 的价值不在功能全面,而在把高频操作的速度提升一个数量级;参考 k9s 在 Kubernetes 生态中的地位,TAWS 有望成为 AWS 重度用户的必备工具。 | [BV1h56SBtEzh · 02:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=175) | [GitHub](https://github.com/huseyinbabal/taws) |
 | Air | 一个专为 Go 应用开发的实时重载命令行工具。在项目根目录运行 Air 即可自动监控代码变化并重新编译运行，支持自定义构建命令、排除特定子目录、动态添加监控目录，并提供彩色日志输出，提升开发体验。 | 2017-10-12 | 认为 Air 特别适合开发阶段需要频繁修改代码的 Go 开发者（作者正是在基于 Gin 开发 Web 服务时产生开发该工具的想法）。 | [BV1nrrPYdEHH · 01:27](https://www.bilibili.com/video/BV1nrrPYdEHH?t=87) | [GitHub](https://github.com/air-verse/air) |
 | Quickwit | 一个专为可观测性设计的云原生搜索引擎，支持日志、追踪（以及即将推出的指标）数据。可作为 Datadog、Elasticsearch、Loki 和 Tempo 的开源替代方案；具备高性能与低成本，能在云存储上实现亚秒级搜索，并支持与 Elasticsearch 兼容的 API，便于迁移。 | 2021-04-13 | 认为 Quickwit 特别适合需要处理大规模日志和追踪数据的团队，其架构设计优化云存储的 I/O 路径、显著降低的成本，对已在用 Elasticsearch 的用户提供了无缝迁移路径且能享受更低运营成本；并提及近期 Datadog 宣布收购 Quickwit，二者未来融合值得关注。 | [BV1TLcgeqEQ8 · 00:32](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=32) | [GitHub](https://github.com/quickwit-oss/quickwit) |
+| Stratoshark | 基于 Wireshark 的系统调用与日志分析工具，由 Sysdig 与 Wireshark 基金会打造，可在系统调用层面探索和分析应用行为，共享 Wireshark/Falco 的解析与过滤引擎。 | 2025-01-22 | 考拉认为 Stratoshark 特别适合需要深度分析应用行为的开发者与运维（SRE）人员，尤其在云原生环境中；它良好的易用性以及与既有工具的兼容性，使其成为排查问题的强大助手。 | [BV1dPFKeeEuw · 00:29](https://www.bilibili.com/video/BV1dPFKeeEuw?t=29) | [官网](https://stratoshark.org) |
 
 ## AI 模型与推理
 
@@ -153,6 +156,7 @@ toc:
 | TranslateGemma | Google DeepMind 发布的开放权重翻译模型系列,基于 Gemma 3 架构,提供 4B、12B、27B 三个版本,覆盖 55 种语言;12B 模型翻译质量超过 Gemma 3 原版 27B,参数效率显著提升,支持图文多模态翻译,4B 适合移动端、12B 可在笔记本运行;通过 SFT 与强化学习两阶段训练将大模型翻译能力蒸馏进小模型。 | 2026-01-15 | 考拉认为,参数效率确实亮眼,但真正的考验是低资源语言和小语种的实际效果。如果能在保持多模态能力的同时做到轻量化,对边缘部署很有价值。 | [BV1tSkWBWEoU · 02:27](https://www.bilibili.com/video/BV1tSkWBWEoU?t=147) | [Hugging Face](https://huggingface.co/collections/google/translategemma) |
 | Osaurus | 专为 macOS(Apple Silicon)打造的原生 AI 运行时 / LLM 服务器。集成 GPT、Claude、Llama 等模型,基于 Apple MLX 框架实现优化的本地推理;约 10MB 体积,通过集成 MCP 原生工具实现浏览器自动化、文件系统操作与 Git 工作流集成;可作为 MCP server 供 Cursor、Claude Desktop 等 Agent 调用,并支持连接远程模型提供商。 | 2025-08-17 | 考拉认为,你可以将 Osaurus 看作 Mac 上原生增强的 Ollama;近期该项目发布了 macOS MCP 工具集,让 Ollama 更好地操作 Mac 系统。对 MLX 的支持,在 Mac 硬件越来越强大的今天,让更多用户有了本地运行模型的动力。 | [BV11gixBMEMs · 00:01](https://www.bilibili.com/video/BV11gixBMEMs?t=1) | [GitHub](https://github.com/osaurus-ai/osaurus) |
 | Kokoro | 一个先进的文本转语音（TTS）模型，仅约 8200 万参数，却在 TTS Space Arena 中排名第一。使用不到 100 小时音频数据训练，性能却超越参数更多、数据量更大的模型；v0.19 版本以 Apache 2.0 许可发布，支持美式与英式英语，并提供多个语音包。 | 2024-12-25 | 认为 Kokoro 的高效表现表明传统 TTS 模型的 scaling law 可能比预期更陡峭；其轻量级设计与开源许可，使其成为开发者和研究者的理想选择，在资源有限的情况下优势更为明显。 | [BV14Vwqe2EBR · 01:29](https://www.bilibili.com/video/BV14Vwqe2EBR?t=89) | [Hugging Face](https://huggingface.co/hexgrad/Kokoro-82M) |
+| DeepSeek-R1 | 基于强化学习训练的推理大模型，无需依赖监督微调即可激发链式思考与推理能力，在数学、代码与推理任务上表现出色，并提供蒸馏到小模型的版本与开源权重/API。 | 2025-01-20 | 考拉认为 DeepSeek-R1 的独特之处在于它通过强化学习直接增强模型的推理能力，避免了传统方法中的一些限制；其开源版本和 API 让更多用户可以尝试，同时也展示了国产大模型的研究实力。 | [BV1dPFKeeEuw · 03:40](https://www.bilibili.com/video/BV1dPFKeeEuw?t=220) | [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
 
 ## AI Agent 与智能体开发
 
@@ -196,6 +200,7 @@ toc:
 | Pydantic AI | 由 Pydantic 团队开发的 Python AI 代理框架，目标是简化生成式 AI 应用的设计与开发。支持 OpenAI、Anthropic、Gemini 等多种主流模型，提供类型安全、结构化响应、依赖注入等特性；设计灵感来自 FastAPI，希望为生成式 AI 应用开发带来类似的流畅体验。 | 2024-06-21 | 认为尽管 AI 代理框架已数不胜数，但由于其开发团队来自 Pydantic、在 Python AI 生态中被广泛使用且口碑良好，同一团队发布的新项目仍让开发者愿意尝试。 | [BV1nrrPYdEHH · 03:20](https://www.bilibili.com/video/BV1nrrPYdEHH?t=200) | [GitHub](https://github.com/pydantic/pydantic-ai) |
 | Cline | 一个集成在 IDE 中的 AI 编程助手，能够创建和编辑文件、执行命令、使用浏览器等。基于强大的编码模型能力，可逐步处理复杂的软件开发任务；支持通过 Model Context Protocol（MCP）创建新工具、扩展能力，且在每一步操作上都需要用户授权。 | 2024-07-06 | 认为 Cline 的出现让开发者可以在自己习惯的编辑器或命令行中体验 AI 结对编程，而无需被特定编辑器绑定；下一步值得探索的是如何提供足够详细的描述让 AI 准确完成编程意图。 | [BV1TLcgeqEQ8 · 00:01](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=1) | [GitHub](https://github.com/cline/cline) |
 | Agent Recipes | 一个提供 LLM 工作流图文示例的合集网站，包含多种 LLM 工作流的示意图与代码示例（如 Prompt Chaining、Routing、Parallelization、Orchestrator-workers、Evaluator-optimizer、Autonomous Agent 等）。这些工作流设计灵感来源于 Anthropic 的研究报告，目标是帮助开发者优化 LLM 的使用效率。 | 2025-01-03 | 认为此前 Anthropic 的研究报告让大家有了 LLM 工作流的学习材料，而这一组 Recipes 则让相应知识的学习变得更加直观。 | [BV14Vwqe2EBR · 02:47](https://www.bilibili.com/video/BV14Vwqe2EBR?t=167) | [官网](https://www.agentrecipes.com/) |
+| yek | 一个用 Rust 编写的工具，用于读取代码库或目录并将文本文件序列化/分块，便于直接喂给大语言模型，遵循 .gitignore 规则、依据 Git 历史推断重要文件，并支持通过 yek.toml 配置。 | 2025-01-11 | 考拉认为将代码读取后提供给 AI 智能体，已经让 AI 变得更强大；yek 比之前的同类工具性能更好，但在代码语义理解上还没有表现出更为突出的优势。 | [BV1dPFKeeEuw · 04:59](https://www.bilibili.com/video/BV1dPFKeeEuw?t=299) | [GitHub](https://github.com/mohsen1/yek) |
 
 ## 数据工程与存储
 
@@ -297,3 +302,16 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | SNAGRA Trading | 一个实时展示 GPT-4o、Gemini 1.5 Pro、Claude 3.5 Sonnet 三大 AI 模型股票交易水平的在线竞技场平台（项目名 “Battle of the Bots: AI Trading Arena”）。每天清晨自动分析市场新闻、各自推荐一只股票并以真实资金（每笔 5 美元）执行交易，实时追踪各模型的收益、胜率与整体表现，用户可查看每日交易总结、性能指标与 AI 的交易决策逻辑。 | 2024-12-20 | 认为这个竞技场不仅真实测评了 AI 在金融领域的应用潜力，也为普通用户提供了一个学习和评判 AI 交易策略的机会。 | [BV1nrrPYdEHH · 00:30](https://www.bilibili.com/video/BV1nrrPYdEHH?t=30) | [官网](https://trading.snagra.com) |
+
+## 学习工具
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| WordPecker | 一款结合 Duolingo 风格课程与自定义词汇表的个性化语言学习工具，支持从书籍、文章或视频中导入单词，通过互动测验和 LLM 生成的课程进行复习。 | 2025-01-20 | 考拉认为 WordPecker 特别适合希望通过阅读或观看内容来学习语言的人；其自动释义与上下文学习功能让学习过程更高效、有趣，未来若加入进度追踪等更多功能，有望成为语言学习者的得力工具。 | [BV1dPFKeeEuw · 00:01](https://www.bilibili.com/video/BV1dPFKeeEuw?t=1) | [GitHub](https://github.com/baturyilmaz/wordpecker-app) |
+| SQL Boy | 一个设计精美的互动式 SQL 学习平台，面向初学者，通过让学习者编写 SQL 查询完成任务来获取实时反馈与指导，并跟踪学习进度。 | 2025-01-01 | 考拉认为这种互动式学习方式非常适合新手，尤其是那些希望通过实践来巩固理论知识的用户；平台会在每次执行后及时纠正错误并提供建议，完成任务也会对应更新学习进度，是一个非常友好的学习工具。 | [BV1dPFKeeEuw · 02:24](https://www.bilibili.com/video/BV1dPFKeeEuw?t=144) | [官网](https://www.hisqlboy.com) |
+
+## 物联网与硬件
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Printercow | 一个将任意 USB 热敏打印机变成联网 HTTP API 端点的平台，通过简单的安装命令配合 Raspberry Pi Zero W2 即可实现远程打印，支持 ESC/POS 指令与自定义纸张宽度。 | 2025-01-21 | 考拉认为 Printercow 的易用性和灵活性使其成为零售、餐饮和高流量物流行业的理想选择；其开源模式确保了功能的透明性和可扩展性，同时也为企业提供开箱即用的托管服务。 | [BV1dPFKeeEuw · 03:14](https://www.bilibili.com/video/BV1dPFKeeEuw?t=194) | [官网](https://www.printercow.com) |
