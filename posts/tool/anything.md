@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:24+08:00
+lastmod: 2026-08-17T13:07:26+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -34,6 +34,7 @@ toc:
 | GPUI | Rust UI 框架 | —（原文未记录） | —（原文未记录） | —（原文未记录） | —（原文未记录） |
 | gpui-component | GPUI 组件库 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/longbridge/gpui-component) |
 | deno desktop | Deno 2.9 新增的官方子命令，能把一个 TypeScript 文件甚至整个 Next.js 应用直接编译成跨平台桌面应用的单个二进制文件。 | 2026-06-25 | 考拉认为复用系统 WebView 虽然省体积，但也意味着各平台渲染一致性要打个问号，这是所有走原生 WebView 路线的方案都绕不开的老问题。 | [BV1EWTK6iEGj · 03:54](https://www.bilibili.com/video/BV1EWTK6iEGj?t=234) | [官网](https://docs.deno.com/runtime/reference/cli/desktop/) |
+| driftwm | 一个实验性的 Wayland 合成器（窗口管理器），用无限画布的思路重新想象窗口管理：所有窗口以原始大小散落在无边界的二维画布上，屏幕像一台相机，通过平移和缩放在画布里游走；窗口靠近时自动吸附成组，支持触控板原生惯性滚动、捏合缩放等手势，对多显示器支持良好，还能通过 Unix socket 脚本化控制。 | 2026-02-22 | 主流窗口管理无非平铺和堆叠两条路，driftwm 把白板类应用流行的无限画布概念搬到了桌面管理层，是个少见的方向；它契合触控板时代的交互直觉，使用 Linux 桌面的极客们可以尝鲜。 | [BV1GpEs6gEAA · 03:44](https://www.bilibili.com/video/BV1GpEs6gEAA?t=224) | [GitHub](https://github.com/malbiruk/driftwm) |
 
 ## 代码质量与 Code Review
 
@@ -56,6 +57,7 @@ toc:
 | Nub | 面向 Node.js 的一体化工具包，把 TypeScript 运行、包管理、脚本执行和 Node 版本管理集中进同一个 CLI。 | 2026-06-03 | 考拉认为这两年 Bun、Deno 都想用全新运行时挑战 Node，而 Nub 走的是反方向——不取代 Node，而是把围绕 Node 的工具链体验补齐。 | [BV1EWTK6iEGj · 02:27](https://www.bilibili.com/video/BV1EWTK6iEGj?t=147) | [GitHub](https://github.com/nubjs/nub) |
 | ProseKit | 基于 ProseMirror 的框架无关、headless 富文本编辑器框架，把编辑能力与样式解耦并内置斜杠命令、任务列表、数学公式等扩展。 | 2023-07-09 | 考拉认为富文本编辑器是出了名的难做，ProseMirror 虽强但学习曲线陡峭、API 偏底层；ProseKit 的价值在于把 ProseMirror 的复杂度封装成更友好的扩展式 API，同时坚持 headless 路线、不绑定 UI，更符合当下的技术潮流。 | [BV1EWTK6iEGj · 03:25](https://www.bilibili.com/video/BV1EWTK6iEGj?t=205) | [GitHub](https://github.com/prosekit/prosekit) |
 | Extend UI | Extend 开源的 React 组件库（shadcn 风格注册表），面向文档类产品，提供 PDF/DOCX/XLSX/CSV 查看与编辑、边界框引用、文件上传、电子签名等 14 个可定制组件，MIT 许可。 | 2026-05-12 | 通用 UI 组件库已经红海一片，Extend UI 聪明地选择了文档处理这个细分赛道；这类组件又重又琐碎（PDF 渲染、表格编辑、签名都是硬骨头），现成高质量开源方案不多；Extend AI 做文档智能处理，把内部打磨的能力开源出来，既是技术品牌建设也是给开发者获客的入口。 | [BV1CWJF6xE1d · 03:18](https://www.bilibili.com/video/BV1CWJF6xE1d?t=198) | [GitHub](https://github.com/extend-hq/ui) |
+| The Website Specification | 一份平台无关的网站技术标准/规范，把优质网站应具备的特性归纳为十大类（基础结构、SEO、无障碍、安全、性能、隐私、国际化、Well-Known URIs、Agent 可读性等，共约 128 项），每条均链接到 W3C/IETF/WCAG 等权威来源，并提供公开 MCP 服务器供 Agent 查询。 | 2026-05-29 | 这份规范的价值在于把碎片化的最佳实践系统化，并坚持用标准（W3C、IETF 等）作背书，可信度比一般的经验清单更高；其中专门列出「Agent 可读性」类别，反映出网站的读者不再只是人类，还有越来越多的 AI 智能体，能否被 Agent 正确理解和调用正成为网站建设的新考量。 | [BV1GpEs6gEAA · 01:26](https://www.bilibili.com/video/BV1GpEs6gEAA?t=86) | [GitHub](https://github.com/jdevalk/specification.website) |
 
 ## 测试与质量保障
 
@@ -98,6 +100,7 @@ toc:
 | Go Micro v6 | Go 生态知名的微服务框架在 v6 版本转身为 AI Agent 运行时，让每个服务方法既是 RPC 端点也自动暴露成 AI 可调用的工具。 | 2026-06-18 | 考拉认为 Go Micro 把成熟的服务发现、RPC 与工作流能力直接复用，让 Agent 真正成为生产系统的一等公民，这是一个不错的切入点。 | [BV1EWTK6iEGj · 01:56](https://www.bilibili.com/video/BV1EWTK6iEGj?t=116) | [GitHub](https://github.com/micro/go-micro) |
 | Loop Library | 一个 AI Loop 工作流配方库，收录覆盖工程、运维、内容、设计与评估场景的可复用 Agent 循环提示词，每个 Loop 都内置明确的检查点与停止条件，并附带可安装的 Skill 供编码代理查找、审计与改写 Loop。 | 2026-06-12 | 考拉认为现在大家都在追求让 Agent 长时间自主跑，但真正的难点是怎么让它跑得可靠、知道何时该停；并邀请对 Loop 工程感兴趣的观众在视频下留言，由他们来测试这些 Loop 配方是否靠谱。 | [BV1SVj46KE3c · 00:01](https://www.bilibili.com/video/BV1SVj46KE3c?t=1) | [GitHub](https://github.com/Forward-Future/loopy) |
 | eve | Vercel 开源的文件系统优先 TypeScript Agent 框架，以「一个 Agent 就是一个目录」为核心，内置持久化执行、沙箱化计算、人工审批、子代理、通道与评估能力。 | 2026-06-17 | 考拉认为 Agent 框架现在已经卷成红海，LangChain、Mastra 和各家云厂商都在抢；eve 的差异点在于把 Vercel 最擅长的开发者体验和部署一体化搬了过来，但这也意味着它和 Vercel 平台绑定较深，能否成为跨厂商的事实标准还要看社区接受度；框架打包了可观测性和评估，是值得关注的方向。 | [BV1SVj46KE3c · 00:31](https://www.bilibili.com/video/BV1SVj46KE3c?t=31) | [GitHub](https://github.com/vercel/eve) |
+| GitHub Copilot CLI | GitHub 官方的 AI 编程命令行工具；本期介绍的更新中，Rubber Duck（小黄鸭）内置批评式 Agent 正式可用，会主动审视方案、设计、实现与测试并找漏洞和盲点，语音输入与定时任务（/every、/after）也正式上线，并重新设计了带标签页与无障碍支持的终端界面。 | 2026-06-02 | GitHub 在 coding agent 之战中还未投降，投入 Copilot CLI 而减少在 VSCode 上的投入也是顺应潮流之举；虽然近期对 GitHub AI 产品功能的批评声音不少，但这个世界最大的开发者社区仍然是有力的竞争者。 | [BV1GpEs6gEAA · 01:55](https://www.bilibili.com/video/BV1GpEs6gEAA?t=115) | [GitHub](https://docs.github.com/en/copilot/using-github-copilot/copilot-cli) |
 
 ## 数据工程与存储
 
@@ -118,6 +121,7 @@ toc:
 | Paca | 免费开源、可自托管的 AI 原生项目管理平台，把 AI Agent 当成敏捷团队的正式成员，与人类在同一块 Scrumban 看板上领取任务、更新状态并实时协作。 | 2026-03-20 | 考拉认为 Jira、ClickUp 这类工具都在往里塞 AI，但大多还是把 AI 当成辅助助手，Paca 反过来，从数据模型层面就把 Agent 当一等公民，产品理念更激进、也更贴近 Agent 协作的未来形态；当然实际落地还要看它真正解决问题的能力，把沙箱、代码变更都合在一起的设计，也可能在复杂场景中成为减分项。 | [BV1SVj46KE3c · 01:56](https://www.bilibili.com/video/BV1SVj46KE3c?t=116) | [GitHub](https://github.com/Paca-AI/paca) |
 | Mattermost | 开源、自托管的团队协作平台（Slack 替代品），提供实时聊天、工作流自动化、语音通话、屏幕共享与 AI 集成；Go 后端 + React 前端，单 Linux 二进制运行，数据存 PostgreSQL，MIT 许可，支持 Docker/Kubernetes/Helm 部署。 | 2015-10-02 | Mattermost 没有正面去拼 Slack 的消费级体验，而是聚焦研发和安全运营场景，把自己嵌进 DevSecOps 工具链，这个差异化定位让它在企业市场站稳了脚跟。 | [BV1CWJF6xE1d · 02:20](https://www.bilibili.com/video/BV1CWJF6xE1d?t=140) | [GitHub](https://github.com/mattermost/mattermost) |
 | FablePool | 众包式 AI 开发平台：用户提交软件构想并众筹积分，达标后由 AI Agent 按里程碑公开构建，全程支出、日志与产出记录在公开账本上，成果以 MIT 开源。 | 2026-06-12 | 这是一个相当有趣的实验，把 Agent 当成更加平等的生产力，也让众筹所得的用途非常透明。 | [BV1CWJF6xE1d · 04:13](https://www.bilibili.com/video/BV1CWJF6xE1d?t=253) | [官网](https://fablepool.com) |
+| Hocuspocus | 由 Tiptap（ueberdosis）团队开源的即插即用实时协作后端，基于 Yjs/CRDT，用 WebSocket 封装多人实时编辑的同步逻辑，让多用户同时改一份文档时自动合并、互不覆盖；可接 SQLite 等做持久化，也提供云托管服务 Tiptap Collab，并支撑 Tiptap 编辑器的协同功能。 | 2020-12-02 | 在线协作几乎成了文档、白板、笔记类产品的标配，但自己从零实现 OT 或 CRDT 同步门槛很高；Hocuspocus 把这块基础设施做成开箱即用的后端，并且和富文本编辑器 Tiptap 同源，生态衔接顺滑。 | [BV1GpEs6gEAA · 02:51](https://www.bilibili.com/video/BV1GpEs6gEAA?t=171) | [GitHub](https://github.com/ueberdosis/hocuspocus) |
 
 ## 多媒体与图形
 
@@ -135,6 +139,8 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Bento | 把完整 PPT 编辑器、演示器塞进单个约 560KB 的 HTML 文件，浏览器打开即用，支持 AES-GCM 端到端加密协作，且文档为明文 JSON 可被 Agent 直接编辑 | 2026-07-17 | 单个 HTML 文件配合浏览器能力足以胜任很多本地化使用场景，在满足需求的同时还提供了良好的隐私保护与离线体验。 | [BV1KK3J6cE5J · 00:02](https://www.bilibili.com/video/BV1KK3J6cE5J?t=2) | [GitHub](https://github.com/nyblnet/bento) |
 | FreeGraphPaper | 在线网格纸生成器，免注册、无水印，选好模板后调整间距、颜色和边距，实时预览并导出 PDF 或 PNG 直接打印；支持方格、点阵、等轴测、六边形、横线和康奈尔笔记纸，覆盖 A4、US Letter 等规格，间距可精确到 5 毫米或 1/4 英寸并保证 100% 比例打印。 | 2026-07-03 | 这类小工具网站的价值在于把一个具体需求做到零门槛，比起功能庞杂的绘图软件，打开即用反而是最大卖点。手帐、数学练习、工程草图都是稳定需求，靠搜索流量、自用站点往往能长期存活，也是独立开发者做小产品的一个不错样本。 | [BV1SYMM6FEeT · 04:18](https://www.bilibili.com/video/BV1SYMM6FEeT?t=258) | [官网](https://freegraphpaper.net/) |
+| stop-slop | 一个以 SKILL.md 形式分发的写作技能（skill），教 Claude 等 LLM 识别并去除 AI 生成的文字痕迹（清嗓子式开场、商业黑话、空泛断言、过度评论、滥用破折号等），内置 5 维度质量打分（1-10），总分低于 35/50 强制重写。 | 2026-01-11 | 仅作功能介绍，未给出明确评价。 | [BV1GpEs6gEAA · 00:01](https://www.bilibili.com/video/BV1GpEs6gEAA?t=1) | [GitHub](https://github.com/hardikpandya/stop-slop) |
+| mq | 用 Rust 编写的命令行工具，把 jq 的处理思路搬到 Markdown 上，可按类似 jq 的语法查询、过滤、转换 Markdown（抽取章节、标题、代码块等），并导出 JSON、CSV、YAML、HTML 等格式，专为 LLM 工作流设计。 | 2025-02-25 | mq 把结构化抽取能力带给了纯文本格式（Markdown），在 LLM 时代尤其应景；当大量内容需要被切分、过滤后送进模型时，一个可组合、可脚本化的 Markdown 处理器，比手写解析高效得多。 | [BV1GpEs6gEAA · 00:28](https://www.bilibili.com/video/BV1GpEs6gEAA?t=28) | [GitHub](https://github.com/harehare/mq) |
 
 ## 开发者认证与招聘
 
