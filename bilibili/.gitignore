@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+
+# Runtime artifacts and downloaded media
+data/
+
+# Locally installed download backend
+tools/
+
