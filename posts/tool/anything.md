@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:29+08:00
+lastmod: 2026-08-17T13:07:31+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -35,6 +35,7 @@ toc:
 | gpui-component | GPUI 组件库 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/longbridge/gpui-component) |
 | deno desktop | Deno 2.9 新增的官方子命令，能把一个 TypeScript 文件甚至整个 Next.js 应用直接编译成跨平台桌面应用的单个二进制文件。 | 2026-06-25 | 考拉认为复用系统 WebView 虽然省体积，但也意味着各平台渲染一致性要打个问号，这是所有走原生 WebView 路线的方案都绕不开的老问题。 | [BV1EWTK6iEGj · 03:54](https://www.bilibili.com/video/BV1EWTK6iEGj?t=234) | [官网](https://docs.deno.com/runtime/reference/cli/desktop/) |
 | driftwm | 一个实验性的 Wayland 合成器（窗口管理器），用无限画布的思路重新想象窗口管理：所有窗口以原始大小散落在无边界的二维画布上，屏幕像一台相机，通过平移和缩放在画布里游走；窗口靠近时自动吸附成组，支持触控板原生惯性滚动、捏合缩放等手势，对多显示器支持良好，还能通过 Unix socket 脚本化控制。 | 2026-02-22 | 主流窗口管理无非平铺和堆叠两条路，driftwm 把白板类应用流行的无限画布概念搬到了桌面管理层，是个少见的方向；它契合触控板时代的交互直觉，使用 Linux 桌面的极客们可以尝鲜。 | [BV1GpEs6gEAA · 03:44](https://www.bilibili.com/video/BV1GpEs6gEAA?t=224) | [GitHub](https://github.com/malbiruk/driftwm) |
+| CodeBurn | 本地优先的开源仪表盘，追踪 Claude Code、Cursor、Codex 等 20+ AI 编码工具的 Token 消耗与花费，按模型、项目、任务拆解，并提供浪费扫描与 CSV/JSON 报表导出。 | 2026-04-13 | 认为 CodeBurn 解决的是 AI 编码开销的黑盒焦虑，让钱花在哪、值不值、哪些是浪费变得更加透明；这类工具未来会向云成本管理的 FinOps 方向发展，用于优化 Agent 的成本。 | [BV1VsLJ6QEbN · 00:01](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=1) | [GitHub](https://github.com/getagentseal/codeburn) |
 
 ## 代码质量与 Code Review
 
@@ -59,6 +60,7 @@ toc:
 | ProseKit | 基于 ProseMirror 的框架无关、headless 富文本编辑器框架，把编辑能力与样式解耦并内置斜杠命令、任务列表、数学公式等扩展。 | 2023-07-09 | 考拉认为富文本编辑器是出了名的难做，ProseMirror 虽强但学习曲线陡峭、API 偏底层；ProseKit 的价值在于把 ProseMirror 的复杂度封装成更友好的扩展式 API，同时坚持 headless 路线、不绑定 UI，更符合当下的技术潮流。 | [BV1EWTK6iEGj · 03:25](https://www.bilibili.com/video/BV1EWTK6iEGj?t=205) | [GitHub](https://github.com/prosekit/prosekit) |
 | Extend UI | Extend 开源的 React 组件库（shadcn 风格注册表），面向文档类产品，提供 PDF/DOCX/XLSX/CSV 查看与编辑、边界框引用、文件上传、电子签名等 14 个可定制组件，MIT 许可。 | 2026-05-12 | 通用 UI 组件库已经红海一片，Extend UI 聪明地选择了文档处理这个细分赛道；这类组件又重又琐碎（PDF 渲染、表格编辑、签名都是硬骨头），现成高质量开源方案不多；Extend AI 做文档智能处理，把内部打磨的能力开源出来，既是技术品牌建设也是给开发者获客的入口。 | [BV1CWJF6xE1d · 03:18](https://www.bilibili.com/video/BV1CWJF6xE1d?t=198) | [GitHub](https://github.com/extend-hq/ui) |
 | The Website Specification | 一份平台无关的网站技术标准/规范，把优质网站应具备的特性归纳为十大类（基础结构、SEO、无障碍、安全、性能、隐私、国际化、Well-Known URIs、Agent 可读性等，共约 128 项），每条均链接到 W3C/IETF/WCAG 等权威来源，并提供公开 MCP 服务器供 Agent 查询。 | 2026-05-29 | 这份规范的价值在于把碎片化的最佳实践系统化，并坚持用标准（W3C、IETF 等）作背书，可信度比一般的经验清单更高；其中专门列出「Agent 可读性」类别，反映出网站的读者不再只是人类，还有越来越多的 AI 智能体，能否被 Agent 正确理解和调用正成为网站建设的新考量。 | [BV1GpEs6gEAA · 01:26](https://www.bilibili.com/video/BV1GpEs6gEAA?t=86) | [GitHub](https://github.com/jdevalk/specification.website) |
+| @pierre/trees | Pierre Computer 开源的文件树渲染库，提供开箱即用的高性能文件树组件，支持 Git 状态着色、上百种文件图标、可配置布局与细粒度 CSS 变量主题，可用于 PR Review 与 Web IDE。 | 2025-09-19 | 认为该团队此前做过 Diff UI 库（@pierre/diffs），本次坚持类似设计理念——只做文件树但做到极致；在 AI 大量生成代码、做 PR Review 和 Web IDE 的项目越来越多的当下，一个开箱即用的文件树组件比自己用 react-arborist 拼一遍省心得多。 | [BV1VsLJ6QEbN · 02:22](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=142) | [GitHub](https://github.com/pierrecomputer/pierre) |
 
 ## 测试与质量保障
 
@@ -77,6 +79,7 @@ toc:
 | Iroh | 开源点对点连接工具包，用加密公钥替代 IP 地址建立设备直连，自带 QUIC 传输、NAT/防火墙穿透与无状态中继兜底。 | 2026-06-15 | 考拉认为 Iroh 用 Rust 编写、能下沉到 MCU 级别设备，定位比一般的 WebRTC 方案更底层、更通用，适合需要自己掌控连接层的团队，但要落地仍然要求开发者理解 P2P 的复杂性。 | [BV1SVj46KE3c · 02:54](https://www.bilibili.com/video/BV1SVj46KE3c?t=174) | [GitHub](https://github.com/n0-computer/iroh) |
 | container | 苹果官方开源的命令行工具，在 Apple 芯片 Mac 上以轻量虚拟机方式运行 Linux 容器，完全用 Swift 编写，底层基于 Containerization 包，兼容 OCI 标准镜像与现有容器生态。 | 2026-06-09 | 长期以来 Mac 上跑容器主要靠 Docker Desktop（背后是一个大虚拟机）；苹果这次的思路是给每个容器分配独立的轻量虚拟机，隔离性更好、启动更快，并深度绑定 Apple 芯片做优化。 | [BV1CWJF6xE1d · 01:54](https://www.bilibili.com/video/BV1CWJF6xE1d?t=114) | [GitHub](https://github.com/apple/container) |
 | ArtifactFS | Cloudflare 开源的 FUSE 文件系统驱动，把 Git 仓库挂载为本地目录而跳过完整 clone 的等待，目录树立即可见，文件内容按需后台拉取，并支持 git log、commit、checkout 等标准操作。 | 2026-03-29 | 考拉认为在 Agentic Coding 时代 Git Clone 次数正在指数级上升，对大型仓库成为不可忽视的成本；Cloudflare 把它放进 ArtifactFS，意图明显是提升自家 Workers 产品的竞争力；局限也明显——git status 等遍历操作开销极大，非 Linux 环境兼容性也不好，短期内更适合容器化的 Agent 环境，做本地日常开发还不如直接 Clone。 | [BV15iVV6AE6U · 03:57](https://www.bilibili.com/video/BV15iVV6AE6U?t=237) | [GitHub](https://github.com/cloudflare/artifact-fs) |
+| boring | 命令行 SSH 隧道管理器，用 TOML 文件集中管理本地端口转发、远程转发与 SOCKS5 动态代理，兼容 SSH config 与 ssh-agent，支持 Unix 套接字、断线自动重连与分组批量启停。 | 2024-09-21 | 认为传统做法要么手敲一长串 SSH 参数，要么靠 autossh 加 systemd 凑守护进程；Boring 把这些零散动作收进一个 TOML 配置，外加分组批量启停和重连兜底，对长期挂多条隧道的开发者很实用。 | [BV1VsLJ6QEbN · 01:27](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=87) | [GitHub](https://github.com/alebeck/boring) |
 
 ## AI 模型与推理
 
@@ -108,6 +111,8 @@ toc:
 | auth.md | WorkOS 提出的开放协议，服务商在自己域名下托管一个 Markdown 文件声明支持的注册流程，AI Agent 读取后可在无需填写表单的情况下代替用户完成服务注册与登录。 | 2026-05-20 | 考拉认为随着 AI Agent 自主行动能力增强，如果 Agent 能够自主完成注册与登录，确实可以让软件服务快速被 Agent 接入使用。 | [BV15iVV6AE6U · 02:58](https://www.bilibili.com/video/BV15iVV6AE6U?t=178) | [GitHub](https://github.com/workos/auth.md) |
 | Satori | 面向 MCP 编程智能体的代码检索工具，把仓库转换为具备新鲜度感知的代码地图，让智能体按意图查找行为、打开真实代码拥有者、跟随调用图上下文并只读取所需源码，可离线运行。 | 2026-01-08 | 考拉认为让 Agent 高效阅读代码这件事，过去一年方案分两派——向量检索精度不稳、靠 grep 又烧 token；Satori 是个值得关注的选择，它与代码的结构（AST）天然对应，返回的片段更完整更可用，比起靠 LLM 语义要可靠得多。 | [BV1yYG76oESe · 00:32](https://www.bilibili.com/video/BV1yYG76oESe?t=32) | [GitHub](https://github.com/ham-zax/satori) |
 | kubernetes-skill | 面向 Claude Code、Codex 等编程智能体的开源 Kubernetes Skill，用 failure-mode-first（先诊断六类已知故障模式再生成 YAML）的方法论解决 LLM 生成 K8s 配置时标签不对齐、端口不一致、安全默认值缺失等问题，配套二十余份按需加载的参考文档。 | 2026-04-12 | 考拉认为作者对 Skill 机制的理解相当不错，把领域知识按需加载，激活成本压到几百 token；比起单纯让 LLM 记住 K8s 最佳实践，failure-mode-first 这种先验证再生成的工作流更可靠；虽然 LLM 对 K8s 通识不错，但结合这样的专家型 Skill 还能进一步提升可靠性。 | [BV1yYG76oESe · 03:51](https://www.bilibili.com/video/BV1yYG76oESe?t=231) | [GitHub](https://github.com/LukasNiessen/kubernetes-skill) |
+| Mirage | 面向 AI Agent 的统一虚拟文件系统，将 S3、Google Drive、GitHub、Slack、Postgres、Redis 等后端挂载到同一根目录，Agent 用熟悉的 cat/grep/管道即可跨服务操作，并支持快照、克隆与回滚。 | 2026-05-06 | 认为 MCP 之后大家在想 Agent 接入外部世界更优雅的方式，Mirage 的思路很取巧——既然 LLM 早就熟悉 Bash，就把所有东西伪装成文件，省去学新工具的成本；优势是 Agent 计算复用，劣势是潜在性能问题与运维复杂度。 | [BV1VsLJ6QEbN · 00:58](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=58) | [GitHub](https://github.com/strukto-ai/mirage) |
+| Flue | Astro 团队开源的 TypeScript Agent Harness 框架，将架构拆为模型层（Token/Prompt/Tools）、工具层（Skill/Memory/Session）、沙箱层（Bash/网络/权限）与文件系统层（read/write/grep/glob），可部署到 Node.js 与 Cloudflare Workers。 | 2026-02-07 | 认为这个项目的 API 设计有一定创新性，但仍偏向编程的范畴；在模型驱动占主导地位的今天，也许该框架的适用场景是由模型而非人类开发者来编写业务逻辑；总体是有趣的尝试，但适用场景仍需探索。 | [BV1VsLJ6QEbN · 03:50](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=230) | [GitHub](https://github.com/withastro/flue) |
 
 ## 数据工程与存储
 
@@ -142,6 +147,7 @@ toc:
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
 | Box3D | Box2D 作者 Erin Catto 开源的 3D 物理引擎，以 Box2D 为基底扩展三角网格/高度场/烘焙复合碰撞等 3D 特性，全部库代码使用 C17，支持连续碰撞、宽 SIMD 接触求解器、多线程钩子、跨平台确定性与录制回放。 | 2026-06-30 | Box2D 作为 2D 物理引擎近 20 年广受好评，Erin Catto 的口碑让 Box3D 天生自带信任度；3D 开源物理领域此前靠 Godot 整合站稳脚跟，Box3D 的入场会让这个长期被商业引擎主导的领域更有看头。游戏开发者值得持续关注。 | [BV1SYMM6FEeT · 01:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=87) | [GitHub](https://github.com/erincatto/box3d) |
 | dotlottie-web | LottieFiles 官方推出的网页动画播放器，基于 Rust + WebAssembly 实现，同时支持 Canvas 2D、WebGL2 与实验性的 WebGPU 后端，并原生支持 dotLottie v2 的状态机、运行时主题切换与嵌入音频，提供 Vanilla JS、React、Vue 等六套 SDK。 | 2023-10-20 | 考拉认为 Lottie 生态长期被各端实现不一致拖累，同一个动画 iOS 上正常、Web 上掉帧或样式错位是常态；LottieFiles 这次用 Rust 内核统一全平台渲染，是从根本上解决问题；dotLottie v2 加入状态机和主题切换，也把 Lottie 从「播放动画」推向「交互组件」，对设计师和前端协作流程是个升级。 | [BV1yYG76oESe · 02:23](https://www.bilibili.com/video/BV1yYG76oESe?t=143) | [GitHub](https://github.com/LottieFiles/dotlottie-web) |
+| Datatype | 开源 OpenType 可变字体，通过连字替换（ligature）把纯文本表达式（如 {b:30,70,50,90}）直接渲染成柱状图、折线图与饼图，无需 JavaScript 与图片，字体带宽度与字重两个可变轴。 | 2026-02-15 | 认为这是一个非常有想象力的工程巧思，把数据可视化压缩到一个 WOFF2 文件里，对邮件、PDF、终端、静态报表这些 JS 跑不起来的场景特别合适；但局限明显——没有交互、数据范围限制在 0–100、最多 20 个点，可理解为一种技术创意的体现。 | [BV1VsLJ6QEbN · 02:51](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=171) | [GitHub](https://github.com/franktisellano/datatype) |
 
 ## 办公与演示
 
