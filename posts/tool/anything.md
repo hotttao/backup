@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:34+08:00
+lastmod: 2026-08-17T13:07:36+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -63,12 +63,14 @@ toc:
 | @pierre/trees | Pierre Computer 开源的文件树渲染库，提供开箱即用的高性能文件树组件，支持 Git 状态着色、上百种文件图标、可配置布局与细粒度 CSS 变量主题，可用于 PR Review 与 Web IDE。 | 2025-09-19 | 认为该团队此前做过 Diff UI 库（@pierre/diffs），本次坚持类似设计理念——只做文件树但做到极致；在 AI 大量生成代码、做 PR Review 和 Web IDE 的项目越来越多的当下，一个开箱即用的文件树组件比自己用 react-arborist 拼一遍省心得多。 | [BV1VsLJ6QEbN · 02:22](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=142) | [GitHub](https://github.com/pierrecomputer/pierre) |
 | dev3000 | Vercel Labs 开源的 Web 应用调试工具（CLI 名为 d3k），用 Chrome DevTools Protocol 监控浏览器，把服务器日志、浏览器控制台、网络请求、用户交互与自动截图按时间戳汇总到一份统一信息流，供 AI 助手调试。 | 2025-09-02 | 认为这个工具的定位是给 AI 看的上下文采集器；AI 写代码的瓶颈早就不是生成能力，而是稀疏获取——让模型去猜浏览器报什么错、网络请求返回什么，效率上不去。dev3000 让 AI 能像人一样看到全貌。 | [BV1SZ5j6BEom · 00:01](https://www.bilibili.com/video/BV1SZ5j6BEom?t=1) | [GitHub](https://github.com/vercel-labs/dev3000) |
 | AnimateIcons | 开源的 React 动画图标库，提供 281 个免费动画 SVG 图标组件，分 Lucide 与 Huge 两套设计风格，动画在 SVG path 级别精修，支持 hover/focus/程序触发，构建支持 tree-shaking，底层用 Motion 做动画。 | 2025-07-29 | 认为 AnimateIcons 把微动画做成图标的一等公民；现代 Web 应用越来越追求 motion design 的细节，按钮、菜单、状态切换都要有过渡，以前要么手写 SVG path 动画、要么用 Lottie，前者麻烦后者太重，AnimateIcons 填上了这两种方案的中间地带。 | [BV1SZ5j6BEom · 01:55](https://www.bilibili.com/video/BV1SZ5j6BEom?t=115) | [GitHub](https://github.com/Avijit07x/animateicons) |
+| Fuse.js | 零依赖的 JavaScript 模糊搜索库，基于 Bitap 算法实现容错匹配，压缩后仅约 8KB；支持权重字段、嵌套字段、扩展搜索语法以及逻辑表达式（$and/$or），可运行在浏览器、Node.js 与 Deno 环境。 | 2012-05-28 | 考拉认为：Fuse.js 在前端本地/客户端搜索这个场景，它几乎没有对手；在 AI 问答如火如荼的今天，很多文档站点的即时搜索仍然靠它支撑，因为许多用户需要的还是毫秒级响应；即便与 AI 结合，Fuse.js 的查询能力也是很不错的基础工具。 | [BV1qmoFBzE1e · 03:43](https://www.bilibili.com/video/BV1qmoFBzE1e?t=223) | [GitHub](https://github.com/krisk/Fuse) |
 
 ## 测试与质量保障
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Vitest 4.0 | 支持浏览器模式和视觉回归测试的测试框架 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [项目文档](https://vitest.dev/guide/) |
+| Happy DOM | 用 TypeScript 实现的 Headless 浏览器/DOM 环境，提供完整的 DOM API（Custom Elements、Shadow DOM、Mutation Observer、Fetch 等），被 Vitest、Jest、Bun 等测试框架作为默认或可选的 DOM 环境，支持 React、Vue 等主流框架的测试。 | 2019-09-09 | 考拉认为：长期以来 jsdom 几乎是 Node 测试 DOM 的唯一选择，但它相对笨重、维护节奏缓慢；Happy DOM 选择重写一套更轻量的实现，Vitest 默认推荐它作为环境就是最好的背书；在前端基础设施越来越追求速度的当下，Bun 和 Vite 带起的这波提速浪潮里，Happy DOM 是基础设施层的关键一环；局限是 API 覆盖度仍不如 jsdom 全面，遇到冷门 DOM 特性偶尔需要绕路。 | [BV1qmoFBzE1e · 01:50](https://www.bilibili.com/video/BV1qmoFBzE1e?t=110) | [GitHub](https://github.com/capricorn86/happy-dom) |
 
 ## 运维、部署与基础设施
 
@@ -120,6 +122,7 @@ toc:
 | Tilde | 让 AI Agent 安全访问生产数据的运行平台（由 lakeFS 团队 Treeverse 出品），核心理念是把每次 Agent 执行变成一个事务：GitHub 代码、S3 数据、Google Drive 文档统一挂载到单一版本化文件系统，默认拦截网络请求并记录，关键操作可加审批，支持时间旅行审计与回滚。 | 2026-05-07 | 认为 Tilde 是一个封装更进一步的 Agent 沙箱，但强大的功能也代表着更高的复杂度，稳定性还需要实际测试。 | [BV1SZ5j6BEom · 03:49](https://www.bilibili.com/video/BV1SZ5j6BEom?t=229) | [官网](https://tilde.run) |
 | Composio | 开源的 AI Agent 工具集成 SDK，预打包 1000+ 第三方应用连接器（Gmail、Slack、GitHub、Notion、HackerNews 等），自带 OAuth 与凭据管理框架，提供 TypeScript/Python 官方 SDK，并附带名为 Rube 的 MCP 服务器连通 500+ 应用。 | 2024-02-23 | 考拉认为：Agent 落地的最大瓶颈不再是模型能力，而是接入已有系统的工程量；每个 SaaS 各自的 OAuth、API 限流、错误处理重复一遍就会劝退多数团队；Composio 把这一层做成基础设施，本质上是在做 Agent 时代的 Zapier，但走的是开发者优先和开源路线。 | [BV1U19ZBLEcf · 01:00](https://www.bilibili.com/video/BV1U19ZBLEcf?t=60) | [GitHub](https://github.com/ComposioHQ/composio) |
 | Agent Vault | Infisical 出品的开源 HTTP 凭据代理与保险库，作为透明 MITM 代理位于 Agent 与第三方服务之间，在请求离开网络边界前注入真实凭据（Bearer Token、API Key 等），Agent 自身永远看不到密钥；支持 WebSocket 透传与白名单/拒绝模式。 | 2026-04-22 | 考拉认为：当前 Agent 调用第三方 API 普遍把密钥直接塞进环境变量或 prompt，等于把家门钥匙交给一个会犯错且可能被 prompt 注入的程序；Agent Vault 的思路是把鉴权下沉到网络层，Agent 只看到一个本地代理 URL，密钥泄漏面降到最小，这是 Infisical 从企业密钥管理延伸到 AI Agent 场景的自然延伸，方向合理，但要让 Agent 理解如何使用，尚需生态配合。 | [BV1U19ZBLEcf · 02:57](https://www.bilibili.com/video/BV1U19ZBLEcf?t=177) | [GitHub](https://github.com/Infisical/agent-vault) |
+| Open Agents | Vercel Labs 开源的后台编程 Agent 参考实现（视频中称 OpenAgent / Vocale Labs），包含 Web UI、Agent 运行时、沙箱编排与 GitHub 集成的完整栈；架构上把 Agent 与沙箱分离——Agent 在 VM 外运行，通过工具调用与 VM 内的文件系统、Shell、Git 交互，支持多步持久化执行、流式输出、快照恢复与自动提交 PR。 | 2025-12-26 | 考拉认为：这是 Vercel 对云端 Agent 这条赛道给出的开源答案，让开发者不必从零造轮子；Agent 和沙箱分离的设计是对的——这意味着 Agent 的逻辑可以独立演进，沙箱可以按需替换；对 Vercel 自己来说，这也是推广 Vercel Sandbox 产品的一种方式。 | [BV1qmoFBzE1e · 02:18](https://www.bilibili.com/video/BV1qmoFBzE1e?t=138) | [GitHub](https://github.com/vercel-labs/open-agents) |
 
 ## 数据工程与存储
 
@@ -146,6 +149,8 @@ toc:
 | Hocuspocus | 由 Tiptap（ueberdosis）团队开源的即插即用实时协作后端，基于 Yjs/CRDT，用 WebSocket 封装多人实时编辑的同步逻辑，让多用户同时改一份文档时自动合并、互不覆盖；可接 SQLite 等做持久化，也提供云托管服务 Tiptap Collab，并支撑 Tiptap 编辑器的协同功能。 | 2020-12-02 | 在线协作几乎成了文档、白板、笔记类产品的标配，但自己从零实现 OT 或 CRDT 同步门槛很高；Hocuspocus 把这块基础设施做成开箱即用的后端，并且和富文本编辑器 Tiptap 同源，生态衔接顺滑。 | [BV1GpEs6gEAA · 02:51](https://www.bilibili.com/video/BV1GpEs6gEAA?t=171) | [GitHub](https://github.com/ueberdosis/hocuspocus) |
 | Agentic Inbox | Cloudflare 开源的自托管邮件客户端与 AI Agent 参考实现，完全运行在 Cloudflare Workers 上，每封邮件隔离在独立 Durable Object 中，配 D1 数据库、R2 附件存储，并用 Cloudflare Agents SDK 调用 9 个邮件工具、以 Kimi K2.5 自动起草回复。 | 2026-04-10 | 认为单看产品它只是一个邮件客户端，但放到 Cloudflare 的版图里看就是另一回事——这套实现把多个平台功能串到一起，用一个开源项目把自家平台能力全部展示一遍，也起到了推广其 Agents SDK 的效果。 | [BV1SZ5j6BEom · 00:31](https://www.bilibili.com/video/BV1SZ5j6BEom?t=31) | [GitHub](https://github.com/cloudflare/agentic-inbox) |
 | gh-dashboard | 开源的 GitHub 数据聚合面板，把仓库、Issue、PR、流量、CI 活动这些分散在 GitHub 不同页面的数据聚合到一个 Web 界面，后端处理 OAuth 并代理 REST 与 GraphQL 调用（项目后更名为 Gitdeck）。 | 2026-04-29 | 认为这几年 GitHub 自己的 UI 扩张得很厉害，但跨仓库聚合一直是短板，跨多个项目开发的人得在一堆标签页之间跳；GH Dashboard 解决的就是这个具体痛点，思路类似 gh-dash 但用 Web 而非 TUI，受众更广。 | [BV1SZ5j6BEom · 01:25](https://www.bilibili.com/video/BV1SZ5j6BEom?t=85) | [GitHub](https://github.com/debba/gh-dashboard) |
+| GitHub Stacked PRs | GitHub 官方原生支持的「堆叠式拉取请求」工作流（私有预览阶段），把一个大改动拆成若干按顺序堆叠、可独立审查的 PR，支持一键合并整条链；配套网页端 Stack Map 可视化与名为 gh stack 的 GitHub CLI 扩展，并可通过 NPM 包让 AI 编码 Agent 创建堆叠。 | 2026-04-13 | 考拉认为：堆叠 PR 这个工作流在 Meta、Google 内部用了很多年，外部则靠第三方工具支撑；GitHub 下场做原生集成是一大进步，意味着这种工作流从小众走向主流；其俱乐部频道近期也介绍了基于 AI 精确切分 PR 的思路。 | [BV1qmoFBzE1e · 00:01](https://www.bilibili.com/video/BV1qmoFBzE1e?t=1) | [GitHub](https://github.github.com/gh-stack/) |
+| Bright Bean Studio | 开源自托管的社交媒体管理平台，目前支持 Facebook、Instagram、LinkedIn、TikTok、YouTube 等 10+ 海外主流平台（国内平台支持较少），功能覆盖内容撰写、排期、审批、发布、统一收件箱与客户门户等完整工作流。 | 2026-03-25 | 考拉认为：SaaS 工具长期按账号数和席位数收费，对独立客户代运营的中小机构来说成本高企；自托管方案的核心价值不只是省钱，更是掌握数据和凭证的主动权；不过项目使用 AGPL，需要注意 license 风险。 | [BV1qmoFBzE1e · 03:15](https://www.bilibili.com/video/BV1qmoFBzE1e?t=195) | [GitHub](https://github.com/brightbeanxyz/brightbean-studio) |
 
 ## 多媒体与图形
 
@@ -159,6 +164,7 @@ toc:
 | dotlottie-web | LottieFiles 官方推出的网页动画播放器，基于 Rust + WebAssembly 实现，同时支持 Canvas 2D、WebGL2 与实验性的 WebGPU 后端，并原生支持 dotLottie v2 的状态机、运行时主题切换与嵌入音频，提供 Vanilla JS、React、Vue 等六套 SDK。 | 2023-10-20 | 考拉认为 Lottie 生态长期被各端实现不一致拖累，同一个动画 iOS 上正常、Web 上掉帧或样式错位是常态；LottieFiles 这次用 Rust 内核统一全平台渲染，是从根本上解决问题；dotLottie v2 加入状态机和主题切换，也把 Lottie 从「播放动画」推向「交互组件」，对设计师和前端协作流程是个升级。 | [BV1yYG76oESe · 02:23](https://www.bilibili.com/video/BV1yYG76oESe?t=143) | [GitHub](https://github.com/LottieFiles/dotlottie-web) |
 | Datatype | 开源 OpenType 可变字体，通过连字替换（ligature）把纯文本表达式（如 {b:30,70,50,90}）直接渲染成柱状图、折线图与饼图，无需 JavaScript 与图片，字体带宽度与字重两个可变轴。 | 2026-02-15 | 认为这是一个非常有想象力的工程巧思，把数据可视化压缩到一个 WOFF2 文件里，对邮件、PDF、终端、静态报表这些 JS 跑不起来的场景特别合适；但局限明显——没有交互、数据范围限制在 0–100、最多 20 个点，可理解为一种技术创意的体现。 | [BV1VsLJ6QEbN · 02:51](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=171) | [GitHub](https://github.com/franktisellano/datatype) |
 | Open Design | 本地优先的开源 AI 设计生成平台，定位为 Claude Design 的开源替代；不内置 Agent，而是复用用户本地的 Coding Agent（Claude Code、Codex、Cursor 等），负责 Design System 注入、提示词堆栈编排与沙盒化预览渲染，并支持 HTML/PDF/PPTX 等多格式导出。 | 2026-04-28 | 考拉认为：AI 设计赛道关注度迅速上升，但闭源供应商绑定让许多团队观望；Open Design 以极快速度做出可插拔、多后端替代，并内植 71 个品牌级 Design System，本质是把 Claude Design 的工作流封装价值提取成开放工具；但作为商业产品的 Claude Design 仍能像 Claude Code 一样通过数据驱动持续改进模型与产品，这是开源项目一时难以匹敌的。 | [BV1U19ZBLEcf · 00:01](https://www.bilibili.com/video/BV1U19ZBLEcf?t=1) | [GitHub](https://github.com/nexu-io/open-design) |
+| OpenPencil | 开源的 AI 原生设计编辑器，定位为 Figma 的开源替代；可原生打开并读写 .fig 文件，内置约 90 个工具的对话式 AI（可作为 MCP Server 接入 Claude Code/Cursor），支持 WebRTC 点对点实时协作、无头 CLI，并能导出 Tailwind/HTML/CSS 等代码。 | 2026-02-27 | 考拉认为：Figma 在 AI 时代的态度一直让人琢磨不透，在 API 开放性上更是表现得十分保守；OpenPencil 尽管在兼容性上还存在一些问题，但能让 Agent 方便地读写设计稿，具有突破 Figma 固有市场的潜力；当然，本周发布的 Claude Design 更是对设计 SaaS 的一大挑战。 | [BV1qmoFBzE1e · 00:57](https://www.bilibili.com/video/BV1qmoFBzE1e?t=57) | [GitHub](https://github.com/open-pencil/open-pencil) |
 
 ## 办公与演示
 
