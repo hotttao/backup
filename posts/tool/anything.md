@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:40+08:00
+lastmod: 2026-08-17T18:43:42+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -52,6 +52,7 @@ toc:
 | BUSY Bar | BUSY Bar 是一款带有 LED 点阵显示屏的开源效率小工具，可帮助专注工作、屏蔽手机与电脑通知；支持高度自定义，并能通过 Matter/HomeKit 协议与 Google Home、Apple Home 等智能家居联动，还提供 HTTP API 与多语言 SDK。 | 2024-11-28 | 认为对于工作繁忙的人来说，一款高颜值的可爱工具不仅有实用性，还能带来情绪价值。 | [BV1PudqYZE8r · 02:00](https://www.bilibili.com/video/BV1PudqYZE8r?t=120) | [官网](https://busy.bar) |
 | Atuin Desktop | 本地优先（local-first）、可执行的可视化 Runbook 编辑器，外观像文档、运行起来像终端；支持链式脚本块、嵌入式终端、数据库客户端与 Prometheus 图表，基于 CRDT 通过 Atuin Hub 同步协作。 | 2025-04-22 | 仅作功能介绍，未给出明确评价。 | [BV1pijczvE8K · 02:44](https://www.bilibili.com/video/BV1pijczvE8K?t=164) | [GitHub](https://github.com/atuinsh/desktop) |
 | Zodest | 基于 Zod 的现代化 CLI 构建器，完全类型安全、极轻量且无运行时依赖（仅依赖 Zod），支持命令别名、嵌套命令以及全局与命令级选项，配置灵活。 | 2025-04-18 | 考拉认为，在构建 CLI 时，参数解析和校验是必不可少的环节；Zodest 基于 Zod 在类型安全与运行时参数校验上的优势可充分发挥，同时保持了轻量化。 | [BV1wQVFzREBr · 03:49](https://www.bilibili.com/video/BV1wQVFzREBr?t=229) | [GitHub](https://github.com/tunnckoCore/zodest) |
+| Makepad | 用 Rust 编写的开源跨平台 UI 框架/创意软件开发平台，支持 Windows、Linux、macOS、iOS、Android 与 Web，采用基于 Shader 的渲染架构与声明式 DSL，编译速度快、支持实时样式调整。 | 2025-05-18 | Koala 介绍 Makepad 采用基于 Shader 的架构，拥有极高的性能和灵活性，支持 Windows/Linux/macOS/iOS/Android 及 Web，并有一套声明式的设计 DSL 方便创建丰富的响应式 UI，编译速度超快且支持实时样式调整，可流畅迭代；主要作功能介绍，未给出明确优劣评价。 | [BV1CqJgziEB1 · 02:43](https://www.bilibili.com/video/BV1CqJgziEB1?t=163) | [GitHub](https://github.com/makepad/makepad) |
 
 ## 代码质量与 Code Review
 
@@ -121,6 +122,8 @@ toc:
 | bazza/ui | bazza/ui 是一个基于 shadcn/ui 设计的复杂表格过滤器组件，将 shadcn/ui 组件与 TanStack Table 的 headless 表格结合，提供功能完整、视觉风格统一且端到端类型安全的过滤器组件。 | 2024-04-07 | 认为基于 shadcn/ui 的开源生态还在持续壮大，近期 shadcn 还提供了 Registry API 的统一标准，让 bazza/ui 这样的第三方组件可以通过统一的 Schema 复用 shadcn/ui 的 CLI 等工具链，进一步提升开发者体验。 | [BV1tYRiYbEt6 · 03:22](https://www.bilibili.com/video/BV1tYRiYbEt6?t=202) | [GitHub](https://github.com/BazzaDEV/ui) |
 | Datastar | 轻量级超媒体（hypermedia）框架，将 HTMX 式的服务端交互与 Alpine.js 式的客户端响应式能力合二为一，通过 SSE 实现服务端渲染与实时更新，体积比 HTMX 与 Alpine 更小。 | 2024-12-11 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 01:02](https://www.bilibili.com/video/BV1ij5fz2En9?t=62) | [GitHub](https://github.com/starfederation/datastar) |
 | HelloCSV | 一个前端专用、框架无关的开源 CSV 导入库（打包后约 99KB），可轻松嵌入任意 Web 应用，提供美观可定制的四步导入流程（映射、转换、校验、预览），完全在浏览器端运行，数据不离开用户应用。 | 2025-03-29 | Koala 主要作功能介绍，称其为处理用户上传 CSV 的“好帮手”，未给出更深入的明确评价。 | [BV1vwEuzmErT · 02:27](https://www.bilibili.com/video/BV1vwEuzmErT?t=147) | [GitHub](https://github.com/HelloCSV/HelloCSV) |
+| GoVisual | 一款零配置、纯 Go 的 HTTP 请求可视化与调试器，专为本地 Go Web 应用开发设计，可监控并深入检查请求头/体/状态码/时间，追踪中间件执行流程以定位性能瓶颈，并可选集成 OpenTelemetry。 | 2025-05-04 | Koala 认为，GoVisual 就像一个 Go Web 开发的“显微镜”，让调试更直观高效；工具本身虽简单，但十分实用。 | [BV1CqJgziEB1 · 00:58](https://www.bilibili.com/video/BV1CqJgziEB1?t=58) | [GitHub](https://github.com/doganarif/GoVisual) |
+| TanStack DB | 构建在 TanStack Query 之上的嵌入式客户端数据库/响应式数据存储，提供集合（collections）、实时查询（live queries）与乐观变更（optimistic mutations），利用差分数据流实现亚毫秒级的增量更新。 | 2025-07-29 | Koala 认为，TanStack DB 核心是快速查询引擎与细粒度的响应式更新，并支持事务式的数据操作；总体而言，如果你正在寻找一个能够提升前端性能、简化数据管理的工具，TanStack DB 值得关注。 | [BV1CqJgziEB1 · 03:11](https://www.bilibili.com/video/BV1CqJgziEB1?t=191) | [官网](https://tanstack.com/db) |
 
 ## 测试与质量保障
 
@@ -266,6 +269,9 @@ toc:
 | Tutorial Codebase Knowledge | 由 PocketFlow 团队开发的教程项目，爬取 GitHub 代码库并构建知识库，将复杂代码转化为带清晰可视化的、初学者友好的交互式教程（类似 DeepWiki）。 | 2025-04-02 | 考拉认为 PocketFlow 的推广策略十分值得学习，其开发的 Tutorial Codebase Knowledge 让用户能快速感受用 PocketFlow 开发 Agent 内容的潜力。 | [BV1pijczvE8K · 01:30](https://www.bilibili.com/video/BV1pijczvE8K?t=90) | [GitHub](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge) |
 | ActorCore | 由 Rivet 团队出品的有状态 Serverless 框架，可部署到 Rivet、Cloudflare Workers、Bun、Node.js；每个计算单元就像一个微型服务器，在请求之间保持状态，适合构建 AI 智能体协作应用、实时应用与游戏服务器。 | 2025-02-05 | 考拉认为 ActorCore 是一个十分有趣的有状态 Serverless 应用开发方案，其核心有状态计算让计算单元像微型服务器一样在请求之间保留数据，非常适合实时性要求高的应用。 | [BV1pijczvE8K · 03:39](https://www.bilibili.com/video/BV1pijczvE8K?t=219) | [GitHub](https://github.com/rivet-gg/actor-core) |
 | TmuxAI | 常驻 tmux 会话的 AI 终端助手，能观察并理解终端面板内容，通过自然语言交互给出命令建议，支持观察模式、准备模式与监视模式，开源且可免费按自身工作流定制。 | 2025-04-19 | 考拉认为，提问式的交互方式想必是 AI 终端的第一步，未来也会有自动补全等更智能的实现功能出现。 | [BV1wQVFzREBr · 00:01](https://www.bilibili.com/video/BV1wQVFzREBr?t=1) | [GitHub](https://github.com/alvinunreal/tmuxai) |
+| WeClone | 利用微信等聊天记录微调大语言模型，打造个性化数字分身（学习口头禅与说话习惯），可绑定到聊天机器人代替你回复，并强调本地训练与数据隐私。 | 2025-05-11 | Koala 认为，WeClone 考虑到了隐私问题，所有的数据处理和模型训练都可以在本地进行，保证你的数据安全；如果你对数字分身或模型微调训练感兴趣，不妨从这个项目入手进行学习。 | [BV1CqJgziEB1 · 00:01](https://www.bilibili.com/video/BV1CqJgziEB1?t=1) | [GitHub](https://github.com/xming521/WeClone) |
+| Airweave | 开源的 AI 上下文检索层，通过连接器把各类应用、数据库与 API 的内容同步并转化为 Agent 可理解的语义知识，提供统一搜索接口，支持 Python/TypeScript SDK 与 MCP 兼容。 | 2024-12-24 | Koala 主要作功能介绍：称 Airweave 是 AI 搜索聚合工具，能让 AI Agent 具备在各种应用里进行语义搜索的能力，支持 25+（现 50+）数据源，提供 Python 和 JS 的 SDK 上手简单，同时提供与 MCP 兼容的接口，使它可以被快速接入更多 AI 应用；未给出明确优劣评价。 | [BV1CqJgziEB1 · 00:30](https://www.bilibili.com/video/BV1CqJgziEB1?t=30) | [GitHub](https://github.com/airweave-ai/airweave) |
+| SuperMemory | 面向 AI 的通用记忆与上下文引擎（API），为 LLM/Agent 提供长期记忆与上下文，内部封装向量数据库、数据解析与扩展性，开发者无需自行搭建底层基础设施即可开箱即用。 | 2024-02-22 | Koala 认为，SuperMemory 为想快速构建有记忆、能理解用户历史对话与数据的 AI 应用的开发者，提供了一个非常方便的开箱即用方案，省去了许多底层基础设施（向量库、数据解析、扩展性）的搭建工作。 | [BV1CqJgziEB1 · 01:52](https://www.bilibili.com/video/BV1CqJgziEB1?t=112) | [GitHub](https://github.com/supermemoryai/supermemory) |
 
 ## 数据工程与存储
 
