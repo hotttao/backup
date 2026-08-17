@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:29+08:00
+lastmod: 2026-08-17T18:39:31+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -57,6 +57,7 @@ toc:
 | DiffsHub | GitHub 代码差异查看器，把 URL 里的 github.com 换成 diffshub.com 即可打开，用虚拟化渲染撑住超大规模 diff，PR、commit、compare、patch 等页面都能接管，宣称能流畅打开 Linux 内核版本间的对比。 | 2026-05-20 | 考拉认为背后的公司 Pierre 之前介绍过他们的两个底层组件 FileTree 和 Diff，DiffsHub 就是基于这两个组件搭出来的上层产品，可以看出他们在往 Patch Review 这个垂直方向深耕；这个时机也很合理——AI 让代码产出速度爆炸增长，Code Review 的工具体验反而成了瓶颈，GitHub 原生 diff 在大 PR 下卡顿是公认痛点，垂直工具用更好的工程实现来抢占体验是个合理的切入角度。 | [BV1yYG76oESe · 01:28](https://www.bilibili.com/video/BV1yYG76oESe?t=88) | [官网](https://diffshub.com/) |
 | dependency-cruiser | 通过配置文件定义依赖规则（如禁止客户端代码引用服务端模块），在 CI 中自动检查依赖违规，并能生成可可视化的依赖图，帮助理解代码结构。 | 2016-11-20 | 考拉认为在 AI 参与开发的项目中架构越发重要；该工具把原本靠 Code Review 人工把关的事自动化了；声明式配置易纳入现有工作流，但规则设计需要团队对架构有清晰共识，否则易流于形式。 | [BV1txNKztENM · 02:53](https://www.bilibili.com/video/BV1txNKztENM?t=173) | [GitHub](https://github.com/sverweij/dependency-cruiser) |
 | Diffs (@pierre/diffs) | 由 The Pierre Computer Company 开源的 diff 与代码渲染库,基于 Shiki 3 实现语法高亮与主题(自动浅色/深色),提供 split(并排)与 stacked(合并)两种布局、词级差异高亮、自定义 hunk 分隔与头部、合并冲突解决 UI、评论线程、行选择(点击拖拽)与 token hover 回调等原语;提供 Web Components、React、SSR、Cloudflare Worker 多种入口,不捆绑任何上层产品,作为独立工具维护。 | 2025-12-10 | 考拉认为,在 AI Coding 盛行的时代,开发者对 AI 产出的代码进行 Code Review 越来越重要,更智能的 Dev 工具是大势所趋。Diffs 让 Review 的关注点更加集中,未来我们还可能看到这个领域的更多创新。 | [BV1h56SBtEzh · 01:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=115) | [GitHub](https://github.com/pierrecomputer/pierre) |
+| GitDiagram | 将任意 GitHub 仓库一键转换为交互式系统架构图，可点击图中组件直接跳转对应源码文件，帮助快速理解代码库结构与模块依赖关系。 | 2024-12-15 | Koala 认为 GitDiagram 使用 Claude 3.5 Sonnet 模型，图表生成速度快、准确度高，无论是快速上手新项目还是梳理已有代码都很有帮助，是代码结合 AI 的有趣运用。 | [BV1QyAueyEjX · 00:01](https://www.bilibili.com/video/BV1QyAueyEjX?t=1) | [GitHub](https://github.com/ahmedkhaleel2004/gitdiagram) |
 
 ## Web 与 JavaScript 开发
 
@@ -99,6 +100,7 @@ toc:
 | Manifest | 一个以单文件方式为前端应用提供完整后端能力的微后端工具，内置数据库、管理面板、REST API 与文件存储等核心功能，可轻松集成到任意前端/移动端框架。 | 2022-09-27 | 考拉认为 Manifest 非常适合快速构建原型或小型项目，尤其是那些希望专注于前端开发的开发者；其性能与可扩展性对于大型项目可能并不足够，但它的易用性和灵活性让人印象深刻，在适合的场景中仍值得尝试。 | [BV1mjNAe4EoR · 01:24](https://www.bilibili.com/video/BV1mjNAe4EoR?t=84) | [GitHub](https://github.com/mnfst/manifest) |
 | Onlook | 一款面向设计师的 React 网站可视化编辑器，支持实时可视化编辑并把修改同步回代码，兼容使用 Tailwind CSS 进行样式处理的 React 站点，并引入了 AI 功能。 | 2024-06-25 | 考拉认为 Onlook 在功能实现上更加重视具有 UI 设计背景用户的使用体验，帮助设计师直接将样式修改建议进一步实现为代码，加强设计与开发团队的协作能力。 | [BV1mjNAe4EoR · 01:54](https://www.bilibili.com/video/BV1mjNAe4EoR?t=114) | [GitHub](https://github.com/onlook-dev/onlook) |
 | Ultra | 一个专为 Deno 设计的现代流式 React 框架，无需任何构建/打包步骤，基于 ESM 与导入映射，由 Deno 和浏览器直接运行源码，并通过动态导入实现按需懒加载路由。 | 2021-06-29 | 考拉认为 Ultra 尤其适合 Deno 生态系统的开发者，可以让应用的前端和后端都不再依赖构建流程；这不仅可以带来开发体验的提升，还可能在 AI 开发的时代与 AI 工具更好地结合。 | [BV1jjN1etEa8 · 03:19](https://www.bilibili.com/video/BV1jjN1etEa8?t=199) | [GitHub](https://github.com/exhibitionist-digital/ultra) |
+| Dexie | 轻量（约 29KB）的 IndexedDB 封装库，提供简洁易用的 API 与响应式查询，方便在浏览器端持久化与查询数据，并易于集成 React、Vue、Svelte 等框架，让 IndexedDB 数据变化实时反映到 UI。 | 2014-02-26 | Koala 认为 Dexie 还提供 Dexie Cloud，可帮助快速搭建本地优先（local-first）应用，并通过云端服务实现设备间的数据同步，是一种有趣的商业化思路。 | [BV1QyAueyEjX · 00:31](https://www.bilibili.com/video/BV1QyAueyEjX?t=31) | [GitHub](https://github.com/dexie/Dexie.js) |
 
 ## 测试与质量保障
 
@@ -147,6 +149,8 @@ toc:
 | Coolify | 一个可自托管、开箱即用的 PaaS 平台，相当于 Vercel/Heroku/Netlify 的开源替代品，提供现代化 UI 与完整 API，可一键部署静态站点、数据库、全栈应用等。 | 2021-01-25 | 考拉认为，如果你是 DevOps 工程师，或者正在寻找一款好用的自动化工具，Coolify 值得尝试；对于基础需求，它的 UI 可以让你使用起来更加轻松愉快，对复杂需求，它的 API 也能让你轻松扩展基础设施规模。 | [BV1jjN1etEa8 · 00:28](https://www.bilibili.com/video/BV1jjN1etEa8?t=28) | [GitHub](https://github.com/coollabsio/coolify) |
 | dockur/windows | 一个开箱即用的容器化运行 Windows 方案，支持自动下载 ISO、KVM 加速，并自带 Web 界面，可通过 Docker Compose/CLI 或 Kubernetes 部署，覆盖 Windows 7 到 Windows 11 等多个版本。 | 2024-01-14 | 考拉认为，如果你需要在 Linux 系统上运行 Windows，或者想在一个隔离的环境中体验 Windows，不妨试试这个项目；除 Windows 之外，dockur 还发布过在容器中运行 macOS 的方案，适合有各类桌面虚拟化需求的用户。 | [BV1jjN1etEa8 · 01:24](https://www.bilibili.com/video/BV1jjN1etEa8?t=84) | [GitHub](https://github.com/dockur/windows) |
 | Kubernetes History Inspector (KHI) | Google Cloud 发布的 Kubernetes 日志可视化工具，将海量日志转化为交互式的时间线视图，提供资源历史、多类型日志关联展示与集群资源拓扑图等能力，便于故障排查。 | 2025-01-22 | 考拉认为 KHI 特别适合在复杂的 Kubernetes 环境中进行故障排查和问题定位；它的交互式时间线和强大的过滤功能，能够帮助你快速从大量日志中找到关键信息。 | [BV1jjN1etEa8 · 02:22](https://www.bilibili.com/video/BV1jjN1etEa8?t=142) | [GitHub](https://github.com/GoogleCloudPlatform/khi) |
+| BentoML | 开源的模型服务框架，用于构建推理 API、任务队列与复合 AI 系统；支持本地开发调试、与主流推理引擎集成，一键打包为 Docker 镜像部署，并内置模型管理与可观测指标，商业云支持按流量自动水平扩缩与快速冷启动。 | 2019-04-02 | 仅作功能介绍，未给出明确评价。（字幕主要介绍其简化 LLM 部署、本地调试、Docker 打包与云端自动扩缩/冷启动等能力，无『Koala 认为』式主观评价） | [BV1QyAueyEjX · 02:24](https://www.bilibili.com/video/BV1QyAueyEjX?t=144) | [GitHub](https://github.com/bentoml/BentoML) |
+| Airbroke | 轻量、兼容 Airbrake/Sentry 协议、基于 PostgreSQL 的开源异常追踪平台，用于收集与管理应用错误、在界面查看错误报告并分析；内置多种登录认证，高负载下数据库占用小，并尝试集成 AI 助手分析问题，适合小型团队自行搭建。 | 2023-05-05 | Koala 认为 Airbroke 的设计目标是简单和高效，即使在高负载下也能保持较小的数据库占用；除基本异常追踪外，还提供如用 cURL 命令重现 HTTP 异常这样的精细功能，并尝试集成 AI 助手分析问题，适合小型团队和业务自行搭建使用。 | [BV1QyAueyEjX · 03:21](https://www.bilibili.com/video/BV1QyAueyEjX?t=201) | [GitHub](https://github.com/icoretech/airbroke) |
 
 ## AI 模型与推理
 
@@ -165,6 +169,7 @@ toc:
 | Osaurus | 专为 macOS(Apple Silicon)打造的原生 AI 运行时 / LLM 服务器。集成 GPT、Claude、Llama 等模型,基于 Apple MLX 框架实现优化的本地推理;约 10MB 体积,通过集成 MCP 原生工具实现浏览器自动化、文件系统操作与 Git 工作流集成;可作为 MCP server 供 Cursor、Claude Desktop 等 Agent 调用,并支持连接远程模型提供商。 | 2025-08-17 | 考拉认为,你可以将 Osaurus 看作 Mac 上原生增强的 Ollama;近期该项目发布了 macOS MCP 工具集,让 Ollama 更好地操作 Mac 系统。对 MLX 的支持,在 Mac 硬件越来越强大的今天,让更多用户有了本地运行模型的动力。 | [BV11gixBMEMs · 00:01](https://www.bilibili.com/video/BV11gixBMEMs?t=1) | [GitHub](https://github.com/osaurus-ai/osaurus) |
 | Kokoro | 一个先进的文本转语音（TTS）模型，仅约 8200 万参数，却在 TTS Space Arena 中排名第一。使用不到 100 小时音频数据训练，性能却超越参数更多、数据量更大的模型；v0.19 版本以 Apache 2.0 许可发布，支持美式与英式英语，并提供多个语音包。 | 2024-12-25 | 认为 Kokoro 的高效表现表明传统 TTS 模型的 scaling law 可能比预期更陡峭；其轻量级设计与开源许可，使其成为开发者和研究者的理想选择，在资源有限的情况下优势更为明显。 | [BV14Vwqe2EBR · 01:29](https://www.bilibili.com/video/BV14Vwqe2EBR?t=89) | [Hugging Face](https://huggingface.co/hexgrad/Kokoro-82M) |
 | DeepSeek-R1 | 基于强化学习训练的推理大模型，无需依赖监督微调即可激发链式思考与推理能力，在数学、代码与推理任务上表现出色，并提供蒸馏到小模型的版本与开源权重/API。 | 2025-01-20 | 考拉认为 DeepSeek-R1 的独特之处在于它通过强化学习直接增强模型的推理能力，避免了传统方法中的一些限制；其开源版本和 API 让更多用户可以尝试，同时也展示了国产大模型的研究实力。 | [BV1dPFKeeEuw · 03:40](https://www.bilibili.com/video/BV1dPFKeeEuw?t=220) | [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
+| Orate | 参考 Vercel AI SDK 设计的 TypeScript 语音 AI SDK 封装，以统一 API 实现语音转文字、文字转语音、语音变声与语音处理，整合 OpenAI、ElevenLabs、AssemblyAI 等厂商，让开发者用一套接口调用各家能力。 | 2024-08-01 | 仅作功能介绍，未给出明确评价。（字幕介绍其参考 AI SDK 实现、统一调用 OpenAI/ElevenLabs 等、可省去语音应用开发麻烦，无『Koala 认为』式主观评价） | [BV1QyAueyEjX · 03:50](https://www.bilibili.com/video/BV1QyAueyEjX?t=230) | [官网](https://orate.dev) |
 
 ## AI Agent 与智能体开发
 
@@ -274,6 +279,7 @@ toc:
 | ChartGPU | 基于 WebGPU 的开源高性能图表库，使用 TypeScript 编写，将 LTTB 降采样、命中检测与渲染搬上 GPU，支持折线、面积、柱状、散点、饼图、K 线等常见类型，并提供 React 绑定（chartgpu-react），适合大规模数据可视化。 | 2026-01-17 | 浏览器端的数据可视化一直受限于 Canvas 和 SVG 的性能瓶颈，在大规模数据可视化中表现一般；ChartGPU 选择了一条不同的道路，充分利用 WebGPU 渲染图表，把更多计算任务放入 WebGPU 中；在功能层面它支持折线图、柱状图、K 线图等常见类型，类手势交互和缩放滑块；项目用 TypeScript 编写，配套的 React 绑定也已就绪。WebGPU 用于图表是个有趣的技术选型，但目前 WebGPU 的浏览器兼容性较弱，生产环境还不推荐使用；对 WebGPU API 有兴趣的小伙伴，可以通过该项目学习其中细节。 | [BV1NozxBmEe3 · 02:56](https://www.bilibili.com/video/BV1NozxBmEe3?t=176) | [GitHub](https://github.com/ChartGPU/ChartGPU) |
 | Pdftris | 一个在 PDF 文件里玩俄罗斯方块的趣味项目。作者利用现代浏览器 PDF 引擎支持 JavaScript 的特性，通过显示/隐藏、缩放字体来模拟像素点，并通过文本框实现键盘输入，在 PDF 中实现了可玩的俄罗斯方块。 | 2025-01-04 | 认为这个项目不仅有趣，还提醒我们 PDF 文件的安全性可能比想象中更复杂；虽浏览器对 PDF 中 JavaScript 执行有严格限制，但这种技术仍可能被滥用，作为一次技术探索确实让人眼前一亮。 | [BV1TLcgeqEQ8 · 01:30](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=90) | [GitHub](https://github.com/ThomasRinsma/pdftris) |
 | Logo Creator | 一个免费开源的 Logo 生成器，基于 Together AI 平台上的 Flux 模型，根据用户输入快速生成各种风格的 Logo，本身使用 Next.js、Shadcn UI 与 Tailwind CSS 等技术栈，便于二次开发。 | 2024-11-06 | 考拉认为 Logo Creator 让个性化 Logo 设计的门槛大幅降低，每个人都能轻松拥有美观及独特的 logo；开源特性也让它拥有无限可能。 | [BV1jjN1etEa8 · 00:55](https://www.bilibili.com/video/BV1jjN1etEa8?t=55) | [GitHub](https://github.com/Nutlope/logocreator) |
+| Eleven Reader | ElevenLabs 出品的 AI 听书/朗读应用，可将书籍、文章、PDF、ePub 甚至新闻邮件等文本用自然逼真的 AI 语音朗读出来，支持 32 种语言与多种可选声音，并内置类播客的有声化玩法。 | 2024-06-01 | Koala 认为 Eleven Reader 是通勤、健身、学习的绝佳伴侣，目前免费，建议感兴趣的用户下载体验，用耳朵享受科技乐趣。 | [BV1QyAueyEjX · 01:29](https://www.bilibili.com/video/BV1QyAueyEjX?t=89) | [官网](https://elevenreader.io) |
 
 ## 办公与演示
 
