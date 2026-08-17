@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:32+08:00
+lastmod: 2026-08-17T18:43:34+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -116,6 +116,7 @@ toc:
 | Valibot | Valibot 是一个模块化、类型安全的 TypeScript schema 校验库，类似 Zod 但包体积极小（最小可低于 700 字节），支持 100% 测试覆盖率。 | 2023-07-07 | 认为与 Zod 相比，Valibot 在开发体验和打包体积上有一定优势，可根据项目需求灵活选用。 | [BV1A3ZBYAE8a · 02:52](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=172) | [GitHub](https://github.com/fabian-hiller/valibot) |
 | Bun | Bun 是一个轻量级的 JavaScript 运行时，采用异步事件驱动架构并复用 npm 等工具链，注重嵌入式与跨设备支持，目标是以较少开销在桌面端、移动端等多种环境运行 JS 代码。 | 2021-04-14 | 认为 Bun 的模块化设计很有趣，你可以根据需要选择不同模块，避免不必要的依赖和性能损耗；如果你在寻找一个轻量级的 JS 运行时，Bun 是一个新的、值得关注的选项。 | [BV1tYRiYbEt6 · 02:52](https://www.bilibili.com/video/BV1tYRiYbEt6?t=172) | [GitHub](https://github.com/oven-sh/bun) |
 | bazza/ui | bazza/ui 是一个基于 shadcn/ui 设计的复杂表格过滤器组件，将 shadcn/ui 组件与 TanStack Table 的 headless 表格结合，提供功能完整、视觉风格统一且端到端类型安全的过滤器组件。 | 2024-04-07 | 认为基于 shadcn/ui 的开源生态还在持续壮大，近期 shadcn 还提供了 Registry API 的统一标准，让 bazza/ui 这样的第三方组件可以通过统一的 Schema 复用 shadcn/ui 的 CLI 等工具链，进一步提升开发者体验。 | [BV1tYRiYbEt6 · 03:22](https://www.bilibili.com/video/BV1tYRiYbEt6?t=202) | [GitHub](https://github.com/BazzaDEV/ui) |
+| Datastar | 轻量级超媒体（hypermedia）框架，将 HTMX 式的服务端交互与 Alpine.js 式的客户端响应式能力合二为一，通过 SSE 实现服务端渲染与实时更新，体积比 HTMX 与 Alpine 更小。 | 2024-12-11 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 01:02](https://www.bilibili.com/video/BV1ij5fz2En9?t=62) | [GitHub](https://github.com/starfederation/datastar) |
 
 ## 测试与质量保障
 
@@ -195,6 +196,8 @@ toc:
 | Unsloth | 让微调大语言模型速度翻倍并节省约 70% 显存、对新手友好的训练框架。 | 2023-11-29 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:29](https://www.bilibili.com/video/BV1G5ASetENw?t=29) | [GitHub](https://github.com/unslothai/unsloth) |
 | Mistral OCR | Mistral 推出的文档理解/解析服务，以低成本、极高准确度将 PDF、扫描件等多页文档解析为结构化 Markdown，支持表格、公式、图片等复杂排版，号称 OCR 新标杆。 | 2025-03-06 | Koala 介绍 Mistral OCR 是文档 OCR 的新标杆，能以极低成本、极高准确度把 PDF、扫描件这类多页复杂文档解析成结构化 Markdown，表格、公式、图片等都能很好地保留；相比传统 OCR 方案，它在复杂排版上的表现尤为突出。 | [BV1gLR8Y2E8W · 00:01](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=1) | [官网](https://mistral.ai/news/mistral-ocr) |
 | Lorax | Lorax（LoRAX）是 Predibase 开发的多 LoRA 推理服务器，可在单张 GPU 上动态加载并服务成百上千个微调适配器（来自 Hugging Face、Predibase 或本地），兼顾吞吐与延迟。 | 2023-10-20 | 认为 Predibase 近期因提供类似 OpenAI 强化微调的功能而受到关注，模型微调是 AI 产品化的必经之路，而 Lorax 正是为大量微调场景设计的推理引擎。 | [BV1A3ZBYAE8a · 03:48](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=228) | [GitHub](https://github.com/predibase/lorax) |
+| Cloudflare AutoRAG | Cloudflare 提供的全托管检索增强生成（RAG）流水线，自动完成数据摄取、分块、向量化与存储，并支持自动更新索引，让开发者无需管理底层基础设施即可构建基于自有数据的 AI 应用。 | 2025-04-07 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:00](https://www.bilibili.com/video/BV1ij5fz2En9?t=120) | [官网](https://developers.cloudflare.com/autorag/) |
+| smartfunc | 轻量优雅的 Python 工具库，基于 LLM 库与 Jinja2 模板引擎，将函数 docstring 解析为 prompt 并自动生成对应的 LLM 函数，支持 Pydantic 结构化返回与异步调用。 | 2025-03-12 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:58](https://www.bilibili.com/video/BV1ij5fz2En9?t=178) | [GitHub](https://github.com/koaning/smartfunc) |
 
 ## AI Agent 与智能体开发
 
@@ -245,6 +248,7 @@ toc:
 | GhidraMCP | GhidraMCP 是一个 MCP 服务器，将 Ghidra 的反编译、重命名方法/数据、列出方法/类/导入/导出等逆向能力暴露给 LLM 与各类 MCP 客户端，实现 AI 自主逆向工程。 | 2025-03-23 | 认为该工具对安全研究人员和逆向工程师来说是福音，将 Ghidra 的能力融入其中让逆向分析更智能高效，且基于 MCP 的通用性可在代码编辑器和聊天工具等多种 MCP 客户端中使用。 | [BV1A3ZBYAE8a · 01:27](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=87) | [GitHub](https://github.com/LaurieWired/GhidraMCP) |
 | GitMCP | GitMCP 是一个免费开源的 MCP 工具，能把任意 GitHub 项目变成 AI 助手的知识库，让 AI 直接访问仓库代码与文档以更好地理解项目、减少幻觉，无需安装任何东西。 | 2025-03-29 | 认为除阅读代码外，未来 GitMCP 如果能进一步阅读代码文件的 commit 历史以及浏览 issue 列表，会让更多问题得以解决。 | [BV1PudqYZE8r · 00:31](https://www.bilibili.com/video/BV1PudqYZE8r?t=31) | [GitHub](https://github.com/idosal/git-mcp) |
 | Browser MCP | Browser MCP 是一个 MCP 服务器，通过 MCP 协议连接 AI 助手与你的浏览器，让 AI 代表你自动执行网页任务（自动填表、读取信息、抓取数据等），可利用你现有的浏览器配置保持登录状态。 | 2025-03-28 | 认为 Browser MCP 的特点是速度快、安全性高，能利用现有浏览器配置保持登录状态，甚至避开一些反爬虫机制；在 MCP 的帮助下，它已支持 Cursor、Claude、Windsurf、VSCode 等工具。 | [BV1PudqYZE8r · 03:51](https://www.bilibili.com/video/BV1PudqYZE8r?t=231) | [GitHub](https://github.com/BrowserMCP/mcp) |
+| Plandex | 开源的终端型 AI 编程代理，专为大型、跨多文件、多步骤的编码任务设计，支持高达 200 万 token 的上下文与累积差异审查沙盒（diff sandbox），并将 AI 改动与项目文件隔离。 | 2023-10-24 | 考拉认为，与 Claude Code 和 OpenAI Codex 类似，Plandex 也是基于终端的 AI 开发工具，但功能更为丰富，且不与任何 AI 厂商绑定；它希望在充分利用 AI 优势的同时，避免在项目中留下混乱。 | [BV1ij5fz2En9 · 00:01](https://www.bilibili.com/video/BV1ij5fz2En9?t=1) | [GitHub](https://github.com/plandex-ai/plandex) |
 
 ## 数据工程与存储
 
@@ -269,6 +273,7 @@ toc:
 | DuckDB | 高性能嵌入式（in-process）分析型数据库；2025 年 3 月推出本地图形界面（Local UI），让用户无需命令行即可在浏览器中与 DuckDB 交互、运行 SQL 查询与浏览数据。 | 2025-03-12 | Koala 介绍 DuckDB 推出了本地图形界面（Local UI），让用户无需命令行就能在浏览器中与 DuckDB 数据库交互、运行 SQL 查询并浏览数据，降低了这款嵌入式分析数据库的使用门槛。 | [BV1UYQbYeELx · 03:27](https://www.bilibili.com/video/BV1UYQbYeELx?t=207) | [官网](https://duckdb.org) |
 | DiceDB | 面向实时应用的开源内存数据库，兼容 Redis 协议并支持基于 SQL 的查询与查询订阅（query subscriptions），主打低延迟与高吞吐，适合需要毫秒级响应的实时场景。 | 2022-08-31 | Koala 介绍 DiceDB 是一个面向实时应用的内存数据库，兼容 Redis 协议并支持基于 SQL 的查询，主打低延迟与高吞吐，适合需要毫秒级响应的实时场景。 | [BV1vXXhYpEbK · 01:57](https://www.bilibili.com/video/BV1vXXhYpEbK?t=117) | [GitHub](https://github.com/dicedb/dicedb) |
 | Postgres Language Server | Postgres Language Server 是 Supabase 社区推出的 PostgreSQL 语言服务器，实现了 Language Server Protocol，为 PL/pgSQL 代码提供自动补全、语法高亮与代码检查等能力。 | 2023-05-18 | 认为拥有 Language Server 之后，不仅日常的开发体验会有所提升，也能基于它进一步开发代码相关的 AI 工具，提升 SQL 生成的准确性。 | [BV1tYRiYbEt6 · 02:24](https://www.bilibili.com/video/BV1tYRiYbEt6?t=144) | [GitHub](https://github.com/supabase-community/postgres-language-server) |
+| SpacetimeDB | 将数据库与应用服务器合二为一的开源系统，客户端可直接连接数据库，业务逻辑以 Rust / C# 编写的模块编译为 WebAssembly 运行，适合构建大型多人在线游戏。 | 2023-06-17 | 考拉认为 SpacetimeDB 是一个很有意思的开源项目，它把数据库和服务器合二为一，让少量开发者也能构建出大型多人游戏（包括后端逻辑、玩家实时位置、持久化状态），从而不再需要云上复杂的多服务架构。 | [BV1ij5fz2En9 · 01:32](https://www.bilibili.com/video/BV1ij5fz2En9?t=92) | [GitHub](https://github.com/clockworklabs/SpacetimeDB) |
 
 ## 协作与项目管理
 
@@ -399,3 +404,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Lynx | 字节跳动开源的跨平台原生 UI 开发框架，使用 React 等前端技术栈即可构建同时运行于 Android、iOS 与 Web 的高性能原生应用。 | 2025-03-05 | Koala 介绍 Lynx 是字节跳动开源的跨平台原生 UI 开发框架，开发者可以用 React 等熟悉的前端技术栈，构建同时运行在 Android、iOS 和 Web 上的原生应用；它主打原生渲染与高性能，让一套代码就能覆盖多端。 | [BV1gLR8Y2E8W · 01:28](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=88) | [官网](https://lynxjs.org) |
+
+## 身份验证与授权
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Better Auth | 类型安全、功能全面的开源身份验证框架，易于集成（如连接 Prisma ORM 并注册页面即可），可作为 Auth.js / NextAuth 的替代方案。 | 2024-05-19 | 考拉认为 Better Auth 是一款近期在开发者社区获得很高评价的身份验证方案，用起来简单且类型安全，相比 Auth.js 更容易集成（例如连接数据库时只需连接到 Prisma ORM 并注册一个注册页面即可），对于寻找简单而强大身份验证方案的新项目值得一试。 | [BV1ij5fz2En9 · 02:28](https://www.bilibili.com/video/BV1ij5fz2En9?t=148) | [GitHub](https://github.com/better-auth/better-auth) |
