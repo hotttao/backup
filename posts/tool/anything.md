@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:21+08:00
+lastmod: 2026-08-17T18:39:23+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -93,6 +93,7 @@ toc:
 | mitmproxy2swagger | 一个将 mitmproxy 捕获的网络流量转换为 OpenAPI 3.0 规范 Swagger 文档的开源工具。只需运行应用程序并捕获流量（或导入浏览器 DevTools 导出的 HAR 文件），即可自动逆向分析程序的 API；通过 pip 或 Docker 即可快速上手。 | 2022-05-11 | 认为与 API Parrot 相比，该工具代码已经开源，并提供 mitmproxy 与 HAR 两种常见流量数据格式的解析，使用起来更加灵活，对希望掌握这类逆向工具实现原理的开发者更值得深入了解。 | [BV1nrrPYdEHH · 02:22](https://www.bilibili.com/video/BV1nrrPYdEHH?t=142) | [GitHub](https://github.com/alufers/mitmproxy2swagger) |
 | Reka UI | 一个开源的 Vue 组件库，专注于提供无样式（unstyled）且可访问性良好的原始组件（headless primitives）。提供丰富的示例与用法，方便开发者快速集成；设计理念是让开发者自由定制样式，同时确保组件可访问性符合 WAI-ARIA 标准。 | 2023-06-22 | 认为越来越多企业尝试出海业务，产品 UI 将面临更严格的可访问性检查，Reka UI 十分适合作为基础组件库使用，其文档和示例非常详细、上手难度较低，是 Vue 生态中较优秀的组件库。 | [BV1TLcgeqEQ8 · 01:55](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=115) | [GitHub](https://github.com/unovue/reka-ui) |
 | AWS Amplify Storage Browser | 一个开源的 React 组件（AWS Amplify 的 connected component），为 Web 应用提供简单的图形界面，让用户直接浏览、下载、上传、复制和删除存储在 S3 对象存储中的数据。支持多种认证方式，包括 Amplify Auth、AWS IAM Identity Center 和自定义认证；除 AWS S3 外也能与各类兼容 S3 协议的对象存储交互。 | 2024-05-01 | 认为 S3 几乎成为互联网场景存储文件的首选，Storage Browser 这一组件非常适合需要与 S3 数据交互的应用场景，开发者无需从头适配 S3 API；虽由 AWS Amplify 团队发布，但能与各类兼容 S3 协议的对象存储交互，实用性大大增加，值得被广泛使用。 | [BV1TLcgeqEQ8 · 02:22](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=142) | [官网](https://ui.docs.amplify.aws/react/connected-components/storage/storage-browser) |
+| ArkType | 一个 TypeScript 运行时的类型校验库。语法与你已熟悉的 TypeScript 完全一致，但提供了更强大的安全校验与代码补全；性能出色（比 Zod 快约 100 倍），编辑器内补全性能也令人惊艳，类型定义更简洁、错误信息更易读、悬停提示更精准，并支持深度自定义错误信息，通过集合论在运行时理解和暴露类型之间的关系。 | 2019-06-21 | 认为 ArkType 通过优化使其特别适合需要高性能和深度类型检查的 TypeScript 项目；如果你对现有类型校验库感到不满，不妨试试 ArkType。 | [BV14Vwqe2EBR · 00:32](https://www.bilibili.com/video/BV14Vwqe2EBR?t=32) | [GitHub](https://github.com/arktypeio/arktype) |
 
 ## 测试与质量保障
 
@@ -104,6 +105,7 @@ toc:
 | Promptfoo | 开源的 LLM/提示词测试框架，用声明式配置定义测试用例，自动对比多个模型输出，并检测提示注入等安全风险；支持接入 CI/CD 并输出合规报告（可映射到 OWASP、NIST 等标准）。 | 2023-04-28 | 考拉认为 LLM 应用进入生产环境后，可观测性与测试覆盖是两大痛点；Promptfoo 把传统软件测试方法论引入 AI 领域，比单纯依赖人工评估更可持续。Anthropic 博客提到其内部也在用该工具做 Agent 质量评估，使其获得更多关注。 | [BV1txNKztENM · 00:28](https://www.bilibili.com/video/BV1txNKztENM?t=28) | [GitHub](https://github.com/promptfoo/promptfoo) |
 | Shannon | Keygraph 开发的白盒 AI 渗透测试工具，分析 Web 应用 / API 源码识别攻击路径，并真正执行漏洞利用（SQL 注入、认证绕过、SSRF、XSS 等）以产出可复现的概念验证报告。 | 2025-09-27 | 考拉认为这是目前最接近 AI 红队想象的开源实现；'无利用不报告'的原则解决了安全扫描误报的痛点。但 AGPL 协议与仅支持白盒测试的限制需要注意；每次扫描消耗 3-5 美元 API 费用，对大型代码库成本不低；更重要的是它真的会实施攻击，千万别在生产环境运行。 | [BV1MgcTzXEjH · 00:31](https://www.bilibili.com/video/BV1MgcTzXEjH?t=31) | [GitHub](https://github.com/KeygraphHQ/shannon) |
 | BundleMon | 免费的包体积监控工具,通过 CI 集成在每次提交时自动比对基线与目标分支,当文件体积或涨幅百分比超出阈值时直接让构建失败;GitHub 评论会生成详细差异报告,历史数据面板支持按天回溯。提供免费托管服务,也支持自托管。 | 2020-06-19 | 考拉认为,构建失败机制比警告通知更有效,能从根本上杜绝在体积优化上的妥协。对开源项目友好,但免费版数据保留策略较严格,PR 仅记录 30 天,企业级场景建议自托管或选择付费版。 | [BV11gixBMEMs · 02:51](https://www.bilibili.com/video/BV11gixBMEMs?t=171) | [GitHub](https://github.com/LironEr/bundlemon) |
+| Lightpanda | 一个专为 headless 模式设计的开源浏览器，特别适合用于 AI 代理、网页抓取和自动化测试等场景。最大特点是极低内存占用与极快执行速度（内存占用比 Chrome 少约 9 倍、执行速度快约 11 倍），支持在页面内执行 JavaScript 和部分 Web API，并兼容 Playwright 与 Puppeteer 工具。 | 2023-02-07 | 认为 Lightpanda 的目标是提供一个轻量级、高性能的无头浏览器方案，尤其适合需要大规模并发处理的场景；虽仍处于 Beta 阶段，但已展现巨大潜力，特别是在资源受限环境中，专注 headless 场景也使其从设计之初保持轻量化。 | [BV14Vwqe2EBR · 00:01](https://www.bilibili.com/video/BV14Vwqe2EBR?t=1) | [GitHub](https://github.com/lightpanda-io/browser) |
 
 ## 运维、部署与基础设施
 
@@ -150,6 +152,7 @@ toc:
 | Open Responses | 致力于完善 AI API 统一标准的开源项目。基于 OpenAI Responses API 风格,另立一套中立的 schema、流式事件方案与工具调用格式,让开发者写一次代码即可切换不同模型;强调可扩展并保留厂商特定功能空间。 | 2026-01-15 | 考拉认为,OpenAI 早期推出的 V1 生成式 API 已成为模型推理领域的标准 API,但后续发布的、对 Agent 更友好的 Responses API 实现更复杂且内部细节不可见、不被社区理解。本次维护中立标准,希望能重新建立对 Agent 友好的 API 标准。 | [BV1tSkWBWEoU · 01:28](https://www.bilibili.com/video/BV1tSkWBWEoU?t=88) | [GitHub](https://github.com/openresponses/openresponses) |
 | TranslateGemma | Google DeepMind 发布的开放权重翻译模型系列,基于 Gemma 3 架构,提供 4B、12B、27B 三个版本,覆盖 55 种语言;12B 模型翻译质量超过 Gemma 3 原版 27B,参数效率显著提升,支持图文多模态翻译,4B 适合移动端、12B 可在笔记本运行;通过 SFT 与强化学习两阶段训练将大模型翻译能力蒸馏进小模型。 | 2026-01-15 | 考拉认为,参数效率确实亮眼,但真正的考验是低资源语言和小语种的实际效果。如果能在保持多模态能力的同时做到轻量化,对边缘部署很有价值。 | [BV1tSkWBWEoU · 02:27](https://www.bilibili.com/video/BV1tSkWBWEoU?t=147) | [Hugging Face](https://huggingface.co/collections/google/translategemma) |
 | Osaurus | 专为 macOS(Apple Silicon)打造的原生 AI 运行时 / LLM 服务器。集成 GPT、Claude、Llama 等模型,基于 Apple MLX 框架实现优化的本地推理;约 10MB 体积,通过集成 MCP 原生工具实现浏览器自动化、文件系统操作与 Git 工作流集成;可作为 MCP server 供 Cursor、Claude Desktop 等 Agent 调用,并支持连接远程模型提供商。 | 2025-08-17 | 考拉认为,你可以将 Osaurus 看作 Mac 上原生增强的 Ollama;近期该项目发布了 macOS MCP 工具集,让 Ollama 更好地操作 Mac 系统。对 MLX 的支持,在 Mac 硬件越来越强大的今天,让更多用户有了本地运行模型的动力。 | [BV11gixBMEMs · 00:01](https://www.bilibili.com/video/BV11gixBMEMs?t=1) | [GitHub](https://github.com/osaurus-ai/osaurus) |
+| Kokoro | 一个先进的文本转语音（TTS）模型，仅约 8200 万参数，却在 TTS Space Arena 中排名第一。使用不到 100 小时音频数据训练，性能却超越参数更多、数据量更大的模型；v0.19 版本以 Apache 2.0 许可发布，支持美式与英式英语，并提供多个语音包。 | 2024-12-25 | 认为 Kokoro 的高效表现表明传统 TTS 模型的 scaling law 可能比预期更陡峭；其轻量级设计与开源许可，使其成为开发者和研究者的理想选择，在资源有限的情况下优势更为明显。 | [BV14Vwqe2EBR · 01:29](https://www.bilibili.com/video/BV14Vwqe2EBR?t=89) | [Hugging Face](https://huggingface.co/hexgrad/Kokoro-82M) |
 
 ## AI Agent 与智能体开发
 
@@ -192,6 +195,7 @@ toc:
 | Vibe Kanban | 基于 Git Worktree 的 AI 编码看板产品。把任务看板、代码审查与并行调度打包成一体,让你从终端监控中解放出来,专注在规划与质量把控;内置审查工具让代码审查回归人性,适合管理多个同时工作的 AI 编码代理。 | 2025-06-14 | 考拉认为,当代理可靠性越过临界点后,工程师的角色正从写代码转向编排代理。Vibe Kanban 抓住了这个转型期的核心痛点;相比 Worktrunk 的轻量工具定位,它更像是一个完整的生产环境解决方案,但这也意味着更高的学习成本与锁定风险。 | [BV1h56SBtEzh · 00:32](https://www.bilibili.com/video/BV1h56SBtEzh?t=32) | [GitHub](https://github.com/BloopAI/vibe-kanban) |
 | Pydantic AI | 由 Pydantic 团队开发的 Python AI 代理框架，目标是简化生成式 AI 应用的设计与开发。支持 OpenAI、Anthropic、Gemini 等多种主流模型，提供类型安全、结构化响应、依赖注入等特性；设计灵感来自 FastAPI，希望为生成式 AI 应用开发带来类似的流畅体验。 | 2024-06-21 | 认为尽管 AI 代理框架已数不胜数，但由于其开发团队来自 Pydantic、在 Python AI 生态中被广泛使用且口碑良好，同一团队发布的新项目仍让开发者愿意尝试。 | [BV1nrrPYdEHH · 03:20](https://www.bilibili.com/video/BV1nrrPYdEHH?t=200) | [GitHub](https://github.com/pydantic/pydantic-ai) |
 | Cline | 一个集成在 IDE 中的 AI 编程助手，能够创建和编辑文件、执行命令、使用浏览器等。基于强大的编码模型能力，可逐步处理复杂的软件开发任务；支持通过 Model Context Protocol（MCP）创建新工具、扩展能力，且在每一步操作上都需要用户授权。 | 2024-07-06 | 认为 Cline 的出现让开发者可以在自己习惯的编辑器或命令行中体验 AI 结对编程，而无需被特定编辑器绑定；下一步值得探索的是如何提供足够详细的描述让 AI 准确完成编程意图。 | [BV1TLcgeqEQ8 · 00:01](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=1) | [GitHub](https://github.com/cline/cline) |
+| Agent Recipes | 一个提供 LLM 工作流图文示例的合集网站，包含多种 LLM 工作流的示意图与代码示例（如 Prompt Chaining、Routing、Parallelization、Orchestrator-workers、Evaluator-optimizer、Autonomous Agent 等）。这些工作流设计灵感来源于 Anthropic 的研究报告，目标是帮助开发者优化 LLM 的使用效率。 | 2025-01-03 | 认为此前 Anthropic 的研究报告让大家有了 LLM 工作流的学习材料，而这一组 Recipes 则让相应知识的学习变得更加直观。 | [BV14Vwqe2EBR · 02:47](https://www.bilibili.com/video/BV14Vwqe2EBR?t=167) | [官网](https://www.agentrecipes.com/) |
 
 ## 数据工程与存储
 
@@ -208,6 +212,7 @@ toc:
 | sql-tap | 数据库代理层工具，以中间人方式捕获 PostgreSQL/MySQL/TiDB 等数据库的查询流量，提供终端 UI 和 Web 界面两种实时展示，支持 N+1 查询检测、执行计划分析和事务追踪，无需修改应用代码。 | 2026-02-14 | 考拉认为 sql-tap 是数据库性能调试利器，TUI 体验流畅，代理架构比日志分析更实时、比 APM 更轻量；但生产环境引入额外网络跳点的风险需评估，建议先在开发环境使用。N+1 检测的阈值调优也是技术活，避免过度误报。 | [BV11AZZBUEeD · 01:22](https://www.bilibili.com/video/BV11AZZBUEeD?t=82) | [GitHub](https://github.com/mickamy/sql-tap) |
 | QMD | Shopify CEO Tobi Lütke 开发的本地 Markdown 搜索引擎，结合 BM25 全文检索、向量语义搜索与 LLM 重排序（RRF 融合、查询扩展等），全程通过 Ollama 本地运行，支持 MCP 协议，可集成到 Claude Desktop / Claude Code。 | 2025-12-08 | 考拉认为这个项目的亮点在于混合搜索策略设计得比较精细，包括查询扩展、RRF 融合、位置感知权重混合等；Tobi 作为 CEO 仍能保持精力写代码，也让他在技术圈中始终拥有不错的口碑。 | [BV1Ny6xBSEpb · 01:28](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=88) | [GitHub](https://github.com/tobi/qmd) |
 | CocoIndex | 面向 AI 的高性能增量数据转换 / 索引框架,Rust 核心 + Python 接口。针对传统 ETL 遇到大模型生成与知识图谱等 AI 场景,用 Rust 重写核心引擎支撑增量处理;最大卖点是流式更新能力——源数据变更时仅重新计算受影响部分,对频繁调用大模型 API 的场景能节省大量成本;内置 CocoInsight 工具让非数据工程师也能可视化理解 Pipeline。 | 2025-03-03 | 考拉认为,增量索引设计确实切中 AI 应用的核心成本痛点;一些使用案例的背书印证了其生产环境的可行性。不过作为新型框架,生态完整度与和主流向量数据库的集成深度,仍待时间检验。 | [BV11gixBMEMs · 01:25](https://www.bilibili.com/video/BV11gixBMEMs?t=85) | [GitHub](https://github.com/cocoindex-io/cocoindex) |
+| PostgreSQL Anonymizer | 一个 PostgreSQL 数据库扩展，专门用于对个人身份信息或商业敏感数据脱敏。采用声明式脱敏方法，允许在表定义中直接声明脱敏规则（“设计即脱敏”）；支持多种脱敏方法（匿名导出、静态脱敏、动态脱敏、副本脱敏、脱敏视图、脱敏数据包装器等），并提供随机化、伪造、部分打乱等多种脱敏函数。 | 2018-07-31 | 认为对于许多商业应用来说数据脱敏是刚需，使用 PostgreSQL Anonymizer 可帮助开发者快速开发出安全、健壮的脱敏逻辑。 | [BV14Vwqe2EBR · 01:58](https://www.bilibili.com/video/BV14Vwqe2EBR?t=118) | [官网](https://gitlab.com/dalibo/postgresql_anonymizer) |
 
 ## 协作与项目管理
 
@@ -228,6 +233,7 @@ toc:
 | Entire | 由前 GitHub CEO Thomas Dohmke 创立的 AI 原生开发者平台，其开源 CLI 工具 Checkpoints 在每次 git commit 时自动绑定完整的 AI Agent 会话记录（prompt、响应、token 用量、工具调用），数据存于 Git 历史，无需外部服务。 | 2026-02-10 | 考拉认为产品仍处于早期阶段，背靠明星开发团队值得关注，思路也有价值；AI 生成代码的可解释性确实是痛点，把 prompt 的会话写进 Git 比单独建知识库更自然。但隐患在于会话数据膨胀与隐私敏感信息泄漏风险，采用前需评估合规性。 | [BV11AZZBUEeD · 00:32](https://www.bilibili.com/video/BV11AZZBUEeD?t=32) | [GitHub](https://github.com/entireio/cli) |
 | Vouch | 由 HashiCorp 创始人 Mitchell Hashimoto 开源的社区信任管理工具，通过纯文本担保名单（.td 文件）实现显式信任白名单，配合 GitHub Actions 自动关闭未被担保者的 PR/Issue，并支持跨项目信任网络。 | 2026-02-05 | 考拉认为针对 AI 生成低质 PR 的方案，Vouch 的思路粗暴但有效，显式信任模型比算法推荐更透明，适合中小规模社区；风险在于担保人的认知负荷与潜在的圈子化倾向，大社区可能面临治理困境。项目正在自用验证，值得关注实际效果。 | [BV11AZZBUEeD · 02:49](https://www.bilibili.com/video/BV11AZZBUEeD?t=169) | [GitHub](https://github.com/mitchellh/vouch) |
 | WakaTime | 一个为开发者设计的时间管理 / 生产力度量工具，通过开源插件自动记录你在编程上花费的时间，可追踪在每个项目、文件或功能上的时间，帮助分析会议与编码时间的比例、识别代码库瓶颈；还提供排行榜和目标设定功能，可与全球开发者竞争。 | 2013-07-15 | 认为 WakaTime 特别适合那些想要量化自己编码时间的开发者，其自动记录功能让你无需手动操作、只需专注代码本身；无论个人开发者还是团队，都能帮助更好地管理时间、提升效率。 | [BV1TLcgeqEQ8 · 03:20](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=200) | [官网](https://wakatime.com) |
+| SimpleGantt | 一个轻量级的项目管理工具，专为不想安装桌面端软件或使用云端应用的极简主义者设计。完全运行在浏览器中、无需安装其他软件，支持交互式甘特图渲染、任务管理、里程碑跟踪，并且可以离线使用，所有数据都保存在本地，确保隐私和安全。代码不依赖任何 JS 框架，直接使用原生 JS 在约 2000 行的文件内完成所有逻辑。 | 2024-12-18 | 认为虽然功能不如一些大型工具丰富，但对于基本需求管理来说，SimpleGantt 已经足够；其代码实现也很有趣，不借助任何 JS 框架、用原生 JS 在一个约 2000 行文件内完成，对希望提升 UI 编程能力的小伙伴也是值得学习的代码库。 | [BV14Vwqe2EBR · 03:41](https://www.bilibili.com/video/BV14Vwqe2EBR?t=221) | [GitHub](https://github.com/aerugo/simplegantt) |
 
 ## 多媒体与图形
 
