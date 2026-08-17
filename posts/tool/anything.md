@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:39+08:00
+lastmod: 2026-08-17T18:39:41+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -108,6 +108,8 @@ toc:
 | Usertour | 开源的用户引导（产品导览）平台，是 Userflow、Appcues 的开源替代品，可在几分钟内创建应用内产品巡览、清单与调查，支持自部署以保护数据隐私。 | 2025-01-24 | Koala 介绍 Usertour 是一个开源的用户引导工具，对开发者十分友好，能在几分钟内创建应用内的产品导览、checklist 等常见引导流程，可视为 Userflow 和 Appcues 的开源替代品，支持多页面应用与自定义引导样式，并能通过 Docker 快速自部署，开源与自部署让数据隐私得到保护。 | [BV1gLR8Y2E8W · 03:22](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=202) | [GitHub](https://github.com/usertour/usertour) |
 | TypeScript (tsgo) | 微软用 Go 重写的 TypeScript 原生实现（代号 Project Corsa，可执行文件 tsgo），目标是用原生代码大幅提升类型检查与构建速度，早期基准显示比现有 tsc 快约 10 倍。 | 2025-03-11 | Koala 介绍 TypeScript 团队正用 Go 重写编译器（代号 Project Corsa，产物叫 tsgo），目标是大幅提升类型检查与构建速度；早期基准显示其比现有的 tsc 快大约 10 倍，未来有望显著缩短大型项目的编译等待时间。 | [BV1UYQbYeELx · 00:01](https://www.bilibili.com/video/BV1UYQbYeELx?t=1) | [GitHub](https://github.com/microsoft/TypeScript) |
 | Swapy | 框架无关的轻量库，用少量代码即可把任意布局变成可拖拽互换（drag-to-swap）的布局，方便为原型或产品加入可定制的位置互换交互。 | 2024-07-15 | Koala 介绍 Swapy 是一个让 UI 元素可以拖拽互换的轻量库，开发者无需写复杂的布局逻辑，就能为原型或产品加入拖拽排序、互换位置的交互，适合做可定制的仪表盘或落地页。 | [BV1UYQbYeELx · 02:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=120) | [GitHub](https://github.com/TahaSh/swapy) |
+| Goravel | 受 Laravel 启发的 Go 语言 Web 框架（full-featured Golang framework skeleton），提供路由、ORM、队列、认证等开箱即用的组件，让 Go 开发者也能获得类似 Laravel 的优雅开发体验。 | 2022-10-10 | Koala 介绍 Goravel 是一个受 Laravel 启发的 Go 语言 Web 框架，提供了路由、ORM、队列、认证等开箱即用的组件，让 Go 开发者也能享受类似 Laravel 的优雅开发体验。 | [BV1vXXhYpEbK · 02:27](https://www.bilibili.com/video/BV1vXXhYpEbK?t=147) | [GitHub](https://github.com/goravel/goravel) |
+| Motion for Vue | 热门动画库 Motion（原 Framer Motion）的 Vue 移植版，为 Vue 应用带来声明式的动画与过渡能力，方便实现流畅的组件动效。 | 2024-11-15 | Koala 介绍 Motion for Vue 是热门动画库 Motion（原 Framer Motion）的 Vue 移植版，为 Vue 应用带来声明式的动画与过渡能力，方便实现流畅的组件动效。 | [BV1vXXhYpEbK · 03:26](https://www.bilibili.com/video/BV1vXXhYpEbK?t=206) | [GitHub](https://github.com/motiondivision/motion-vue) |
 
 ## 测试与质量保障
 
@@ -161,6 +163,7 @@ toc:
 | DeepSeek 开源周工具集 | DeepSeek 开源周连续发布的五个生产级工具库（FlashMLA / DeepEP / DeepGEMM / DualPipe+EPLB / 3FS），覆盖内核、通信与文件存储。 | 2025-02-24 | 考拉认为 DeepSeek 的开源举措不仅展示了他们的技术深度，也进一步巩固了 DeepSeek 模型在开源界的领先地位。 | [BV1xc9FYDED3 · 00:32](https://www.bilibili.com/video/BV1xc9FYDED3?t=32) | [GitHub](https://github.com/deepseek-ai/FlashMLA) |
 | JetKVM | 开源 KVM-over-IP 方案，通过 WebRTC 提供超低延迟的远程计算机 / 服务器管理。 | 2024-10-03 | 考拉认为，作为 Kickstarter 上的明星众筹项目，JetKVM 让大家看到开发小而美的精品软件，能在给用户带来帮助的同时也收获不错的商业结果。 | [BV1xc9FYDED3 · 01:57](https://www.bilibili.com/video/BV1xc9FYDED3?t=117) | [GitHub](https://github.com/jetkvm/kvm) |
 | pingy | 用 Rust 编写、支持多并发与实时可视化图表的 ping 工具，适用于大规模网络性能监控。 | 2025-03-22 | 考拉认为 pingy 的亮点在于实时数据可视化与并发处理能力，特别适合网络管理员和开发者进行大规模网络性能监控；Rust 的高性能特性也让其在处理大规模 ping 请求时表现出色。 | [BV1xc9FYDED3 · 03:24](https://www.bilibili.com/video/BV1xc9FYDED3?t=204) | [GitHub](https://github.com/trinhminhtriet/pingy) |
+| Rsdoctor | Rspack / Webpack 的构建分析利器，提供可视化的构建产物分析、依赖关系图与编译耗时火焰图，帮助开发者快速定位构建瓶颈与体积问题。 | 2025-03-19 | Koala 介绍 Rsdoctor 是 Rspack / Webpack 的构建分析利器，提供可视化的构建产物分析、依赖关系图与编译耗时火焰图，帮助开发者快速定位构建瓶颈和包体积问题。 | [BV1vXXhYpEbK · 01:29](https://www.bilibili.com/video/BV1vXXhYpEbK?t=89) | [GitHub](https://github.com/web-infra-dev/rsdoctor) |
 
 ## AI 模型与推理
 
@@ -228,6 +231,7 @@ toc:
 | yek | 一个用 Rust 编写的工具，用于读取代码库或目录并将文本文件序列化/分块，便于直接喂给大语言模型，遵循 .gitignore 规则、依据 Git 历史推断重要文件，并支持通过 yek.toml 配置。 | 2025-01-11 | 考拉认为将代码读取后提供给 AI 智能体，已经让 AI 变得更强大；yek 比之前的同类工具性能更好，但在代码语义理解上还没有表现出更为突出的优势。 | [BV1dPFKeeEuw · 04:59](https://www.bilibili.com/video/BV1dPFKeeEuw?t=299) | [GitHub](https://github.com/mohsen1/yek) |
 | Goose | Block 推出的开源通用 AI 智能体，可在本地运行，协助开发者生成测试数据、编写脚本、处理复杂部署任务，并支持连接 MCP 服务器或 API 进行扩展。 | 2024-08-23 | 考拉认为一部分已经试用过的开发者对 Goose 评价不错，他们认为 Goose 不仅提高了工作效率，还增加了开发的乐趣；它支持本地运行、保留用户对过程的完全控制，并具有可扩展性。 | [BV1mjNAe4EoR · 00:32](https://www.bilibili.com/video/BV1mjNAe4EoR?t=32) | [GitHub](https://github.com/block/goose) |
 | Mastra | 用 TypeScript 构建与部署 AI 应用（Agent、工作流、RAG、可观测）的框架。 | 2024-08-06 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:01](https://www.bilibili.com/video/BV1G5ASetENw?t=1) | [GitHub](https://github.com/mastra-ai/mastra) |
+| CodeMCP | 面向 Claude Desktop 的编码助手 MCP 服务器，让 Claude 能够直接读写本地项目文件、运行命令，从而把 Claude Desktop 变成真正可参与端到端编码任务的编程助手。 | 2025-03-09 | Koala 介绍 CodeMCP 是一个 MCP 服务器，能把 Claude Desktop 变成可以编辑本地代码的编程助手，让 Claude 直接读写项目文件、运行命令，从而真正参与端到端的编码任务。 | [BV1vXXhYpEbK · 00:29](https://www.bilibili.com/video/BV1vXXhYpEbK?t=29) | [GitHub](https://github.com/ezyang/codemcp) |
 
 ## 数据工程与存储
 
@@ -250,6 +254,7 @@ toc:
 | Superglue | 自修复的数据连接器/集成代理，用自然语言构建面向长尾与企业系统的生产级集成，自动处理鉴权、分页与字段映射，并在连接器失效时自动修复，无需自建 OAuth 服务器。 | 2025-01-10 | Koala 介绍 Superglue 是一个自修复的数据连接器（self-healing data connector），能连接各种 SaaS API、数据库与文档，自动处理鉴权、分页和字段映射；当某个连接器的接口发生变化、连接失败时，它能自动修复连接器，让开发者无需自建 OAuth 服务器就能获得可靠的数据集成。 | [BV1gLR8Y2E8W · 00:58](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=58) | [GitHub](https://github.com/superglue-ai/superglue) |
 | FilePizza | 浏览器内的 P2P 文件传输工具，发送方与接收方通过 WebRTC 直接传输文件、无需上传到中心服务器，既保护隐私又免去大文件存储成本。 | 2015-02-25 | Koala 介绍 FilePizza 是一个浏览器内的 P2P 文件传输工具，发送方与接收方通过 WebRTC 直接传输文件、无需上传到中心服务器，既保护隐私又免去大文件存储成本。 | [BV1UYQbYeELx · 02:57](https://www.bilibili.com/video/BV1UYQbYeELx?t=177) | [GitHub](https://github.com/kern/filepizza) |
 | DuckDB | 高性能嵌入式（in-process）分析型数据库；2025 年 3 月推出本地图形界面（Local UI），让用户无需命令行即可在浏览器中与 DuckDB 交互、运行 SQL 查询与浏览数据。 | 2025-03-12 | Koala 介绍 DuckDB 推出了本地图形界面（Local UI），让用户无需命令行就能在浏览器中与 DuckDB 数据库交互、运行 SQL 查询并浏览数据，降低了这款嵌入式分析数据库的使用门槛。 | [BV1UYQbYeELx · 03:27](https://www.bilibili.com/video/BV1UYQbYeELx?t=207) | [官网](https://duckdb.org) |
+| DiceDB | 面向实时应用的开源内存数据库，兼容 Redis 协议并支持基于 SQL 的查询与查询订阅（query subscriptions），主打低延迟与高吞吐，适合需要毫秒级响应的实时场景。 | 2022-08-31 | Koala 介绍 DiceDB 是一个面向实时应用的内存数据库，兼容 Redis 协议并支持基于 SQL 的查询，主打低延迟与高吞吐，适合需要毫秒级响应的实时场景。 | [BV1vXXhYpEbK · 01:57](https://www.bilibili.com/video/BV1vXXhYpEbK?t=117) | [GitHub](https://github.com/dicedb/dicedb) |
 
 ## 协作与项目管理
 
@@ -297,6 +302,7 @@ toc:
 | Pdftris | 一个在 PDF 文件里玩俄罗斯方块的趣味项目。作者利用现代浏览器 PDF 引擎支持 JavaScript 的特性，通过显示/隐藏、缩放字体来模拟像素点，并通过文本框实现键盘输入，在 PDF 中实现了可玩的俄罗斯方块。 | 2025-01-04 | 认为这个项目不仅有趣，还提醒我们 PDF 文件的安全性可能比想象中更复杂；虽浏览器对 PDF 中 JavaScript 执行有严格限制，但这种技术仍可能被滥用，作为一次技术探索确实让人眼前一亮。 | [BV1TLcgeqEQ8 · 01:30](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=90) | [GitHub](https://github.com/ThomasRinsma/pdftris) |
 | Logo Creator | 一个免费开源的 Logo 生成器，基于 Together AI 平台上的 Flux 模型，根据用户输入快速生成各种风格的 Logo，本身使用 Next.js、Shadcn UI 与 Tailwind CSS 等技术栈，便于二次开发。 | 2024-11-06 | 考拉认为 Logo Creator 让个性化 Logo 设计的门槛大幅降低，每个人都能轻松拥有美观及独特的 logo；开源特性也让它拥有无限可能。 | [BV1jjN1etEa8 · 00:55](https://www.bilibili.com/video/BV1jjN1etEa8?t=55) | [GitHub](https://github.com/Nutlope/logocreator) |
 | Eleven Reader | ElevenLabs 出品的 AI 听书/朗读应用，可将书籍、文章、PDF、ePub 甚至新闻邮件等文本用自然逼真的 AI 语音朗读出来，支持 32 种语言与多种可选声音，并内置类播客的有声化玩法。 | 2024-06-01 | Koala 认为 Eleven Reader 是通勤、健身、学习的绝佳伴侣，目前免费，建议感兴趣的用户下载体验，用耳朵享受科技乐趣。 | [BV1QyAueyEjX · 01:29](https://www.bilibili.com/video/BV1QyAueyEjX?t=89) | [官网](https://elevenreader.io) |
+| Cascii | 基于 Web 的 ASCII / Unicode 图表设计工具，可用类绘图方式创建流程图、架构图等文本图形，结果可直接复制为纯文本用于文档或代码注释。 | 2025-03-08 | Koala 介绍 Cascii 是一个基于文本的 ASCII 图表设计工具，可在浏览器里用类似绘图的方式创建流程图、架构图等 ASCII 图形，结果能直接复制为纯文本，方便放进文档或代码注释里。 | [BV1vXXhYpEbK · 00:01](https://www.bilibili.com/video/BV1vXXhYpEbK?t=1) | [GitHub](https://github.com/casparwylie/cascii-core) |
 
 ## 办公与演示
 
