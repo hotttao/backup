@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:08:00+08:00
+lastmod: 2026-08-17T18:39:18+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -45,6 +45,7 @@ toc:
 | diffnav | 由 gh-dash 作者 dlvhdr 开发的 git diff 分页器，基于 delta 渲染 diff 并叠加 GitHub 风格侧边文件树，支持文件跳转与搜索，解决命令行查看大量文件变更时容易迷失的问题。 | 2024-09-18 | 考拉认为这是一个小工具；作者 dlvhdr 此前做过 gh-dash，对开发者工作流理解很深。在当前 AI 高速生成代码的阶段，如何 Review 代码、是否 Review 代码都在激烈讨论中，任何能提升生产力的工具都可能获得用户。 | [BV1MkAiz3E7k · 03:21](https://www.bilibili.com/video/BV1MkAiz3E7k?t=201) | [GitHub](https://github.com/dlvhdr/diffnav) |
 | Mole | 一款免费的 Mac 命令行清理工具，覆盖缓存清理、残留卸载、磁盘分析与系统状态监控，支持 TouchID 授权与 Recast 快速调用，单文件部署，是 CleanMyMac 的命令行替代品。 | 2025-09-23 | Mole 是一个需要命令行（command line）的 Mac 清理工具，功能覆盖缓存清理、残留卸载、磁盘分析和系统状态监控，基本是 CleanMyMac 的命令行平替；支持 TouchID 授权，还能对接 Recast 快速调用；免费开源且单文件部署是核心卖点，开源属性证明开发者对付费清理软件的不满是真实的。Mole 清理足够自动与全面，但系统清理类工具始终有风险，建议先用 Dry Run（演练）预览，重要数据做好备份。 | [BV1NozxBmEe3 · 00:32](https://www.bilibili.com/video/BV1NozxBmEe3?t=32) | [GitHub](https://github.com/tw93/Mole) |
 | Worktrunk | 用于 Git worktree 管理的命令行工具(CLI),面向并行 AI Agent 工作流。用三个核心命令把 worktree 操作变得像切换分支一样自然,一行命令即可新建 worktree 并启动 Claude Code 等 Agent;定位清晰,为并行 AI Agent 而生,hooks 系统与提交信息管理使其超越简单的目录切换工具。 | 2025-10-17 | 考拉介绍,Worktrunk 让原生 Git worktree 的 UX 对初学者也高效,一行命令即可新建 worktree 并启动 AI 编码代理,为并行 AI Agent 而生;其 hooks 系统与提交信息管理让它超越简单的目录切换工具。 | [BV1h56SBtEzh · 00:01](https://www.bilibili.com/video/BV1h56SBtEzh?t=1) | [GitHub](https://github.com/max-sixty/worktrunk) |
+| Kando | 一款让你在毫秒间选择常用工具和操作的桌面端手势识别 / 径向菜单工具。它通过将整个屏幕变成可点击目标，让你无需精准瞄准小按钮，只需大致方向即可完成操作，兼具速度与准确性；支持 Windows、macOS、Linux 多平台，代码开源。 | 2023-04-16 | 认为 Kando 上手之后可以极大提升操作效率，特别适合手速快、脑速更快的极客们。 | [BV1nrrPYdEHH · 00:45](https://www.bilibili.com/video/BV1nrrPYdEHH?t=45) | [GitHub](https://github.com/kando-menu/kando) |
 
 ## 代码质量与 Code Review
 
@@ -88,6 +89,8 @@ toc:
 | Astro | 面向内容驱动型网站的开源 Web 框架。本期新闻为 Astro 团队整体加入 Cloudflare,但项目仍保持开源与自托管;即将发布的 Astro 6 开发服务器将基于 Vite 实现,并能在本地直接运行 Cloudflare Workers 运行时,使本地开发即可调用 Durable Objects、D1 等 Cloudflare 专属服务,实现本地与生产一致。 | 2021-03-15 | 考拉认为,对开发者最实在的好处是'本地与生产一致性(local-to-prod parity)',这个老大难问题终于有解,只要 Astro 能保持其开放治理。这种(被收购/加入)对社区是利好,也解决了团队的生存压力。 | [BV1tSkWBWEoU · 03:26](https://www.bilibili.com/video/BV1tSkWBWEoU?t=206) | [GitHub](https://github.com/withastro/astro) |
 | FracturedJson | 将 JSON 格式化为既易读又相对紧凑的工具族。数组与对象在足够短且不复杂时写为单行,否则缩进展开;当若干相似的内联数组/对象结构相近且空间足够时,自动对齐成表格形态,减少视觉噪音并保留纵向对比便利。提供浏览器页面、.NET 库、JavaScript 包与 VS Code 扩展多端形态。 | 2020-10-14 | 考拉认为,表格对齐功能在日志分析和配置对比场景尤其实用,看得出作者在长期使用中积累的痛点认知。 | [BV11gixBMEMs · 00:31](https://www.bilibili.com/video/BV11gixBMEMs?t=31) | [GitHub](https://github.com/j-brooke/FracturedJson) |
 | mapcn | 基于 MapLibre GL 封装的免费开源地图组件库,主打零配置、一行命令初始化,内置 Tailwind 样式体系,采用与 shadcn/ui 一致的设计理念降低前端开发者上手门槛;支持现代 React / Vue 项目直接使用,无需深入理解地图底层技术细节。 | 2025-12-28 | 考拉认为,约定大于配置的思路在组件库领域已被验证,能显著缩短原型开发周期。但地图场景的复杂度常在于个性化底图样式、海量点击等进阶需求;目前文档没有明确这些边界,建议评估业务场景后再深度采用。 | [BV11gixBMEMs · 02:22](https://www.bilibili.com/video/BV11gixBMEMs?t=142) | [GitHub](https://github.com/AnmolSaini16/mapcn) |
+| API Parrot | 一款专门用于逆向分析任何网站 HTTP API 的桌面端工具。内置 HTTP 代理，可轻松记录应用程序的网络流量、分析数据之间的关系，用户可自定义函数、指定输入输出参数、排除无关数据，并将这些功能导出为 JavaScript 代码直接集成到应用中，用于自动化操作、系统集成与数据抓取。 | 2023-11-14 | 认为 API Parrot 的界面化设计以及数据关系自动分析等深度功能使它更为实用；作者表示未来代码很可能会开源，目前发布的版本将保持免费。 | [BV1nrrPYdEHH · 01:55](https://www.bilibili.com/video/BV1nrrPYdEHH?t=115) | [官网](https://apiparrot.com) |
+| mitmproxy2swagger | 一个将 mitmproxy 捕获的网络流量转换为 OpenAPI 3.0 规范 Swagger 文档的开源工具。只需运行应用程序并捕获流量（或导入浏览器 DevTools 导出的 HAR 文件），即可自动逆向分析程序的 API；通过 pip 或 Docker 即可快速上手。 | 2022-05-11 | 认为与 API Parrot 相比，该工具代码已经开源，并提供 mitmproxy 与 HAR 两种常见流量数据格式的解析，使用起来更加灵活，对希望掌握这类逆向工具实现原理的开发者更值得深入了解。 | [BV1nrrPYdEHH · 02:22](https://www.bilibili.com/video/BV1nrrPYdEHH?t=142) | [GitHub](https://github.com/alufers/mitmproxy2swagger) |
 
 ## 测试与质量保障
 
@@ -127,6 +130,7 @@ toc:
 | eBPF.party | 将复杂的内核 eBPF 编程搬到网页沙盒中的交互式教学项目。教程分章节推进,从基础概念到内核探针,每一步都能直接写代码、编译、运行,无需本地搭建环境,降低 eBPF 上手的门槛。 | 2025-12-26 | 考拉认为,这种交互式学习并不新鲜,但针对 eBPF 这么底层的领域做成零配置体验,确实下了功夫。目前内容还在扩充,但对于想快速上手、又不想折腾虚拟机的人来说,算是一个不错的切入点,也帮助了 eBPF 技术的推广。 | [BV1tSkWBWEoU · 02:57](https://www.bilibili.com/video/BV1tSkWBWEoU?t=177) | [GitHub](https://github.com/DavidVentura/ebpf.party) |
 | docker-android | 用 Alpine Linux 把 Android 模拟器压缩到最小体积的 Docker 镜像,便于在 CI 流水线中运行安卓测试。APR28 版本约需 1.46GB,KVM 原生支持让其在容器内也能硬件加速,配合 scrcpy 可远程操控屏幕;可自定义 API 级别、架构与变体类型,并支持将 SDK 挂载到外部存储以避免重复下载。 | 2023-02-08 | 考拉认为,除了应用开发测试场景,未来更多移动端 Agent 的场景也可以基于这个项目,构建安全、可大规模启动的安卓自动化环境。 | [BV1h56SBtEzh · 01:29](https://www.bilibili.com/video/BV1h56SBtEzh?t=89) | [GitHub](https://github.com/HQarroum/docker-android) |
 | taws | 用 Rust 编写的、类 k9s 的 AWS 交互式终端界面(TUI),让你在终端里快速浏览 EC2、S3 等资源;安全方面离线处理凭证,无第三方数据上传。 | 2026-01-04 | 考拉认为,TAWS 的价值不在功能全面,而在把高频操作的速度提升一个数量级;参考 k9s 在 Kubernetes 生态中的地位,TAWS 有望成为 AWS 重度用户的必备工具。 | [BV1h56SBtEzh · 02:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=175) | [GitHub](https://github.com/huseyinbabal/taws) |
+| Air | 一个专为 Go 应用开发的实时重载命令行工具。在项目根目录运行 Air 即可自动监控代码变化并重新编译运行，支持自定义构建命令、排除特定子目录、动态添加监控目录，并提供彩色日志输出，提升开发体验。 | 2017-10-12 | 认为 Air 特别适合开发阶段需要频繁修改代码的 Go 开发者（作者正是在基于 Gin 开发 Web 服务时产生开发该工具的想法）。 | [BV1nrrPYdEHH · 01:27](https://www.bilibili.com/video/BV1nrrPYdEHH?t=87) | [GitHub](https://github.com/air-verse/air) |
 
 ## AI 模型与推理
 
@@ -183,6 +187,7 @@ toc:
 | Agentation | 一款轻量的 React 组件，让用户在 React 应用中点击或框选指定区域并添加标注，生成结构化 Markdown（含 CSS 选择器、位置、组件树等上下文）反馈给 AI 编程 Agent，从而精准定位代码；支持多选、区域框选，以及暂停 CSS 动画来捕捉特定状态。 | 2026-01-18 | Agentation 是一个轻量的 React 组件，让用户可以在 React 应用中选择指定区域并标记信息；主要使用场景是使用 AI Agent 编程时，可以从开发的 UI 界面中快速反馈，让 Agent 进行修改；除了基本的点击之外，还支持多选、区域框选，甚至暂停 CSS 动画来捕捉特定状态。Agentation 是一款非常垂直的工具，解决的是 AI Coding 工作流中沟通效率问题，与其用文字描述右边那个蓝色按钮，不如直接给一个 Sidebar Button Primary；特别对于没有代码能力的 vibe coding 用户来说，值得一试。 | [BV1NozxBmEe3 · 03:22](https://www.bilibili.com/video/BV1NozxBmEe3?t=202) | [GitHub](https://github.com/benjitaylor/agentation) |
 | AgentFS | 为 AI Agent 提供隔离的文件系统层。Agent 的所有文件读写操作都记录在独立的隔离文件中,原始项目文件不受影响;天然支持快照、回滚与 fork,便于审计和调试,Agent 可安全调用 CLI 工具读写文件,最终由人类审核后决定是否合并回真实文件系统。 | 2025-10-24 | 考拉认为,把文件系统做成隔离文件(写时复制)的思路很巧,完美复用了底层文件系统的写时复制(Copy-on-Write)与事务特性。如果能在性能上不遇到瓶颈,会是一个很有趣的尝试。 | [BV1tSkWBWEoU · 00:01](https://www.bilibili.com/video/BV1tSkWBWEoU?t=1) | [GitHub](https://github.com/tursodatabase/agentfs) |
 | Vibe Kanban | 基于 Git Worktree 的 AI 编码看板产品。把任务看板、代码审查与并行调度打包成一体,让你从终端监控中解放出来,专注在规划与质量把控;内置审查工具让代码审查回归人性,适合管理多个同时工作的 AI 编码代理。 | 2025-06-14 | 考拉认为,当代理可靠性越过临界点后,工程师的角色正从写代码转向编排代理。Vibe Kanban 抓住了这个转型期的核心痛点;相比 Worktrunk 的轻量工具定位,它更像是一个完整的生产环境解决方案,但这也意味着更高的学习成本与锁定风险。 | [BV1h56SBtEzh · 00:32](https://www.bilibili.com/video/BV1h56SBtEzh?t=32) | [GitHub](https://github.com/BloopAI/vibe-kanban) |
+| Pydantic AI | 由 Pydantic 团队开发的 Python AI 代理框架，目标是简化生成式 AI 应用的设计与开发。支持 OpenAI、Anthropic、Gemini 等多种主流模型，提供类型安全、结构化响应、依赖注入等特性；设计灵感来自 FastAPI，希望为生成式 AI 应用开发带来类似的流畅体验。 | 2024-06-21 | 认为尽管 AI 代理框架已数不胜数，但由于其开发团队来自 Pydantic、在 Python AI 生态中被广泛使用且口碑良好，同一团队发布的新项目仍让开发者愿意尝试。 | [BV1nrrPYdEHH · 03:20](https://www.bilibili.com/video/BV1nrrPYdEHH?t=200) | [GitHub](https://github.com/pydantic/pydantic-ai) |
 
 ## 数据工程与存储
 
@@ -274,3 +279,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Code Crafters(73 个编程项目清单) | Code Crafters 发布的一份包含 73 个核心编程项目的清单,每个项目都附带经典论文或权威规范(如 BitTorrent 协议、RAFT 共识算法、SQLite 磁盘存储、RFC 5905 等),从量子门模拟到光线追踪,难度跨度大但学习路径清晰;项目描述会明确告知将掌握哪些底层原理,而非单纯复刻功能。Code Crafters 本身也提供在线付费学习平台。 | 2025-04-14 | 考拉认为,这份清单适合作为工程师的系统化学习地图;尤其推荐'实现 Git 核心功能'和'从零构建容器运行时'这两个能彻底解耦黑箱的项目。Code Crafters 本身也提供在线付费学习平台,但即使不付费,结合 AI 按图索骥自行尝试,也并非无法完成的任务。 | [BV11gixBMEMs · 03:20](https://www.bilibili.com/video/BV11gixBMEMs?t=200) | [官网](https://codecrafters.io/blog/programming-project-ideas) |
+
+## 金融与交易
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| SNAGRA Trading | 一个实时展示 GPT-4o、Gemini 1.5 Pro、Claude 3.5 Sonnet 三大 AI 模型股票交易水平的在线竞技场平台（项目名 “Battle of the Bots: AI Trading Arena”）。每天清晨自动分析市场新闻、各自推荐一只股票并以真实资金（每笔 5 美元）执行交易，实时追踪各模型的收益、胜率与整体表现，用户可查看每日交易总结、性能指标与 AI 的交易决策逻辑。 | 2024-12-20 | 认为这个竞技场不仅真实测评了 AI 在金融领域的应用潜力，也为普通用户提供了一个学习和评判 AI 交易策略的机会。 | [BV1nrrPYdEHH · 00:30](https://www.bilibili.com/video/BV1nrrPYdEHH?t=30) | [官网](https://trading.snagra.com) |
