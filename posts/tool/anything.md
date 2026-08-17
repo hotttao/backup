@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:34+08:00
+lastmod: 2026-08-17T18:43:36+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -50,6 +50,7 @@ toc:
 | Presenterm | 终端里的 Markdown 幻灯片工具，用 Markdown 编写演示文稿并在终端全屏放映，支持代码高亮、主题与动画，适合开发者的技术演示。 | 2023-08-27 | Koala 介绍 Presenterm 是一个终端里的 Markdown 幻灯片工具，直接用 Markdown 写演示文稿、在终端中全屏放映，并支持代码高亮、主题与动画，非常适合开发者在终端环境下做技术演示。 | [BV1UYQbYeELx · 01:29](https://www.bilibili.com/video/BV1UYQbYeELx?t=89) | [GitHub](https://github.com/mfontanini/presenterm) |
 | ttyd | ttyd 是一个基于 libwebsockets 与 xterm.js 的命令行工具，可通过网页分享并操作终端，支持 CJK 等宽字符、文件上传下载与基础鉴权。 | 2016-09-13 | 认为用 ttyd 远程管理服务器或与同事分享终端操作更加方便，对多人协同和远程 debug 等场景比较有用，但前提是做好足够的安全防护措施。 | [BV1A3ZBYAE8a · 00:32](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=32) | [GitHub](https://github.com/tsl0922/ttyd) |
 | BUSY Bar | BUSY Bar 是一款带有 LED 点阵显示屏的开源效率小工具，可帮助专注工作、屏蔽手机与电脑通知；支持高度自定义，并能通过 Matter/HomeKit 协议与 Google Home、Apple Home 等智能家居联动，还提供 HTTP API 与多语言 SDK。 | 2024-11-28 | 认为对于工作繁忙的人来说，一款高颜值的可爱工具不仅有实用性，还能带来情绪价值。 | [BV1PudqYZE8r · 02:00](https://www.bilibili.com/video/BV1PudqYZE8r?t=120) | [官网](https://busy.bar) |
+| Atuin Desktop | 本地优先（local-first）、可执行的可视化 Runbook 编辑器，外观像文档、运行起来像终端；支持链式脚本块、嵌入式终端、数据库客户端与 Prometheus 图表，基于 CRDT 通过 Atuin Hub 同步协作。 | 2025-04-22 | 仅作功能介绍，未给出明确评价。 | [BV1pijczvE8K · 02:44](https://www.bilibili.com/video/BV1pijczvE8K?t=164) | [GitHub](https://github.com/atuinsh/desktop) |
 
 ## 代码质量与 Code Review
 
@@ -129,6 +130,7 @@ toc:
 | Shannon | Keygraph 开发的白盒 AI 渗透测试工具，分析 Web 应用 / API 源码识别攻击路径，并真正执行漏洞利用（SQL 注入、认证绕过、SSRF、XSS 等）以产出可复现的概念验证报告。 | 2025-09-27 | 考拉认为这是目前最接近 AI 红队想象的开源实现；'无利用不报告'的原则解决了安全扫描误报的痛点。但 AGPL 协议与仅支持白盒测试的限制需要注意；每次扫描消耗 3-5 美元 API 费用，对大型代码库成本不低；更重要的是它真的会实施攻击，千万别在生产环境运行。 | [BV1MgcTzXEjH · 00:31](https://www.bilibili.com/video/BV1MgcTzXEjH?t=31) | [GitHub](https://github.com/KeygraphHQ/shannon) |
 | BundleMon | 免费的包体积监控工具,通过 CI 集成在每次提交时自动比对基线与目标分支,当文件体积或涨幅百分比超出阈值时直接让构建失败;GitHub 评论会生成详细差异报告,历史数据面板支持按天回溯。提供免费托管服务,也支持自托管。 | 2020-06-19 | 考拉认为,构建失败机制比警告通知更有效,能从根本上杜绝在体积优化上的妥协。对开源项目友好,但免费版数据保留策略较严格,PR 仅记录 30 天,企业级场景建议自托管或选择付费版。 | [BV11gixBMEMs · 02:51](https://www.bilibili.com/video/BV11gixBMEMs?t=171) | [GitHub](https://github.com/LironEr/bundlemon) |
 | Lightpanda | 一个专为 headless 模式设计的开源浏览器，特别适合用于 AI 代理、网页抓取和自动化测试等场景。最大特点是极低内存占用与极快执行速度（内存占用比 Chrome 少约 9 倍、执行速度快约 11 倍），支持在页面内执行 JavaScript 和部分 Web API，并兼容 Playwright 与 Puppeteer 工具。 | 2023-02-07 | 认为 Lightpanda 的目标是提供一个轻量级、高性能的无头浏览器方案，尤其适合需要大规模并发处理的场景；虽仍处于 Beta 阶段，但已展现巨大潜力，特别是在资源受限环境中，专注 headless 场景也使其从设计之初保持轻量化。 | [BV14Vwqe2EBR · 00:01](https://www.bilibili.com/video/BV14Vwqe2EBR?t=1) | [GitHub](https://github.com/lightpanda-io/browser) |
+| Trivy | 由 Aqua Security 出品的开源、全面且通用的安全扫描器，可扫描容器镜像、文件系统、Kubernetes、代码仓库与云环境，发现漏洞（CVE）、错误配置、密钥/敏感信息与 SBOM。 | 2019-04-11 | 考拉认为，对于企业级应用，若希望保证自身代码与上游供应链安全，Trivy 是一个可靠的选择。 | [BV1pijczvE8K · 01:51](https://www.bilibili.com/video/BV1pijczvE8K?t=111) | [GitHub](https://github.com/aquasecurity/trivy) |
 
 ## 运维、部署与基础设施
 
@@ -174,6 +176,7 @@ toc:
 | Pico.sh | Pico.sh 是一套仅基于 SSH 协议即可使用的开发者工具集，可通过已安装的 SSH 客户端发布静态网站/博客、建立隧道把本地服务暴露到公网、分享代码片段与接收 RSS 邮件订阅。 | 2022-08-24 | 认为如果你是喜欢用命令行搞定一切的开发者，Pico.sh 值得尝试；它简化了很多常见的开发和部署流程，让你专注于写代码而不是折腾配置；免费套餐支持所有基础功能和 25MB 存储，足够做小型实验。 | [BV1tYRiYbEt6 · 01:26](https://www.bilibili.com/video/BV1tYRiYbEt6?t=86) | [GitHub](https://github.com/picosh/pico) |
 | Coroot | Coroot 是一个开源的 APM 与可观测性工具，可作为 Datadog 和 New Relic 的替代方案，通过 eBPF 自动收集 Metrics、Logs、Traces 和 Profiles，并借助预定义的 Dashboard 与 Inspection 将其转化为可执行的洞察。 | 2022-08-22 | 认为 Coroot 能帮你轻松了解服务状态、跟踪依赖并探索一次请求的三层原因；如果你正在寻找强大的、能使用 eBPF 的开源可观测性解决方案，Coroot 值得尝试。 | [BV1PudqYZE8r · 00:01](https://www.bilibili.com/video/BV1PudqYZE8r?t=1) | [GitHub](https://github.com/coroot/coroot) |
 | Headlamp | Headlamp 是一款注重可扩展性的 Kubernetes UI，可轻松定制界面细节与颜色主题，支持 RBAC 全线控制，既可作为 Web 应用运行，也可作为桌面应用运行。 | 2019-11-08 | 认为如果你正在基于 K8s 构建产品，或者需要一个深度定制的 K8s UI，Headlamp 可以让你避免从零开始，从而更快完成目标。 | [BV1PudqYZE8r · 02:28](https://www.bilibili.com/video/BV1PudqYZE8r?t=148) | [GitHub](https://github.com/kubernetes-sigs/headlamp) |
+| Sapphire | 用 Rust 编写的下一代 macOS 包管理器，灵感来自 Homebrew，可安装命令行工具（Formulae）与桌面应用（Casks），支持并行下载、自动依赖解析与前缀隔离；项目后更名为 sps。 | 2025-04-23 | 考拉表示可以关注这个项目，并提醒目前它还处于 Alpha 阶段，所以使用需谨慎。 | [BV1pijczvE8K · 04:09](https://www.bilibili.com/video/BV1pijczvE8K?t=249) | [GitHub](https://github.com/alexykn/sapphire) |
 
 ## AI 模型与推理
 
@@ -198,6 +201,7 @@ toc:
 | Lorax | Lorax（LoRAX）是 Predibase 开发的多 LoRA 推理服务器，可在单张 GPU 上动态加载并服务成百上千个微调适配器（来自 Hugging Face、Predibase 或本地），兼顾吞吐与延迟。 | 2023-10-20 | 认为 Predibase 近期因提供类似 OpenAI 强化微调的功能而受到关注，模型微调是 AI 产品化的必经之路，而 Lorax 正是为大量微调场景设计的推理引擎。 | [BV1A3ZBYAE8a · 03:48](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=228) | [GitHub](https://github.com/predibase/lorax) |
 | Cloudflare AutoRAG | Cloudflare 提供的全托管检索增强生成（RAG）流水线，自动完成数据摄取、分块、向量化与存储，并支持自动更新索引，让开发者无需管理底层基础设施即可构建基于自有数据的 AI 应用。 | 2025-04-07 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:00](https://www.bilibili.com/video/BV1ij5fz2En9?t=120) | [官网](https://developers.cloudflare.com/autorag/) |
 | smartfunc | 轻量优雅的 Python 工具库，基于 LLM 库与 Jinja2 模板引擎，将函数 docstring 解析为 prompt 并自动生成对应的 LLM 函数，支持 Pydantic 结构化返回与异步调用。 | 2025-03-12 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:58](https://www.bilibili.com/video/BV1ij5fz2En9?t=178) | [GitHub](https://github.com/koaning/smartfunc) |
+| DeepWiki | 由 Cognition AI（Devin 出品方）推出的 AI 代码文档平台，通过大语言模型与代码分析自动将任意公共 GitHub 仓库转化为结构化的交互式 Wiki（含架构图、目录、模块说明），并支持自然语言问答。 | 2025-04-27 | 考拉认为，对代码库的理解是 AI 编程工具的核心竞争力，DeepWiki 团队开发此项目证明了其 AI 开发工具具备领先水平。 | [BV1pijczvE8K · 00:31](https://www.bilibili.com/video/BV1pijczvE8K?t=31) | [官网](https://deepwiki.com) |
 
 ## AI Agent 与智能体开发
 
@@ -249,6 +253,9 @@ toc:
 | GitMCP | GitMCP 是一个免费开源的 MCP 工具，能把任意 GitHub 项目变成 AI 助手的知识库，让 AI 直接访问仓库代码与文档以更好地理解项目、减少幻觉，无需安装任何东西。 | 2025-03-29 | 认为除阅读代码外，未来 GitMCP 如果能进一步阅读代码文件的 commit 历史以及浏览 issue 列表，会让更多问题得以解决。 | [BV1PudqYZE8r · 00:31](https://www.bilibili.com/video/BV1PudqYZE8r?t=31) | [GitHub](https://github.com/idosal/git-mcp) |
 | Browser MCP | Browser MCP 是一个 MCP 服务器，通过 MCP 协议连接 AI 助手与你的浏览器，让 AI 代表你自动执行网页任务（自动填表、读取信息、抓取数据等），可利用你现有的浏览器配置保持登录状态。 | 2025-03-28 | 认为 Browser MCP 的特点是速度快、安全性高，能利用现有浏览器配置保持登录状态，甚至避开一些反爬虫机制；在 MCP 的帮助下，它已支持 Cursor、Claude、Windsurf、VSCode 等工具。 | [BV1PudqYZE8r · 03:51](https://www.bilibili.com/video/BV1PudqYZE8r?t=231) | [GitHub](https://github.com/BrowserMCP/mcp) |
 | Plandex | 开源的终端型 AI 编程代理，专为大型、跨多文件、多步骤的编码任务设计，支持高达 200 万 token 的上下文与累积差异审查沙盒（diff sandbox），并将 AI 改动与项目文件隔离。 | 2023-10-24 | 考拉认为，与 Claude Code 和 OpenAI Codex 类似，Plandex 也是基于终端的 AI 开发工具，但功能更为丰富，且不与任何 AI 厂商绑定；它希望在充分利用 AI 优势的同时，避免在项目中留下混乱。 | [BV1ij5fz2En9 · 00:01](https://www.bilibili.com/video/BV1ij5fz2En9?t=1) | [GitHub](https://github.com/plandex-ai/plandex) |
+| PocketFlow | 仅约 100 行代码、零依赖的极简 LLM/Agent 框架，用图（Graph）抽象表达 Agent、工作流与 RAG 等模式，让 AI Agent 构建 AI Agent。 | 2024-12-24 | 考拉认为 PocketFlow 只用约一百行代码就能实现，且不依赖任何外部库（纯净、零依赖、零厂商锁定），可以用来快速构建 Agent 应用；若觉得 LangChain 等方案过重，不妨一试，并且社区还提供 Python、TypeScript、Java、C#、Go 等多语言版本。 | [BV1pijczvE8K · 01:02](https://www.bilibili.com/video/BV1pijczvE8K?t=62) | [GitHub](https://github.com/The-Pocket/PocketFlow) |
+| Tutorial Codebase Knowledge | 由 PocketFlow 团队开发的教程项目，爬取 GitHub 代码库并构建知识库，将复杂代码转化为带清晰可视化的、初学者友好的交互式教程（类似 DeepWiki）。 | 2025-04-02 | 考拉认为 PocketFlow 的推广策略十分值得学习，其开发的 Tutorial Codebase Knowledge 让用户能快速感受用 PocketFlow 开发 Agent 内容的潜力。 | [BV1pijczvE8K · 01:30](https://www.bilibili.com/video/BV1pijczvE8K?t=90) | [GitHub](https://github.com/The-Pocket/Tutorial-Codebase-Knowledge) |
+| ActorCore | 由 Rivet 团队出品的有状态 Serverless 框架，可部署到 Rivet、Cloudflare Workers、Bun、Node.js；每个计算单元就像一个微型服务器，在请求之间保持状态，适合构建 AI 智能体协作应用、实时应用与游戏服务器。 | 2025-02-05 | 考拉认为 ActorCore 是一个十分有趣的有状态 Serverless 应用开发方案，其核心有状态计算让计算单元像微型服务器一样在请求之间保留数据，非常适合实时性要求高的应用。 | [BV1pijczvE8K · 03:39](https://www.bilibili.com/video/BV1pijczvE8K?t=219) | [GitHub](https://github.com/rivet-gg/actor-core) |
 
 ## 数据工程与存储
 
