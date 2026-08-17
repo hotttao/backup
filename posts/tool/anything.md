@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:06:40+08:00
+lastmod: 2026-08-17T13:06:41+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -33,6 +33,7 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | GPUI | Rust UI 框架 | —（原文未记录） | —（原文未记录） | —（原文未记录） | —（原文未记录） |
 | gpui-component | GPUI 组件库 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/longbridge/gpui-component) |
+| deno desktop | Deno 2.9 新增的官方子命令，能把一个 TypeScript 文件甚至整个 Next.js 应用直接编译成跨平台桌面应用的单个二进制文件。 | 2026-06-25 | 考拉认为复用系统 WebView 虽然省体积，但也意味着各平台渲染一致性要打个问号，这是所有走原生 WebView 路线的方案都绕不开的老问题。 | [BV1EWTK6iEGj · 03:54](https://www.bilibili.com/video/BV1EWTK6iEGj?t=234) | [官网](https://docs.deno.com/runtime/reference/cli/desktop/) |
 
 ## 代码质量与 Code Review
 
@@ -51,6 +52,8 @@ toc:
 | TypeScript 7 | 微软用 Go 完全重写的原生 TypeScript 编译器，全量构建提速 8–12 倍，内存占用下降 6%–26%，编辑器首个报错出现时间从约 17.5 秒降至 1.3 秒，默认开启 4 个类型检查并行线程。 | 2026-07-08 | 实际提速对大型仓库是质变级别的提升；不过 Blazor 等依赖编译器 API 的前端框架/语言工作流还要等 API 稳定，框架用户暂不宜全量切换。 | [BV19qNT6ZEmL · 00:01](https://www.bilibili.com/video/BV19qNT6ZEmL?t=1) | [GitHub](https://github.com/microsoft/typescript-go) |
 | Hexana | JetBrains 推出的 WebAssembly 与二进制分析工具包，提供 IntelliJ 插件和 VS Code 扩展两个版本，具备多标签 .wasm 编辑器、可编辑的 WAT 视图与 WIT 语言支持，可可视化分析 ELF、Mach-O、PE 二进制，调试可对接 Wasmtime、WAMR、GraalVM 等运行时。 | 2026-05-26 | WASM 的工具链一直落后于语言本身；在组件模型落地后，开发者更缺一个能看清模块内部的工具，JetBrains 官方下场补上了这块空白；对做 WASM 插件系统和边缘运行时的团队来说，能省下不少逆向排错时间。 | [BV19qNT6ZEmL · 04:24](https://www.bilibili.com/video/BV19qNT6ZEmL?t=264) | [GitHub](https://github.com/JetBrains/hexana) |
 | shot-scraper | Simon Willison 开发的命令行截图工具，基于 Playwright，可批量给网页截图、录制演示视频、执行 JavaScript 抓取数据，并可与 GitHub Actions 配合做成可版本化、可进 CI 的截图流水线。 | 2022-03-09 | 截图看似是小需求，但在文档维护和监控场景里高频出现；shot-scraper 把它做成了可版本化、可进 CI 的流水线，这是和手动截图的本质区别。Simon Willison 一贯擅长做这种小而美的工具，配合他的 llm 工具链还能打出把网页内容喂给模型的组合拳。 | [BV1SYMM6FEeT · 03:23](https://www.bilibili.com/video/BV1SYMM6FEeT?t=203) | [GitHub](https://github.com/simonw/shot-scraper) |
+| Nub | 面向 Node.js 的一体化工具包，把 TypeScript 运行、包管理、脚本执行和 Node 版本管理集中进同一个 CLI。 | 2026-06-03 | 考拉认为这两年 Bun、Deno 都想用全新运行时挑战 Node，而 Nub 走的是反方向——不取代 Node，而是把围绕 Node 的工具链体验补齐。 | [BV1EWTK6iEGj · 02:27](https://www.bilibili.com/video/BV1EWTK6iEGj?t=147) | [GitHub](https://github.com/nubjs/nub) |
+| ProseKit | 基于 ProseMirror 的框架无关、headless 富文本编辑器框架，把编辑能力与样式解耦并内置斜杠命令、任务列表、数学公式等扩展。 | 2023-07-09 | 考拉认为富文本编辑器是出了名的难做，ProseMirror 虽强但学习曲线陡峭、API 偏底层；ProseKit 的价值在于把 ProseMirror 的复杂度封装成更友好的扩展式 API，同时坚持 headless 路线、不绑定 UI，更符合当下的技术潮流。 | [BV1EWTK6iEGj · 03:25](https://www.bilibili.com/video/BV1EWTK6iEGj?t=205) | [GitHub](https://github.com/prosekit/prosekit) |
 
 ## 测试与质量保障
 
@@ -87,6 +90,8 @@ toc:
 | Destructive Command Guard | 用 Rust 编写的安全防护工具（简称 dcg），在 AI 编程助手执行 rm -rf、git push --force、DROP TABLE 等毁灭性命令前直接拦截，覆盖十多种主流 Agent，内置 50 多个规则包，并扩展到数据库、Kubernetes、云平台等场景 | 2026-07-13 | Agent 误删代码的事故几乎每个重度用户都遇到过，各家 CLI 自带的确认机制又常被自动批准模式绕过；dcg 把防护做成跨 Agent 的统一钩子层，解决的是真实痛点。它用 SIMD 做到亚毫秒级延迟，还能识别藏在 Python 代码和 heredoc 里的危险调用，并智能区分命令是为执行还是只做文本出现。不过规则天然存在绕过空间，把它当最后一道保险而不是唯一防线才是正确认知，配合容器隔离和 Git 备份使用更稳妥。 | [BV17vKB6sEYR · 02:22](https://www.bilibili.com/video/BV17vKB6sEYR?t=142) | [GitHub](https://github.com/Dicklesworthstone/destructive_command_guard) |
 | ax | Hono 作者 Yusuke Wada 推出的面向 AI Agent 的 HTTP/HTML 命令行工具，号称“AI 时代的 curl”，提供结构化的请求报告、页面结构探索和 CSS 选择器数据提取三类能力，输出按 token 成本优化（TSV 比 JSON 省约 40%）。 | 2026-07-06 | 给 Agent 造工具是当下最活跃的方向；ax 的聪明之处是不做黑盒抓取，而是让模型使用 CSS 选择器这种页面变化后仍可修复的抽象；作者（Hono）在开发者工具上的品位加上社区号召力会帮它快速铺开，值得放进 Agent 的工具箱。 | [BV19qNT6ZEmL · 00:57](https://www.bilibili.com/video/BV19qNT6ZEmL?t=57) | [GitHub](https://github.com/yusukebe/ax) |
 | Page Agent | 阿里巴巴开源的纯前端 JavaScript GUI Agent 框架，一段脚本即可让任意网页拥有自然语言操控能力，无需后端、截图或多模态模型，支持自带大模型（BYO LLM）与隐私保护，采用 MIT 协议。 | 2025-09-23 | 网页端 Agent 目前多靠浏览器插件或云端 RPA 实现；Page Agent 把能力下沉到网页自身，让开发者主动给用户提供 AI 入口，对存量 Web 应用的 AI 化改造很友好。不过纯前端方案在复杂多步任务上的可靠性还有待验证，适合先从表单填写、导航引导这类场景切入。 | [BV1SYMM6FEeT · 00:01](https://www.bilibili.com/video/BV1SYMM6FEeT?t=1) | [GitHub](https://github.com/alibaba/page-agent) |
+| AI SDK 7 | Vercel 的 TypeScript AI 工具包 7.0 版本，把重心从接入模型转向构建生产级 AI 代理，覆盖开发、运行、集成、观测全流程。 | 2026-06-25 | 考拉认为 AI SDK 的演进路径很能说明问题：从最早帮前端接 ChatGPT 做流式输出，到现在做全栈代理基础设施，本质是 Vercel 想占据 AI 应用的入口，把更多用量接入自家的基础设施。 | [BV1EWTK6iEGj · 00:58](https://www.bilibili.com/video/BV1EWTK6iEGj?t=58) | [GitHub](https://github.com/vercel/ai) |
+| Go Micro v6 | Go 生态知名的微服务框架在 v6 版本转身为 AI Agent 运行时，让每个服务方法既是 RPC 端点也自动暴露成 AI 可调用的工具。 | 2026-06-18 | 考拉认为 Go Micro 把成熟的服务发现、RPC 与工作流能力直接复用，让 Agent 真正成为生产系统的一等公民，这是一个不错的切入点。 | [BV1EWTK6iEGj · 01:56](https://www.bilibili.com/video/BV1EWTK6iEGj?t=116) | [GitHub](https://github.com/micro/go-micro) |
 
 ## 数据工程与存储
 
@@ -94,6 +99,7 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Apache Iceberg | 开放式数据湖表格式 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/apache/iceberg) |
 | ZeroFS | 开源日志结构文件系统，将 S3 兼容对象存储直接挂载为 POSIX 文件系统，支持 NFS 与 9P 协议并通过 NBD 暴露为块设备，数据以 XChaCha20-Poly1305 加密、Zstd 压缩，通过了 pjdfstest（8600+ 用例）与 Jepsen 验证，可在其上编译 Linux 内核。 | 2026-01-13 | 把对象存储当本地盘用的方案不少（如 JuiceFS、S3BucketFS），ZeroFS 的激进之处在于单进程完成所有事并直接支持块设备语义；测试投入也远超多数同类开源项目，适合用 S3 的价格拿到本地盘体验的场景，但延迟敏感型复杂场景上生产前还需要仔细加测。 | [BV1SYMM6FEeT · 02:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=147) | [GitHub](https://github.com/Barre/ZeroFS) |
+| F3 | 一种把 WebAssembly 解码器直接内嵌进每个文件的开源列式存储格式，让任何平台无需原生库即可解码数据。 | 2025-05-31 | 考拉认为 Parquet 这类格式都是为上一代硬件设计的，编码方案一旦固化就很难演进，这是整个数据湖生态的隐疾；F3 用 Wasm 把解码逻辑随数据一起分发，相当于给文件格式装上可插拔的引擎，思路很巧妙，不过把解码器塞进文件也意味着要为 Wasm 运行时开销买单；目前项目还只是研究原型，作者明确不建议上生产，但有 Wes McKinney 这样的 Arrow 核心人物背书，这个方向值得长期关注。 | [BV1EWTK6iEGj · 00:01](https://www.bilibili.com/video/BV1EWTK6iEGj?t=1) | [GitHub](https://github.com/future-file-format/F3) |
 
 ## 协作与项目管理
 
