@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:06:38+08:00
+lastmod: 2026-08-17T13:06:40+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -50,6 +50,7 @@ toc:
 | Topcoat | Tokio 团队的 Rust 全栈响应式 Web 框架，服务端渲染异步组件，通过宏把 Rust 表达式交叉编译为 JavaScript 实现客户端响应式，无需 WASM，内置组件库与文件路由 | 2026-07-22 | Rust 后端已成熟但全栈体验一直是短板；Topcoat 由 Tokio 这一 Rust 生态核心团队打造，路线更接近 Rust 的一体化哲学而非 Leptos 那种 WASM 优先思路，不过项目仍处于早期实验阶段。 | [BV1KK3J6cE5J · 02:00](https://www.bilibili.com/video/BV1KK3J6cE5J?t=120) | [GitHub](https://github.com/tokio-rs/topcoat) |
 | TypeScript 7 | 微软用 Go 完全重写的原生 TypeScript 编译器，全量构建提速 8–12 倍，内存占用下降 6%–26%，编辑器首个报错出现时间从约 17.5 秒降至 1.3 秒，默认开启 4 个类型检查并行线程。 | 2026-07-08 | 实际提速对大型仓库是质变级别的提升；不过 Blazor 等依赖编译器 API 的前端框架/语言工作流还要等 API 稳定，框架用户暂不宜全量切换。 | [BV19qNT6ZEmL · 00:01](https://www.bilibili.com/video/BV19qNT6ZEmL?t=1) | [GitHub](https://github.com/microsoft/typescript-go) |
 | Hexana | JetBrains 推出的 WebAssembly 与二进制分析工具包，提供 IntelliJ 插件和 VS Code 扩展两个版本，具备多标签 .wasm 编辑器、可编辑的 WAT 视图与 WIT 语言支持，可可视化分析 ELF、Mach-O、PE 二进制，调试可对接 Wasmtime、WAMR、GraalVM 等运行时。 | 2026-05-26 | WASM 的工具链一直落后于语言本身；在组件模型落地后，开发者更缺一个能看清模块内部的工具，JetBrains 官方下场补上了这块空白；对做 WASM 插件系统和边缘运行时的团队来说，能省下不少逆向排错时间。 | [BV19qNT6ZEmL · 04:24](https://www.bilibili.com/video/BV19qNT6ZEmL?t=264) | [GitHub](https://github.com/JetBrains/hexana) |
+| shot-scraper | Simon Willison 开发的命令行截图工具，基于 Playwright，可批量给网页截图、录制演示视频、执行 JavaScript 抓取数据，并可与 GitHub Actions 配合做成可版本化、可进 CI 的截图流水线。 | 2022-03-09 | 截图看似是小需求，但在文档维护和监控场景里高频出现；shot-scraper 把它做成了可版本化、可进 CI 的流水线，这是和手动截图的本质区别。Simon Willison 一贯擅长做这种小而美的工具，配合他的 llm 工具链还能打出把网页内容喂给模型的组合拳。 | [BV1SYMM6FEeT · 03:23](https://www.bilibili.com/video/BV1SYMM6FEeT?t=203) | [GitHub](https://github.com/simonw/shot-scraper) |
 
 ## 测试与质量保障
 
@@ -85,12 +86,14 @@ toc:
 | codex-plugin-cc | OpenAI 官方开源的 Claude Code 插件，让用户在 Claude Code 工作流内直接调用本机 Codex，用于代码审查、对抗式 review、任务委派与后台任务管理，复用本机 Codex CLI 与认证 | 2026-03-30 | OpenAI 亲自给竞争对手的产品写官方插件，在以前难以想象，说明 Claude Code 的强势仍然难以挑战；OpenAI 宁可把 Codex 嵌进去，也不愿失去这批用户的使用量。对开发者是好事——用一个模型写代码、换另一个模型做对抗审查的双模型工作流，确实能捕捉到单一模型的盲区。这种巨头间的互操作能维持多久是个问号，但至少现在用户是赢家。 | [BV17vKB6sEYR · 00:58](https://www.bilibili.com/video/BV17vKB6sEYR?t=58) | [GitHub](https://github.com/openai/codex-plugin-cc) |
 | Destructive Command Guard | 用 Rust 编写的安全防护工具（简称 dcg），在 AI 编程助手执行 rm -rf、git push --force、DROP TABLE 等毁灭性命令前直接拦截，覆盖十多种主流 Agent，内置 50 多个规则包，并扩展到数据库、Kubernetes、云平台等场景 | 2026-07-13 | Agent 误删代码的事故几乎每个重度用户都遇到过，各家 CLI 自带的确认机制又常被自动批准模式绕过；dcg 把防护做成跨 Agent 的统一钩子层，解决的是真实痛点。它用 SIMD 做到亚毫秒级延迟，还能识别藏在 Python 代码和 heredoc 里的危险调用，并智能区分命令是为执行还是只做文本出现。不过规则天然存在绕过空间，把它当最后一道保险而不是唯一防线才是正确认知，配合容器隔离和 Git 备份使用更稳妥。 | [BV17vKB6sEYR · 02:22](https://www.bilibili.com/video/BV17vKB6sEYR?t=142) | [GitHub](https://github.com/Dicklesworthstone/destructive_command_guard) |
 | ax | Hono 作者 Yusuke Wada 推出的面向 AI Agent 的 HTTP/HTML 命令行工具，号称“AI 时代的 curl”，提供结构化的请求报告、页面结构探索和 CSS 选择器数据提取三类能力，输出按 token 成本优化（TSV 比 JSON 省约 40%）。 | 2026-07-06 | 给 Agent 造工具是当下最活跃的方向；ax 的聪明之处是不做黑盒抓取，而是让模型使用 CSS 选择器这种页面变化后仍可修复的抽象；作者（Hono）在开发者工具上的品位加上社区号召力会帮它快速铺开，值得放进 Agent 的工具箱。 | [BV19qNT6ZEmL · 00:57](https://www.bilibili.com/video/BV19qNT6ZEmL?t=57) | [GitHub](https://github.com/yusukebe/ax) |
+| Page Agent | 阿里巴巴开源的纯前端 JavaScript GUI Agent 框架，一段脚本即可让任意网页拥有自然语言操控能力，无需后端、截图或多模态模型，支持自带大模型（BYO LLM）与隐私保护，采用 MIT 协议。 | 2025-09-23 | 网页端 Agent 目前多靠浏览器插件或云端 RPA 实现；Page Agent 把能力下沉到网页自身，让开发者主动给用户提供 AI 入口，对存量 Web 应用的 AI 化改造很友好。不过纯前端方案在复杂多步任务上的可靠性还有待验证，适合先从表单填写、导航引导这类场景切入。 | [BV1SYMM6FEeT · 00:01](https://www.bilibili.com/video/BV1SYMM6FEeT?t=1) | [GitHub](https://github.com/alibaba/page-agent) |
 
 ## 数据工程与存储
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Apache Iceberg | 开放式数据湖表格式 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/apache/iceberg) |
+| ZeroFS | 开源日志结构文件系统，将 S3 兼容对象存储直接挂载为 POSIX 文件系统，支持 NFS 与 9P 协议并通过 NBD 暴露为块设备，数据以 XChaCha20-Poly1305 加密、Zstd 压缩，通过了 pjdfstest（8600+ 用例）与 Jepsen 验证，可在其上编译 Linux 内核。 | 2026-01-13 | 把对象存储当本地盘用的方案不少（如 JuiceFS、S3BucketFS），ZeroFS 的激进之处在于单进程完成所有事并直接支持块设备语义；测试投入也远超多数同类开源项目，适合用 S3 的价格拿到本地盘体验的场景，但延迟敏感型复杂场景上生产前还需要仔细加测。 | [BV1SYMM6FEeT · 02:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=147) | [GitHub](https://github.com/Barre/ZeroFS) |
 
 ## 协作与项目管理
 
@@ -107,15 +110,23 @@ toc:
 | Decoy Font | Mixfont 推出的 TTF 字体，利用混合图像（hybrid image）原理制作隐写效果：每个字母近看是诱饵文字、远看或眯眼则显示另一段隐藏信息，基于 DejaVu Sans Mono，免费用于个人与商业项目 | 2026-07-17 | 作者实测能骗过 ChatGPT、Gemini 等主流大模型的 OCR 识别，却作为普通字体文件即可使用。在 AI 抓取无处不在的今天，这类对抗性设计正在从学术界走向实用工具，验证码、隐私水印都是可能的落地方向；它更大的价值也许是作为视觉语言模型的基准测试素材，探出模型在感知层面和人眼的差距。当然作者也承认这不是可靠的保护手段，指令得当的模型依然可能识破，把它当安全方案不如当一个精巧的视觉实验。 | [BV17vKB6sEYR · 03:17](https://www.bilibili.com/video/BV17vKB6sEYR?t=197) | [项目页](https://www.mixfont.com/experiments/decoy-font) |
 | Godogen | 自动游戏生成器，用自然语言描述游戏概念，调度 Claude Code 或 Codex 自动完成项目脚手架、代码编写、素材生成和引擎配置，产出可运行游戏；支持 Godot 4、Bevy 和 Babylon.js 三种引擎，素材侧接入 Gemini、Grok 和 Tripo3D 生成图像、纹理与 3D 模型。 | 2026-03-13 | AI 生成游戏的难点在于验证——画面是否正确、玩法能否跑通，模型需要更多的校验能力。Godogen 把运行时录屏当作反馈信号，等于给代理装上了“眼睛”，比单纯生成代码的同类项目更进一步；但离生成有可玩性的作品还很远，当作快速原型工具更实际。 | [BV19qNT6ZEmL · 02:22](https://www.bilibili.com/video/BV19qNT6ZEmL?t=142) | [GitHub](https://github.com/htdt/godogen) |
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
+| Box3D | Box2D 作者 Erin Catto 开源的 3D 物理引擎，以 Box2D 为基底扩展三角网格/高度场/烘焙复合碰撞等 3D 特性，全部库代码使用 C17，支持连续碰撞、宽 SIMD 接触求解器、多线程钩子、跨平台确定性与录制回放。 | 2026-06-30 | Box2D 作为 2D 物理引擎近 20 年广受好评，Erin Catto 的口碑让 Box3D 天生自带信任度；3D 开源物理领域此前靠 Godot 整合站稳脚跟，Box3D 的入场会让这个长期被商业引擎主导的领域更有看头。游戏开发者值得持续关注。 | [BV1SYMM6FEeT · 01:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=87) | [GitHub](https://github.com/erincatto/box3d) |
 
 ## 办公与演示
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Bento | 把完整 PPT 编辑器、演示器塞进单个约 560KB 的 HTML 文件，浏览器打开即用，支持 AES-GCM 端到端加密协作，且文档为明文 JSON 可被 Agent 直接编辑 | 2026-07-17 | 单个 HTML 文件配合浏览器能力足以胜任很多本地化使用场景，在满足需求的同时还提供了良好的隐私保护与离线体验。 | [BV1KK3J6cE5J · 00:02](https://www.bilibili.com/video/BV1KK3J6cE5J?t=2) | [GitHub](https://github.com/nyblnet/bento) |
+| FreeGraphPaper | 在线网格纸生成器，免注册、无水印，选好模板后调整间距、颜色和边距，实时预览并导出 PDF 或 PNG 直接打印；支持方格、点阵、等轴测、六边形、横线和康奈尔笔记纸，覆盖 A4、US Letter 等规格，间距可精确到 5 毫米或 1/4 英寸并保证 100% 比例打印。 | 2026-07-03 | 这类小工具网站的价值在于把一个具体需求做到零门槛，比起功能庞杂的绘图软件，打开即用反而是最大卖点。手帐、数学练习、工程草图都是稳定需求，靠搜索流量、自用站点往往能长期存活，也是独立开发者做小产品的一个不错样本。 | [BV1SYMM6FEeT · 04:18](https://www.bilibili.com/video/BV1SYMM6FEeT?t=258) | [官网](https://freegraphpaper.net/) |
 
 ## 开发者认证与招聘
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Redential | 把私有代码库转换为可分享、可验证的技术能力凭证，通过 CLI 或 GitHub 应用分析代码并辅以技术答辩，NDA 安全，只暴露必要信息 | 2026-07-14 | 瞄准 AI 原生时代的招聘信任问题，用已交付的真实项目为能力背书是合理方向，尤其适合没有传统学历但有实战作品的开发者；但凭证价值取决于雇主是否认可，且 AI 大量参与写代码后，代码分析能否区分个人贡献仍是未解问题。 | [BV1KK3J6cE5J · 01:01](https://www.bilibili.com/video/BV1KK3J6cE5J?t=61) | [GitHub](https://github.com/Redential/redential-cli) |
+
+## 安全与渗透测试
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
