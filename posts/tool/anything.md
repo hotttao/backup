@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:42+08:00
+lastmod: 2026-08-17T18:43:44+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -124,6 +124,7 @@ toc:
 | HelloCSV | 一个前端专用、框架无关的开源 CSV 导入库（打包后约 99KB），可轻松嵌入任意 Web 应用，提供美观可定制的四步导入流程（映射、转换、校验、预览），完全在浏览器端运行，数据不离开用户应用。 | 2025-03-29 | Koala 主要作功能介绍，称其为处理用户上传 CSV 的“好帮手”，未给出更深入的明确评价。 | [BV1vwEuzmErT · 02:27](https://www.bilibili.com/video/BV1vwEuzmErT?t=147) | [GitHub](https://github.com/HelloCSV/HelloCSV) |
 | GoVisual | 一款零配置、纯 Go 的 HTTP 请求可视化与调试器，专为本地 Go Web 应用开发设计，可监控并深入检查请求头/体/状态码/时间，追踪中间件执行流程以定位性能瓶颈，并可选集成 OpenTelemetry。 | 2025-05-04 | Koala 认为，GoVisual 就像一个 Go Web 开发的“显微镜”，让调试更直观高效；工具本身虽简单，但十分实用。 | [BV1CqJgziEB1 · 00:58](https://www.bilibili.com/video/BV1CqJgziEB1?t=58) | [GitHub](https://github.com/doganarif/GoVisual) |
 | TanStack DB | 构建在 TanStack Query 之上的嵌入式客户端数据库/响应式数据存储，提供集合（collections）、实时查询（live queries）与乐观变更（optimistic mutations），利用差分数据流实现亚毫秒级的增量更新。 | 2025-07-29 | Koala 认为，TanStack DB 核心是快速查询引擎与细粒度的响应式更新，并支持事务式的数据操作；总体而言，如果你正在寻找一个能够提升前端性能、简化数据管理的工具，TanStack DB 值得关注。 | [BV1CqJgziEB1 · 03:11](https://www.bilibili.com/video/BV1CqJgziEB1?t=191) | [官网](https://tanstack.com/db) |
+| TypeScript Native Preview | 微软 TypeScript 团队将 TypeScript 编译器与工具链移植到 Go 实现的原生预览版（内部代号 Project Corsa），通过 npm 包 @typescript/native-preview 提供 tsgo 可执行文件，编译速度可达约 10 倍提升，最终将演进为 TypeScript 7。 | 2025-05-22 | Koala 介绍 TypeScript 团队推出原生预览版，通过将编译器与工具链移植到原生语言（Go）实现约 10 倍的项目编译提速，可通过 npm 安装预览版编译器并在 VS Code 中体验新的编译功能，未来将演进为 TypeScript 7；主要作功能介绍，未给出明确优劣评价。 | [BV1NpjMztEZR · 00:01](https://www.bilibili.com/video/BV1NpjMztEZR?t=1) | [GitHub](https://github.com/microsoft/typescript-go) |
 
 ## 测试与质量保障
 
@@ -214,6 +215,7 @@ toc:
 | smartfunc | 轻量优雅的 Python 工具库，基于 LLM 库与 Jinja2 模板引擎，将函数 docstring 解析为 prompt 并自动生成对应的 LLM 函数，支持 Pydantic 结构化返回与异步调用。 | 2025-03-12 | 仅作功能介绍，未给出明确评价。 | [BV1ij5fz2En9 · 02:58](https://www.bilibili.com/video/BV1ij5fz2En9?t=178) | [GitHub](https://github.com/koaning/smartfunc) |
 | DeepWiki | 由 Cognition AI（Devin 出品方）推出的 AI 代码文档平台，通过大语言模型与代码分析自动将任意公共 GitHub 仓库转化为结构化的交互式 Wiki（含架构图、目录、模块说明），并支持自然语言问答。 | 2025-04-27 | 考拉认为，对代码库的理解是 AI 编程工具的核心竞争力，DeepWiki 团队开发此项目证明了其 AI 开发工具具备领先水平。 | [BV1pijczvE8K · 00:31](https://www.bilibili.com/video/BV1pijczvE8K?t=31) | [官网](https://deepwiki.com) |
 | OpenPipe ART | OpenPipe 开源的强化学习训练库（Agent Reinforcement Trainer），使用 GRPO 对多步智能体进行训练，可在现有代码库中运行 Agent 并将复杂的强化学习训练交给后端，支持 Qwen、Gemma、Llama 等主流 LLM。 | 2025-03-10 | 考拉认为 ART 支持市面上大多数的 LLM 模型，像是 Qwen、Gemma 等；现在已经有了使用 3B 和 7B Qwen 模型成功微调、使它们可以进行 2048、Tic-Tac-Toe 这样的小游戏的 Notebook 实例，大家可以快速上手体验。 | [BV1wQVFzREBr · 01:26](https://www.bilibili.com/video/BV1wQVFzREBr?t=86) | [GitHub](https://github.com/OpenPipe/ART) |
+| Dream 7B | 香港大学与华为诺亚方舟实验室联合开源的离散扩散大语言模型（70 亿参数），采用双向上下文建模与可控生成，在通用、数学与编程能力上超越现有扩散语言模型，并具备更强的规划与推理灵活性；基于 Qwen2.5-7B 初始化，训练 5800 亿 token。 | 2025-04-02 | Koala 介绍 Dream 7B 是港大与华为诺亚方舟实验室联合推出的开源扩散大语言模型，在通用、数学和编程能力上超越了现有的扩散语言模型，并且在规划能力和推理灵活性上表现出色；并提到近期 DeepMind 也发布了基于扩散的大语言模型研究项目，让大家对于这一架构有了更多兴趣；主要作功能/技术介绍。 | [BV1NpjMztEZR · 01:47](https://www.bilibili.com/video/BV1NpjMztEZR?t=107) | [Hugging Face](https://huggingface.co/Dream-org/Dream-v0-Base-7B) |
 
 ## AI Agent 与智能体开发
 
@@ -272,6 +274,7 @@ toc:
 | WeClone | 利用微信等聊天记录微调大语言模型，打造个性化数字分身（学习口头禅与说话习惯），可绑定到聊天机器人代替你回复，并强调本地训练与数据隐私。 | 2025-05-11 | Koala 认为，WeClone 考虑到了隐私问题，所有的数据处理和模型训练都可以在本地进行，保证你的数据安全；如果你对数字分身或模型微调训练感兴趣，不妨从这个项目入手进行学习。 | [BV1CqJgziEB1 · 00:01](https://www.bilibili.com/video/BV1CqJgziEB1?t=1) | [GitHub](https://github.com/xming521/WeClone) |
 | Airweave | 开源的 AI 上下文检索层，通过连接器把各类应用、数据库与 API 的内容同步并转化为 Agent 可理解的语义知识，提供统一搜索接口，支持 Python/TypeScript SDK 与 MCP 兼容。 | 2024-12-24 | Koala 主要作功能介绍：称 Airweave 是 AI 搜索聚合工具，能让 AI Agent 具备在各种应用里进行语义搜索的能力，支持 25+（现 50+）数据源，提供 Python 和 JS 的 SDK 上手简单，同时提供与 MCP 兼容的接口，使它可以被快速接入更多 AI 应用；未给出明确优劣评价。 | [BV1CqJgziEB1 · 00:30](https://www.bilibili.com/video/BV1CqJgziEB1?t=30) | [GitHub](https://github.com/airweave-ai/airweave) |
 | SuperMemory | 面向 AI 的通用记忆与上下文引擎（API），为 LLM/Agent 提供长期记忆与上下文，内部封装向量数据库、数据解析与扩展性，开发者无需自行搭建底层基础设施即可开箱即用。 | 2024-02-22 | Koala 认为，SuperMemory 为想快速构建有记忆、能理解用户历史对话与数据的 AI 应用的开发者，提供了一个非常方便的开箱即用方案，省去了许多底层基础设施（向量库、数据解析、扩展性）的搭建工作。 | [BV1CqJgziEB1 · 01:52](https://www.bilibili.com/video/BV1CqJgziEB1?t=112) | [GitHub](https://github.com/supermemoryai/supermemory) |
+| Suna | Kortix 开源的通用型 AI Agent（Apache-2.0），通过自然语言帮用户完成现实任务，内置浏览器自动化、文件管理、网页爬取、命令行执行、网站部署与各种 API/服务集成。 | 2025-04-22 | Koala 认为，Suna 的开源特性与多功能性使其成为一个值得关注的项目，特别是对于关注复杂 AI Agent 系统的开发者来说，是一个可以研究并参考的项目。 | [BV1NpjMztEZR · 02:40](https://www.bilibili.com/video/BV1NpjMztEZR?t=160) | [GitHub](https://github.com/kortix-ai/suna) |
 
 ## 数据工程与存储
 
@@ -349,6 +352,8 @@ toc:
 | Blender 4.4 | Blender 是一款工业级开源 3D 创作套装；4.4 版本重点提升稳定性、修复大量 bug，并引入 Action Slots 动画系统与增强的视频序列器（VSE）。 | 2025-03-18 | 认为 Blender 4.4 是一个十分吸引人的新版本，作为工业级开源软件，其活力让人对开源软件的未来充满期待。 | [BV1A3ZBYAE8a · 00:01](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=1) | [官网](https://www.blender.org/) |
 | Anime.js | Anime.js 是一个功能强大且体积小巧的 JavaScript 动画库，支持 CSS 变换、SVG 动画、时间轴（timeline）与滚动触发（scroll 触发）等效果，并内置缓动函数与 stagger 效果。 | 2025-04-03 | 认为如果你想为网站或应用添加一些吸睛的动画，Anime.js 绝对值得关注；而且新版本中库的体积被控制得很小，不会给项目增加太多性能负担。 | [BV1tYRiYbEt6 · 00:01](https://www.bilibili.com/video/BV1tYRiYbEt6?t=1) | [GitHub](https://github.com/juliangarnier/anime) |
 | ScreenRecorder.me | 浏览器内直接使用的免费在线屏幕录制工具，无需注册登录，支持录制、编辑、分享，并可自定义壁纸、屏幕样式、摄像头效果与放大动画等高级功能。 | 2025-04-28 | 考拉认为，与许多收费的录制工具相比，这款工具的功能完全不落下风；除了基础的录制之外，它还支持自定义壁纸、调整屏幕样式、配置摄像头效果以及设置放大动画等高级功能。 | [BV1wQVFzREBr · 00:57](https://www.bilibili.com/video/BV1wQVFzREBr?t=57) | [官网](https://screenrecorder.me) |
+| Roboflow Sports | Roboflow 开源的计算机视觉与体育工具集，提供球追踪、球衣号码识别、球员追踪与再识别、相机标定等可复用工具及多种数据集，便于在足球、篮球等运动中做检测与分析。 | 2024-05-14 | Koala 认为，对于计算机视觉从业者、爱好者和体育爱好者来说，这是一个值得一看的开源项目。 | [BV1NpjMztEZR · 01:26](https://www.bilibili.com/video/BV1NpjMztEZR?t=86) | [GitHub](https://github.com/roboflow/sports) |
+| OpenCut | 免费开源（MIT）的跨平台视频编辑器，对标 CapCut/剪映，在浏览器中即可使用，所有处理在本地完成（不上传云端）、无水印无订阅，支持 Web/桌面/移动端，可剪辑、合并视频片段并添加图片、文字与音频。 | 2025-06-22 | Koala 认为，OpenCut 简直是视频编辑的福音，特别是对于那些只需简单编辑的用户来说；开源的属性也让它更具吸引力，说不定以后还能看到更多定制化的功能。 | [BV1NpjMztEZR · 03:06](https://www.bilibili.com/video/BV1NpjMztEZR?t=186) | [GitHub](https://github.com/OpenCut-app/OpenCut) |
 
 ## 办公与演示
 
@@ -435,3 +440,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Better Auth | 类型安全、功能全面的开源身份验证框架，易于集成（如连接 Prisma ORM 并注册页面即可），可作为 Auth.js / NextAuth 的替代方案。 | 2024-05-19 | 考拉认为 Better Auth 是一款近期在开发者社区获得很高评价的身份验证方案，用起来简单且类型安全，相比 Auth.js 更容易集成（例如连接数据库时只需连接到 Prisma ORM 并注册一个注册页面即可），对于寻找简单而强大身份验证方案的新项目值得一试。 | [BV1ij5fz2En9 · 02:28](https://www.bilibili.com/video/BV1ij5fz2En9?t=148) | [GitHub](https://github.com/better-auth/better-auth) |
+
+## 效率与笔记
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| DoubleMemory | 一款 macOS 原生的本地优先（local-first）信息保存工具，双击 Command+C 即可保存书签、稍后阅读内容与剪贴板历史，数据存于本机并可同步到 iCloud，以美观卡片展示，并提供从 Pocket 等迁移数据的工具。 | 2025-02-25 | Koala 介绍 DoubleMemory 是一个简化信息保存与回忆的工具，双击 Ctrl+C（实为 Command+C）即可激活记忆功能，帮助你轻松管理网页书签、稍后阅读的内容和剪贴板历史；它离线优先、无需扩展、无需注册、无需服务器。有云端备份需求可同步到 iCloud，所有保存内容以美观视觉卡片展示；并提到 Mozilla 维护的同类工具 Pocket 即将停止服务，DoubleMemory 也提供了迁移工具。 | [BV1NpjMztEZR · 00:28](https://www.bilibili.com/video/BV1NpjMztEZR?t=28) | [官网](https://doublememory.com/) |
