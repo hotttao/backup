@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:26+08:00
+lastmod: 2026-08-17T13:07:27+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -75,6 +75,7 @@ toc:
 | OpenShip | 开源自托管部署平台，自动识别 Node/Python/Go/Rust 等技术栈，一键配置 PostgreSQL/Redis 等服务与 SSL，部署为不可变快照、支持零停机回滚，可云服务或自有服务器自托管 | 2026-03-05 | 仅作功能介绍，未给出明确评价。 | [BV1KK3J6cE5J · 00:32](https://www.bilibili.com/video/BV1KK3J6cE5J?t=32) | [GitHub](https://github.com/oblien/openship) |
 | Iroh | 开源点对点连接工具包，用加密公钥替代 IP 地址建立设备直连，自带 QUIC 传输、NAT/防火墙穿透与无状态中继兜底。 | 2026-06-15 | 考拉认为 Iroh 用 Rust 编写、能下沉到 MCU 级别设备，定位比一般的 WebRTC 方案更底层、更通用，适合需要自己掌控连接层的团队，但要落地仍然要求开发者理解 P2P 的复杂性。 | [BV1SVj46KE3c · 02:54](https://www.bilibili.com/video/BV1SVj46KE3c?t=174) | [GitHub](https://github.com/n0-computer/iroh) |
 | container | 苹果官方开源的命令行工具，在 Apple 芯片 Mac 上以轻量虚拟机方式运行 Linux 容器，完全用 Swift 编写，底层基于 Containerization 包，兼容 OCI 标准镜像与现有容器生态。 | 2026-06-09 | 长期以来 Mac 上跑容器主要靠 Docker Desktop（背后是一个大虚拟机）；苹果这次的思路是给每个容器分配独立的轻量虚拟机，隔离性更好、启动更快，并深度绑定 Apple 芯片做优化。 | [BV1CWJF6xE1d · 01:54](https://www.bilibili.com/video/BV1CWJF6xE1d?t=114) | [GitHub](https://github.com/apple/container) |
+| ArtifactFS | Cloudflare 开源的 FUSE 文件系统驱动，把 Git 仓库挂载为本地目录而跳过完整 clone 的等待，目录树立即可见，文件内容按需后台拉取，并支持 git log、commit、checkout 等标准操作。 | 2026-03-29 | 考拉认为在 Agentic Coding 时代 Git Clone 次数正在指数级上升，对大型仓库成为不可忽视的成本；Cloudflare 把它放进 ArtifactFS，意图明显是提升自家 Workers 产品的竞争力；局限也明显——git status 等遍历操作开销极大，非 Linux 环境兼容性也不好，短期内更适合容器化的 Agent 环境，做本地日常开发还不如直接 Clone。 | [BV15iVV6AE6U · 03:57](https://www.bilibili.com/video/BV15iVV6AE6U?t=237) | [GitHub](https://github.com/cloudflare/artifact-fs) |
 
 ## AI 模型与推理
 
@@ -101,6 +102,9 @@ toc:
 | Loop Library | 一个 AI Loop 工作流配方库，收录覆盖工程、运维、内容、设计与评估场景的可复用 Agent 循环提示词，每个 Loop 都内置明确的检查点与停止条件，并附带可安装的 Skill 供编码代理查找、审计与改写 Loop。 | 2026-06-12 | 考拉认为现在大家都在追求让 Agent 长时间自主跑，但真正的难点是怎么让它跑得可靠、知道何时该停；并邀请对 Loop 工程感兴趣的观众在视频下留言，由他们来测试这些 Loop 配方是否靠谱。 | [BV1SVj46KE3c · 00:01](https://www.bilibili.com/video/BV1SVj46KE3c?t=1) | [GitHub](https://github.com/Forward-Future/loopy) |
 | eve | Vercel 开源的文件系统优先 TypeScript Agent 框架，以「一个 Agent 就是一个目录」为核心，内置持久化执行、沙箱化计算、人工审批、子代理、通道与评估能力。 | 2026-06-17 | 考拉认为 Agent 框架现在已经卷成红海，LangChain、Mastra 和各家云厂商都在抢；eve 的差异点在于把 Vercel 最擅长的开发者体验和部署一体化搬了过来，但这也意味着它和 Vercel 平台绑定较深，能否成为跨厂商的事实标准还要看社区接受度；框架打包了可观测性和评估，是值得关注的方向。 | [BV1SVj46KE3c · 00:31](https://www.bilibili.com/video/BV1SVj46KE3c?t=31) | [GitHub](https://github.com/vercel/eve) |
 | GitHub Copilot CLI | GitHub 官方的 AI 编程命令行工具；本期介绍的更新中，Rubber Duck（小黄鸭）内置批评式 Agent 正式可用，会主动审视方案、设计、实现与测试并找漏洞和盲点，语音输入与定时任务（/every、/after）也正式上线，并重新设计了带标签页与无障碍支持的终端界面。 | 2026-06-02 | GitHub 在 coding agent 之战中还未投降，投入 Copilot CLI 而减少在 VSCode 上的投入也是顺应潮流之举；虽然近期对 GitHub AI 产品功能的批评声音不少，但这个世界最大的开发者社区仍然是有力的竞争者。 | [BV1GpEs6gEAA · 01:55](https://www.bilibili.com/video/BV1GpEs6gEAA?t=115) | [GitHub](https://docs.github.com/en/copilot/using-github-copilot/copilot-cli) |
+| Skybridge | 专为 MCP 应用设计的全栈 TypeScript 框架，同一份代码可运行在 Claude、ChatGPT、VS Code 等多种 MCP 客户端上，提供端到端类型安全与本地模拟器。 | 2025-10-07 | 考拉认为 MCP 生态正在快速扩张，为 MCP 引入的工具扩展 UI 确实是值得探索的方向；目前 Skybridge 通过为每个工具的调用请求与结果定制 React 组件来实现扩展性，但对于希望脱离聊天对话框的更复杂场景还无法提供帮助。 | [BV15iVV6AE6U · 00:01](https://www.bilibili.com/video/BV15iVV6AE6U?t=1) | [GitHub](https://github.com/alpic-ai/skybridge) |
+| LiteParse | LlamaIndex 团队开源的本地文档解析库，用 PDFium 提取带空间位置信息的文本，支持 PDF、Word、Excel、PowerPoint 与图片，并以 Rust、Node.js、Python 和浏览器 WASM 多种接口暴露，可生成截图供视觉模型使用。 | 2026-02-09 | 考拉认为文档解析是 Agent 应对复杂文档时的瓶颈，市面上收费的解析服务价格不菲；LiteParse 完全本地运行、License 宽松，对数据合规要求高的企业场景很友好；技术实现思路也有巧思——不再对全文使用 OCR 识别，而是尽可能还原 PDF 文本结构，让模型自行理解。 | [BV15iVV6AE6U · 00:32](https://www.bilibili.com/video/BV15iVV6AE6U?t=32) | [GitHub](https://github.com/run-llama/liteparse) |
+| auth.md | WorkOS 提出的开放协议，服务商在自己域名下托管一个 Markdown 文件声明支持的注册流程，AI Agent 读取后可在无需填写表单的情况下代替用户完成服务注册与登录。 | 2026-05-20 | 考拉认为随着 AI Agent 自主行动能力增强，如果 Agent 能够自主完成注册与登录，确实可以让软件服务快速被 Agent 接入使用。 | [BV15iVV6AE6U · 02:58](https://www.bilibili.com/video/BV15iVV6AE6U?t=178) | [GitHub](https://github.com/workos/auth.md) |
 
 ## 数据工程与存储
 
@@ -111,6 +115,8 @@ toc:
 | F3 | 一种把 WebAssembly 解码器直接内嵌进每个文件的开源列式存储格式，让任何平台无需原生库即可解码数据。 | 2025-05-31 | 考拉认为 Parquet 这类格式都是为上一代硬件设计的，编码方案一旦固化就很难演进，这是整个数据湖生态的隐疾；F3 用 Wasm 把解码逻辑随数据一起分发，相当于给文件格式装上可插拔的引擎，思路很巧妙，不过把解码器塞进文件也意味着要为 Wasm 运行时开销买单；目前项目还只是研究原型，作者明确不建议上生产，但有 Wes McKinney 这样的 Arrow 核心人物背书，这个方向值得长期关注。 | [BV1EWTK6iEGj · 00:01](https://www.bilibili.com/video/BV1EWTK6iEGj?t=1) | [GitHub](https://github.com/future-file-format/F3) |
 | DBX | 基于 Rust 与 Tauri 的轻量级开源数据库客户端，把 50 多种数据库的连接管理、SQL 编辑、ER 图、Schema 对比与跨引擎数据导入导出收进一个约 15MB 的应用。 | 2026-04-29 | 考拉认为 DBX 的卖点是又全又轻，不过对单一数据库的支持未必比得过垂直工具，它更适合广度优先的全栈开发者。 | [BV1SVj46KE3c · 03:38](https://www.bilibili.com/video/BV1SVj46KE3c?t=218) | [GitHub](https://github.com/t8y2/dbx) |
 | pg_durable | 微软开源的 PostgreSQL 扩展，用纯 SQL 定义多步骤、可容错的长时工作流，自动为每步打检查点，崩溃或失败后从最近检查点恢复，无需 Redis、Temporal 等外部编排服务。 | 2026-06-06 | 持久化执行这两年很火，Temporal、Resonate 等专门编排系统是主流；微软反其道而行，把这套能力塞进数据库，对本来就把状态存在 PostgreSQL 的团队，能省掉一整套 worker 和队列基础设施，运维心智负担显著降低；代价是工作流和数据库强耦合，跨语言、跨服务的复杂编排未必合适。 | [BV1CWJF6xE1d · 00:57](https://www.bilibili.com/video/BV1CWJF6xE1d?t=57) | [GitHub](https://github.com/microsoft/pg_durable) |
+| Files SDK | 一套统一的文件操作 API，覆盖 S3、R2、GCS 等 40 多个对象存储服务，上传/下载/删除/复制接口完全一致，切换云厂商只需改配置，并支持并行上传、字节级进度与字节范围下载。 | 2026-05-08 | 考拉认为多云存储的抽象层这个赛道也有不少选手，Files SDK 的差异化在于四十家适配器的覆盖范围和优雅的 API 设计以及对 Agent 的友好；在 Agent 越来越频繁处理文件的趋势下，这个切入点有一定实际优势。 | [BV15iVV6AE6U · 01:30](https://www.bilibili.com/video/BV15iVV6AE6U?t=90) | [GitHub](https://github.com/haydenbleasel/files-sdk) |
+| ExtendDB | AWS 开源的 DynamoDB 兼容适配器，后端可对接 PostgreSQL 与 Cassandra，PostgreSQL 模式下单条操作延迟低于 10 毫秒，Cassandra 模式可横向扩展到每秒数千请求，便于把依赖 DynamoDB 的应用迁移到其他存储。 | 2026-05-10 | 考拉认为这是 AWS 少见的反向操作，主动帮用户把工作负载从自己的云上搬走；背后的逻辑可能是 DynamoDB 的 API 本身就是护城河，只要开发者习惯了这套接口，大规模云上负载还是会回到 AWS 生态；ExtendDB 对本地开发和合规要求严格的场景很有价值，能帮助用户将一套应用代码部署到不同场景。 | [BV15iVV6AE6U · 02:29](https://www.bilibili.com/video/BV15iVV6AE6U?t=149) | [GitHub](https://github.com/ExtendDB/extenddb) |
 
 ## 协作与项目管理
 
