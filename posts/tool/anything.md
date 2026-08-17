@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:44+08:00
+lastmod: 2026-08-17T18:43:31+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -113,6 +113,8 @@ toc:
 | Motion for Vue | 热门动画库 Motion（原 Framer Motion）的 Vue 移植版，为 Vue 应用带来声明式的动画与过渡能力，方便实现流畅的组件动效。 | 2024-11-15 | Koala 介绍 Motion for Vue 是热门动画库 Motion（原 Framer Motion）的 Vue 移植版，为 Vue 应用带来声明式的动画与过渡能力，方便实现流畅的组件动效。 | [BV1vXXhYpEbK · 03:26](https://www.bilibili.com/video/BV1vXXhYpEbK?t=206) | [GitHub](https://github.com/motiondivision/motion-vue) |
 | Simple AI | Simple AI 是一套基于 shadcn/ui 与 Vercel AI SDK 构建的开源 AI 场景 UI 组件库，包含聊天对话与 React Flow 工作流组件，可加速 AI 应用界面开发。 | 2024-12-26 | 认为如果你正在用 React 开发包含聊天对话与 AI 工作流场景的 AI 应用，Simple AI 能帮你节省不少时间，快速构建出美观又实用的界面。 | [BV1A3ZBYAE8a · 01:57](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=117) | [GitHub](https://github.com/techronin/simple-ai) |
 | Valibot | Valibot 是一个模块化、类型安全的 TypeScript schema 校验库，类似 Zod 但包体积极小（最小可低于 700 字节），支持 100% 测试覆盖率。 | 2023-07-07 | 认为与 Zod 相比，Valibot 在开发体验和打包体积上有一定优势，可根据项目需求灵活选用。 | [BV1A3ZBYAE8a · 02:52](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=172) | [GitHub](https://github.com/fabian-hiller/valibot) |
+| Bun | Bun 是一个轻量级的 JavaScript 运行时，采用异步事件驱动架构并复用 npm 等工具链，注重嵌入式与跨设备支持，目标是以较少开销在桌面端、移动端等多种环境运行 JS 代码。 | 2021-04-14 | 认为 Bun 的模块化设计很有趣，你可以根据需要选择不同模块，避免不必要的依赖和性能损耗；如果你在寻找一个轻量级的 JS 运行时，Bun 是一个新的、值得关注的选项。 | [BV1tYRiYbEt6 · 02:52](https://www.bilibili.com/video/BV1tYRiYbEt6?t=172) | [GitHub](https://github.com/oven-sh/bun) |
+| bazza/ui | bazza/ui 是一个基于 shadcn/ui 设计的复杂表格过滤器组件，将 shadcn/ui 组件与 TanStack Table 的 headless 表格结合，提供功能完整、视觉风格统一且端到端类型安全的过滤器组件。 | 2024-04-07 | 认为基于 shadcn/ui 的开源生态还在持续壮大，近期 shadcn 还提供了 Registry API 的统一标准，让 bazza/ui 这样的第三方组件可以通过统一的 Schema 复用 shadcn/ui 的 CLI 等工具链，进一步提升开发者体验。 | [BV1tYRiYbEt6 · 03:22](https://www.bilibili.com/video/BV1tYRiYbEt6?t=202) | [GitHub](https://github.com/BazzaDEV/ui) |
 
 ## 测试与质量保障
 
@@ -167,6 +169,7 @@ toc:
 | JetKVM | 开源 KVM-over-IP 方案，通过 WebRTC 提供超低延迟的远程计算机 / 服务器管理。 | 2024-10-03 | 考拉认为，作为 Kickstarter 上的明星众筹项目，JetKVM 让大家看到开发小而美的精品软件，能在给用户带来帮助的同时也收获不错的商业结果。 | [BV1xc9FYDED3 · 01:57](https://www.bilibili.com/video/BV1xc9FYDED3?t=117) | [GitHub](https://github.com/jetkvm/kvm) |
 | pingy | 用 Rust 编写、支持多并发与实时可视化图表的 ping 工具，适用于大规模网络性能监控。 | 2025-03-22 | 考拉认为 pingy 的亮点在于实时数据可视化与并发处理能力，特别适合网络管理员和开发者进行大规模网络性能监控；Rust 的高性能特性也让其在处理大规模 ping 请求时表现出色。 | [BV1xc9FYDED3 · 03:24](https://www.bilibili.com/video/BV1xc9FYDED3?t=204) | [GitHub](https://github.com/trinhminhtriet/pingy) |
 | Rsdoctor | Rspack / Webpack 的构建分析利器，提供可视化的构建产物分析、依赖关系图与编译耗时火焰图，帮助开发者快速定位构建瓶颈与体积问题。 | 2025-03-19 | Koala 介绍 Rsdoctor 是 Rspack / Webpack 的构建分析利器，提供可视化的构建产物分析、依赖关系图与编译耗时火焰图，帮助开发者快速定位构建瓶颈和包体积问题。 | [BV1vXXhYpEbK · 01:29](https://www.bilibili.com/video/BV1vXXhYpEbK?t=89) | [GitHub](https://github.com/web-infra-dev/rsdoctor) |
+| Pico.sh | Pico.sh 是一套仅基于 SSH 协议即可使用的开发者工具集，可通过已安装的 SSH 客户端发布静态网站/博客、建立隧道把本地服务暴露到公网、分享代码片段与接收 RSS 邮件订阅。 | 2022-08-24 | 认为如果你是喜欢用命令行搞定一切的开发者，Pico.sh 值得尝试；它简化了很多常见的开发和部署流程，让你专注于写代码而不是折腾配置；免费套餐支持所有基础功能和 25MB 存储，足够做小型实验。 | [BV1tYRiYbEt6 · 01:26](https://www.bilibili.com/video/BV1tYRiYbEt6?t=86) | [GitHub](https://github.com/picosh/pico) |
 
 ## AI 模型与推理
 
@@ -260,6 +263,7 @@ toc:
 | FilePizza | 浏览器内的 P2P 文件传输工具，发送方与接收方通过 WebRTC 直接传输文件、无需上传到中心服务器，既保护隐私又免去大文件存储成本。 | 2015-02-25 | Koala 介绍 FilePizza 是一个浏览器内的 P2P 文件传输工具，发送方与接收方通过 WebRTC 直接传输文件、无需上传到中心服务器，既保护隐私又免去大文件存储成本。 | [BV1UYQbYeELx · 02:57](https://www.bilibili.com/video/BV1UYQbYeELx?t=177) | [GitHub](https://github.com/kern/filepizza) |
 | DuckDB | 高性能嵌入式（in-process）分析型数据库；2025 年 3 月推出本地图形界面（Local UI），让用户无需命令行即可在浏览器中与 DuckDB 交互、运行 SQL 查询与浏览数据。 | 2025-03-12 | Koala 介绍 DuckDB 推出了本地图形界面（Local UI），让用户无需命令行就能在浏览器中与 DuckDB 数据库交互、运行 SQL 查询并浏览数据，降低了这款嵌入式分析数据库的使用门槛。 | [BV1UYQbYeELx · 03:27](https://www.bilibili.com/video/BV1UYQbYeELx?t=207) | [官网](https://duckdb.org) |
 | DiceDB | 面向实时应用的开源内存数据库，兼容 Redis 协议并支持基于 SQL 的查询与查询订阅（query subscriptions），主打低延迟与高吞吐，适合需要毫秒级响应的实时场景。 | 2022-08-31 | Koala 介绍 DiceDB 是一个面向实时应用的内存数据库，兼容 Redis 协议并支持基于 SQL 的查询，主打低延迟与高吞吐，适合需要毫秒级响应的实时场景。 | [BV1vXXhYpEbK · 01:57](https://www.bilibili.com/video/BV1vXXhYpEbK?t=117) | [GitHub](https://github.com/dicedb/dicedb) |
+| Postgres Language Server | Postgres Language Server 是 Supabase 社区推出的 PostgreSQL 语言服务器，实现了 Language Server Protocol，为 PL/pgSQL 代码提供自动补全、语法高亮与代码检查等能力。 | 2023-05-18 | 认为拥有 Language Server 之后，不仅日常的开发体验会有所提升，也能基于它进一步开发代码相关的 AI 工具，提升 SQL 生成的准确性。 | [BV1tYRiYbEt6 · 02:24](https://www.bilibili.com/video/BV1tYRiYbEt6?t=144) | [GitHub](https://github.com/supabase-community/postgres-language-server) |
 
 ## 协作与项目管理
 
@@ -309,6 +313,7 @@ toc:
 | Eleven Reader | ElevenLabs 出品的 AI 听书/朗读应用，可将书籍、文章、PDF、ePub 甚至新闻邮件等文本用自然逼真的 AI 语音朗读出来，支持 32 种语言与多种可选声音，并内置类播客的有声化玩法。 | 2024-06-01 | Koala 认为 Eleven Reader 是通勤、健身、学习的绝佳伴侣，目前免费，建议感兴趣的用户下载体验，用耳朵享受科技乐趣。 | [BV1QyAueyEjX · 01:29](https://www.bilibili.com/video/BV1QyAueyEjX?t=89) | [官网](https://elevenreader.io) |
 | Cascii | 基于 Web 的 ASCII / Unicode 图表设计工具，可用类绘图方式创建流程图、架构图等文本图形，结果可直接复制为纯文本用于文档或代码注释。 | 2025-03-08 | Koala 介绍 Cascii 是一个基于文本的 ASCII 图表设计工具，可在浏览器里用类似绘图的方式创建流程图、架构图等 ASCII 图形，结果能直接复制为纯文本，方便放进文档或代码注释里。 | [BV1vXXhYpEbK · 00:01](https://www.bilibili.com/video/BV1vXXhYpEbK?t=1) | [GitHub](https://github.com/casparwylie/cascii-core) |
 | Blender 4.4 | Blender 是一款工业级开源 3D 创作套装；4.4 版本重点提升稳定性、修复大量 bug，并引入 Action Slots 动画系统与增强的视频序列器（VSE）。 | 2025-03-18 | 认为 Blender 4.4 是一个十分吸引人的新版本，作为工业级开源软件，其活力让人对开源软件的未来充满期待。 | [BV1A3ZBYAE8a · 00:01](https://www.bilibili.com/video/BV1A3ZBYAE8a?t=1) | [官网](https://www.blender.org/) |
+| Anime.js | Anime.js 是一个功能强大且体积小巧的 JavaScript 动画库，支持 CSS 变换、SVG 动画、时间轴（timeline）与滚动触发（scroll 触发）等效果，并内置缓动函数与 stagger 效果。 | 2025-04-03 | 认为如果你想为网站或应用添加一些吸睛的动画，Anime.js 绝对值得关注；而且新版本中库的体积被控制得很小，不会给项目增加太多性能负担。 | [BV1tYRiYbEt6 · 00:01](https://www.bilibili.com/video/BV1tYRiYbEt6?t=1) | [GitHub](https://github.com/juliangarnier/anime) |
 
 ## 办公与演示
 
