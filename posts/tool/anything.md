@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:58+08:00
+lastmod: 2026-08-17T13:08:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -86,6 +86,8 @@ toc:
 | Rust/UI | 受 shadcn/ui 启发的 Rust 组件注册表，面向 Leptos 全栈框架，采用复制粘贴（copy-paste）模式分发源码，基于 Tailwind CSS 样式，提供表格/数据表、对话框、聊天等 90+ 组件与 CLI。 | 2026-03-11 | 考拉认为 Rust 前端生态正在快速发展，但相比 React 丰富的成熟组件库，Leptos 周边组件仍然薄弱；作者也希望借此项目降低使用 Rust 开发 UI 的门槛。 | [BV1MgcTzXEjH · 03:19](https://www.bilibili.com/video/BV1MgcTzXEjH?t=199) | [GitHub](https://github.com/rust-ui/ui) |
 | json-render | 一个为 AI 生成 UI 增加约束的 Generative UI 框架。开发者先定义可用的组件、动作与数据绑定规则形成模板,用户只能在该模板范围内让 AI 生成界面;AI 输出结构化 JSON,前端实时渲染为组件,支持流式传输与渐进式渲染,从而把'生成什么'的自由度从模型收回一部分交给开发者控制,避免 AI 乱写代码。 | 2026-01-14 | 考拉认为,这是一个非常务实的规避思路:在安全性要求高的场景,完全放开让 AI 写代码等于埋雷。用 JSON 做中间层,既保留了灵活性,又牢牢握住了安全边界;设计克制,但可能正是企业所需要的。 | [BV1tSkWBWEoU · 00:30](https://www.bilibili.com/video/BV1tSkWBWEoU?t=30) | [GitHub](https://github.com/vercel-labs/json-render) |
 | Astro | 面向内容驱动型网站的开源 Web 框架。本期新闻为 Astro 团队整体加入 Cloudflare,但项目仍保持开源与自托管;即将发布的 Astro 6 开发服务器将基于 Vite 实现,并能在本地直接运行 Cloudflare Workers 运行时,使本地开发即可调用 Durable Objects、D1 等 Cloudflare 专属服务,实现本地与生产一致。 | 2021-03-15 | 考拉认为,对开发者最实在的好处是'本地与生产一致性(local-to-prod parity)',这个老大难问题终于有解,只要 Astro 能保持其开放治理。这种(被收购/加入)对社区是利好,也解决了团队的生存压力。 | [BV1tSkWBWEoU · 03:26](https://www.bilibili.com/video/BV1tSkWBWEoU?t=206) | [GitHub](https://github.com/withastro/astro) |
+| FracturedJson | 将 JSON 格式化为既易读又相对紧凑的工具族。数组与对象在足够短且不复杂时写为单行,否则缩进展开;当若干相似的内联数组/对象结构相近且空间足够时,自动对齐成表格形态,减少视觉噪音并保留纵向对比便利。提供浏览器页面、.NET 库、JavaScript 包与 VS Code 扩展多端形态。 | 2020-10-14 | 考拉认为,表格对齐功能在日志分析和配置对比场景尤其实用,看得出作者在长期使用中积累的痛点认知。 | [BV11gixBMEMs · 00:31](https://www.bilibili.com/video/BV11gixBMEMs?t=31) | [GitHub](https://github.com/j-brooke/FracturedJson) |
+| mapcn | 基于 MapLibre GL 封装的免费开源地图组件库,主打零配置、一行命令初始化,内置 Tailwind 样式体系,采用与 shadcn/ui 一致的设计理念降低前端开发者上手门槛;支持现代 React / Vue 项目直接使用,无需深入理解地图底层技术细节。 | 2025-12-28 | 考拉认为,约定大于配置的思路在组件库领域已被验证,能显著缩短原型开发周期。但地图场景的复杂度常在于个性化底图样式、海量点击等进阶需求;目前文档没有明确这些边界,建议评估业务场景后再深度采用。 | [BV11gixBMEMs · 02:22](https://www.bilibili.com/video/BV11gixBMEMs?t=142) | [GitHub](https://github.com/AnmolSaini16/mapcn) |
 
 ## 测试与质量保障
 
@@ -96,6 +98,7 @@ toc:
 | AIMock | CopilotKit 推出的开源确定性 Mock 基础设施，用单一端口模拟 LLM、MCP、A2A、向量数据库与多模态 API，核心是录制回放，并支持漂移检测与混沌测试。 | 2026-03-03 | 考拉认为，AI 应用的测试一直是个痛点，依赖外部 API、输出不稳定、成本高。AIMock 把传统软件测试中成熟的录制回放模式引入 AI 领域；随着 Agent 开发逐步走向工程化，从能跑就行到可测试可复现，这类基础测试工具会越来越重要。 | [BV1HzDSBqEgd · 03:50](https://www.bilibili.com/video/BV1HzDSBqEgd?t=230) | [GitHub](https://github.com/CopilotKit/aimock) |
 | Promptfoo | 开源的 LLM/提示词测试框架，用声明式配置定义测试用例，自动对比多个模型输出，并检测提示注入等安全风险；支持接入 CI/CD 并输出合规报告（可映射到 OWASP、NIST 等标准）。 | 2023-04-28 | 考拉认为 LLM 应用进入生产环境后，可观测性与测试覆盖是两大痛点；Promptfoo 把传统软件测试方法论引入 AI 领域，比单纯依赖人工评估更可持续。Anthropic 博客提到其内部也在用该工具做 Agent 质量评估，使其获得更多关注。 | [BV1txNKztENM · 00:28](https://www.bilibili.com/video/BV1txNKztENM?t=28) | [GitHub](https://github.com/promptfoo/promptfoo) |
 | Shannon | Keygraph 开发的白盒 AI 渗透测试工具，分析 Web 应用 / API 源码识别攻击路径，并真正执行漏洞利用（SQL 注入、认证绕过、SSRF、XSS 等）以产出可复现的概念验证报告。 | 2025-09-27 | 考拉认为这是目前最接近 AI 红队想象的开源实现；'无利用不报告'的原则解决了安全扫描误报的痛点。但 AGPL 协议与仅支持白盒测试的限制需要注意；每次扫描消耗 3-5 美元 API 费用，对大型代码库成本不低；更重要的是它真的会实施攻击，千万别在生产环境运行。 | [BV1MgcTzXEjH · 00:31](https://www.bilibili.com/video/BV1MgcTzXEjH?t=31) | [GitHub](https://github.com/KeygraphHQ/shannon) |
+| BundleMon | 免费的包体积监控工具,通过 CI 集成在每次提交时自动比对基线与目标分支,当文件体积或涨幅百分比超出阈值时直接让构建失败;GitHub 评论会生成详细差异报告,历史数据面板支持按天回溯。提供免费托管服务,也支持自托管。 | 2020-06-19 | 考拉认为,构建失败机制比警告通知更有效,能从根本上杜绝在体积优化上的妥协。对开源项目友好,但免费版数据保留策略较严格,PR 仅记录 30 天,企业级场景建议自托管或选择付费版。 | [BV11gixBMEMs · 02:51](https://www.bilibili.com/video/BV11gixBMEMs?t=171) | [GitHub](https://github.com/LironEr/bundlemon) |
 
 ## 运维、部署与基础设施
 
@@ -139,6 +142,7 @@ toc:
 | Voxtral Transcribe 2 | Mistral 发布的下一代语音转文字模型系列，包含批量转写的 Voxtral Mini Transcribe V2 与实时流式转写的 Voxtral Realtime，支持 13 种语言、说话人分离与词级时间戳。 | 2026-02-04 | 考拉认为开源权重加上秒级延迟的组合确实有竞争力，对需要本地部署的隐私敏感场景是好消息；但本次开源仅针对 Realtime 版本，mini 版仍只有 API 服务。 | [BV1MgcTzXEjH · 01:27](https://www.bilibili.com/video/BV1MgcTzXEjH?t=87) | [官网](https://mistral.ai/fr/news/voxtral-transcribe-2) |
 | Open Responses | 致力于完善 AI API 统一标准的开源项目。基于 OpenAI Responses API 风格,另立一套中立的 schema、流式事件方案与工具调用格式,让开发者写一次代码即可切换不同模型;强调可扩展并保留厂商特定功能空间。 | 2026-01-15 | 考拉认为,OpenAI 早期推出的 V1 生成式 API 已成为模型推理领域的标准 API,但后续发布的、对 Agent 更友好的 Responses API 实现更复杂且内部细节不可见、不被社区理解。本次维护中立标准,希望能重新建立对 Agent 友好的 API 标准。 | [BV1tSkWBWEoU · 01:28](https://www.bilibili.com/video/BV1tSkWBWEoU?t=88) | [GitHub](https://github.com/openresponses/openresponses) |
 | TranslateGemma | Google DeepMind 发布的开放权重翻译模型系列,基于 Gemma 3 架构,提供 4B、12B、27B 三个版本,覆盖 55 种语言;12B 模型翻译质量超过 Gemma 3 原版 27B,参数效率显著提升,支持图文多模态翻译,4B 适合移动端、12B 可在笔记本运行;通过 SFT 与强化学习两阶段训练将大模型翻译能力蒸馏进小模型。 | 2026-01-15 | 考拉认为,参数效率确实亮眼,但真正的考验是低资源语言和小语种的实际效果。如果能在保持多模态能力的同时做到轻量化,对边缘部署很有价值。 | [BV1tSkWBWEoU · 02:27](https://www.bilibili.com/video/BV1tSkWBWEoU?t=147) | [Hugging Face](https://huggingface.co/collections/google/translategemma) |
+| Osaurus | 专为 macOS(Apple Silicon)打造的原生 AI 运行时 / LLM 服务器。集成 GPT、Claude、Llama 等模型,基于 Apple MLX 框架实现优化的本地推理;约 10MB 体积,通过集成 MCP 原生工具实现浏览器自动化、文件系统操作与 Git 工作流集成;可作为 MCP server 供 Cursor、Claude Desktop 等 Agent 调用,并支持连接远程模型提供商。 | 2025-08-17 | 考拉认为,你可以将 Osaurus 看作 Mac 上原生增强的 Ollama;近期该项目发布了 macOS MCP 工具集,让 Ollama 更好地操作 Mac 系统。对 MLX 的支持,在 Mac 硬件越来越强大的今天,让更多用户有了本地运行模型的动力。 | [BV11gixBMEMs · 00:01](https://www.bilibili.com/video/BV11gixBMEMs?t=1) | [GitHub](https://github.com/osaurus-ai/osaurus) |
 
 ## AI Agent 与智能体开发
 
@@ -194,6 +198,7 @@ toc:
 | DuckLake | DuckDB 团队于 2026-04-13 发布的 1.0 版本 Lakehouse 格式规范，最大特点是将所有元数据放进一个数据库（catalog），而非像 Iceberg/Delta Lake 那样用 JSON + 元数据文件描述表状态；1.0 引入数据内联、有序表、Bucket 分区、原生 Geometry 等。 | 2026-04-13 | 考拉认为：Iceberg 标准化进展是过去两年的热点，但元数据的复杂度也是它最大的门槛，小团队跑 Iceberg 等于跑一个分布式系统；DuckLake 判断九成 Lakehouse 用例其实不需要 Iceberg 的扩展性，把元数据塞进一台数据库反而更简单可靠，是简化数据栈的典型操作，对中小数据规模团队会有真实吸引力。 | [BV1U19ZBLEcf · 02:27](https://www.bilibili.com/video/BV1U19ZBLEcf?t=147) | [GitHub](https://github.com/duckdb/ducklake) |
 | sql-tap | 数据库代理层工具，以中间人方式捕获 PostgreSQL/MySQL/TiDB 等数据库的查询流量，提供终端 UI 和 Web 界面两种实时展示，支持 N+1 查询检测、执行计划分析和事务追踪，无需修改应用代码。 | 2026-02-14 | 考拉认为 sql-tap 是数据库性能调试利器，TUI 体验流畅，代理架构比日志分析更实时、比 APM 更轻量；但生产环境引入额外网络跳点的风险需评估，建议先在开发环境使用。N+1 检测的阈值调优也是技术活，避免过度误报。 | [BV11AZZBUEeD · 01:22](https://www.bilibili.com/video/BV11AZZBUEeD?t=82) | [GitHub](https://github.com/mickamy/sql-tap) |
 | QMD | Shopify CEO Tobi Lütke 开发的本地 Markdown 搜索引擎，结合 BM25 全文检索、向量语义搜索与 LLM 重排序（RRF 融合、查询扩展等），全程通过 Ollama 本地运行，支持 MCP 协议，可集成到 Claude Desktop / Claude Code。 | 2025-12-08 | 考拉认为这个项目的亮点在于混合搜索策略设计得比较精细，包括查询扩展、RRF 融合、位置感知权重混合等；Tobi 作为 CEO 仍能保持精力写代码，也让他在技术圈中始终拥有不错的口碑。 | [BV1Ny6xBSEpb · 01:28](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=88) | [GitHub](https://github.com/tobi/qmd) |
+| CocoIndex | 面向 AI 的高性能增量数据转换 / 索引框架,Rust 核心 + Python 接口。针对传统 ETL 遇到大模型生成与知识图谱等 AI 场景,用 Rust 重写核心引擎支撑增量处理;最大卖点是流式更新能力——源数据变更时仅重新计算受影响部分,对频繁调用大模型 API 的场景能节省大量成本;内置 CocoInsight 工具让非数据工程师也能可视化理解 Pipeline。 | 2025-03-03 | 考拉认为,增量索引设计确实切中 AI 应用的核心成本痛点;一些使用案例的背书印证了其生产环境的可行性。不过作为新型框架,生态完整度与和主流向量数据库的集成深度,仍待时间检验。 | [BV11gixBMEMs · 01:25](https://www.bilibili.com/video/BV11gixBMEMs?t=85) | [GitHub](https://github.com/cocoindex-io/cocoindex) |
 
 ## 协作与项目管理
 
@@ -263,3 +268,9 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
 | SkillSpector | NVIDIA 开源的 AI Agent Skill 安全扫描器，在安装前用静态分析加可选的 LLM 语义评估检测提示注入、数据外泄、权限提升与供应链投毒等风险，并给出 0–100 风险评分。 | 2026-03-21 | 考拉认为 Agent Skill 和 MCP 生态在快速膨胀，但安全治理几乎是空白，一个第三方 Skill 拿到的权限可能远超想象，而 SkillSpector 能方便地接入现有 CI 安全流水线；值得注意的是它也有局限，只能做静态分析，解析不了运行时行为、加密代码和非英文内容。 | [BV1SVj46KE3c · 04:16](https://www.bilibili.com/video/BV1SVj46KE3c?t=256) | [GitHub](https://github.com/NVIDIA/SkillSpector) |
+
+## 学习资源与教程
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Code Crafters(73 个编程项目清单) | Code Crafters 发布的一份包含 73 个核心编程项目的清单,每个项目都附带经典论文或权威规范(如 BitTorrent 协议、RAFT 共识算法、SQLite 磁盘存储、RFC 5905 等),从量子门模拟到光线追踪,难度跨度大但学习路径清晰;项目描述会明确告知将掌握哪些底层原理,而非单纯复刻功能。Code Crafters 本身也提供在线付费学习平台。 | 2025-04-14 | 考拉认为,这份清单适合作为工程师的系统化学习地图;尤其推荐'实现 Git 核心功能'和'从零构建容器运行时'这两个能彻底解耦黑箱的项目。Code Crafters 本身也提供在线付费学习平台,但即使不付费,结合 AI 按图索骥自行尝试,也并非无法完成的任务。 | [BV11gixBMEMs · 03:20](https://www.bilibili.com/video/BV11gixBMEMs?t=200) | [官网](https://codecrafters.io/blog/programming-project-ideas) |
