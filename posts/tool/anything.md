@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:49+08:00
+lastmod: 2026-08-17T13:07:51+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -80,6 +80,7 @@ toc:
 | Oxfmt | Oxc（The JavaScript Oxidation Compiler）项目下的 Rust 代码格式化工具，完全兼容 Prettier 且速度快 30 倍以上，内置 import 排序与 Tailwind CSS 支持，迁移命令一行即可完成。 | 2026-02-24 | 考拉认为 JavaScript 工具链的 Rust 化已成定局；Oxfmt 没有试图重新定义格式标准，而是选择完全兼容 Prettier，这种务实让社区可以无痛迁移。随着 Agent 与 Harness 工程流程的发展，智能化工具链的性能都需有更高追求。 | [BV1txNKztENM · 02:24](https://www.bilibili.com/video/BV1txNKztENM?t=144) | [GitHub](https://github.com/oxc-project/oxc) |
 | Tambo | 面向 React 的生成式 UI（Generative UI）工具包/SDK，让 Agent 直接渲染你的 React 组件并管理状态，内置 MCP 支持与全栈能力，使 LLM 返回内容更具可交互性。 | 2025-09-15 | 考拉认为相比 JSON Render 等方案，Tambo 更彻底地复用组件，让 AI 操作已有设计系统，比从零生成 HTML 更务实；但组件接口的 AI 友好性是以性（集成）成本为代价的，性能与稳定性同样需深入优化，否则用户将难以忍受数十秒等待后出现的无法交互的 UI。 | [BV11AZZBUEeD · 03:18](https://www.bilibili.com/video/BV11AZZBUEeD?t=198) | [GitHub](https://github.com/tambo-ai/tambo) |
 | LiftKit | 主打视觉对称的 CSS/UI 组件库（面向 Next.js），用黄金比例（φ）生成组件尺寸与间距，提供实时调色面板与材质预设，试图用数学美学解决设计系统“不够精致”的微妙问题。 | 2025-04-09 | 考拉认为 LiftKit 的差异化在于把数学美学工具化，黄金比例确实是有意思的想法，适合对视觉细节有执念的独立开发者，但实际提升还有赖于真实用户检验。 | [BV11AZZBUEeD · 03:47](https://www.bilibili.com/video/BV11AZZBUEeD?t=227) | [GitHub](https://github.com/Chainlift/liftkit) |
+| Rust/UI | 受 shadcn/ui 启发的 Rust 组件注册表，面向 Leptos 全栈框架，采用复制粘贴（copy-paste）模式分发源码，基于 Tailwind CSS 样式，提供表格/数据表、对话框、聊天等 90+ 组件与 CLI。 | 2026-03-11 | 考拉认为 Rust 前端生态正在快速发展，但相比 React 丰富的成熟组件库，Leptos 周边组件仍然薄弱；作者也希望借此项目降低使用 Rust 开发 UI 的门槛。 | [BV1MgcTzXEjH · 03:19](https://www.bilibili.com/video/BV1MgcTzXEjH?t=199) | [GitHub](https://github.com/rust-ui/ui) |
 
 ## 测试与质量保障
 
@@ -89,6 +90,7 @@ toc:
 | Happy DOM | 用 TypeScript 实现的 Headless 浏览器/DOM 环境，提供完整的 DOM API（Custom Elements、Shadow DOM、Mutation Observer、Fetch 等），被 Vitest、Jest、Bun 等测试框架作为默认或可选的 DOM 环境，支持 React、Vue 等主流框架的测试。 | 2019-09-09 | 考拉认为：长期以来 jsdom 几乎是 Node 测试 DOM 的唯一选择，但它相对笨重、维护节奏缓慢；Happy DOM 选择重写一套更轻量的实现，Vitest 默认推荐它作为环境就是最好的背书；在前端基础设施越来越追求速度的当下，Bun 和 Vite 带起的这波提速浪潮里，Happy DOM 是基础设施层的关键一环；局限是 API 覆盖度仍不如 jsdom 全面，遇到冷门 DOM 特性偶尔需要绕路。 | [BV1qmoFBzE1e · 01:50](https://www.bilibili.com/video/BV1qmoFBzE1e?t=110) | [GitHub](https://github.com/capricorn86/happy-dom) |
 | AIMock | CopilotKit 推出的开源确定性 Mock 基础设施，用单一端口模拟 LLM、MCP、A2A、向量数据库与多模态 API，核心是录制回放，并支持漂移检测与混沌测试。 | 2026-03-03 | 考拉认为，AI 应用的测试一直是个痛点，依赖外部 API、输出不稳定、成本高。AIMock 把传统软件测试中成熟的录制回放模式引入 AI 领域；随着 Agent 开发逐步走向工程化，从能跑就行到可测试可复现，这类基础测试工具会越来越重要。 | [BV1HzDSBqEgd · 03:50](https://www.bilibili.com/video/BV1HzDSBqEgd?t=230) | [GitHub](https://github.com/CopilotKit/aimock) |
 | Promptfoo | 开源的 LLM/提示词测试框架，用声明式配置定义测试用例，自动对比多个模型输出，并检测提示注入等安全风险；支持接入 CI/CD 并输出合规报告（可映射到 OWASP、NIST 等标准）。 | 2023-04-28 | 考拉认为 LLM 应用进入生产环境后，可观测性与测试覆盖是两大痛点；Promptfoo 把传统软件测试方法论引入 AI 领域，比单纯依赖人工评估更可持续。Anthropic 博客提到其内部也在用该工具做 Agent 质量评估，使其获得更多关注。 | [BV1txNKztENM · 00:28](https://www.bilibili.com/video/BV1txNKztENM?t=28) | [GitHub](https://github.com/promptfoo/promptfoo) |
+| Shannon | Keygraph 开发的白盒 AI 渗透测试工具，分析 Web 应用 / API 源码识别攻击路径，并真正执行漏洞利用（SQL 注入、认证绕过、SSRF、XSS 等）以产出可复现的概念验证报告。 | 2025-09-27 | 考拉认为这是目前最接近 AI 红队想象的开源实现；'无利用不报告'的原则解决了安全扫描误报的痛点。但 AGPL 协议与仅支持白盒测试的限制需要注意；每次扫描消耗 3-5 美元 API 费用，对大型代码库成本不低；更重要的是它真的会实施攻击，千万别在生产环境运行。 | [BV1MgcTzXEjH · 00:31](https://www.bilibili.com/video/BV1MgcTzXEjH?t=31) | [GitHub](https://github.com/KeygraphHQ/shannon) |
 
 ## 运维、部署与基础设施
 
@@ -111,6 +113,7 @@ toc:
 | Lifo | 把浏览器标签页变成完整的 Linux 风格沙箱操作系统，提供文件系统、进程管理与 60+ 常用命令；基于 IndexedDB 持久化、无需虚拟机或容器，适合即时运行 AI 生成的代码。 | 2026-02-24 | 考拉认为思路取巧但合理；IndexedDB 虚拟文件系统和无网络依赖是亮点；但存储配额和无法运行原生二进制文件是硬伤，不能当成虚拟化与容器的替代品。不过在 AI 时代，说不定真有一席之地。 | [BV1MkAiz3E7k · 00:32](https://www.bilibili.com/video/BV1MkAiz3E7k?t=32) | [GitHub](https://github.com/lguzzon-scratchbook/lifo) |
 | Monty | Pydantic 团队用 Rust 实现的安全 Python 子集解释器，专为安全执行 LLM 生成的代码设计；通过 WASM 内存隔离禁止文件系统/网络/环境变量访问，支持执行状态快照与恢复，微秒级启动。 | 2026-02-19 | 考拉认为 Monty 的目标精准解决未知代码执行的安全与性能矛盾；相比 Docker 容器的百毫秒级启动，微秒级延迟让实时工具调用成为可能；但受限的 Python 子集和缺失的标准库是开发者要面对的问题，复杂业务逻辑可能跑不通。 | [BV11AZZBUEeD · 00:01](https://www.bilibili.com/video/BV11AZZBUEeD?t=1) | [GitHub](https://github.com/pydantic/monty) |
 | bunqueue | 专为 Bun 设计的高性能任务队列，零外部依赖，使用 SQLite 持久化，单机性能标称约 20 万操作/秒，API 兼容 BullMQ，支持延迟任务、定时任务和死信队列，提供嵌入式与 TCP 服务器两种模式。 | 2026-01-28 | 考拉认为 Redisless 架构省去了运维成本，但 SQLite 的单节点限制是硬伤，官方也坦诚不适合多区域分布式场景；对于不想为队列单独跑 Redis 服务的小团队是个务实选择，规模扩大后的迁移成本需提前考虑。 | [BV11AZZBUEeD · 01:50](https://www.bilibili.com/video/BV11AZZBUEeD?t=110) | [GitHub](https://github.com/egeominotti/bunqueue) |
+| zerobrew | 用 Rust 重写的实验性 Homebrew 替代品（命令 zb），采用内容寻址存储等优化实现 2-20 倍提速，直接复用 Homebrew 的 CDN 与包定义，可无缝替换 brew 命令。 | 2026-01-19 | 考拉认为速度提升来自存储层优化而非协议更新，保持了很好的兼容性；但 Homebrew 的生态粘性不止于速度，那些复杂的编译依赖和包的处理才是关键。 | [BV1MgcTzXEjH · 02:23](https://www.bilibili.com/video/BV1MgcTzXEjH?t=143) | [GitHub](https://github.com/lucasgelfond/zerobrew) |
 
 ## AI 模型与推理
 
@@ -123,6 +126,7 @@ toc:
 | Colibri | 纯 C 语言、零运行时依赖的推理引擎，核心约 2400 行代码，能在 25GB 内存的消费级设备上运行 GLM-5.2（744B MoE）模型，将部分参数层常驻内存、2 万多个路由专家按需在 NVMe 磁盘上流式加载，配合 int4 量化与投机解码。 | 2026-07-01 | 是 llama.cpp 之后又一个极限工程实现；当前速度离生产可用还很远，但它证明了 MoE + NVMe 流式加载这条路的可行性，随着固态硬盘带宽逼近内存，专家按需加载可能会成为本地推理的常规手段。 | [BV19qNT6ZEmL · 01:25](https://www.bilibili.com/video/BV19qNT6ZEmL?t=85) | [GitHub](https://github.com/JustVugg/colibri) |
 | Gemma 4 | Google DeepMind 开源的开放模型家族，含 E2B、E4B、26B、31B 四档，全系支持音视频多模态与函数调用，覆盖 140 种语言，可端侧/本地部署。 | 2026-04-02 | 考拉认为，本次 Gemma 4 号称在 Gemma 3 的研究成果之上训练而成，有望打破 Google 内部两派模型水平差距过大的问题；但 Gemma 4 作为开源中小型模型，聚焦的仍然是本地甚至端侧部署的场景，目前竞争对手也主要是 Qwen 和 Mistral 的同规格模型。 | [BV1rLD5BKEtE · 01:23](https://www.bilibili.com/video/BV1rLD5BKEtE?t=83) | [官网](https://deepmind.google/models/gemma/gemma-4) |
 | Moonshine | 由 Useful Sensors 推出的低延迟语音识别（ASR）模型/引擎，采用 C/C++ 实现并提供纯 C API，针对嵌入式与边缘设备优化，避免 Whisper 固定 30 秒窗口的延迟问题，跨平台支持 IoT 场景。 | 2024-10-04 | 考拉认为 Moonshine 是 Whisper 之后 ASR 领域的新常识；C 语言实现比 Python 更适合资源受限设备；但比 Whisper 快的基准测试需看具体硬件环境；生态成熟度尚早，适合有本地语音高速识别需求的场景。 | [BV1MkAiz3E7k · 01:25](https://www.bilibili.com/video/BV1MkAiz3E7k?t=85) | [GitHub](https://github.com/moonshine-ai/moonshine) |
+| Voxtral Transcribe 2 | Mistral 发布的下一代语音转文字模型系列，包含批量转写的 Voxtral Mini Transcribe V2 与实时流式转写的 Voxtral Realtime，支持 13 种语言、说话人分离与词级时间戳。 | 2026-02-04 | 考拉认为开源权重加上秒级延迟的组合确实有竞争力，对需要本地部署的隐私敏感场景是好消息；但本次开源仅针对 Realtime 版本，mini 版仍只有 API 服务。 | [BV1MgcTzXEjH · 01:27](https://www.bilibili.com/video/BV1MgcTzXEjH?t=87) | [官网](https://mistral.ai/fr/news/voxtral-transcribe-2) |
 
 ## AI Agent 与智能体开发
 
@@ -155,6 +159,7 @@ toc:
 | Autoresearch | Karpathy 开源的自主 AI 研究框架，让 AI Agent 在夜间自动开展机器学习实验，在受限环境下验证 Agent 能否做出有意义的研究迭代。 | 2026-03-06 | 考拉认为这是 AI 辅助研究从工具走向自主研究者的早期信号，但当前仍需人类定义实验方向，离真正自主研究尚有距离；项目总能精准把握 AI 社区脉搏，5 分钟训练预算与单文件约束的设计非常克制，既控制了风险又保证了可复现性。 | [BV1WbXUBGEJr · 00:01](https://www.bilibili.com/video/BV1WbXUBGEJr?t=1) | [GitHub](https://github.com/karpathy/autoresearch) |
 | Jido | 基于 Elixir/OTP 的自治多智能体框架，Agent 为纯函数式数据结构，状态变更通过指令描述，副作用由 OTP 运行时执行；内置 Supervisor 树可自动恢复崩溃的 agent，并支持热更新。 | 2026-02-22 | 考拉认为当 Python 和 Go 几乎垄断 AI 开发时，Jido 提供了另一种思路；Elixir 的并发模型与容错机制适合构建高可靠 Agent 系统，但生态成熟度仍有差距，适合对性能与稳定性有极致要求、且愿意接受函数式编程思维的团队。Jido 2.0 的代码设计对想深入 Agent 实现的开发者很有参考价值。 | [BV1txNKztENM · 03:52](https://www.bilibili.com/video/BV1txNKztENM?t=232) | [GitHub](https://github.com/agentjido/jido) |
 | Hugging Face Skills | Hugging Face 推出的 Agent Skills 集合，把训练模型、创建数据集、运行评估等常用动作拆成独立文件夹（含 SKILL.md、脚本与模板），可被 Claude Code、Codex、Gemini CLI、Cursor 等编码 Agent 直接调用。 | 2025-11-24 | 考拉认为借助 Hugging Face 庞大的 AI 与机器学习生态，进一步迭代 Skills 能让研究者的 Agent 更聪明地使用 Hugging Face，有望让 Hugging Face 成为大家更喜爱的平台。 | [BV1MkAiz3E7k · 01:54](https://www.bilibili.com/video/BV1MkAiz3E7k?t=114) | [GitHub](https://github.com/huggingface/skills) |
+| NanoClaw | 轻量级、可理解、可定制的个人 AI 代理，将每个代理会话运行在隔离容器（Apple Container / Docker）中，支持 WhatsApp、Telegram 等消息渠道接入与定时任务。 | 2026-01-31 | 考拉认为这类项目展示了开发者对透明性和可定制性的追求，是学习与定制化实验的好材料；但作为生产工具仍需更成熟的生态支持和社区协作。 | [BV1MgcTzXEjH · 00:01](https://www.bilibili.com/video/BV1MgcTzXEjH?t=1) | [GitHub](https://github.com/nanocoai/nanoclaw) |
 
 ## 数据工程与存储
 
@@ -206,6 +211,7 @@ toc:
 | Semiotic | 支持流式数据的 React 可视化库，40+ 图表类型，双画布流式引擎支持 60fps 渲染，内置预测与异常检测等统计功能，并提供 MCP Server 供 LLM 生成图表。 | 2026-03-21 | 考拉认为，项目的 API 设计在 D3 和 Recharts 之间找到平衡。流式渲染和 MCP 集成是差异化所在，适合结合 LLM 的流式输出做可视化渲染。 | [BV1rLD5BKEtE · 02:49](https://www.bilibili.com/video/BV1rLD5BKEtE?t=169) | [GitHub](https://github.com/nteract/semiotic) |
 | Rendi | 将 FFmpeg 封装为云端服务的 API（FFmpeg as a Service），无需本地安装，直接通过 REST API 提交原生 FFmpeg 命令即可在云端处理音视频与图片；服务器无冷启动，支持 20+ 分钟的重型任务，定价透明（不按编码次数、分辨率或流量收费）。 | 2025-02-05 | 考拉认为视频处理的云端化趋势已经很明确，但大多数方案都试图用自己的 DSL 包装 FFmpeg，Rendi 反其道而行，直接接受原生 FFmpeg 命令，对开发者最友好，也意味着迁移成本几乎为零；不过纯 API 形态意味着它更适合自动化工作流集成，而非面向终端用户的场景。 | [BV1ivAMzGEv5 · 03:20](https://www.bilibili.com/video/BV1ivAMzGEv5?t=200) | [官网](https://www.rendi.dev) |
 | manim-web | 将 3Blue1Brown 的 Manim 数学动画库用 TypeScript 和 WebGL 重写并搬进浏览器，无需本地安装 Python/FFmpeg，打开网页即可实时渲染数学公式动画。 | 2026-01-29 | 考拉认为 WebGL 实时渲染比生成视频播放流畅得多；但复杂场景的 WebGL 性能消耗和移动端兼容性需实际测试。若能稳定，基于 Web 的使用场景远超原 Python 版本，会是教育场景的利器。 | [BV1MkAiz3E7k · 02:53](https://www.bilibili.com/video/BV1MkAiz3E7k?t=173) | [GitHub](https://github.com/maloyan/manim-web) |
+| Excalidraw MCP | Excalidraw 官方出品的 MCP 服务器，让 Claude、ChatGPT、VS Code 等支持 MCP 的客户端在对话中直接生成手绘风格 Excalidraw 图表，支持流畅视口控制与全屏交互编辑，可本地运行或部署到云端。 | 2026-02-04 | 考拉认为相比让 AI 生成 Mermaid 或 PlantUML，手绘风格的适用空间更广泛。 | [BV1MgcTzXEjH · 01:55](https://www.bilibili.com/video/BV1MgcTzXEjH?t=115) | [GitHub](https://github.com/excalidraw/excalidraw-mcp) |
 
 ## 办公与演示
 
