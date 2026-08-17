@@ -1,0 +1,4 @@
+interface:
+  display_name: "Koala 科技周报处理器"
+  short_description: "逐期核验 Koala 科技周报工具并维护可恢复、可回退的分类目录"
+  default_prompt: "使用 $process-koala-tech-weekly 处理一期尚未完成的 Koala 科技周报，逐条核验项目地址并更新工具目录。"
