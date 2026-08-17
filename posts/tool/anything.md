@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:27+08:00
+lastmod: 2026-08-17T13:07:29+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -43,6 +43,7 @@ toc:
 | 0github | Code Review 工具 | —（原文未记录） | —（原文未记录） | —（原文未记录） | —（原文未记录） |
 | GitHub Stacked Pull Requests | 通过 `gh stack` 把大改动拆成相互依赖、可独立评审和合并的小 PR | 2026-02-06 | Agent 生成的代码量暴涨后，评审正成为新瓶颈；把大改动切成可消化的小块正好对症。 | [BV1Fz3X62ETW · 02:35](https://www.bilibili.com/video/BV1Fz3X62ETW?t=155) | [GitHub](https://github.com/github/gh-stack) |
 | sem | 基于 Git 的语义级版本控制/差异工具，从函数、类等实体层面（而非逐行）理解一次提交改了什么，提供 sem diff、sem blame、sem impact 命令，面向 AI 编程 Agent 输出结构化变更信息。 | 2026-02-06 | 传统行 diff 是给人看的，但在 AI 写代码的时代，Agent 需要的是结构化、语义化的变更信息；sem 通过代码静态分析，希望提供这种对 Agent 更友好的新格式。 | [BV1CWJF6xE1d · 00:01](https://www.bilibili.com/video/BV1CWJF6xE1d?t=1) | [GitHub](https://github.com/Ataraxy-Labs/sem) |
+| DiffsHub | GitHub 代码差异查看器，把 URL 里的 github.com 换成 diffshub.com 即可打开，用虚拟化渲染撑住超大规模 diff，PR、commit、compare、patch 等页面都能接管，宣称能流畅打开 Linux 内核版本间的对比。 | 2026-05-20 | 考拉认为背后的公司 Pierre 之前介绍过他们的两个底层组件 FileTree 和 Diff，DiffsHub 就是基于这两个组件搭出来的上层产品，可以看出他们在往 Patch Review 这个垂直方向深耕；这个时机也很合理——AI 让代码产出速度爆炸增长，Code Review 的工具体验反而成了瓶颈，GitHub 原生 diff 在大 PR 下卡顿是公认痛点，垂直工具用更好的工程实现来抢占体验是个合理的切入角度。 | [BV1yYG76oESe · 01:28](https://www.bilibili.com/video/BV1yYG76oESe?t=88) | [官网](https://diffshub.com/) |
 
 ## Web 与 JavaScript 开发
 
@@ -105,6 +106,8 @@ toc:
 | Skybridge | 专为 MCP 应用设计的全栈 TypeScript 框架，同一份代码可运行在 Claude、ChatGPT、VS Code 等多种 MCP 客户端上，提供端到端类型安全与本地模拟器。 | 2025-10-07 | 考拉认为 MCP 生态正在快速扩张，为 MCP 引入的工具扩展 UI 确实是值得探索的方向；目前 Skybridge 通过为每个工具的调用请求与结果定制 React 组件来实现扩展性，但对于希望脱离聊天对话框的更复杂场景还无法提供帮助。 | [BV15iVV6AE6U · 00:01](https://www.bilibili.com/video/BV15iVV6AE6U?t=1) | [GitHub](https://github.com/alpic-ai/skybridge) |
 | LiteParse | LlamaIndex 团队开源的本地文档解析库，用 PDFium 提取带空间位置信息的文本，支持 PDF、Word、Excel、PowerPoint 与图片，并以 Rust、Node.js、Python 和浏览器 WASM 多种接口暴露，可生成截图供视觉模型使用。 | 2026-02-09 | 考拉认为文档解析是 Agent 应对复杂文档时的瓶颈，市面上收费的解析服务价格不菲；LiteParse 完全本地运行、License 宽松，对数据合规要求高的企业场景很友好；技术实现思路也有巧思——不再对全文使用 OCR 识别，而是尽可能还原 PDF 文本结构，让模型自行理解。 | [BV15iVV6AE6U · 00:32](https://www.bilibili.com/video/BV15iVV6AE6U?t=32) | [GitHub](https://github.com/run-llama/liteparse) |
 | auth.md | WorkOS 提出的开放协议，服务商在自己域名下托管一个 Markdown 文件声明支持的注册流程，AI Agent 读取后可在无需填写表单的情况下代替用户完成服务注册与登录。 | 2026-05-20 | 考拉认为随着 AI Agent 自主行动能力增强，如果 Agent 能够自主完成注册与登录，确实可以让软件服务快速被 Agent 接入使用。 | [BV15iVV6AE6U · 02:58](https://www.bilibili.com/video/BV15iVV6AE6U?t=178) | [GitHub](https://github.com/workos/auth.md) |
+| Satori | 面向 MCP 编程智能体的代码检索工具，把仓库转换为具备新鲜度感知的代码地图，让智能体按意图查找行为、打开真实代码拥有者、跟随调用图上下文并只读取所需源码，可离线运行。 | 2026-01-08 | 考拉认为让 Agent 高效阅读代码这件事，过去一年方案分两派——向量检索精度不稳、靠 grep 又烧 token；Satori 是个值得关注的选择，它与代码的结构（AST）天然对应，返回的片段更完整更可用，比起靠 LLM 语义要可靠得多。 | [BV1yYG76oESe · 00:32](https://www.bilibili.com/video/BV1yYG76oESe?t=32) | [GitHub](https://github.com/ham-zax/satori) |
+| kubernetes-skill | 面向 Claude Code、Codex 等编程智能体的开源 Kubernetes Skill，用 failure-mode-first（先诊断六类已知故障模式再生成 YAML）的方法论解决 LLM 生成 K8s 配置时标签不对齐、端口不一致、安全默认值缺失等问题，配套二十余份按需加载的参考文档。 | 2026-04-12 | 考拉认为作者对 Skill 机制的理解相当不错，把领域知识按需加载，激活成本压到几百 token；比起单纯让 LLM 记住 K8s 最佳实践，failure-mode-first 这种先验证再生成的工作流更可靠；虽然 LLM 对 K8s 通识不错，但结合这样的专家型 Skill 还能进一步提升可靠性。 | [BV1yYG76oESe · 03:51](https://www.bilibili.com/video/BV1yYG76oESe?t=231) | [GitHub](https://github.com/LukasNiessen/kubernetes-skill) |
 
 ## 数据工程与存储
 
@@ -138,6 +141,7 @@ toc:
 | Godogen | 自动游戏生成器，用自然语言描述游戏概念，调度 Claude Code 或 Codex 自动完成项目脚手架、代码编写、素材生成和引擎配置，产出可运行游戏；支持 Godot 4、Bevy 和 Babylon.js 三种引擎，素材侧接入 Gemini、Grok 和 Tripo3D 生成图像、纹理与 3D 模型。 | 2026-03-13 | AI 生成游戏的难点在于验证——画面是否正确、玩法能否跑通，模型需要更多的校验能力。Godogen 把运行时录屏当作反馈信号，等于给代理装上了“眼睛”，比单纯生成代码的同类项目更进一步；但离生成有可玩性的作品还很远，当作快速原型工具更实际。 | [BV19qNT6ZEmL · 02:22](https://www.bilibili.com/video/BV19qNT6ZEmL?t=142) | [GitHub](https://github.com/htdt/godogen) |
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
 | Box3D | Box2D 作者 Erin Catto 开源的 3D 物理引擎，以 Box2D 为基底扩展三角网格/高度场/烘焙复合碰撞等 3D 特性，全部库代码使用 C17，支持连续碰撞、宽 SIMD 接触求解器、多线程钩子、跨平台确定性与录制回放。 | 2026-06-30 | Box2D 作为 2D 物理引擎近 20 年广受好评，Erin Catto 的口碑让 Box3D 天生自带信任度；3D 开源物理领域此前靠 Godot 整合站稳脚跟，Box3D 的入场会让这个长期被商业引擎主导的领域更有看头。游戏开发者值得持续关注。 | [BV1SYMM6FEeT · 01:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=87) | [GitHub](https://github.com/erincatto/box3d) |
+| dotlottie-web | LottieFiles 官方推出的网页动画播放器，基于 Rust + WebAssembly 实现，同时支持 Canvas 2D、WebGL2 与实验性的 WebGPU 后端，并原生支持 dotLottie v2 的状态机、运行时主题切换与嵌入音频，提供 Vanilla JS、React、Vue 等六套 SDK。 | 2023-10-20 | 考拉认为 Lottie 生态长期被各端实现不一致拖累，同一个动画 iOS 上正常、Web 上掉帧或样式错位是常态；LottieFiles 这次用 Rust 内核统一全平台渲染，是从根本上解决问题；dotLottie v2 加入状态机和主题切换，也把 Lottie 从「播放动画」推向「交互组件」，对设计师和前端协作流程是个升级。 | [BV1yYG76oESe · 02:23](https://www.bilibili.com/video/BV1yYG76oESe?t=143) | [GitHub](https://github.com/LottieFiles/dotlottie-web) |
 
 ## 办公与演示
 
@@ -147,6 +151,8 @@ toc:
 | FreeGraphPaper | 在线网格纸生成器，免注册、无水印，选好模板后调整间距、颜色和边距，实时预览并导出 PDF 或 PNG 直接打印；支持方格、点阵、等轴测、六边形、横线和康奈尔笔记纸，覆盖 A4、US Letter 等规格，间距可精确到 5 毫米或 1/4 英寸并保证 100% 比例打印。 | 2026-07-03 | 这类小工具网站的价值在于把一个具体需求做到零门槛，比起功能庞杂的绘图软件，打开即用反而是最大卖点。手帐、数学练习、工程草图都是稳定需求，靠搜索流量、自用站点往往能长期存活，也是独立开发者做小产品的一个不错样本。 | [BV1SYMM6FEeT · 04:18](https://www.bilibili.com/video/BV1SYMM6FEeT?t=258) | [官网](https://freegraphpaper.net/) |
 | stop-slop | 一个以 SKILL.md 形式分发的写作技能（skill），教 Claude 等 LLM 识别并去除 AI 生成的文字痕迹（清嗓子式开场、商业黑话、空泛断言、过度评论、滥用破折号等），内置 5 维度质量打分（1-10），总分低于 35/50 强制重写。 | 2026-01-11 | 仅作功能介绍，未给出明确评价。 | [BV1GpEs6gEAA · 00:01](https://www.bilibili.com/video/BV1GpEs6gEAA?t=1) | [GitHub](https://github.com/hardikpandya/stop-slop) |
 | mq | 用 Rust 编写的命令行工具，把 jq 的处理思路搬到 Markdown 上，可按类似 jq 的语法查询、过滤、转换 Markdown（抽取章节、标题、代码块等），并导出 JSON、CSV、YAML、HTML 等格式，专为 LLM 工作流设计。 | 2025-02-25 | mq 把结构化抽取能力带给了纯文本格式（Markdown），在 LLM 时代尤其应景；当大量内容需要被切分、过滤后送进模型时，一个可组合、可脚本化的 Markdown 处理器，比手写解析高效得多。 | [BV1GpEs6gEAA · 00:28](https://www.bilibili.com/video/BV1GpEs6gEAA?t=28) | [GitHub](https://github.com/harehare/mq) |
+| files.md | 完全本地优先的 Markdown 笔记应用，数据不上云，内置笔记、日记、待办、习惯等结构，主打用聊天式输入快速捕捉想法再通过链接构建知识网络，官网明确反对复杂的「第二大脑」系统。 | 2023-05-23 | 考拉认为在 Obsidian、Notion、Logseq 这些越做越重的 PKM 工具大行其道时，files.md 的姿态相当反潮流；它的官网明确反对复杂的「第二大脑」系统，认为系统越完善，真正的思考反而越少，适合那些被插件、双链、模板搞得心累的用户回归本源；软件本身的交互体验也做得非常不错。 | [BV1yYG76oESe · 01:00](https://www.bilibili.com/video/BV1yYG76oESe?t=60) | [GitHub](https://github.com/zakirullin/files.md) |
+| Polypad | 教育公司 Amplify（原 Mathigon）推出的免费在线数学操作平台，免登录、跨设备可用，把分数条、3D 多面体、天平、函数机、转盘、数据科学工具、逻辑门等几十种模块搬到屏幕上，覆盖从小学算术到中学逻辑与数据科学的全跨度。 | 2020-01-17 | 考拉认为 Polypad 内嵌的丰富模块让交互式的数学教学变为可能，原本有一定上手门槛的模块搭建过程，如果能与 Agent 结合变为自然语言交互，很有可能获得更多的落地机会。 | [BV1yYG76oESe · 03:22](https://www.bilibili.com/video/BV1yYG76oESe?t=202) | [官网](https://mathigon.org/polypad) |
 
 ## 开发者认证与招聘
 
