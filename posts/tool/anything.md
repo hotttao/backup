@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:42+08:00
+lastmod: 2026-08-17T13:07:43+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -40,6 +40,7 @@ toc:
 | Hammerspoon | 基于 Lua 脚本引擎的 macOS 桌面自动化工具，充当操作系统与 Lua 之间的桥梁，可用脚本控制窗口管理、快捷键、WiFi、电池、剪贴板等几乎所有系统功能。 | 2014-10-08 | 考拉认为 Hammerspoon 是 macOS 自动化领域的老牌项目，选用 Lua 作为脚本语言让它在性能与灵活性之间找到了不错的平衡点；相比 Shortcuts、Battertouch 2 等图形化方案上限更高，但学习曲线也更陡，适合喜欢用代码掌控一切的 Power User，不适合追求开箱即用的普通用户。 | [BV1WbXUBGEJr · 00:58](https://www.bilibili.com/video/BV1WbXUBGEJr?t=58) | [GitHub](https://github.com/Hammerspoon/hammerspoon) |
 | ccstatusline | 为 Claude Code CLI 打造的高度可自定义终端状态栏（status line）格式化工具，基于 Claude Code 的 Status Line API，可展示模型、Git 分支、Token 用量、Agent 运行状态与进度等指标。 | 2025-08-08 | 仅作功能介绍，未给出明确评价。 | [BV1WbXUBGEJr · 01:56](https://www.bilibili.com/video/BV1WbXUBGEJr?t=116) | [GitHub](https://github.com/sirmalloc/ccstatusline) |
 | TUI Studio | 类似 Figma 的可视化终端 UI（TUI）编辑器，可拖拽 20 余种预置组件、实时 ANSI 预览，支持 Absolute/Flexbox/Grid 布局与多种配色主题，项目保存为可版本控制的 .tui JSON 并可导出到 Ink、Bubble Tea 等主流 TUI 框架。 | 2026-02-14 | 考拉认为终端 UI 开发长期是纯代码驱动的领域，TUI Studio 试图用可视化编辑降低门槛，想法很有吸引力，毕竟如今越来越多的 TUI 项目也需要设计。 | [BV1WbXUBGEJr · 02:52](https://www.bilibili.com/video/BV1WbXUBGEJr?t=172) | [GitHub](https://github.com/jalonsogo/tui-studio) |
+| Ki Editor | 多光标结构化模态编辑器，直接操作语法树上的节点（函数、循环、表达式可作为整体选中、移动、替换）而非逐字符编辑；配合多光标机制可批量重构多个语法节点，并统一了按词、按行、按语法结构移动的模态编辑粒度。 | 2023-04-04 | 考拉认为结构化编辑的概念并不新鲜，ParEdit 在 Lisp 社区已验证多年，但推广到通用语言一直是难题；另外在 Agent Coding 盛行的当下，编辑器领域的创新看起来更像是学术研究而非生产力工具。 | [BV1ivAMzGEv5 · 04:17](https://www.bilibili.com/video/BV1ivAMzGEv5?t=257) | [GitHub](https://github.com/ki-editor/ki-editor) |
 
 ## 代码质量与 Code Review
 
@@ -71,6 +72,8 @@ toc:
 | PDFx | 基于 @react-pdf/renderer 的 React PDF 组件库，沿用 shadcn/ui 的复制即用模式，提供预制、可主题化的 PDF 组件与 CLI，无运行时依赖。 | 2026-02-14 | 考拉认为，PDF 生成在企业应用中是刚需但体验一直很差，要么用重量级商业方案，要么在底层库上从零搭建。PDFx 沿用 shadcn/ui 的复制而非安装模式，这种路线在 React 生态已被验证有效；对于需要生成发票、报告、合同等 PDF 的团队，这是一个能省不少重复劳动的实用工具。 | [BV1HzDSBqEgd · 02:56](https://www.bilibili.com/video/BV1HzDSBqEgd?t=176) | [GitHub](https://github.com/akii09/pdfx) |
 | EmDash | Cloudflare 开源的 TypeScript CMS，定位为 WordPress 的精神续作，基于 Astro 与 Cloudflare Workers，插件在独立 isolate 中沙箱运行，内置 MCP Server 让 AI Agent 直接管理内容与部署。 | 2026-04-01 | 考拉认为，技术选型现代，但 WordPress 有 43% 的市场份额和 6 万插件生态，并不是 EmDash 可以快速撬动的。但更重要的是，Cloudflare 展现出了全新的战略思路，通过搭建 Cloudflare Native 生态为自己的基础设施带货，最终加大市场占有率。相信 EmDash 只是一个开始，未来他们还会有更多同类项目推出。 | [BV1rLD5BKEtE · 00:02](https://www.bilibili.com/video/BV1rLD5BKEtE?t=2) | [GitHub](https://github.com/emdash-cms/emdash) |
 | Cult UI | 基于 shadcn/ui 的开源动效组件库，提供 78+ 可复制动画组件与 100+ AI Agent 交互模式/区块，技术栈 React + Tailwind + TypeScript，可一键复制或直接用 shadcn 安装。 | 2024-05-29 | 仅作功能介绍，未给出明确评价。 | [BV1rLD5BKEtE · 03:16](https://www.bilibili.com/video/BV1rLD5BKEtE?t=196) | [官网](https://cult-ui.com) |
+| Vite+ | VoidZero 推出的统一前端工具链，将 Vite、Vitest、Rolldown、Oxlint、Oxfmt、tsdown 整合为单一 CLI（vp），一个命令即可管理 Node 版本、开发、测试、构建、代码检查与格式化。 | 2026-03-13 | 考拉认为前端工具链碎片化一直是开发者的痛点，VoidZero 试图用 Rust 重写的高性能工具统一整个链路，野心不小；从 Alpha 阶段看各子项目成熟度参差不齐，Rolldown 和 Oxlint 已有不少生产验证，但 tsdown 和 Vite Task 还比较早期；能否真正取代现有工具链取决于生态兼容性和社区意愿。 | [BV1ivAMzGEv5 · 00:01](https://www.bilibili.com/video/BV1ivAMzGEv5?t=1) | [GitHub](https://github.com/voidzero-dev/vite-plus) |
+| Element Source | 在运行时定位任意 DOM 元素对应源文件位置的零配置库，返回文件名、行号、列号与完整组件调用栈，支持 React、Preact、Vue、Svelte、Solid 五大框架，初衷是为 AI 编程助手提供精准的代码上下文。 | 2026-03-11 | 考拉认为这个工具切中了一个很实际的痛点——AI 编程助手最大的瓶颈之一就是缺乏精准的上下文，而 Element Source 从 UI 层反向追溯到源码，相当于给 Agent 装了一双眼睛；作者之前发布过 React 生态的多个类似工具，本次则支持了更多不同框架。 | [BV1ivAMzGEv5 · 01:54](https://www.bilibili.com/video/BV1ivAMzGEv5?t=114) | [GitHub](https://github.com/aidenybai/element-source) |
 
 ## 测试与质量保障
 
@@ -96,6 +99,7 @@ toc:
 | goshs | 用 Go 编写的 SimpleHTTPServer 现代替代（视频中称 Ghost）；V2 在简单文件分享之外加入了基于 ACL 的权限控制、带二维码的限时分享链接、WebDAV 与 SFTP 支持、IP 白名单与 Webhook 通知等企业级特性。 | 2020-10-02 | 考拉认为：Python SimpleHTTPServer 流行了二十年但功能止步于最基础的 HTTP，想要 HTTPS、鉴权、配额得多自己折腾；goshs 把这些杂事一次解决，从内网文件传输到对外有限分享，都能用一个二进制覆盖。 | [BV1U19ZBLEcf · 01:58](https://www.bilibili.com/video/BV1U19ZBLEcf?t=118) | [GitHub](https://github.com/goshs-labs/goshs) |
 | Open Source Security at Astral | Ruff/uv/ty 的开发团队 Astral 发布的一篇开源供应链安全实践指南，系统梳理 CI/CD 安全、仓库管控、发布流程与依赖管理四大维度的措施。 | 2026-04-08 | 考拉认为，Astral 提出的一系列实践是对近期几起恶性供应链攻击问题的回应，一方面向社区输出安全最佳实践，另一方面也体现了团队的专业性。 | [BV1HzDSBqEgd · 05:43](https://www.bilibili.com/video/BV1HzDSBqEgd?t=343) | [官网](https://astral.sh/blog/open-source-security-at-astral) |
 | Portless | Vercel Labs 开源的本地开发工具，用稳定的命名 .localhost 域名（如 https://myapp.localhost）替换易变的 localhost 端口，自动生成并信任本地 CA 实现 HTTPS，支持 Git worktree 按分支分配子域名，并为 Vite、Astro 等框架自动注入兼容参数。 | 2026-02-15 | 考拉认为同类产品很多，但 Vercel 将多年在开发体验方面的深度积累融入到默认配置中，减少了用户踩坑的概率。 | [BV1WbXUBGEJr · 03:45](https://www.bilibili.com/video/BV1WbXUBGEJr?t=225) | [GitHub](https://github.com/vercel-labs/portless) |
+| AgentSafeHouse | 基于 macOS 原生 sandbox-exec 的本地 AI 编程代理沙箱工具，采用默认拒绝（deny-first）模型，仅放行项目目录与工具链的读写权限，从内核层面阻止代理访问 ~/.ssh、~/.aws 等敏感路径；内置 Claude Code、Cursor 等十多种代理的预置配置，Homebrew 一键安装。 | 2026-02-09 | 考拉认为 AI 代理安全仍是个被严重低估的问题，当让 Agent 全权操作文件系统时，一个幻觉就可能删掉关键文件；AgentSafeHouse 选择在操作系统层面做隔离，比应用层的权限控制更可靠；不过 SandboxExec 本身是 macOS 未公开文档的 API，苹果随时可能调整行为，长期维护存在不确定性。 | [BV1ivAMzGEv5 · 02:51](https://www.bilibili.com/video/BV1ivAMzGEv5?t=171) | [GitHub](https://github.com/eugene1g/agent-safehouse) |
 
 ## AI 模型与推理
 
@@ -166,6 +170,7 @@ toc:
 | GitHub Stacked PRs | GitHub 官方原生支持的「堆叠式拉取请求」工作流（私有预览阶段），把一个大改动拆成若干按顺序堆叠、可独立审查的 PR，支持一键合并整条链；配套网页端 Stack Map 可视化与名为 gh stack 的 GitHub CLI 扩展，并可通过 NPM 包让 AI 编码 Agent 创建堆叠。 | 2026-04-13 | 考拉认为：堆叠 PR 这个工作流在 Meta、Google 内部用了很多年，外部则靠第三方工具支撑；GitHub 下场做原生集成是一大进步，意味着这种工作流从小众走向主流；其俱乐部频道近期也介绍了基于 AI 精确切分 PR 的思路。 | [BV1qmoFBzE1e · 00:01](https://www.bilibili.com/video/BV1qmoFBzE1e?t=1) | [GitHub](https://github.github.com/gh-stack/) |
 | Bright Bean Studio | 开源自托管的社交媒体管理平台，目前支持 Facebook、Instagram、LinkedIn、TikTok、YouTube 等 10+ 海外主流平台（国内平台支持较少），功能覆盖内容撰写、排期、审批、发布、统一收件箱与客户门户等完整工作流。 | 2026-03-25 | 考拉认为：SaaS 工具长期按账号数和席位数收费，对独立客户代运营的中小机构来说成本高企；自托管方案的核心价值不只是省钱，更是掌握数据和凭证的主动权；不过项目使用 AGPL，需要注意 license 风险。 | [BV1qmoFBzE1e · 03:15](https://www.bilibili.com/video/BV1qmoFBzE1e?t=195) | [GitHub](https://github.com/brightbeanxyz/brightbean-studio) |
 | Multica | 开源的 AI Agent 团队协作平台，将 Claude Code、Codex 等 coding agent 变成看板上的正式成员，可分配任务、自主执行并实时汇报进度，支持自托管。 | 2026-01-13 | 考拉认为 Multica 解决的是 Agent 协作的编排与可观测性问题，思路精巧；但从产品深度看，Human-in-the-Loop 场景的交互能力还不够成熟，比如人类如何高效介入 Agent 的决策节点、如何做细粒度的权限管控。更关键的是 Multica 不托管运行时，用户要自己搞定基础设施，这在企业规模化场景下是个门槛。定位在轻量编排层是聪明的切入点，但天花板也因此受限。 | [BV1HzDSBqEgd · 01:01](https://www.bilibili.com/video/BV1HzDSBqEgd?t=61) | [GitHub](https://github.com/multica-ai/multica) |
+| Slock | 实时人机协作平台，把 AI Agent 视为真正的团队成员（而非工具），构建类似 Slack 的频道/私信协作空间；Agent 拥有持久记忆与上下文感知，空闲休眠、收到消息即唤醒，并通过本地 daemon 在用户自己的机器上运行。 | 2026-02-18 | 考拉认为把 AI 代理从工具提升为协作者，概念上很吸引人，但实际价值取决于代理能力的上限；目前 Agent 在复杂任务上的可靠性仍不够稳定，让他们作为团队成员 7×24 小时运转，可能产生大量需要人工审查的输出。 | [BV1ivAMzGEv5 · 00:56](https://www.bilibili.com/video/BV1ivAMzGEv5?t=56) | [官网](https://app.slock.ai) |
 
 ## 多媒体与图形
 
@@ -182,6 +187,7 @@ toc:
 | OpenPencil | 开源的 AI 原生设计编辑器，定位为 Figma 的开源替代；可原生打开并读写 .fig 文件，内置约 90 个工具的对话式 AI（可作为 MCP Server 接入 Claude Code/Cursor），支持 WebRTC 点对点实时协作、无头 CLI，并能导出 Tailwind/HTML/CSS 等代码。 | 2026-02-27 | 考拉认为：Figma 在 AI 时代的态度一直让人琢磨不透，在 API 开放性上更是表现得十分保守；OpenPencil 尽管在兼容性上还存在一些问题，但能让 Agent 方便地读写设计稿，具有突破 Figma 固有市场的潜力；当然，本周发布的 Claude Design 更是对设计 SaaS 的一大挑战。 | [BV1qmoFBzE1e · 00:57](https://www.bilibili.com/video/BV1qmoFBzE1e?t=57) | [GitHub](https://github.com/open-pencil/open-pencil) |
 | MVIDIA | 从晶体管开始教你造 GPU 的交互式网页游戏，玩家扮演硬件工程师，从逻辑门逐步构建 ALU、处理器，最终到 GPU 与着色器编程，课程分五幕、含前置依赖的知识图谱。 | 2026-04-05 | 考拉认为，GPU 架构教育长期是个空白地带，传统课程聚焦 CPU，GPU 内部结构只能啃论文和厂商文档。MVIDIA 用游戏化方式填补了这个缺口。当前游戏内容还比较硬核，但如果学习者有足够的热情，想必可以帮助作者持续完善，让每个关卡变得更加容易理解。 | [BV1HzDSBqEgd · 04:49](https://www.bilibili.com/video/BV1HzDSBqEgd?t=289) | [官网](https://jaso1024.com/mvidia/) |
 | Semiotic | 支持流式数据的 React 可视化库，40+ 图表类型，双画布流式引擎支持 60fps 渲染，内置预测与异常检测等统计功能，并提供 MCP Server 供 LLM 生成图表。 | 2026-03-21 | 考拉认为，项目的 API 设计在 D3 和 Recharts 之间找到平衡。流式渲染和 MCP 集成是差异化所在，适合结合 LLM 的流式输出做可视化渲染。 | [BV1rLD5BKEtE · 02:49](https://www.bilibili.com/video/BV1rLD5BKEtE?t=169) | [GitHub](https://github.com/nteract/semiotic) |
+| Rendi | 将 FFmpeg 封装为云端服务的 API（FFmpeg as a Service），无需本地安装，直接通过 REST API 提交原生 FFmpeg 命令即可在云端处理音视频与图片；服务器无冷启动，支持 20+ 分钟的重型任务，定价透明（不按编码次数、分辨率或流量收费）。 | 2025-02-05 | 考拉认为视频处理的云端化趋势已经很明确，但大多数方案都试图用自己的 DSL 包装 FFmpeg，Rendi 反其道而行，直接接受原生 FFmpeg 命令，对开发者最友好，也意味着迁移成本几乎为零；不过纯 API 形态意味着它更适合自动化工作流集成，而非面向终端用户的场景。 | [BV1ivAMzGEv5 · 03:20](https://www.bilibili.com/video/BV1ivAMzGEv5?t=200) | [官网](https://www.rendi.dev) |
 
 ## 办公与演示
 
