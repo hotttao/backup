@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:07:45+08:00
+lastmod: 2026-08-17T13:07:47+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -42,6 +42,7 @@ toc:
 | TUI Studio | 类似 Figma 的可视化终端 UI（TUI）编辑器，可拖拽 20 余种预置组件、实时 ANSI 预览，支持 Absolute/Flexbox/Grid 布局与多种配色主题，项目保存为可版本控制的 .tui JSON 并可导出到 Ink、Bubble Tea 等主流 TUI 框架。 | 2026-02-14 | 考拉认为终端 UI 开发长期是纯代码驱动的领域，TUI Studio 试图用可视化编辑降低门槛，想法很有吸引力，毕竟如今越来越多的 TUI 项目也需要设计。 | [BV1WbXUBGEJr · 02:52](https://www.bilibili.com/video/BV1WbXUBGEJr?t=172) | [GitHub](https://github.com/jalonsogo/tui-studio) |
 | Ki Editor | 多光标结构化模态编辑器，直接操作语法树上的节点（函数、循环、表达式可作为整体选中、移动、替换）而非逐字符编辑；配合多光标机制可批量重构多个语法节点，并统一了按词、按行、按语法结构移动的模态编辑粒度。 | 2023-04-04 | 考拉认为结构化编辑的概念并不新鲜，ParEdit 在 Lisp 社区已验证多年，但推广到通用语言一直是难题；另外在 Agent Coding 盛行的当下，编辑器领域的创新看起来更像是学术研究而非生产力工具。 | [BV1ivAMzGEv5 · 04:17](https://www.bilibili.com/video/BV1ivAMzGEv5?t=257) | [GitHub](https://github.com/ki-editor/ki-editor) |
 | Bubble Tea | Charm 团队推出的 Go 语言 TUI（终端 UI）框架，v2 为六年来首次重大更新：渲染性能提升 10 倍以上，API 由命令式转向声明式；已在 AI 编程助手等生产环境验证。 | 2026-02-24 | 考拉认为终端不再是复古玩具，而是 AI 时代人机交互的重要界面；v2 的声明式 API 设计让状态管理更清晰，性能优化直接降低了 SSH 场景下的带宽成本。2.5 万个依赖项目的迁移压力不小，但 Charm 提供了详尽升级指南，甚至为 LLM 准备了专用提示词。 | [BV1txNKztENM · 01:26](https://www.bilibili.com/video/BV1txNKztENM?t=86) | [GitHub](https://github.com/charmbracelet/bubbletea) |
+| diffnav | 由 gh-dash 作者 dlvhdr 开发的 git diff 分页器，基于 delta 渲染 diff 并叠加 GitHub 风格侧边文件树，支持文件跳转与搜索，解决命令行查看大量文件变更时容易迷失的问题。 | 2024-09-18 | 考拉认为这是一个小工具；作者 dlvhdr 此前做过 gh-dash，对开发者工作流理解很深。在当前 AI 高速生成代码的阶段，如何 Review 代码、是否 Review 代码都在激烈讨论中，任何能提升生产力的工具都可能获得用户。 | [BV1MkAiz3E7k · 03:21](https://www.bilibili.com/video/BV1MkAiz3E7k?t=201) | [GitHub](https://github.com/dlvhdr/diffnav) |
 
 ## 代码质量与 Code Review
 
@@ -105,6 +106,7 @@ toc:
 | Portless | Vercel Labs 开源的本地开发工具，用稳定的命名 .localhost 域名（如 https://myapp.localhost）替换易变的 localhost 端口，自动生成并信任本地 CA 实现 HTTPS，支持 Git worktree 按分支分配子域名，并为 Vite、Astro 等框架自动注入兼容参数。 | 2026-02-15 | 考拉认为同类产品很多，但 Vercel 将多年在开发体验方面的深度积累融入到默认配置中，减少了用户踩坑的概率。 | [BV1WbXUBGEJr · 03:45](https://www.bilibili.com/video/BV1WbXUBGEJr?t=225) | [GitHub](https://github.com/vercel-labs/portless) |
 | AgentSafeHouse | 基于 macOS 原生 sandbox-exec 的本地 AI 编程代理沙箱工具，采用默认拒绝（deny-first）模型，仅放行项目目录与工具链的读写权限，从内核层面阻止代理访问 ~/.ssh、~/.aws 等敏感路径；内置 Claude Code、Cursor 等十多种代理的预置配置，Homebrew 一键安装。 | 2026-02-09 | 考拉认为 AI 代理安全仍是个被严重低估的问题，当让 Agent 全权操作文件系统时，一个幻觉就可能删掉关键文件；AgentSafeHouse 选择在操作系统层面做隔离，比应用层的权限控制更可靠；不过 SandboxExec 本身是 macOS 未公开文档的 API，苹果随时可能调整行为，长期维护存在不确定性。 | [BV1ivAMzGEv5 · 02:51](https://www.bilibili.com/video/BV1ivAMzGEv5?t=171) | [GitHub](https://github.com/eugene1g/agent-safehouse) |
 | gws | Google 推出的统一命令行工具（Rust 编写），用一条命令控制 Drive、Gmail、Calendar、Sheets、Docs、Chat 等全部 Workspace 服务；运行时读取 Google Discovery Service 动态生成命令，内置 40+ Agent 技能与 MCP 服务器。 | 2026-03-02 | 考拉认为 gws 是帮助 Workspace 服务融入 Agent 生态的重要手段，凭借庞大的用户群和办公场景有望解锁更多 Agent 办公场景；其动态服务发现机制设计用心，比不少第三方 MCP 形态集成方案更胜一筹。 | [BV1txNKztENM · 00:01](https://www.bilibili.com/video/BV1txNKztENM?t=1) | [GitHub](https://github.com/googleworkspace/cli) |
+| Lifo | 把浏览器标签页变成完整的 Linux 风格沙箱操作系统，提供文件系统、进程管理与 60+ 常用命令；基于 IndexedDB 持久化、无需虚拟机或容器，适合即时运行 AI 生成的代码。 | 2026-02-24 | 考拉认为思路取巧但合理；IndexedDB 虚拟文件系统和无网络依赖是亮点；但存储配额和无法运行原生二进制文件是硬伤，不能当成虚拟化与容器的替代品。不过在 AI 时代，说不定真有一席之地。 | [BV1MkAiz3E7k · 00:32](https://www.bilibili.com/video/BV1MkAiz3E7k?t=32) | [GitHub](https://github.com/lguzzon-scratchbook/lifo) |
 
 ## AI 模型与推理
 
@@ -116,6 +118,7 @@ toc:
 | Bonsai 27B | PrismML 对阿里巴巴 Qwen3.6-27B 的极端量化产物，提供 1-bit（1.125 比特/权重、3.9GB）与三元（1.71 比特/权重、5.9GB）两个版本，首次让 27B 级模型跑进 iPhone 17 Pro，保留完整多模态能力与 262K 上下文，支持工具调用与计算机操作循环 | 2026-07-14 | 首次让 27B 级模型跑进 iPhone 17 Pro，保留完整多模态能力和 262K 上下文、支持工具调用与计算机操作循环，数学基准从 95.3 只降到 91.7；数学和工具调用这两项 Agent 关键能力在量化后保持得最好，说明选型经过仔细权衡。本地模型的竞争正从参数规模转向它们提出的“智能密度”——也就是每 GB 体积能装下多少能力。 | [BV17vKB6sEYR · 01:27](https://www.bilibili.com/video/BV17vKB6sEYR?t=87) | [Hugging Face](https://huggingface.co/collections/prism-ml/bonsai-27b) |
 | Colibri | 纯 C 语言、零运行时依赖的推理引擎，核心约 2400 行代码，能在 25GB 内存的消费级设备上运行 GLM-5.2（744B MoE）模型，将部分参数层常驻内存、2 万多个路由专家按需在 NVMe 磁盘上流式加载，配合 int4 量化与投机解码。 | 2026-07-01 | 是 llama.cpp 之后又一个极限工程实现；当前速度离生产可用还很远，但它证明了 MoE + NVMe 流式加载这条路的可行性，随着固态硬盘带宽逼近内存，专家按需加载可能会成为本地推理的常规手段。 | [BV19qNT6ZEmL · 01:25](https://www.bilibili.com/video/BV19qNT6ZEmL?t=85) | [GitHub](https://github.com/JustVugg/colibri) |
 | Gemma 4 | Google DeepMind 开源的开放模型家族，含 E2B、E4B、26B、31B 四档，全系支持音视频多模态与函数调用，覆盖 140 种语言，可端侧/本地部署。 | 2026-04-02 | 考拉认为，本次 Gemma 4 号称在 Gemma 3 的研究成果之上训练而成，有望打破 Google 内部两派模型水平差距过大的问题；但 Gemma 4 作为开源中小型模型，聚焦的仍然是本地甚至端侧部署的场景，目前竞争对手也主要是 Qwen 和 Mistral 的同规格模型。 | [BV1rLD5BKEtE · 01:23](https://www.bilibili.com/video/BV1rLD5BKEtE?t=83) | [官网](https://deepmind.google/models/gemma/gemma-4) |
+| Moonshine | 由 Useful Sensors 推出的低延迟语音识别（ASR）模型/引擎，采用 C/C++ 实现并提供纯 C API，针对嵌入式与边缘设备优化，避免 Whisper 固定 30 秒窗口的延迟问题，跨平台支持 IoT 场景。 | 2024-10-04 | 考拉认为 Moonshine 是 Whisper 之后 ASR 领域的新常识；C 语言实现比 Python 更适合资源受限设备；但比 Whisper 快的基准测试需看具体硬件环境；生态成熟度尚早，适合有本地语音高速识别需求的场景。 | [BV1MkAiz3E7k · 01:25](https://www.bilibili.com/video/BV1MkAiz3E7k?t=85) | [GitHub](https://github.com/moonshine-ai/moonshine) |
 
 ## AI Agent 与智能体开发
 
@@ -147,6 +150,7 @@ toc:
 | nono | 开源的 AI Agent 运行时安全框架，由 Sigstore 创建者打造，提供内核级隔离（Landlock/Seatbelt）、文件快照回滚、审计、供应链签名验证与动态权限审批，提供 Python/TypeScript/Rust/C 多语言 SDK。 | 2026-01-31 | 考拉认为，这个项目的技术深度远超简单沙箱，但 Agent 的生态尚早，开发者安全投入意愿有限，能否在安全和便捷间取得平衡，以及支持大规模云化部署是一个关键问题。 | [BV1rLD5BKEtE · 02:21](https://www.bilibili.com/video/BV1rLD5BKEtE?t=141) | [官网](https://nono.sh) |
 | Autoresearch | Karpathy 开源的自主 AI 研究框架，让 AI Agent 在夜间自动开展机器学习实验，在受限环境下验证 Agent 能否做出有意义的研究迭代。 | 2026-03-06 | 考拉认为这是 AI 辅助研究从工具走向自主研究者的早期信号，但当前仍需人类定义实验方向，离真正自主研究尚有距离；项目总能精准把握 AI 社区脉搏，5 分钟训练预算与单文件约束的设计非常克制，既控制了风险又保证了可复现性。 | [BV1WbXUBGEJr · 00:01](https://www.bilibili.com/video/BV1WbXUBGEJr?t=1) | [GitHub](https://github.com/karpathy/autoresearch) |
 | Jido | 基于 Elixir/OTP 的自治多智能体框架，Agent 为纯函数式数据结构，状态变更通过指令描述，副作用由 OTP 运行时执行；内置 Supervisor 树可自动恢复崩溃的 agent，并支持热更新。 | 2026-02-22 | 考拉认为当 Python 和 Go 几乎垄断 AI 开发时，Jido 提供了另一种思路；Elixir 的并发模型与容错机制适合构建高可靠 Agent 系统，但生态成熟度仍有差距，适合对性能与稳定性有极致要求、且愿意接受函数式编程思维的团队。Jido 2.0 的代码设计对想深入 Agent 实现的开发者很有参考价值。 | [BV1txNKztENM · 03:52](https://www.bilibili.com/video/BV1txNKztENM?t=232) | [GitHub](https://github.com/agentjido/jido) |
+| Hugging Face Skills | Hugging Face 推出的 Agent Skills 集合，把训练模型、创建数据集、运行评估等常用动作拆成独立文件夹（含 SKILL.md、脚本与模板），可被 Claude Code、Codex、Gemini CLI、Cursor 等编码 Agent 直接调用。 | 2025-11-24 | 考拉认为借助 Hugging Face 庞大的 AI 与机器学习生态，进一步迭代 Skills 能让研究者的 Agent 更聪明地使用 Hugging Face，有望让 Hugging Face 成为大家更喜爱的平台。 | [BV1MkAiz3E7k · 01:54](https://www.bilibili.com/video/BV1MkAiz3E7k?t=114) | [GitHub](https://github.com/huggingface/skills) |
 
 ## 数据工程与存储
 
@@ -194,6 +198,7 @@ toc:
 | MVIDIA | 从晶体管开始教你造 GPU 的交互式网页游戏，玩家扮演硬件工程师，从逻辑门逐步构建 ALU、处理器，最终到 GPU 与着色器编程，课程分五幕、含前置依赖的知识图谱。 | 2026-04-05 | 考拉认为，GPU 架构教育长期是个空白地带，传统课程聚焦 CPU，GPU 内部结构只能啃论文和厂商文档。MVIDIA 用游戏化方式填补了这个缺口。当前游戏内容还比较硬核，但如果学习者有足够的热情，想必可以帮助作者持续完善，让每个关卡变得更加容易理解。 | [BV1HzDSBqEgd · 04:49](https://www.bilibili.com/video/BV1HzDSBqEgd?t=289) | [官网](https://jaso1024.com/mvidia/) |
 | Semiotic | 支持流式数据的 React 可视化库，40+ 图表类型，双画布流式引擎支持 60fps 渲染，内置预测与异常检测等统计功能，并提供 MCP Server 供 LLM 生成图表。 | 2026-03-21 | 考拉认为，项目的 API 设计在 D3 和 Recharts 之间找到平衡。流式渲染和 MCP 集成是差异化所在，适合结合 LLM 的流式输出做可视化渲染。 | [BV1rLD5BKEtE · 02:49](https://www.bilibili.com/video/BV1rLD5BKEtE?t=169) | [GitHub](https://github.com/nteract/semiotic) |
 | Rendi | 将 FFmpeg 封装为云端服务的 API（FFmpeg as a Service），无需本地安装，直接通过 REST API 提交原生 FFmpeg 命令即可在云端处理音视频与图片；服务器无冷启动，支持 20+ 分钟的重型任务，定价透明（不按编码次数、分辨率或流量收费）。 | 2025-02-05 | 考拉认为视频处理的云端化趋势已经很明确，但大多数方案都试图用自己的 DSL 包装 FFmpeg，Rendi 反其道而行，直接接受原生 FFmpeg 命令，对开发者最友好，也意味着迁移成本几乎为零；不过纯 API 形态意味着它更适合自动化工作流集成，而非面向终端用户的场景。 | [BV1ivAMzGEv5 · 03:20](https://www.bilibili.com/video/BV1ivAMzGEv5?t=200) | [官网](https://www.rendi.dev) |
+| manim-web | 将 3Blue1Brown 的 Manim 数学动画库用 TypeScript 和 WebGL 重写并搬进浏览器，无需本地安装 Python/FFmpeg，打开网页即可实时渲染数学公式动画。 | 2026-01-29 | 考拉认为 WebGL 实时渲染比生成视频播放流畅得多；但复杂场景的 WebGL 性能消耗和移动端兼容性需实际测试。若能稳定，基于 Web 的使用场景远超原 Python 版本，会是教育场景的利器。 | [BV1MkAiz3E7k · 02:53](https://www.bilibili.com/video/BV1MkAiz3E7k?t=173) | [GitHub](https://github.com/maloyan/manim-web) |
 
 ## 办公与演示
 
