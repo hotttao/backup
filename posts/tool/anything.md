@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T13:06:43+08:00
+lastmod: 2026-08-17T13:07:24+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -41,6 +41,7 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | 0github | Code Review 工具 | —（原文未记录） | —（原文未记录） | —（原文未记录） | —（原文未记录） |
 | GitHub Stacked Pull Requests | 通过 `gh stack` 把大改动拆成相互依赖、可独立评审和合并的小 PR | 2026-02-06 | Agent 生成的代码量暴涨后，评审正成为新瓶颈；把大改动切成可消化的小块正好对症。 | [BV1Fz3X62ETW · 02:35](https://www.bilibili.com/video/BV1Fz3X62ETW?t=155) | [GitHub](https://github.com/github/gh-stack) |
+| sem | 基于 Git 的语义级版本控制/差异工具，从函数、类等实体层面（而非逐行）理解一次提交改了什么，提供 sem diff、sem blame、sem impact 命令，面向 AI 编程 Agent 输出结构化变更信息。 | 2026-02-06 | 传统行 diff 是给人看的，但在 AI 写代码的时代，Agent 需要的是结构化、语义化的变更信息；sem 通过代码静态分析，希望提供这种对 Agent 更友好的新格式。 | [BV1CWJF6xE1d · 00:01](https://www.bilibili.com/video/BV1CWJF6xE1d?t=1) | [GitHub](https://github.com/Ataraxy-Labs/sem) |
 
 ## Web 与 JavaScript 开发
 
@@ -54,6 +55,7 @@ toc:
 | shot-scraper | Simon Willison 开发的命令行截图工具，基于 Playwright，可批量给网页截图、录制演示视频、执行 JavaScript 抓取数据，并可与 GitHub Actions 配合做成可版本化、可进 CI 的截图流水线。 | 2022-03-09 | 截图看似是小需求，但在文档维护和监控场景里高频出现；shot-scraper 把它做成了可版本化、可进 CI 的流水线，这是和手动截图的本质区别。Simon Willison 一贯擅长做这种小而美的工具，配合他的 llm 工具链还能打出把网页内容喂给模型的组合拳。 | [BV1SYMM6FEeT · 03:23](https://www.bilibili.com/video/BV1SYMM6FEeT?t=203) | [GitHub](https://github.com/simonw/shot-scraper) |
 | Nub | 面向 Node.js 的一体化工具包，把 TypeScript 运行、包管理、脚本执行和 Node 版本管理集中进同一个 CLI。 | 2026-06-03 | 考拉认为这两年 Bun、Deno 都想用全新运行时挑战 Node，而 Nub 走的是反方向——不取代 Node，而是把围绕 Node 的工具链体验补齐。 | [BV1EWTK6iEGj · 02:27](https://www.bilibili.com/video/BV1EWTK6iEGj?t=147) | [GitHub](https://github.com/nubjs/nub) |
 | ProseKit | 基于 ProseMirror 的框架无关、headless 富文本编辑器框架，把编辑能力与样式解耦并内置斜杠命令、任务列表、数学公式等扩展。 | 2023-07-09 | 考拉认为富文本编辑器是出了名的难做，ProseMirror 虽强但学习曲线陡峭、API 偏底层；ProseKit 的价值在于把 ProseMirror 的复杂度封装成更友好的扩展式 API，同时坚持 headless 路线、不绑定 UI，更符合当下的技术潮流。 | [BV1EWTK6iEGj · 03:25](https://www.bilibili.com/video/BV1EWTK6iEGj?t=205) | [GitHub](https://github.com/prosekit/prosekit) |
+| Extend UI | Extend 开源的 React 组件库（shadcn 风格注册表），面向文档类产品，提供 PDF/DOCX/XLSX/CSV 查看与编辑、边界框引用、文件上传、电子签名等 14 个可定制组件，MIT 许可。 | 2026-05-12 | 通用 UI 组件库已经红海一片，Extend UI 聪明地选择了文档处理这个细分赛道；这类组件又重又琐碎（PDF 渲染、表格编辑、签名都是硬骨头），现成高质量开源方案不多；Extend AI 做文档智能处理，把内部打磨的能力开源出来，既是技术品牌建设也是给开发者获客的入口。 | [BV1CWJF6xE1d · 03:18](https://www.bilibili.com/video/BV1CWJF6xE1d?t=198) | [GitHub](https://github.com/extend-hq/ui) |
 
 ## 测试与质量保障
 
@@ -70,6 +72,7 @@ toc:
 | evanhahn 的常用脚本 | 日常运维与自动化脚本合集 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [项目页面](https://evanhahn.com/scripts-i-wrote-that-i-use-all-the-time/) |
 | OpenShip | 开源自托管部署平台，自动识别 Node/Python/Go/Rust 等技术栈，一键配置 PostgreSQL/Redis 等服务与 SSL，部署为不可变快照、支持零停机回滚，可云服务或自有服务器自托管 | 2026-03-05 | 仅作功能介绍，未给出明确评价。 | [BV1KK3J6cE5J · 00:32](https://www.bilibili.com/video/BV1KK3J6cE5J?t=32) | [GitHub](https://github.com/oblien/openship) |
 | Iroh | 开源点对点连接工具包，用加密公钥替代 IP 地址建立设备直连，自带 QUIC 传输、NAT/防火墙穿透与无状态中继兜底。 | 2026-06-15 | 考拉认为 Iroh 用 Rust 编写、能下沉到 MCU 级别设备，定位比一般的 WebRTC 方案更底层、更通用，适合需要自己掌控连接层的团队，但要落地仍然要求开发者理解 P2P 的复杂性。 | [BV1SVj46KE3c · 02:54](https://www.bilibili.com/video/BV1SVj46KE3c?t=174) | [GitHub](https://github.com/n0-computer/iroh) |
+| container | 苹果官方开源的命令行工具，在 Apple 芯片 Mac 上以轻量虚拟机方式运行 Linux 容器，完全用 Swift 编写，底层基于 Containerization 包，兼容 OCI 标准镜像与现有容器生态。 | 2026-06-09 | 长期以来 Mac 上跑容器主要靠 Docker Desktop（背后是一个大虚拟机）；苹果这次的思路是给每个容器分配独立的轻量虚拟机，隔离性更好、启动更快，并深度绑定 Apple 芯片做优化。 | [BV1CWJF6xE1d · 01:54](https://www.bilibili.com/video/BV1CWJF6xE1d?t=114) | [GitHub](https://github.com/apple/container) |
 
 ## AI 模型与推理
 
@@ -104,6 +107,7 @@ toc:
 | ZeroFS | 开源日志结构文件系统，将 S3 兼容对象存储直接挂载为 POSIX 文件系统，支持 NFS 与 9P 协议并通过 NBD 暴露为块设备，数据以 XChaCha20-Poly1305 加密、Zstd 压缩，通过了 pjdfstest（8600+ 用例）与 Jepsen 验证，可在其上编译 Linux 内核。 | 2026-01-13 | 把对象存储当本地盘用的方案不少（如 JuiceFS、S3BucketFS），ZeroFS 的激进之处在于单进程完成所有事并直接支持块设备语义；测试投入也远超多数同类开源项目，适合用 S3 的价格拿到本地盘体验的场景，但延迟敏感型复杂场景上生产前还需要仔细加测。 | [BV1SYMM6FEeT · 02:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=147) | [GitHub](https://github.com/Barre/ZeroFS) |
 | F3 | 一种把 WebAssembly 解码器直接内嵌进每个文件的开源列式存储格式，让任何平台无需原生库即可解码数据。 | 2025-05-31 | 考拉认为 Parquet 这类格式都是为上一代硬件设计的，编码方案一旦固化就很难演进，这是整个数据湖生态的隐疾；F3 用 Wasm 把解码逻辑随数据一起分发，相当于给文件格式装上可插拔的引擎，思路很巧妙，不过把解码器塞进文件也意味着要为 Wasm 运行时开销买单；目前项目还只是研究原型，作者明确不建议上生产，但有 Wes McKinney 这样的 Arrow 核心人物背书，这个方向值得长期关注。 | [BV1EWTK6iEGj · 00:01](https://www.bilibili.com/video/BV1EWTK6iEGj?t=1) | [GitHub](https://github.com/future-file-format/F3) |
 | DBX | 基于 Rust 与 Tauri 的轻量级开源数据库客户端，把 50 多种数据库的连接管理、SQL 编辑、ER 图、Schema 对比与跨引擎数据导入导出收进一个约 15MB 的应用。 | 2026-04-29 | 考拉认为 DBX 的卖点是又全又轻，不过对单一数据库的支持未必比得过垂直工具，它更适合广度优先的全栈开发者。 | [BV1SVj46KE3c · 03:38](https://www.bilibili.com/video/BV1SVj46KE3c?t=218) | [GitHub](https://github.com/t8y2/dbx) |
+| pg_durable | 微软开源的 PostgreSQL 扩展，用纯 SQL 定义多步骤、可容错的长时工作流，自动为每步打检查点，崩溃或失败后从最近检查点恢复，无需 Redis、Temporal 等外部编排服务。 | 2026-06-06 | 持久化执行这两年很火，Temporal、Resonate 等专门编排系统是主流；微软反其道而行，把这套能力塞进数据库，对本来就把状态存在 PostgreSQL 的团队，能省掉一整套 worker 和队列基础设施，运维心智负担显著降低；代价是工作流和数据库强耦合，跨语言、跨服务的复杂编排未必合适。 | [BV1CWJF6xE1d · 00:57](https://www.bilibili.com/video/BV1CWJF6xE1d?t=57) | [GitHub](https://github.com/microsoft/pg_durable) |
 
 ## 协作与项目管理
 
@@ -112,6 +116,8 @@ toc:
 | Buzz | 基于 Nostr 事件模型的自托管协作平台，覆盖聊天、画布、代码评审和工作流 | 2026-03-06 | 选择 Nostr 很大胆：天然去中心化且可验证，但生态工具链弱于成熟 IM 协议，自托管也要求运维者理解相关概念。 | [BV1Fz3X62ETW · 04:05](https://www.bilibili.com/video/BV1Fz3X62ETW?t=245) | [GitHub](https://github.com/block/buzz) |
 | Chatto | Hendrik Mans 开源的自托管群聊平台，整个服务端是单个约 50MB 的二进制文件、零依赖一步部署，内置端到端加密的音视频通话与屏幕共享，不依赖第三方服务，提供 GraphQL 与 NATS API，房间类型覆盖自由聊天、论坛与社交信息流，符合 GDPR | 2026-07-08 | 这个赛道上有 Mattermost、Rocket.Chat 等老玩家，但它们部署起来都不轻；Chatto 用单文件零依赖把自托管门槛降到极致，很对个人开发者和小团队的胃口。 | [BV17vKB6sEYR · 04:09](https://www.bilibili.com/video/BV17vKB6sEYR?t=249) | [GitHub](https://github.com/chattocorp/chatto) |
 | Paca | 免费开源、可自托管的 AI 原生项目管理平台，把 AI Agent 当成敏捷团队的正式成员，与人类在同一块 Scrumban 看板上领取任务、更新状态并实时协作。 | 2026-03-20 | 考拉认为 Jira、ClickUp 这类工具都在往里塞 AI，但大多还是把 AI 当成辅助助手，Paca 反过来，从数据模型层面就把 Agent 当一等公民，产品理念更激进、也更贴近 Agent 协作的未来形态；当然实际落地还要看它真正解决问题的能力，把沙箱、代码变更都合在一起的设计，也可能在复杂场景中成为减分项。 | [BV1SVj46KE3c · 01:56](https://www.bilibili.com/video/BV1SVj46KE3c?t=116) | [GitHub](https://github.com/Paca-AI/paca) |
+| Mattermost | 开源、自托管的团队协作平台（Slack 替代品），提供实时聊天、工作流自动化、语音通话、屏幕共享与 AI 集成；Go 后端 + React 前端，单 Linux 二进制运行，数据存 PostgreSQL，MIT 许可，支持 Docker/Kubernetes/Helm 部署。 | 2015-10-02 | Mattermost 没有正面去拼 Slack 的消费级体验，而是聚焦研发和安全运营场景，把自己嵌进 DevSecOps 工具链，这个差异化定位让它在企业市场站稳了脚跟。 | [BV1CWJF6xE1d · 02:20](https://www.bilibili.com/video/BV1CWJF6xE1d?t=140) | [GitHub](https://github.com/mattermost/mattermost) |
+| FablePool | 众包式 AI 开发平台：用户提交软件构想并众筹积分，达标后由 AI Agent 按里程碑公开构建，全程支出、日志与产出记录在公开账本上，成果以 MIT 开源。 | 2026-06-12 | 这是一个相当有趣的实验，把 Agent 当成更加平等的生产力，也让众筹所得的用途非常透明。 | [BV1CWJF6xE1d · 04:13](https://www.bilibili.com/video/BV1CWJF6xE1d?t=253) | [官网](https://fablepool.com) |
 
 ## 多媒体与图形
 
