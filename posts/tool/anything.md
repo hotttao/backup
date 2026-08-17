@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:39:31+08:00
+lastmod: 2026-08-17T18:39:33+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -46,6 +46,7 @@ toc:
 | Mole | 一款免费的 Mac 命令行清理工具，覆盖缓存清理、残留卸载、磁盘分析与系统状态监控，支持 TouchID 授权与 Recast 快速调用，单文件部署，是 CleanMyMac 的命令行替代品。 | 2025-09-23 | Mole 是一个需要命令行（command line）的 Mac 清理工具，功能覆盖缓存清理、残留卸载、磁盘分析和系统状态监控，基本是 CleanMyMac 的命令行平替；支持 TouchID 授权，还能对接 Recast 快速调用；免费开源且单文件部署是核心卖点，开源属性证明开发者对付费清理软件的不满是真实的。Mole 清理足够自动与全面，但系统清理类工具始终有风险，建议先用 Dry Run（演练）预览，重要数据做好备份。 | [BV1NozxBmEe3 · 00:32](https://www.bilibili.com/video/BV1NozxBmEe3?t=32) | [GitHub](https://github.com/tw93/Mole) |
 | Worktrunk | 用于 Git worktree 管理的命令行工具(CLI),面向并行 AI Agent 工作流。用三个核心命令把 worktree 操作变得像切换分支一样自然,一行命令即可新建 worktree 并启动 Claude Code 等 Agent;定位清晰,为并行 AI Agent 而生,hooks 系统与提交信息管理使其超越简单的目录切换工具。 | 2025-10-17 | 考拉介绍,Worktrunk 让原生 Git worktree 的 UX 对初学者也高效,一行命令即可新建 worktree 并启动 AI 编码代理,为并行 AI Agent 而生;其 hooks 系统与提交信息管理让它超越简单的目录切换工具。 | [BV1h56SBtEzh · 00:01](https://www.bilibili.com/video/BV1h56SBtEzh?t=1) | [GitHub](https://github.com/max-sixty/worktrunk) |
 | Kando | 一款让你在毫秒间选择常用工具和操作的桌面端手势识别 / 径向菜单工具。它通过将整个屏幕变成可点击目标，让你无需精准瞄准小按钮，只需大致方向即可完成操作，兼具速度与准确性；支持 Windows、macOS、Linux 多平台，代码开源。 | 2023-04-16 | 认为 Kando 上手之后可以极大提升操作效率，特别适合手速快、脑速更快的极客们。 | [BV1nrrPYdEHH · 00:45](https://www.bilibili.com/video/BV1nrrPYdEHH?t=45) | [GitHub](https://github.com/kando-menu/kando) |
+| Scripton | 具备实时可视化能力的 Python IDE，集成 Plotly / Observable Plot 与 2D 画布、REPL，目前仅支持 macOS。 | 2025-01-28 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 01:26](https://www.bilibili.com/video/BV1G5ASetENw?t=86) | [官网](https://scripton.dev) |
 
 ## 代码质量与 Code Review
 
@@ -170,6 +171,7 @@ toc:
 | Kokoro | 一个先进的文本转语音（TTS）模型，仅约 8200 万参数，却在 TTS Space Arena 中排名第一。使用不到 100 小时音频数据训练，性能却超越参数更多、数据量更大的模型；v0.19 版本以 Apache 2.0 许可发布，支持美式与英式英语，并提供多个语音包。 | 2024-12-25 | 认为 Kokoro 的高效表现表明传统 TTS 模型的 scaling law 可能比预期更陡峭；其轻量级设计与开源许可，使其成为开发者和研究者的理想选择，在资源有限的情况下优势更为明显。 | [BV14Vwqe2EBR · 01:29](https://www.bilibili.com/video/BV14Vwqe2EBR?t=89) | [Hugging Face](https://huggingface.co/hexgrad/Kokoro-82M) |
 | DeepSeek-R1 | 基于强化学习训练的推理大模型，无需依赖监督微调即可激发链式思考与推理能力，在数学、代码与推理任务上表现出色，并提供蒸馏到小模型的版本与开源权重/API。 | 2025-01-20 | 考拉认为 DeepSeek-R1 的独特之处在于它通过强化学习直接增强模型的推理能力，避免了传统方法中的一些限制；其开源版本和 API 让更多用户可以尝试，同时也展示了国产大模型的研究实力。 | [BV1dPFKeeEuw · 03:40](https://www.bilibili.com/video/BV1dPFKeeEuw?t=220) | [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-R1) |
 | Orate | 参考 Vercel AI SDK 设计的 TypeScript 语音 AI SDK 封装，以统一 API 实现语音转文字、文字转语音、语音变声与语音处理，整合 OpenAI、ElevenLabs、AssemblyAI 等厂商，让开发者用一套接口调用各家能力。 | 2024-08-01 | 仅作功能介绍，未给出明确评价。（字幕介绍其参考 AI SDK 实现、统一调用 OpenAI/ElevenLabs 等、可省去语音应用开发麻烦，无『Koala 认为』式主观评价） | [BV1QyAueyEjX · 03:50](https://www.bilibili.com/video/BV1QyAueyEjX?t=230) | [官网](https://orate.dev) |
+| Unsloth | 让微调大语言模型速度翻倍并节省约 70% 显存、对新手友好的训练框架。 | 2023-11-29 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:29](https://www.bilibili.com/video/BV1G5ASetENw?t=29) | [GitHub](https://github.com/unslothai/unsloth) |
 
 ## AI Agent 与智能体开发
 
@@ -215,6 +217,7 @@ toc:
 | Agent Recipes | 一个提供 LLM 工作流图文示例的合集网站，包含多种 LLM 工作流的示意图与代码示例（如 Prompt Chaining、Routing、Parallelization、Orchestrator-workers、Evaluator-optimizer、Autonomous Agent 等）。这些工作流设计灵感来源于 Anthropic 的研究报告，目标是帮助开发者优化 LLM 的使用效率。 | 2025-01-03 | 认为此前 Anthropic 的研究报告让大家有了 LLM 工作流的学习材料，而这一组 Recipes 则让相应知识的学习变得更加直观。 | [BV14Vwqe2EBR · 02:47](https://www.bilibili.com/video/BV14Vwqe2EBR?t=167) | [官网](https://www.agentrecipes.com/) |
 | yek | 一个用 Rust 编写的工具，用于读取代码库或目录并将文本文件序列化/分块，便于直接喂给大语言模型，遵循 .gitignore 规则、依据 Git 历史推断重要文件，并支持通过 yek.toml 配置。 | 2025-01-11 | 考拉认为将代码读取后提供给 AI 智能体，已经让 AI 变得更强大；yek 比之前的同类工具性能更好，但在代码语义理解上还没有表现出更为突出的优势。 | [BV1dPFKeeEuw · 04:59](https://www.bilibili.com/video/BV1dPFKeeEuw?t=299) | [GitHub](https://github.com/mohsen1/yek) |
 | Goose | Block 推出的开源通用 AI 智能体，可在本地运行，协助开发者生成测试数据、编写脚本、处理复杂部署任务，并支持连接 MCP 服务器或 API 进行扩展。 | 2024-08-23 | 考拉认为一部分已经试用过的开发者对 Goose 评价不错，他们认为 Goose 不仅提高了工作效率，还增加了开发的乐趣；它支持本地运行、保留用户对过程的完全控制，并具有可扩展性。 | [BV1mjNAe4EoR · 00:32](https://www.bilibili.com/video/BV1mjNAe4EoR?t=32) | [GitHub](https://github.com/block/goose) |
+| Mastra | 用 TypeScript 构建与部署 AI 应用（Agent、工作流、RAG、可观测）的框架。 | 2024-08-06 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 00:01](https://www.bilibili.com/video/BV1G5ASetENw?t=1) | [GitHub](https://github.com/mastra-ai/mastra) |
 
 ## 数据工程与存储
 
@@ -233,6 +236,7 @@ toc:
 | CocoIndex | 面向 AI 的高性能增量数据转换 / 索引框架,Rust 核心 + Python 接口。针对传统 ETL 遇到大模型生成与知识图谱等 AI 场景,用 Rust 重写核心引擎支撑增量处理;最大卖点是流式更新能力——源数据变更时仅重新计算受影响部分,对频繁调用大模型 API 的场景能节省大量成本;内置 CocoInsight 工具让非数据工程师也能可视化理解 Pipeline。 | 2025-03-03 | 考拉认为,增量索引设计确实切中 AI 应用的核心成本痛点;一些使用案例的背书印证了其生产环境的可行性。不过作为新型框架,生态完整度与和主流向量数据库的集成深度,仍待时间检验。 | [BV11gixBMEMs · 01:25](https://www.bilibili.com/video/BV11gixBMEMs?t=85) | [GitHub](https://github.com/cocoindex-io/cocoindex) |
 | PostgreSQL Anonymizer | 一个 PostgreSQL 数据库扩展，专门用于对个人身份信息或商业敏感数据脱敏。采用声明式脱敏方法，允许在表定义中直接声明脱敏规则（“设计即脱敏”）；支持多种脱敏方法（匿名导出、静态脱敏、动态脱敏、副本脱敏、脱敏视图、脱敏数据包装器等），并提供随机化、伪造、部分打乱等多种脱敏函数。 | 2018-07-31 | 认为对于许多商业应用来说数据脱敏是刚需，使用 PostgreSQL Anonymizer 可帮助开发者快速开发出安全、健壮的脱敏逻辑。 | [BV14Vwqe2EBR · 01:58](https://www.bilibili.com/video/BV14Vwqe2EBR?t=118) | [官网](https://gitlab.com/dalibo/postgresql_anonymizer) |
 | Citus | 一个将 PostgreSQL 变为分布式数据库的扩展（而非 fork），通过分片与复制实现水平扩展，提供分布式查询引擎，支持最新 PostgreSQL 版本并完全开源。 | 2016-03-24 | 考拉认为，如果你的单机 PostgreSQL 数据库已经遇到瓶颈，并且希望通过分布式数据库解决问题，那么 Citus 是较为成熟可靠的方案。 | [BV1jjN1etEa8 · 03:48](https://www.bilibili.com/video/BV1jjN1etEa8?t=228) | [GitHub](https://github.com/citusdata/citus) |
+| Kestra | 通过无代码 UI 与多语言支持编排数据管道与自动化任务的开源数据编排平台。 | 2019-08-24 | 考拉认为，Kestra 通过与 CI/CD 集成、提供无代码 UI，让不同角色的工程师能在统一数据平台上协作，远离零散数据工作流管道逐渐失控的困境。 | [BV1G5ASetENw · 03:20](https://www.bilibili.com/video/BV1G5ASetENw?t=200) | [GitHub](https://github.com/kestra-io/kestra) |
 
 ## 协作与项目管理
 
@@ -295,6 +299,7 @@ toc:
 | Email.md | 用 Markdown 语法编写并生成响应式、邮件安全的 HTML（及纯文本）的开源邮件构建工具，内置 npm 包、CLI、可视化编辑器与实时预览，底层基于 MJML。 | 2026-02-16 | 考拉认为邮件 HTML 开发一直是前端领域的老大难问题，各邮件客户端对 CSS 支持参差不齐、开发体验停留在十年前；Email.md 用 Markdown 抽象掉底层兼容细节，对 Agent 也更加友好。 | [BV1WbXUBGEJr · 02:23](https://www.bilibili.com/video/BV1WbXUBGEJr?t=143) | [GitHub](https://github.com/anypost/emailmd) |
 | Flameshot | 跨平台开源截图软件，支持 Linux、macOS 与 Windows，提供截图编辑、自定义外观、接口扩展（如 Lua 脚本）与多种图床上传。 | 2017-05-10 | 考拉认为如果在 Linux 上找一款好用的截图工具，Flameshot 仍然是第一选择；在 macOS 和 Windows 上也能用，但可能不如原生工具顺手。 | [BV1Ny6xBSEpb · 02:27](https://www.bilibili.com/video/BV1Ny6xBSEpb?t=147) | [GitHub](https://github.com/flameshot-org/flameshot) |
 | Memos | 自托管的轻量级笔记中心,纯 Markdown 存储,无隐私追踪,MIT 授权,承诺永久免费;提供轻量、易部署的笔记体验,适合想快速记录、不愿在复杂编辑器上折腾的技术用户。 | 2021-12-08 | 考拉认为,自托管不该成为折腾的代名词。Memos 在极简与可用性之间找到平衡点,特别适合那些想逃离(Notion)绑架、又不愿投入大量时间维护的技术用户;真正的隐私工具,应让人忘记隐私设置的存在。 | [BV1h56SBtEzh · 03:24](https://www.bilibili.com/video/BV1h56SBtEzh?t=204) | [GitHub](https://github.com/usememos/memos) |
+| Inscribed | 基于 Excalidraw 的草图转多页 PPT 工具，支持快捷键、图片导入与 Google 幻灯片导出。 | 2025-02-08 | 考拉认为，在 Excalidraw 强大功能基础上，InScribe 还增加了键盘快捷键、自定义画布大小、图片导入、集成 Google 幻灯片等更贴心的功能，是灵感爆发时的神器。 | [BV1G5ASetENw · 01:54](https://www.bilibili.com/video/BV1G5ASetENw?t=114) | [GitHub](https://github.com/chunrapeepat/inscribed) |
 
 ## 开发者认证与招聘
 
@@ -333,3 +338,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Printercow | 一个将任意 USB 热敏打印机变成联网 HTTP API 端点的平台，通过简单的安装命令配合 Raspberry Pi Zero W2 即可实现远程打印，支持 ESC/POS 指令与自定义纸张宽度。 | 2025-01-21 | 考拉认为 Printercow 的易用性和灵活性使其成为零售、餐饮和高流量物流行业的理想选择；其开源模式确保了功能的透明性和可扩展性，同时也为企业提供开箱即用的托管服务。 | [BV1dPFKeeEuw · 03:14](https://www.bilibili.com/video/BV1dPFKeeEuw?t=194) | [官网](https://www.printercow.com) |
+
+## 编程语言与编译器
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Inko | 灵感来自 Erlang 与 Pony 的实验性并发编程语言，以类型安全并发与确定性内存管理兼顾安全与效率。 | 2015-04-07 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 02:50](https://www.bilibili.com/video/BV1G5ASetENw?t=170) | [GitHub](https://github.com/inko-lang/inko) |
