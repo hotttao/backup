@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T22:30:10+08:00
+lastmod: 2026-08-19T22:30:12+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -24,8 +24,8 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
-| GoBackup | Go 实现的数据库与文件备份工具 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/gobackup/gobackup) |
 | Databasement | 自托管数据库备份管理 Web 应用，集中管理 MySQL/PostgreSQL/MariaDB/MSSQL/MongoDB/SQLite/Firebird/Redis 八种数据库的定时备份、保留策略与跨服务器恢复，支持 SSH 隧道、Slack/Telegram 告警及 REST API、MCP 接口 | 2025-11-14 | 数据库备份是每个团队都要做却很少做好的事，常见状态是散落各处的 cron 脚本、坏了没人知道；Databasement 更产品化，多数据库加多存储后端的覆盖面在同类开源工具里突出，MCP 接口也体现了对 AI 运维趋势的敏感。 | [BV1KK3J6cE5J · 02:54](https://www.bilibili.com/video/BV1KK3J6cE5J?t=174) | [GitHub](https://github.com/David-Crty/databasement) |
+| GoBackup | 用 Go 编写的备份工具，专为中小型服务器设计，支持定时备份数据库与文件到 FTP、S3、阿里云 OSS 等多种云存储，内置调度器可守护进程运行，并提供 Web 界面与 HTTP API 管理备份任务。 | 2017-09-06 | 对于需要自建备份方案的小型团队来说，这是个实用的选择。单一二进制的特性让部署变得简单，不过功能上相对基础，复杂的备份策略可能需要自己组合实现。 | [BV1DFyoBREyw · 02:23](https://www.bilibili.com/video/BV1DFyoBREyw?t=143) | [GitHub](https://github.com/gobackup/gobackup) |
 
 ## 终端与桌面 UI
 
@@ -65,12 +65,12 @@ toc:
 | ut | 用 Rust 编写的开发者命令行工具箱（瑞士军刀），将 Base64、UUID、正则测试、哈希等数十种常用开发辅助功能整合进单一二进制，涵盖编码转换、文本处理与开发工具等领域。 | 2025-06-28 | 考拉认为工具集成度很高，但功能相对基础，适合处理日常开发中的快速任务；对需要深度配置的场景，专用工具可能仍是更好选择。 | [BV1Qe4Tz4EGi · 00:32](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=32) | [GitHub](https://github.com/ksdme/ut) |
 | WinApps | 在 Linux 桌面（Ubuntu/Fedora + GNOME/KDE/XFCE）上运行 Windows 应用（如 Microsoft 365、Adobe）的项目，通过在 Docker/Podman/libvirt 虚拟机中运行 Windows 并用 FreeRDP 渲染，将 Windows 应用无缝集成到 Linux。 | 2023-07-05 | 考拉认为该项目类似 WinApps、KasmVNC 等，但在易用性上有所改进；虚拟化方案天然带来性能开销，对图形密集型应用效果可能有限，且明确不支持 Podman 等容器方案，限制了部分用户；相比 Wine 等原生兼容层，更适合偶尔需要使用 Windows 专用软件的场景。 | [BV1Qe4Tz4EGi · 01:24](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=84) | [GitHub](https://github.com/winapps-org/winapps) |
 | Evan Hahn 的命令行脚本集 | 开发者 Evan Hahn 维护近十年的命令行脚本集合，覆盖书签管理、文件操作等 60 多个实用小工具（如 mkcd、timee、trash），多为几行代码解决高频痛点。 | 2025-10-22 | 这种积累体现了务实的工程思维。工具不在于大，而在于精准切中需求。这类个人脚本往往高度定制化，直接照搬可能水土不服，更有价值的是借鉴其中的自动化思路。 | [BV11QxAzvE7U · 00:30](https://www.bilibili.com/video/BV11QxAzvE7U?t=30) | [官网](https://evanhahn.com/scripts-i-wrote-that-i-use-all-the-time/) |
+| GPUI Component | 长桥（Longbridge）开源的基于 GPUI 框架的 Rust 跨平台桌面 UI 组件库，采用无状态组件设计，提供 60+ 开箱即用组件，补充了基于 GPUI 开发桌面应用的 UI 能力。 | 2024-06-13 | 从实际表现来看，GPUI 在性能方面确实有独到之处。更多的 UI 组件也让 GPUI 的上手难度大大降低。 | [BV1DFyoBREyw · 01:54](https://www.bilibili.com/video/BV1DFyoBREyw?t=114) | [GitHub](https://github.com/longbridge/gpui-component) |
 
 ## 代码质量与 Code Review
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
-| 0github | Code Review 工具 | —（原文未记录） | —（原文未记录） | —（原文未记录） | —（原文未记录） |
 | GitHub Stacked Pull Requests | 通过 `gh stack` 把大改动拆成相互依赖、可独立评审和合并的小 PR | 2026-02-06 | Agent 生成的代码量暴涨后，评审正成为新瓶颈；把大改动切成可消化的小块正好对症。 | [BV1Fz3X62ETW · 02:35](https://www.bilibili.com/video/BV1Fz3X62ETW?t=155) | [GitHub](https://github.com/github/gh-stack) |
 | sem | 基于 Git 的语义级版本控制/差异工具，从函数、类等实体层面（而非逐行）理解一次提交改了什么，提供 sem diff、sem blame、sem impact 命令，面向 AI 编程 Agent 输出结构化变更信息。 | 2026-02-06 | 传统行 diff 是给人看的，但在 AI 写代码的时代，Agent 需要的是结构化、语义化的变更信息；sem 通过代码静态分析，希望提供这种对 Agent 更友好的新格式。 | [BV1CWJF6xE1d · 00:01](https://www.bilibili.com/video/BV1CWJF6xE1d?t=1) | [GitHub](https://github.com/Ataraxy-Labs/sem) |
 | DiffsHub | GitHub 代码差异查看器，把 URL 里的 github.com 换成 diffshub.com 即可打开，用虚拟化渲染撑住超大规模 diff，PR、commit、compare、patch 等页面都能接管，宣称能流畅打开 Linux 内核版本间的对比。 | 2026-05-20 | 考拉认为背后的公司 Pierre 之前介绍过他们的两个底层组件 FileTree 和 Diff，DiffsHub 就是基于这两个组件搭出来的上层产品，可以看出他们在往 Patch Review 这个垂直方向深耕；这个时机也很合理——AI 让代码产出速度爆炸增长，Code Review 的工具体验反而成了瓶颈，GitHub 原生 diff 在大 PR 下卡顿是公认痛点，垂直工具用更好的工程实现来抢占体验是个合理的切入角度。 | [BV1yYG76oESe · 01:28](https://www.bilibili.com/video/BV1yYG76oESe?t=88) | [官网](https://diffshub.com/) |
@@ -81,12 +81,12 @@ toc:
 | ast-grep | 基于抽象语法树（AST）的多语言代码搜索与重构工具，支持 CLI、编辑器插件和程序化 API，可用于代码审查、重构与自定义 Lint 规则。 | 2022-07-01 | ast-grep 是一个支持多语言的代码搜索与重构工具，基于抽象语法树进行结构化搜索。它允许开发者使用模式精准定位源码，支持 CLI、编译器插件和程序 API，适合代码审查、重构和自定义 Lint 规则等场景。 | [BV1drTUzPEuD · 00:32](https://www.bilibili.com/video/BV1drTUzPEuD?t=32) | [GitHub](https://github.com/ast-grep/ast-grep) |
 | go-binsize-treemap | Go 语言编写的二进制文件大小分析工具，可生成 SVG 格式的 Treemap 可视化，帮助开发者了解二进制各部分的占比与第三方依赖构成，从而优化代码、减小可执行文件体积。 | 2022-01-21 | go-binsize-treemap 这个工具可以帮你分析 Go 语言编译出的二进制文件，然后生成一个 SVG 格式的 Treemap，让你清晰地看到二进制文件中各个部分的大小占比。这工具有啥用呢？如果你想研究编译器的工作原理，或者想看看你的项目里都包含了哪些第三方依赖，再或者你想优化你的 Go 代码、减少最终生成的可执行文件的大小，那么这个工具绝对能帮得上你。使用起来也很简单，一条命令就能搞定。 | [BV1drTUzPEuD · 02:00](https://www.bilibili.com/video/BV1drTUzPEuD?t=120) | [GitHub](https://github.com/nikolaydubina/go-binsize-treemap) |
 | Kingfisher | MongoDB 开源的高速密钥/敏感信息扫描工具，基于 Hyperscan 与 Tree-sitter 实现大规模代码库扫描。 | 2025-06-16 | MongoDB 开源的密钥扫描工具，主打高性能，用 Rust 写，结合 Hyperscan 和 Tree-sitter，能在超大型代码库里快速找出泄露的密钥和敏感信息。 | [BV1eo3fzBEgV · 01:27](https://www.bilibili.com/video/BV1eo3fzBEgV?t=87) | [GitHub](https://github.com/mongodb/kingfisher) |
+| 0github | 基于 GPT-5-Codex 的 GitHub 代码审查工具，以热力图标注 PR diff 中需要人工关注的程度（如硬编码密钥、诡异加密、复杂逻辑），用法为将 PR 链接中的 github.com 替换为 0github.com。 | 2025-11-09 | 这个思路挺有意思。从是否有 bug 转向是否值得看一眼，实际上更符合代码审查的本质需求。但过度依赖自动标注是否会忽略原本能发现的问题，仍然是自动 review 工具需要回答的问题。 | [BV1DFyoBREyw · 00:01](https://www.bilibili.com/video/BV1DFyoBREyw?t=1) | [GitHub](https://github.com/manaflow-ai/cmux) |
 
 ## Web 与 JavaScript 开发
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
-| ArkRegex | 带类型限定的正则表达式库 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [项目文档](https://arktype.io/docs/blog/arkregex) |
 | Navcat | 3D 场景寻路库 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/isaac-mason/navcat) |
 | Topcoat | Tokio 团队的 Rust 全栈响应式 Web 框架，服务端渲染异步组件，通过宏把 Rust 表达式交叉编译为 JavaScript 实现客户端响应式，无需 WASM，内置组件库与文件路由 | 2026-07-22 | Rust 后端已成熟但全栈体验一直是短板；Topcoat 由 Tokio 这一 Rust 生态核心团队打造，路线更接近 Rust 的一体化哲学而非 Leptos 那种 WASM 优先思路，不过项目仍处于早期实验阶段。 | [BV1KK3J6cE5J · 02:00](https://www.bilibili.com/video/BV1KK3J6cE5J?t=120) | [GitHub](https://github.com/tokio-rs/topcoat) |
 | TypeScript 7 | 微软用 Go 完全重写的原生 TypeScript 编译器，全量构建提速 8–12 倍，内存占用下降 6%–26%，编辑器首个报错出现时间从约 17.5 秒降至 1.3 秒，默认开启 4 个类型检查并行线程。 | 2026-07-08 | 实际提速对大型仓库是质变级别的提升；不过 Blazor 等依赖编译器 API 的前端框架/语言工作流还要等 API 稳定，框架用户暂不宜全量切换。 | [BV19qNT6ZEmL · 00:01](https://www.bilibili.com/video/BV19qNT6ZEmL?t=1) | [GitHub](https://github.com/microsoft/typescript-go) |
@@ -152,6 +152,7 @@ toc:
 | Webiny | 开源的、自托管于 AWS serverless（Lambda/DynamoDB/S3）的内容平台与 TypeScript 框架，用 Pulumi 做基础设施即代码，支持多租户、生命周期钩子、GraphQL 扩展与插件化定制，并内置 AI MCP 集成。 | 2018-01-09 | 考栏认为，Webiny 的插件系统设计让定制化不再是痛苦的分叉维护，而是优雅的扩展开发。 | [BV15ThyzLEin · 02:21](https://www.bilibili.com/video/BV15ThyzLEin?t=141) | [GitHub](https://github.com/webiny/webiny-js) |
 | Massimo | 由 Platformatic/Matteo Collina 开源的类型安全 API 客户端生成器，从 OpenAPI 与 GraphQL schema 自动生成 TypeScript 类型安全客户端；Node.js 端基于高性能 Undici，浏览器端使用原生 Fetch API，单条 CLI 命令即可生成含连接池、HTTP/2 与错误处理的客户端。 | 2025-09-01 | 考栏认为，API 客户端生成并非新鲜概念，但 Massimo 在性能优化和平台适配上确实用了心思，作者 Node.js core team member 的身份也提供了背书；不过在 Swagger Codegen 和 OpenAPI Generator 已经占据主流的情况下，新工具想要突围还需要更多差异化优势。 | [BV1TsYVzJEuo · 01:59](https://www.bilibili.com/video/BV1TsYVzJEuo?t=119) | [GitHub](https://github.com/platformatic/massimo) |
 | Jetzig | 基于 Zig 语言编写的 Web 框架，采用文件式路由与 RESTful 设计，默认渲染 JSON，并支持 Zmpl 模板系统与中间件。 | 2024-01-20 | 基于 Zig 编写的 Web 框架，采用文件式路由和 RESTful 设计；框架默认渲染 JSON 结果，同时支持 Zmpl 模板系统处理 HTML 渲染逻辑；提供了对 HTTP 的中间件支持以及会话管理和数据库查询功能，提升开发效率。Koala 认为 Zig 语言的性能优势确实吸引人，但相比成熟的 Web 框架，Zig 的文档和社区支持还有待完善，更适合愿意投入和学习 Zig 语言的开发者。 | [BV1qtWwzLEeS · 03:19](https://www.bilibili.com/video/BV1qtWwzLEeS?t=199) | [官网](https://jetzig.dev) |
+| ArkRegex | ArkType 推出的类型安全正则表达式库，作为 new RegExp() 的替代品，能从正则字符串静态推断出 TS 类型（含位置与命名捕获组），支持 RegExp 全部特性且零运行时开销。 | 2025-10-28 | 这是 TypeScript 类型体操的又一次胜利。对于重度使用正则表达式的项目，能在编译期捕获引用错误确实有价值。不过复杂正则可能会遇到类型推断性能问题，需要手动标注。 | [BV1DFyoBREyw · 00:31](https://www.bilibili.com/video/BV1DFyoBREyw?t=31) | [GitHub](https://github.com/arktypeio/arktype) |
 
 ## 测试与质量保障
 
@@ -455,6 +456,7 @@ toc:
 | Mediabunny | 纯 TypeScript、零依赖的浏览器端媒体处理库，可直接在浏览器/Node.js 中读取、写入与转换 MP4、WebM、MP3 等媒体文件，借助 WebCodecs 硬件加速，支持微秒级精度剪辑、转封装/转码，性能远超传统工具。 | 2025-06-27 | 考栏认为，把复杂的媒体处理搬到浏览器端确实是个有趣的方向；Mediabunny 对在线音视频编辑等场景是一个不错的补充。 | [BV1TsYVzJEuo · 02:54](https://www.bilibili.com/video/BV1TsYVzJEuo?t=174) | [GitHub](https://github.com/Vanilagy/mediabunny) |
 | LÖVE | 基于 Lua 的开源 2D 游戏开发框架，支持 Windows、macOS、Linux、Android、iOS 多平台，提供简洁 API，以《小丑牌》等作品证明了商业化可行性。 | 2008-01-13 | 基于 Lua 的开源 2D 游戏开发框架，支持 Windows、macOS、Linux、Android 和 iOS 多平台，提供简洁的 API，Lua 脚本语言降低了学习门槛；今年大热的独立游戏《小丑牌》就是用 LÖVE 开发的，证明了这个框架的商业化可行性。 | [BV1qtWwzLEeS · 00:01](https://www.bilibili.com/video/BV1qtWwzLEeS?t=1) | [官网](https://love2d.org) |
 | WebAV | 基于浏览器原生 WebCodecs API 构建的网页视频编辑 SDK，可在浏览器与 Electron 中创建/编辑视频文件，官方称比 ffmpeg.wasm 快 10–20 倍，体积约 50KB，所有计算在客户端完成，并提供画布交互层便于构建视频编辑类产品。 | 2023-03-27 | 考拉认为 WebCodecs 确实改变了浏览器音视频处理的性能天花板，让 Web 应用处理音视频有了更大的发挥空间。 | [BV1LosFzrEW5 · 02:56](https://www.bilibili.com/video/BV1LosFzrEW5?t=176) | [GitHub](https://github.com/WebAV-Tech/WebAV) |
+| recast-navigation-js | Recast Navigation 的 JavaScript/TypeScript 移植（WebAssembly），用于 3D 场景导航：基于体素方法生成导航网格，并提供路径规划、人群模拟、障碍物规避等能力，可配合 Three.js、Babylon.js 等引擎使用。 | 2022-08-17 | 这是一个相当专业的工具，填补了 JS 游戏开发中 3D 寻路的空白。文档质量很高，API 设计也考虑到了不同复杂度的使用场景，适合有 3D 游戏或室内 3D 导航等需求的团队。 | [BV1DFyoBREyw · 01:26](https://www.bilibili.com/video/BV1DFyoBREyw?t=86) | [GitHub](https://github.com/isaac-mason/recast-navigation-js) |
 
 ## 办公与演示
 
@@ -477,6 +479,7 @@ toc:
 | Maybe | 设计优雅的开源个人理财应用（现已停止开源维护，转向 B2B）。 | 2024-01-01 | 个人理财工具 Maybe 在 v0.6.0 版本宣布停止开源维护，公司转向 B2B 金融预测业务；该应用曾被誉设计优雅的开源理财工具，支持多货币、AI 聊天助手、预算管理等。团队在告别信中分析了个人理财应用面临的银行数据、隐私等挑战。 | [BV1FU8Yz9E7w · 03:24](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=204) | [GitHub](https://github.com/maybe-finance/maybe) |
 | OverType | 极简的 Markdown 编辑器，将透明文本框叠加在渲染预览之上实现所见即所得，体积仅约 54KB、无需 NPM/构建/配置，黏贴代码即可集成。 | 2025-08-15 | 考拉认为回归技术本质的设计思路值得赞赏，不过这种实现经测试也有一定局限性，例如想在预览时去除 Markdown 标记格式就有一定困难。 | [BV16GeEzdEme · 00:27](https://www.bilibili.com/video/BV16GeEzdEme?t=27) | [GitHub](https://github.com/panphora/overtype) |
 | Dayflow | macOS 原生应用，通过每秒一帧的屏幕录制自动生成用户的日常活动时间线；每 15 分钟用 AI 分析屏幕内容生成活动摘要，支持本地模型与 Gemini 两种模式，开源且本地优先。 | 2025-09-23 | 考拉认为这种被动式时间追踪比手动记录更真实准确，对提升时间管理意识很有帮助；但持续屏幕监控涉及隐私问题，好在开源且支持本地处理，用户可自主选择数据处理方式。 | [BV1rSnRzFE9i · 00:31](https://www.bilibili.com/video/BV1rSnRzFE9i?t=31) | [GitHub](https://github.com/JerryZLiu/Dayflow) |
+| Deta Surf | Deta 推出的开源 AI 笔记本，可在同一界面内浏览网页、YouTube 视频与 PDF 并直接提问获取答案，强调减少上下文切换，数据本地存储并支持自定义/本地 LLM。 | 2025-10-20 | 这类工具的关键在于检索质量和使用流畅度。如果 AI 问答的准确性不够，反而会增加认知负担。目前官网信息较少，实际体验有待验证。 | [BV1DFyoBREyw · 02:52](https://www.bilibili.com/video/BV1DFyoBREyw?t=172) | [GitHub](https://github.com/deta/surf) |
 
 ## 开发者认证与招聘
 
