@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:37:58+08:00
+lastmod: 2026-08-19T12:38:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -73,6 +73,7 @@ toc:
 | Ty | 由 Astral（UV/Ruff 团队）用 Rust 编写的高性能 Python 类型检查器兼语言服务器，可快速检查 Python 代码中的类型错误并提供编辑时智能提示。 | 2025-05-03 | Koala 认为，Ty 由开发了高性能 Python 工具链 UV 和 Ruff 的 Astral 团队开源，该团队已证明其重塑 Python 工具链的实力，因此 Ty 同样值得关注；不过目前仍处 Pre-release 阶段，可能仍有 bug 或功能缺失，但团队正在积极开发。 | [BV1vwEuzmErT · 00:01](https://www.bilibili.com/video/BV1vwEuzmErT?t=1) | [GitHub](https://github.com/astral-sh/ty) |
 | ast-grep | 基于抽象语法树（AST）的多语言代码搜索与重构工具，支持 CLI、编辑器插件和程序化 API，可用于代码审查、重构与自定义 Lint 规则。 | 2022-07-01 | ast-grep 是一个支持多语言的代码搜索与重构工具，基于抽象语法树进行结构化搜索。它允许开发者使用模式精准定位源码，支持 CLI、编译器插件和程序 API，适合代码审查、重构和自定义 Lint 规则等场景。 | [BV1drTUzPEuD · 00:32](https://www.bilibili.com/video/BV1drTUzPEuD?t=32) | [GitHub](https://github.com/ast-grep/ast-grep) |
 | go-binsize-treemap | Go 语言编写的二进制文件大小分析工具，可生成 SVG 格式的 Treemap 可视化，帮助开发者了解二进制各部分的占比与第三方依赖构成，从而优化代码、减小可执行文件体积。 | 2022-01-21 | go-binsize-treemap 这个工具可以帮你分析 Go 语言编译出的二进制文件，然后生成一个 SVG 格式的 Treemap，让你清晰地看到二进制文件中各个部分的大小占比。这工具有啥用呢？如果你想研究编译器的工作原理，或者想看看你的项目里都包含了哪些第三方依赖，再或者你想优化你的 Go 代码、减少最终生成的可执行文件的大小，那么这个工具绝对能帮得上你。使用起来也很简单，一条命令就能搞定。 | [BV1drTUzPEuD · 02:00](https://www.bilibili.com/video/BV1drTUzPEuD?t=120) | [GitHub](https://github.com/nikolaydubina/go-binsize-treemap) |
+| Kingfisher | MongoDB 开源的高速密钥/敏感信息扫描工具，基于 Hyperscan 与 Tree-sitter 实现大规模代码库扫描。 | 2025-06-16 | MongoDB 开源的密钥扫描工具，主打高性能，用 Rust 写，结合 Hyperscan 和 Tree-sitter，能在超大型代码库里快速找出泄露的密钥和敏感信息。 | [BV1eo3fzBEgV · 01:27](https://www.bilibili.com/video/BV1eo3fzBEgV?t=87) | [GitHub](https://github.com/mongodb/kingfisher) |
 
 ## Web 与 JavaScript 开发
 
@@ -135,6 +136,7 @@ toc:
 | Svelte Flow | 用于构建节点式 UI（工作流编辑器、数据管道、可视化编程环境）的 Svelte 库。1.0 整个库基于 Svelte 5 从零重写，新增 Edge 重连、更强大的 fitView、键盘导航、更好的可访问性（A11y）等，并与 React Flow 功能对齐；由 React Flow（xyflow）团队维护。 | 2025-05-14 | Koala 介绍 Svelte Flow 1.0 基于 Svelte 5 重写、脱胎换骨，并指出对构建 AI 工作流 UI 的开发者，它让 UI 框架的选择更加多变。 | [BV1mF7mzzEKm · 02:35](https://www.bilibili.com/video/BV1mF7mzzEKm?t=155) | [官网](https://xyflow.com/blog/svelte-flow-release) |
 | Linkify | 一款 JavaScript 插件，能把纯文本中的链接转换成 HTML <a> 标签，自动识别 URL、邮箱地址、#话题标签与 @提及；支持 React、jQuery、多语言与 Emoji，压缩后约 11KB（minified 约 20KB）。 | 2013-05-02 | Koala 认为对博客、论坛、评论区等场景使用 Linkify 可节省很多解析文本链接的工作，但需确认文本内容可信时才使用，避免用户输入恶意链接诱导点击。 | [BV1mF7mzzEKm · 08:10](https://www.bilibili.com/video/BV1mF7mzzEKm?t=490) | [官网](https://linkify.js.org/) |
 | Rolldown-Vite | 基于 Rust 打包器 Rolldown 驱动的 Vite 直替构建工具，可作为默认 vite 包的替换项，显著提升构建速度、降低内存占用，未来将成为 Vite 的默认打包器。 | 2025-05-30 | Vite 团队正式推出 Rolldown-Vite，这是一个基于 Rust 的下一代打包工具，目标是成为 Vite 默认的打包器。简单来说，你可以通过替换 vite 包为 rolldown-vite 来体验它，已经有早期用户反馈构建速度提升了 3-16 倍，内存占用也大大降低。切换之后 esbuild 也变成了可选依赖。如果你想让你的 Vite 项目速度起飞，不妨试试 Rolldown-Vite。 | [BV1drTUzPEuD · 00:01](https://www.bilibili.com/video/BV1drTUzPEuD?t=1) | [GitHub](https://github.com/vitejs/rolldown-vite) |
+| Glass3D generator | 一个在线工具，可根据文本或图片快速生成玻璃拟态（glassmorphism）风格的 3D CSS 视觉效果。 | 2025-07-02 | 一个网页小工具，输入文字或图片就能生成那种玻璃质感的 3D 视觉效果（CSS 实现），适合做海报、封面或网页装饰，纯前端、即开即用。 | [BV1eo3fzBEgV · 01:55](https://www.bilibili.com/video/BV1eo3fzBEgV?t=115) | [官网](https://glass3d.dev) |
 
 ## 测试与质量保障
 
@@ -149,6 +151,7 @@ toc:
 | Lightpanda | 一个专为 headless 模式设计的开源浏览器，特别适合用于 AI 代理、网页抓取和自动化测试等场景。最大特点是极低内存占用与极快执行速度（内存占用比 Chrome 少约 9 倍、执行速度快约 11 倍），支持在页面内执行 JavaScript 和部分 Web API，并兼容 Playwright 与 Puppeteer 工具。 | 2023-02-07 | 认为 Lightpanda 的目标是提供一个轻量级、高性能的无头浏览器方案，尤其适合需要大规模并发处理的场景；虽仍处于 Beta 阶段，但已展现巨大潜力，特别是在资源受限环境中，专注 headless 场景也使其从设计之初保持轻量化。 | [BV14Vwqe2EBR · 00:01](https://www.bilibili.com/video/BV14Vwqe2EBR?t=1) | [GitHub](https://github.com/lightpanda-io/browser) |
 | Trivy | 由 Aqua Security 出品的开源、全面且通用的安全扫描器，可扫描容器镜像、文件系统、Kubernetes、代码仓库与云环境，发现漏洞（CVE）、错误配置、密钥/敏感信息与 SBOM。 | 2019-04-11 | 考拉认为，对于企业级应用，若希望保证自身代码与上游供应链安全，Trivy 是一个可靠的选择。 | [BV1pijczvE8K · 01:51](https://www.bilibili.com/video/BV1pijczvE8K?t=111) | [GitHub](https://github.com/aquasecurity/trivy) |
 | Magnitude | 开源的 AI 原生 Web 应用端到端测试框架，使用视觉 AI Agent 通过自然语言编写测试，能感知界面变化并自动适应，测试运行可被智能缓存以实现快速、低成本、可重复的执行。 | 2025-04-25 | 考拉认为，如果你的应用界面经常变化，或者觉得维护 E2E 测试的成本太高，那么 Magnitude 是一个可行的解决方案；并提到在之前的俱乐部视频中曾对比过几个热门的浏览器自动化与 AI E2E 测试工具，有兴趣的观众可进一步对比 Magnitude 与它们的差异。 | [BV1wQVFzREBr · 01:56](https://www.bilibili.com/video/BV1wQVFzREBr?t=116) | [GitHub](https://github.com/magnitudedev/magnitude) |
+| Evalite | 面向 TypeScript/LLM 应用的轻量级评估（evals）框架，用于测试生成式 AI 输出的质量。 | 2024-11-12 | 一个给 TypeScript 项目做 LLM 评估的小框架，可以像写测试一样写 eval，用来衡量大模型输出是否靠谱，适合在 GenAI 应用里做回归测试。 | [BV1eo3fzBEgV · 00:30](https://www.bilibili.com/video/BV1eo3fzBEgV?t=30) | [GitHub](https://github.com/mattpocock/evalite) |
 
 ## 运维、部署与基础设施
 
@@ -233,6 +236,7 @@ toc:
 | Dream 7B | 香港大学与华为诺亚方舟实验室联合开源的离散扩散大语言模型（70 亿参数），采用双向上下文建模与可控生成，在通用、数学与编程能力上超越现有扩散语言模型，并具备更强的规划与推理灵活性；基于 Qwen2.5-7B 初始化，训练 5800 亿 token。 | 2025-04-02 | Koala 介绍 Dream 7B 是港大与华为诺亚方舟实验室联合推出的开源扩散大语言模型，在通用、数学和编程能力上超越了现有的扩散语言模型，并且在规划能力和推理灵活性上表现出色；并提到近期 DeepMind 也发布了基于扩散的大语言模型研究项目，让大家对于这一架构有了更多兴趣；主要作功能/技术介绍。 | [BV1NpjMztEZR · 01:47](https://www.bilibili.com/video/BV1NpjMztEZR?t=107) | [Hugging Face](https://huggingface.co/Dream-org/Dream-v0-Base-7B) |
 | TensorZero | 开源的工业级 LLM 应用栈，统一了 LLM 网关、可观测性、优化、评估与实验，通过生产数据形成反馈闭环，持续优化模型使其更智能、更快、更便宜。 | 2024-07-16 | 如果你正在开发 LLM 应用，可以试试开源项目 TensorZero。它可以为你的 LLM 应用创建一个反馈回路，通过生产数据不断优化模型，让它们变得更智能、更快速、更便宜。TensorZero 统一了 LLM 网关、可观测性、优化、评估和实验，形成数据和学习的飞轮。你可以用它的网关做 A/B 测试和流量路由，一方面选择最划算的模型完成任务，另一方面收集数据用于后续微调。它使用 Rust 编写，性能强悍，避免在 API 中引入过多延迟。随着 LLM 应用从 Demo 走向生产，这类观测与优化工具还有更大的潜力等待挖掘。 | [BV1f6Msz6EV7 · 00:58](https://www.bilibili.com/video/BV1f6Msz6EV7?t=58) | [GitHub](https://github.com/tensorzero/tensorzero) |
 | RAGgo | 用 Go 编写的轻量级、可用于生产的 RAG（检索增强生成）库，抽象了 RAG 核心组件，可组合文档提取器、切分器、向量数据库等，并提供 SimpleRAG、ContextualRAG 和 MemoryContext 等多种策略。 | 2024-07-25 | RAGO（RAGgo）是一个用 Go 编写的 RAG 库。虽然 Python 和 JS 生态中的 AI 框架和库层出不穷，但 Go 开发者目前的选择还不是很多。如果你想用 Go 语言快速搭建 RAG 系统，可以从 RAGgo 开始尝试。它将 RAG 的核心组件进行抽象，可以组合内置或自行实现的各个组件，例如文档提取器、切分器、向量数据库等，构建最终的 RAG 系统。RAGgo 还提供了多种 RAG 策略，包括 SimpleRAG、ContextualRAG 和 MemoryContext，满足不同的应用场景。不论是实际使用还是学习都很值得一看。 | [BV1bcNDzpERC · 00:31](https://www.bilibili.com/video/BV1bcNDzpERC?t=31) | [GitHub](https://github.com/teilomillet/raggo) |
+| TokenDagger | 高性能的 token 编解码器，作为 tiktoken 的替代实现，用 C++ 编写以加速大模型文本的 token 化。 | 2025-06-22 | 一个用 C++ 写的高性能 token 编码器/解码器，用来替代 Python 的 tiktoken，速度更快，适合在大模型推理与预处理里做文本的 token 化。 | [BV1eo3fzBEgV · 03:23](https://www.bilibili.com/video/BV1eo3fzBEgV?t=203) | [GitHub](https://github.com/M4THYOU/TokenDagger) |
 
 ## AI Agent 与智能体开发
 
@@ -379,6 +383,7 @@ toc:
 | Roboflow Sports | Roboflow 开源的计算机视觉与体育工具集，提供球追踪、球衣号码识别、球员追踪与再识别、相机标定等可复用工具及多种数据集，便于在足球、篮球等运动中做检测与分析。 | 2024-05-14 | Koala 认为，对于计算机视觉从业者、爱好者和体育爱好者来说，这是一个值得一看的开源项目。 | [BV1NpjMztEZR · 01:26](https://www.bilibili.com/video/BV1NpjMztEZR?t=86) | [GitHub](https://github.com/roboflow/sports) |
 | OpenCut | 免费开源（MIT）的跨平台视频编辑器，对标 CapCut/剪映，在浏览器中即可使用，所有处理在本地完成（不上传云端）、无水印无订阅，支持 Web/桌面/移动端，可剪辑、合并视频片段并添加图片、文字与音频。 | 2025-06-22 | Koala 认为，OpenCut 简直是视频编辑的福音，特别是对于那些只需简单编辑的用户来说；开源的属性也让它更具吸引力，说不定以后还能看到更多定制化的功能。 | [BV1NpjMztEZR · 03:06](https://www.bilibili.com/video/BV1NpjMztEZR?t=186) | [GitHub](https://github.com/OpenCut-app/OpenCut) |
 | Spark | 为 Three.js 设计的 3D Gaussian Splatting（3D 高斯泼溅）渲染器，将高效渲染方案融入 Three.js 渲染管线，原生支持多种文件格式、GPU Shader Graph 动态编辑，并在 WebGL2 环境下保持高兼容性与流畅度。 | 2025-05-23 | Spark 是一个为 Three.js 设计的 3D Gaussian Splatting 渲染器。Gaussian Splatting 实际上是一种高效渲染方案，可以实现逼真的光照和透明度效果，同时兼顾性能和真实感。Spark 将 Splatting 完美融入 Three.js 渲染管线，原生支持多种文件格式，支持 GPU Shader Graph 实现动态编辑，并在 WebGL2 环境下保持高兼容性和流畅度，为开发者提供灵活的交互和混合渲染能力。 | [BV1f6Msz6EV7 · 03:16](https://www.bilibili.com/video/BV1f6Msz6EV7?t=196) | [GitHub](https://github.com/sparkjsdev/spark) |
+| Graphite | 用 Rust 编写的开源 2D 图形编辑器，定位为兼具光栅与矢量能力的下一代创作工具。 | 2020-04-26 | 一个用 Rust 写的新一代开源图形编辑器，目标是做成像 Photoshop + Illustrator 那样既支持位图又支持矢量的强大工具，性能与跨平台体验是卖点。 | [BV1eo3fzBEgV · 00:01](https://www.bilibili.com/video/BV1eo3fzBEgV?t=1) | [GitHub](https://github.com/GraphiteEditor/Graphite) |
 
 ## 办公与演示
 
