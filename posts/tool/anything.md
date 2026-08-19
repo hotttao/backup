@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:19+08:00
+lastmod: 2026-08-19T12:38:20+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -60,6 +60,7 @@ toc:
 | neko | 基于 WebRTC 的虚拟浏览器，可在浏览器中多人共享、协作使用同一个远程浏览器实例。 | 2020-03-14 | 一个通过浏览器就能访问的远程虚拟浏览器，支持多人同时看到并操作同一个浏览器画面，适合演示、协作或做隔离的网页环境。 | [BV1wTgoz3E8M · 03:17](https://www.bilibili.com/video/BV1wTgoz3E8M?t=197) | [GitHub](https://github.com/m1k1o/neko) |
 | asciinema | 终端会话录制与分享工具，3.0 版本用 Rust 完全重写，启动速度显著提升，并新增实时流媒体功能。 | 2025-09-15 | 发布 3.0 版本，完全使用 Rust 重写，启动速度显著提升；新版本引入了实时流媒体功能，支持本地和远程两种模式，让终端录制可以实时分享给其他人观看；文件格式升级到 V3，采用时间间隔而非绝对时间戳，大幅简化了录制内容的编辑过程。Koala 认为 Rust 重写带来的性能提升和实时流媒体功能都很实用，特别是教学和演示场景。 | [BV1qtWwzLEeS · 00:29](https://www.bilibili.com/video/BV1qtWwzLEeS?t=29) | [官网](https://asciinema.org) |
 | Murex | 现代化、类型感知的 Shell 与脚本环境，原生支持 JSON/YAML/CSV 等数据格式的直接操作，并集成 AI 助手与智能提示。 | 2017-03-26 | 一个现代化的 SHELL 环境，原生支持 JSON、YAML、CSV 等数据格式的直接操作，无需额外的解析工具；这个 SHELL 还集成了 AI 助手和智能提示功能，能够从 man 页面和其他来源提取上下文信息；类 pip 的包管理器让配置共享变得简单，用户可以轻松在不同机器间迁移开发环境。Koala 认为相比传统 bash 的纯文本处理，Murex 的数据感知能力确实解决了现代开发中的痛点，特别是处理 API 响应和配置文件时；不过，智能提示功能的实际效果还需要在复杂场景下验证。 | [BV1qtWwzLEeS · 00:58](https://www.bilibili.com/video/BV1qtWwzLEeS?t=58) | [GitHub](https://github.com/lmorg/murex) |
+| Tracky Mouse | 用头部移动控制鼠标的无障碍技术项目，结合面部检测与光流追踪算法，仅需普通摄像头即可实现精准鼠标控制，支持悬停点击与手势取消，主要服务运动障碍人群。 | 2024-10-07 | 考拉认为这类无障碍技术项目具有重要社会价值，技术实现上比现有方案更准确稳定；开源发布让更多开发者参与改进，有助于推动无障碍技术生态发展。 | [BV1rSnRzFE9i · 02:52](https://www.bilibili.com/video/BV1rSnRzFE9i?t=172) | [GitHub](https://github.com/xuanhoa88/tracky-mouse) |
 
 ## 代码质量与 Code Review
 
@@ -162,6 +163,7 @@ toc:
 | Trivy | 由 Aqua Security 出品的开源、全面且通用的安全扫描器，可扫描容器镜像、文件系统、Kubernetes、代码仓库与云环境，发现漏洞（CVE）、错误配置、密钥/敏感信息与 SBOM。 | 2019-04-11 | 考拉认为，对于企业级应用，若希望保证自身代码与上游供应链安全，Trivy 是一个可靠的选择。 | [BV1pijczvE8K · 01:51](https://www.bilibili.com/video/BV1pijczvE8K?t=111) | [GitHub](https://github.com/aquasecurity/trivy) |
 | Magnitude | 开源的 AI 原生 Web 应用端到端测试框架，使用视觉 AI Agent 通过自然语言编写测试，能感知界面变化并自动适应，测试运行可被智能缓存以实现快速、低成本、可重复的执行。 | 2025-04-25 | 考拉认为，如果你的应用界面经常变化，或者觉得维护 E2E 测试的成本太高，那么 Magnitude 是一个可行的解决方案；并提到在之前的俱乐部视频中曾对比过几个热门的浏览器自动化与 AI E2E 测试工具，有兴趣的观众可进一步对比 Magnitude 与它们的差异。 | [BV1wQVFzREBr · 01:56](https://www.bilibili.com/video/BV1wQVFzREBr?t=116) | [GitHub](https://github.com/magnitudedev/magnitude) |
 | Evalite | 面向 TypeScript/LLM 应用的轻量级评估（evals）框架，用于测试生成式 AI 输出的质量。 | 2024-11-12 | 一个给 TypeScript 项目做 LLM 评估的小框架，可以像写测试一样写 eval，用来衡量大模型输出是否靠谱，适合在 GenAI 应用里做回归测试。 | [BV1eo3fzBEgV · 00:30](https://www.bilibili.com/video/BV1eo3fzBEgV?t=30) | [GitHub](https://github.com/mattpocock/evalite) |
+| oha | 用 Rust 编写的 HTTP 负载测试（压测）工具，提供实时 TUI 界面与丰富配置选项，支持 HTTP/2、实验性 HTTP/3 及多种输出格式，并支持随机 URL 生成、从文件读取 URL 列表等。 | 2020-03-02 | 考拉认为 Rust 让压测工具本身的性能得到保证，TUI 界面也让压测过程更直观；不过对简单场景功能可能过于丰富，学习成本相对较高。 | [BV1rSnRzFE9i · 01:54](https://www.bilibili.com/video/BV1rSnRzFE9i?t=114) | [GitHub](https://github.com/hatoo/oha) |
 
 ## 运维、部署与基础设施
 
@@ -336,6 +338,8 @@ toc:
 | GEPA | 反思式提示词/智能体优化器（Genetic-Pareto），由 UC Berkeley、Stanford、MIT、Databricks 等团队提出，通过自然语言反思诊断失败并提出针对性修改，比强化学习（GRPO）用更少 rollout 取得更优提示词，可优化提示词、代码与智能体架构。 | 2025-08-06 | 考栏认为，提示工程正在从手工艺变成工程学科，自动化优化是必然趋势；不过这类工具的实际效果往往高度依赖具体的应用场景，通用性仍然是个挑战。 | [BV1TsYVzJEuo · 00:01](https://www.bilibili.com/video/BV1TsYVzJEuo?t=1) | [GitHub](https://github.com/gepa-ai/gepa) |
 | HumanLayer | 面向 AI 智能体的人机协作（human-in-the-loop）基础设施，允许开发者在智能体执行特定操作前强制要求人类审批，通过装饰器标记需确认的函数调用，被拒绝时可将反馈传回模型，并支持智能体主动联系人类获取建议与帮助。 | 2024-11-21 | 考栏认为，对于 Co-Pilot 模式的 AI 代理，Human Layer 会是一个不错的通用实现，能够节省重复的开发工作。 | [BV1TsYVzJEuo · 01:29](https://www.bilibili.com/video/BV1TsYVzJEuo?t=89) | [GitHub](https://github.com/humanlayer/humanlayer) |
 | Bytebot | 自托管的开源 AI 桌面代理，为 AI 提供完整的容器化 Ubuntu 虚拟桌面环境，可控制鼠标键盘、使用任意桌面应用、处理文件与系统操作，甚至通过密码管理器自动登录，用自然语言即可下达「下载所有供应商门户的发票并整理到文件夹」等跨应用任务。 | 2025-08-19 | 考栏认为，给 AI 一个完整的操作系统环境确实能解锁更多可能性；不过，实际部署的复杂性和安全风险也相应增加，企业级应用还需要考虑更多安全隔离措施。 | [BV1TsYVzJEuo · 03:22](https://www.bilibili.com/video/BV1TsYVzJEuo?t=202) | [GitHub](https://github.com/bytebot-ai/bytebot) |
+| Chrome DevTools MCP | 谷歌出品的 MCP 服务器，让 AI Agent 直接与 Chrome DevTools 交互，可执行性能分析、网络测试、元素检查等操作，解决 AI 编程时难以理解代码运行效果的问题。 | 2025-09-11 | 考拉认为 Chrome DevTools 是 Web 编程中最常用的开发工具，此次提供 MCP 封装极大提升了 AI 对代码结构的观察能力；虽然目前仍是预览版本，但已展现出巨大潜力。 | [BV1rSnRzFE9i · 00:01](https://www.bilibili.com/video/BV1rSnRzFE9i?t=1) | [GitHub](https://github.com/ChromeDevTools/chrome-devtools-mcp) |
+| Exa Code | Exa 推出的面向编程 Agent 的代码搜索引擎，给定查询可返回精确、密集的几百个 Token 的网页代码上下文（而非冗长文档），通过专门的代码索引与代码样例检索降低编码幻觉。 | 2025-09-25 | 考拉认为针对 AI 编程场景的搜索确实是刚需，尤其在海量开源库和 API 文档面前；Exa Code 的高召回率设计很实用，但实际效果与成本还需用过才知道。 | [BV1rSnRzFE9i · 01:24](https://www.bilibili.com/video/BV1rSnRzFE9i?t=84) | [官网](https://exa.ai/blog/exa-code) |
 
 ## 数据工程与存储
 
@@ -371,6 +375,7 @@ toc:
 | CopyParty | 单文件实现的便携式多协议文件服务器，集成媒体浏览与上传功能。 | 2019-05-26 | CopyParty 用单个脚本文件搞定文件服务器所有需求，支持 FTP、WebDAV、FTP、TFTP、SMB 多种协议，还能做音乐播放、图片浏览、Markdown 编辑，功能多但文档厚。考栏认为这种瑞士军刀式工具在快速搭建文件共享场景很实用。 | [BV1Q3hgzCEvk · 00:01](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=1) | [GitHub](https://github.com/9001/copyparty) |
 | PageIndex | 无向量、基于推理的 RAG 文档检索框架，将长文档构建为层级树索引并模拟人类专家用树搜索做可追溯检索，在 FinanceBench 金融文档分析测试中达到 98.7% 准确率。 | 2025-04-01 | 考栏认为，从向量相似性到推理检索的转变反映了 AI 系统从传统匹配向逻辑推理的进化；这种方法特别适合处理结构复杂的专业文档，可能会重新定义企业知识管理的标准。 | [BV15ThyzLEin · 00:32](https://www.bilibili.com/video/BV15ThyzLEin?t=32) | [GitHub](https://github.com/VectifyAI/PageIndex) |
 | Fluid | 云原生（Kubernetes）分布式数据集编排与加速平台，通过分布式缓存实现数据预热与加速，主要服务大数据与 AI 应用场景。 | 2020-08-30 | 一个专门为 K8S 环境设计的数据平台，主要服务大数据和 AI 应用场景；平台通过分布式缓存，实现数据预热和加速，支持异构数据源的统一管理；系统还提供数据感知的调度策略，根据应用和数据特性优化云端部署。Koala 认为，在 AI 训练和大数据处理日益普及的背景下，数据 IO 确实是一个值得优化的方向；不过云原生技术栈带来便利的同时，其复杂性也意味着实施成本不低，需要团队具备相当的运维能力。 | [BV1qtWwzLEeS · 01:54](https://www.bilibili.com/video/BV1qtWwzLEeS?t=114) | [官网](https://fluid.cloudnative.io) |
+| TernFS | XTX Markets 开源的艾字节（exabyte）级、多区域分布式文件系统，目标容量约 10EB，专为机器学习等大规模不可变文件负载优化，采用纠删码与多区域复制，并提供快照与数据恢复机制。 | 2025-09-18 | 考拉认为来自生产环境的大规模文件系统开源项目相当罕见，XTX 技术实力可见一斑；不过底层基础设施项目部署门槛极高，更适合有丰富运维经验的大型组织；文件不可变设计简化了数据一致性问题，但也限制了使用场景。 | [BV1rSnRzFE9i · 02:23](https://www.bilibili.com/video/BV1rSnRzFE9i?t=143) | [GitHub](https://github.com/XTXMarkets/ternfs) |
 
 ## 协作与项目管理
 
@@ -458,6 +463,7 @@ toc:
 | 思源笔记 (Siyuan) | 开源的本地优先个人知识管理与笔记软件，支持块级编辑、双向链接与 Markdown。 | 2020-08-30 | 一个开源的本地优先笔记/知识管理工具，支持块级编辑、双向链接、Markdown，数据存在本地可控，适合做个人知识库。 | [BV1PYMfz5ENn · 03:26](https://www.bilibili.com/video/BV1PYMfz5ENn?t=206) | [GitHub](https://github.com/siyuan-note/siyuan) |
 | Maybe | 设计优雅的开源个人理财应用（现已停止开源维护，转向 B2B）。 | 2024-01-01 | 个人理财工具 Maybe 在 v0.6.0 版本宣布停止开源维护，公司转向 B2B 金融预测业务；该应用曾被誉设计优雅的开源理财工具，支持多货币、AI 聊天助手、预算管理等。团队在告别信中分析了个人理财应用面临的银行数据、隐私等挑战。 | [BV1FU8Yz9E7w · 03:24](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=204) | [GitHub](https://github.com/maybe-finance/maybe) |
 | OverType | 极简的 Markdown 编辑器，将透明文本框叠加在渲染预览之上实现所见即所得，体积仅约 54KB、无需 NPM/构建/配置，黏贴代码即可集成。 | 2025-08-15 | 考拉认为回归技术本质的设计思路值得赞赏，不过这种实现经测试也有一定局限性，例如想在预览时去除 Markdown 标记格式就有一定困难。 | [BV16GeEzdEme · 00:27](https://www.bilibili.com/video/BV16GeEzdEme?t=27) | [GitHub](https://github.com/panphora/overtype) |
+| Dayflow | macOS 原生应用，通过每秒一帧的屏幕录制自动生成用户的日常活动时间线；每 15 分钟用 AI 分析屏幕内容生成活动摘要，支持本地模型与 Gemini 两种模式，开源且本地优先。 | 2025-09-23 | 考拉认为这种被动式时间追踪比手动记录更真实准确，对提升时间管理意识很有帮助；但持续屏幕监控涉及隐私问题，好在开源且支持本地处理，用户可自主选择数据处理方式。 | [BV1rSnRzFE9i · 00:31](https://www.bilibili.com/video/BV1rSnRzFE9i?t=31) | [GitHub](https://github.com/JerryZLiu/Dayflow) |
 
 ## 开发者认证与招聘
 
