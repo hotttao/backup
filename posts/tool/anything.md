@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:09+08:00
+lastmod: 2026-08-19T12:38:11+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -138,6 +138,7 @@ toc:
 | Rolldown-Vite | 基于 Rust 打包器 Rolldown 驱动的 Vite 直替构建工具，可作为默认 vite 包的替换项，显著提升构建速度、降低内存占用，未来将成为 Vite 的默认打包器。 | 2025-05-30 | Vite 团队正式推出 Rolldown-Vite，这是一个基于 Rust 的下一代打包工具，目标是成为 Vite 默认的打包器。简单来说，你可以通过替换 vite 包为 rolldown-vite 来体验它，已经有早期用户反馈构建速度提升了 3-16 倍，内存占用也大大降低。切换之后 esbuild 也变成了可选依赖。如果你想让你的 Vite 项目速度起飞，不妨试试 Rolldown-Vite。 | [BV1drTUzPEuD · 00:01](https://www.bilibili.com/video/BV1drTUzPEuD?t=1) | [GitHub](https://github.com/vitejs/rolldown-vite) |
 | Glass3D generator | 一个在线工具，可根据文本或图片快速生成玻璃拟态（glassmorphism）风格的 3D CSS 视觉效果。 | 2025-07-02 | 一个网页小工具，输入文字或图片就能生成那种玻璃质感的 3D 视觉效果（CSS 实现），适合做海报、封面或网页装饰，纯前端、即开即用。 | [BV1eo3fzBEgV · 01:55](https://www.bilibili.com/video/BV1eo3fzBEgV?t=115) | [官网](https://glass3d.dev) |
 | Vercel AI Elements | 由 Vercel 推出的、基于 shadcn/ui 的开源 React 组件库，用于快速构建聊天、推理面板等 AI 交互界面，并与 Vercel AI SDK 深度集成。 | 2025-08-06 | 考拉认为中立的 AI 组件库很有必要，目前该项目组件质量不错，唯一局限是实际对接的是 AI SDK 封装过的 API 格式，而非更通用的 OpenAI 兼容 API。 | [BV1dXbwzdEuy · 00:29](https://www.bilibili.com/video/BV1dXbwzdEuy?t=29) | [官网](https://vercel.com/changelog/introducing-ai-elements) |
+| EmbedPDF | MIT 许可、框架无关的网页 PDF 查看器，支持 React、Vue、Svelte 与原生 JS，具备虚拟滚动、缩放平移、大纲、文本搜索与插件化架构，并提供完整 TypeScript 类型。 | 2025-01-18 | 考拉认为此前浏览器中查看 PDF 主要靠 PDF.js，而 EmbedPDF 让易用性进一步提升，其插件化架构与跨框架、完整 TypeScript 类型支持是一大优势。 | [BV1nQYkzWEcw · 02:52](https://www.bilibili.com/video/BV1nQYkzWEcw?t=172) | [GitHub](https://github.com/embedpdf/embed-pdf-viewer) |
 
 ## 测试与质量保障
 
@@ -213,6 +214,7 @@ toc:
 | mirrord | 让本地进程以云端 Pod 身份运行、接管其网络与文件系统的 Kubernetes 调试工具。 | 2022-02-01 | MirrorD（mirrord）解决本地调试依赖云上环境的代码痛点：传统做法要么本地搭环境、要么直接云端调试，前者复杂后者危险；mirrord 让本地进程冒充云端 Pod，接管网络流量、文件系统和环境变量。考栏认为它带来额外复杂度，需 Linux 命名空间与集群代理，但对复杂分布式应用调试有价值。 | [BV1Q3hgzCEvk · 01:52](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=112) | [GitHub](https://github.com/metalbear-co/mirrord) |
 | changedetection.io | 开源的网站内容变化监控与告警工具，支持价格/库存追踪。 | 2021-01-27 | ChangeDetection.io 专门监控网页内容变化，支持价格追踪、库存监控等，核心价值在于自动化重复性人工检查；项目提供开源版本，同时有商业化云服务。考栏认为这类小而美的工具说明不是所有软件都需要复杂架构。 | [BV1Q3hgzCEvk · 02:22](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=142) | [GitHub](https://github.com/dgtlmoon/changedetection.io) |
 | wg-easy | 为 WireGuard VPN 提供图形化管理界面（用户、QR 码、流量统计）的开源项目。 | 2021-05-22 | WG-EZ（wg-easy）把 WireGuard 的配置管理包装成傻瓜式 Web 界面，提供用户管理、QR 码生成、流量统计等功能，基本覆盖小团队 VPN 管理需求。考栏认为这种把强大但难用的底层工具包装成普通人可用的产品最有价值。 | [BV1Q3hgzCEvk · 02:52](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=172) | [GitHub](https://github.com/wg-easy/wg-easy) |
+| ShellHub | 开源的集中式 SSH 网关服务，让用户通过 Web 浏览器或移动应用远程访问 Linux 服务器与设备，免去公网 IP、路由器与防火墙配置，并支持审计、防火墙规则等企业功能。 | 2019-05-16 | 考拉认为在云原生时代，这类统一接入方案确实有价值，但需考虑安全性与单点故障风险，毕竟所有访问都要经过一个中心化网关。 | [BV1nQYkzWEcw · 01:54](https://www.bilibili.com/video/BV1nQYkzWEcw?t=114) | [GitHub](https://github.com/shellhub-io/shellhub) |
 
 ## AI 模型与推理
 
@@ -248,6 +250,7 @@ toc:
 | Qwen3-Coder | 阿里开源的 480B 参数 Agent 编程大模型，擅长长上下文与软件工程任务。 | 2025-07-22 | 阿里云通义千问团队开源 Qwen3-Coder，在 SWE-bench 基准达 69.6% 准确率，性能媲美 Claude Sonnet 4，支持 256K 原生上下文、可扩展至 100 万 Token；团队还 fork Gemini CLI 开源了 Qwen Code 用于验证模型 Agent 性能。考栏认为发布后虽有阿里云 API 收费争议，但模型本身为开源编程模型带来新选择。 | [BV1FU8Yz9E7w · 02:25](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=145) | [GitHub](https://github.com/QwenLM/Qwen3-Coder) |
 | GPT-OSS | OpenAI 于 2025-08 发布的开放权重语言模型 gpt-oss-120b 与 gpt-oss-20b，基于 Apache 2.0 许可，支持本地或数据中心部署，具备完整思维链与工具调用能力。 | 2025-08-05 | 考拉认为 GPT-OSS 具备完整思维链与工具调用能力，适合智能体任务和深度定制；并评价 OpenAI 一边发布最强闭源模型拉开距离，一边开源模型示好开发者社区。 | [BV1dXbwzdEuy · 00:40](https://www.bilibili.com/video/BV1dXbwzdEuy?t=40) | [GitHub](https://github.com/openai/gpt-oss) |
 | GPT-5 | OpenAI 于 2025-08 发布的统一大模型系统，具备快速响应与深度推理能力，可按对话内容智能调度不同子模型，覆盖编码、写作、健康等多领域。 | 2025-08-07 | 考拉介绍 GPT-5 为一个统一系统，具备快速响应与深度推理能力，可按对话内容智能调度子模型，在编码、写作、健康等多领域性能提升，并更注重减少幻觉、提升安全性；评价 OpenAI 双管齐下。 | [BV1dXbwzdEuy · 00:58](https://www.bilibili.com/video/BV1dXbwzdEuy?t=58) | [官网](https://openai.com/index/introducing-gpt-5/) |
+| POML | 微软推出的提示词编排标记语言（Prompt Orchestration Markup Language），采用类似 HTML 的语法，通过 Raw、Task、Example 等组件化标签组织提示词结构，支持多数据类型集成与 VSCode 扩展、多语言 SDK。 | 2024-11-29 | 考拉认为标准化提示词确实是行业需求，但能否被广泛采用还要看生态建设，毕竟提示词工程目前更多依赖经验而非工具。 | [BV1nQYkzWEcw · 03:21](https://www.bilibili.com/video/BV1nQYkzWEcw?t=201) | [GitHub](https://github.com/microsoft/poml) |
 
 ## AI Agent 与智能体开发
 
@@ -411,6 +414,7 @@ toc:
 | AmazingHand | 可 3D 打印、低成本可定制的人形机械手开源硬件项目。 | 2025-06-25 | Amazing Hand 是低成本可定制人形机械手，8 自由度、4 手指、驱动器全内置、可 3D 打印、重 400 克、成本低于 200 欧元；提供构建材料清单、CAD 文件和组装指南及 Python/Arduino 控制示例。考栏认为它降低了机器人技术研发门槛。 | [BV1LDgtzEEGB · 03:25](https://www.bilibili.com/video/BV1LDgtzEEGB?t=205) | [GitHub](https://github.com/pollen-robotics/AmazingHand) |
 | AnimeAI | 聚合 GPT-4o 绘图经验与提示词、可生成动漫风格图片的 AI 绘图平台。 | 2025-07-20 | Anime 是 GPT-4o 绘图平台，除常规 LLM API 集成外，还收集了社交媒体上分享的 GPT-4o 绘图经验，将有趣图片及其提示词思路整理在一起，用户可先浏览风格、再学习修改提示词、最终生成所需图片。 | [BV1FU8Yz9E7w · 01:56](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=116) | [官网](https://animeai.app) |
 | How F1 has evolved since 1950 | ESPN 为庆祝 F1 75 周年制作的交互式可视化专题，用丰富的可视化与交互细节呈现 75 年来 F1 赛车技术的演进之路。 | 2025-08-07 | 考拉认为随着 Web 技术演进，用更生动的网页（丰富可视化与交互）替代静态图文、呈现更有趣的故事，已是许多媒体积极尝试的方向，ESPN 这个 75 年 F1 技术演进网站是其中有趣的例子。 | [BV1dXbwzdEuy · 03:18](https://www.bilibili.com/video/BV1dXbwzdEuy?t=198) | [官网](https://www.espn.com/espn/feature/story/_/id/43832710/how-f1-evolved-1950-where-headed-2026) |
+| EvilCharts | 基于 shadcn/ui 与 Recharts 构建的动画图表组件库，提供美观、可交互的数据可视化组件，可像 shadcn/ui 一样通过 CLI 安装或复制代码自由定制。 | 2025-07-16 | 考拉认为 EvilCharts 在成熟图表库之外提供了更注重视觉效果的新选择，专注美观的动画图表，让枯燥数据更生动有吸引力，且像 shadcn/ui 一样可通过 CLI 安装或复制代码自由修改定制。 | [BV1nQYkzWEcw · 00:01](https://www.bilibili.com/video/BV1nQYkzWEcw?t=1) | [GitHub](https://github.com/legions-developer/evilcharts) |
 
 ## 办公与演示
 
@@ -519,3 +523,10 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | FFmpeg asm-lessons | FFmpeg 团队在 GitHub 发布的汇编语言教学项目，为参与 FFmpeg 开发的程序员提供从基础到实战的汇编学习路径教程，要求具备 C 语言与高中数学基础。 | 2024-12-28 | 考拉认为在高级语言盛行的今天，FFmpeg 团队仍推广汇编语言教学，体现了对性能优化的极致追求，但学习投入产出比是否值得，大多数开发者需要权衡考虑。 | [BV1dXbwzdEuy · 02:23](https://www.bilibili.com/video/BV1dXbwzdEuy?t=143) | [GitHub](https://github.com/FFmpeg/asm-lessons) |
+| Engineering.fyi | 将谷歌、Meta、OpenAI、Anthropic、Stripe、Uber 等约 15 家顶级科技公司工程博客内容整合到同一平台、提供统一搜索体验的聚合站点，可按主题、难度级别筛选并快速找到含代码示例的文章。 | 2025-08-10 | 考拉认为这类聚合工具虽实用，但面临挑战：如何保持内容更新的及时性，以及能否获得各大公司的长期支持。 | [BV1nQYkzWEcw · 01:24](https://www.bilibili.com/video/BV1nQYkzWEcw?t=84) | [官网](https://engineering.fyi) |
+
+## 代码搜索与浏览
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Sourcebot | 自托管的代码搜索平台，定位为 Sourcegraph 替代品，支持通过单一界面搜索所有项目与分支，提供强大的正则查询语法、按仓库/路径/符号/语言筛选及代码导航。 | 2024-08-23 | 考拉认为在代码搜索领域挑战 Sourcegraph 并非易事，关键在于性能与易用性的差异化优势；Sourcebot 的答案是保持免费且提供 AI 集成。 | [BV1nQYkzWEcw · 00:31](https://www.bilibili.com/video/BV1nQYkzWEcw?t=31) | [GitHub](https://github.com/sourcebot-dev/sourcebot) |
