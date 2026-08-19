@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:37:51+08:00
+lastmod: 2026-08-19T12:37:54+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -54,6 +54,7 @@ toc:
 | Zodest | 基于 Zod 的现代化 CLI 构建器，完全类型安全、极轻量且无运行时依赖（仅依赖 Zod），支持命令别名、嵌套命令以及全局与命令级选项，配置灵活。 | 2025-04-18 | 考拉认为，在构建 CLI 时，参数解析和校验是必不可少的环节；Zodest 基于 Zod 在类型安全与运行时参数校验上的优势可充分发挥，同时保持了轻量化。 | [BV1wQVFzREBr · 03:49](https://www.bilibili.com/video/BV1wQVFzREBr?t=229) | [GitHub](https://github.com/tunnckoCore/zodest) |
 | Makepad | 用 Rust 编写的开源跨平台 UI 框架/创意软件开发平台，支持 Windows、Linux、macOS、iOS、Android 与 Web，采用基于 Shader 的渲染架构与声明式 DSL，编译速度快、支持实时样式调整。 | 2025-05-18 | Koala 介绍 Makepad 采用基于 Shader 的架构，拥有极高的性能和灵活性，支持 Windows/Linux/macOS/iOS/Android 及 Web，并有一套声明式的设计 DSL 方便创建丰富的响应式 UI，编译速度超快且支持实时样式调整，可流畅迭代；主要作功能介绍，未给出明确优劣评价。 | [BV1CqJgziEB1 · 02:43](https://www.bilibili.com/video/BV1CqJgziEB1?t=163) | [GitHub](https://github.com/makepad/makepad) |
 | KeyboardCowboy | 一款为 macOS 用户设计的快捷键工作流生产力工具，用户可将重复操作、应用启动、系统设置、文件操作等工作流定义为快捷键，双手无需离开键盘即可触发；进阶用户可根据上下文定义触发条件、将不同工作流分组管理。 | 2020-09-02 | Koala 认为虽然 KeyboardCowboy 上手会有些难度，但一旦熟悉且完成自定义配置后，效率就能成倍地提升。 | [BV1mF7mzzEKm · 00:40](https://www.bilibili.com/video/BV1mF7mzzEKm?t=40) | [GitHub](https://github.com/zenangst/KeyboardCowboy) |
+| somo | 用 Rust 编写的命令行网络监控工具，以更友好的表格形式展示 Linux 上的端口与网络连接信息，支持按端口、IP、进程名等条件过滤，提供 TUI 交互。 | 2023-05-15 | 如果你经常使用 netstat，或者需要监控网络状态，那就试试 somo 吧。它是一个用 Rust 编写的命令行工具，可以方便地监控 Linux 上的端口和网络连接。同时，它能以更友好的表格形式展示信息，而且支持过滤，你可以根据端口、IP、进程名等条件来查找。somo 以 TUI 的形式提供交互，在排查问题时保持高效。特别对于不熟悉 netstat 工具的用户来说，一个像 somo 这样更直观易用的工具，可以避免在网络异常时还因为工具不顺手而变得更加焦虑。 | [BV1f6Msz6EV7 · 01:26](https://www.bilibili.com/video/BV1f6Msz6EV7?t=86) | [GitHub](https://github.com/theopfr/somo) |
 
 ## 代码质量与 Code Review
 
@@ -196,6 +197,7 @@ toc:
 | kubectl-ai | Google Cloud 开源的 AI 驱动 Kubernetes 助手，可用自然语言管理 K8s 集群（创建 deployment、查看状态、排查问题等），支持 Gemini、OpenAI、Anthropic 与本地 Ollama 等多种模型。 | 2025-01-20 | Koala 认为，由谷歌云开源的 kubectl-ai 颇具竞争力，可用自然语言管理 Kubernetes 集群，支持 Gemini、OpenAI、Anthropic 和本地 Ollama 等多种模型，选择丰富且安装简单（一条命令或 brew 即可）。 | [BV1vwEuzmErT · 01:59](https://www.bilibili.com/video/BV1vwEuzmErT?t=119) | [GitHub](https://github.com/GoogleCloudPlatform/kubectl-ai) |
 | Outpost | Hookdeck 开源的出站 Webhook 与事件目标（Event Destinations）基础设施，可将事件可靠投递到 Webhooks、SQS、RabbitMQ、Pub/Sub、EventBridge、Kafka 等目标，保证至少一次（at least once）投递，并提供用户界面管理指标与调试。 | 2024-11-12 | Koala 认为，若正在寻找一个可靠、灵活的 Webhook 管理方案，Outpost 是一个轻量级、专注的开源方案。 | [BV1vwEuzmErT · 02:57](https://www.bilibili.com/video/BV1vwEuzmErT?t=177) | [GitHub](https://github.com/hookdeck/outpost) |
 | workers-oauth-provider | Cloudflare 官方提供的 Workers OAuth Provider 库，实现了 OAuth 2.1 协议，让开发者无需自行实现认证检查即可在 Workers 应用中获取已认证用户信息。 | 2025-03-11 | 想给你的 Cloudflare Workers 应用加上 OAuth 认证，但又觉得自己从头开始实现太琐碎吗？Cloudflare 发布的 Workers OAuth Provider 帮你搞定。它实现了 OAuth 2.1 协议，你只需要像平常一样写你的 API Handler，就能拿到已经认证的用户信息，不用自己做任何检查。这个库不关心你如何管理用户，也不限制你使用什么 UI 框架，而且它只存储 Token 的哈希值保证安全性。 | [BV1drTUzPEuD · 01:29](https://www.bilibili.com/video/BV1drTUzPEuD?t=89) | [GitHub](https://github.com/cloudflare/workers-oauth-provider) |
+| s3mini | 超轻量级的 S3 客户端，使用 TypeScript 编写，压缩后约 14KB、零依赖，可在 Cloudflare Workers 等边缘计算平台运行，支持 R2、Backblaze B2 等 S3 兼容存储，仅提供核心 S3 API（List、Put、Get、Delete 等）。 | 2025-05-13 | S3 mini 是一个超轻量级的 S3 客户端，使用 TypeScript 编写，非常小巧，压缩后只有大约 14KB，而且性能也不错。最重要的是它没有任何依赖，完美支持以 Cloudflare Worker 为代表的各类边缘计算平台，也兼容 R2、Backblaze B2 等 S3 存储服务。如果你需要在边缘环境处理对象存储，又不想引入 AWS SDK 这种庞大的库，S3 mini 就值得一试。它只提供最核心的 S3 API，比如 List、Put、Get、Delete 等，非常适合轻量级应用。 | [BV1f6Msz6EV7 · 02:48](https://www.bilibili.com/video/BV1f6Msz6EV7?t=168) | [官网](https://codeberg.org/thinking_tools/s3mini) |
 
 ## AI 模型与推理
 
@@ -223,6 +225,7 @@ toc:
 | DeepWiki | 由 Cognition AI（Devin 出品方）推出的 AI 代码文档平台，通过大语言模型与代码分析自动将任意公共 GitHub 仓库转化为结构化的交互式 Wiki（含架构图、目录、模块说明），并支持自然语言问答。 | 2025-04-27 | 考拉认为，对代码库的理解是 AI 编程工具的核心竞争力，DeepWiki 团队开发此项目证明了其 AI 开发工具具备领先水平。 | [BV1pijczvE8K · 00:31](https://www.bilibili.com/video/BV1pijczvE8K?t=31) | [官网](https://deepwiki.com) |
 | OpenPipe ART | OpenPipe 开源的强化学习训练库（Agent Reinforcement Trainer），使用 GRPO 对多步智能体进行训练，可在现有代码库中运行 Agent 并将复杂的强化学习训练交给后端，支持 Qwen、Gemma、Llama 等主流 LLM。 | 2025-03-10 | 考拉认为 ART 支持市面上大多数的 LLM 模型，像是 Qwen、Gemma 等；现在已经有了使用 3B 和 7B Qwen 模型成功微调、使它们可以进行 2048、Tic-Tac-Toe 这样的小游戏的 Notebook 实例，大家可以快速上手体验。 | [BV1wQVFzREBr · 01:26](https://www.bilibili.com/video/BV1wQVFzREBr?t=86) | [GitHub](https://github.com/OpenPipe/ART) |
 | Dream 7B | 香港大学与华为诺亚方舟实验室联合开源的离散扩散大语言模型（70 亿参数），采用双向上下文建模与可控生成，在通用、数学与编程能力上超越现有扩散语言模型，并具备更强的规划与推理灵活性；基于 Qwen2.5-7B 初始化，训练 5800 亿 token。 | 2025-04-02 | Koala 介绍 Dream 7B 是港大与华为诺亚方舟实验室联合推出的开源扩散大语言模型，在通用、数学和编程能力上超越了现有的扩散语言模型，并且在规划能力和推理灵活性上表现出色；并提到近期 DeepMind 也发布了基于扩散的大语言模型研究项目，让大家对于这一架构有了更多兴趣；主要作功能/技术介绍。 | [BV1NpjMztEZR · 01:47](https://www.bilibili.com/video/BV1NpjMztEZR?t=107) | [Hugging Face](https://huggingface.co/Dream-org/Dream-v0-Base-7B) |
+| TensorZero | 开源的工业级 LLM 应用栈，统一了 LLM 网关、可观测性、优化、评估与实验，通过生产数据形成反馈闭环，持续优化模型使其更智能、更快、更便宜。 | 2024-07-16 | 如果你正在开发 LLM 应用，可以试试开源项目 TensorZero。它可以为你的 LLM 应用创建一个反馈回路，通过生产数据不断优化模型，让它们变得更智能、更快速、更便宜。TensorZero 统一了 LLM 网关、可观测性、优化、评估和实验，形成数据和学习的飞轮。你可以用它的网关做 A/B 测试和流量路由，一方面选择最划算的模型完成任务，另一方面收集数据用于后续微调。它使用 Rust 编写，性能强悍，避免在 API 中引入过多延迟。随着 LLM 应用从 Demo 走向生产，这类观测与优化工具还有更大的潜力等待挖掘。 | [BV1f6Msz6EV7 · 00:58](https://www.bilibili.com/video/BV1f6Msz6EV7?t=58) | [GitHub](https://github.com/tensorzero/tensorzero) |
 
 ## AI Agent 与智能体开发
 
@@ -282,6 +285,7 @@ toc:
 | Airweave | 开源的 AI 上下文检索层，通过连接器把各类应用、数据库与 API 的内容同步并转化为 Agent 可理解的语义知识，提供统一搜索接口，支持 Python/TypeScript SDK 与 MCP 兼容。 | 2024-12-24 | Koala 主要作功能介绍：称 Airweave 是 AI 搜索聚合工具，能让 AI Agent 具备在各种应用里进行语义搜索的能力，支持 25+（现 50+）数据源，提供 Python 和 JS 的 SDK 上手简单，同时提供与 MCP 兼容的接口，使它可以被快速接入更多 AI 应用；未给出明确优劣评价。 | [BV1CqJgziEB1 · 00:30](https://www.bilibili.com/video/BV1CqJgziEB1?t=30) | [GitHub](https://github.com/airweave-ai/airweave) |
 | SuperMemory | 面向 AI 的通用记忆与上下文引擎（API），为 LLM/Agent 提供长期记忆与上下文，内部封装向量数据库、数据解析与扩展性，开发者无需自行搭建底层基础设施即可开箱即用。 | 2024-02-22 | Koala 认为，SuperMemory 为想快速构建有记忆、能理解用户历史对话与数据的 AI 应用的开发者，提供了一个非常方便的开箱即用方案，省去了许多底层基础设施（向量库、数据解析、扩展性）的搭建工作。 | [BV1CqJgziEB1 · 01:52](https://www.bilibili.com/video/BV1CqJgziEB1?t=112) | [GitHub](https://github.com/supermemoryai/supermemory) |
 | Suna | Kortix 开源的通用型 AI Agent（Apache-2.0），通过自然语言帮用户完成现实任务，内置浏览器自动化、文件管理、网页爬取、命令行执行、网站部署与各种 API/服务集成。 | 2025-04-22 | Koala 认为，Suna 的开源特性与多功能性使其成为一个值得关注的项目，特别是对于关注复杂 AI Agent 系统的开发者来说，是一个可以研究并参考的项目。 | [BV1NpjMztEZR · 02:40](https://www.bilibili.com/video/BV1NpjMztEZR?t=160) | [GitHub](https://github.com/kortix-ai/suna) |
+| Task Master | 专为 AI Agent 设计的项目管理工具，提供看板、任务分配、进度跟踪等功能，帮助协调、编排和追踪 AI 代理的任务，像管理真实团队一样管理 Agent 工作流。 | 2025-03-04 | TaskMaster 是一个专门为 AI Agent 设计的项目管理工具。你可以用它来组织协调和追踪 AI 代理的任务，就像管理一个真实的团队一样。TaskMaster 提供了看板、任务分配、进度跟踪等功能，帮助你更好地掌握 AI Agent 的工作流程。如果你正在构建复杂的 Agent 系统，TaskMaster 是一个不错的工具，它能通过实现规划和进度追踪的方式，提升 AI Agent 的效率，确保项目按规划进行。也避免 AI 因为上下文有限记不住已经完成和未完成的任务。 | [BV1f6Msz6EV7 · 01:54](https://www.bilibili.com/video/BV1f6Msz6EV7?t=114) | [GitHub](https://github.com/eyaltoledano/claude-task-master) |
 
 ## 数据工程与存储
 
@@ -309,6 +313,7 @@ toc:
 | SpacetimeDB | 将数据库与应用服务器合二为一的开源系统，客户端可直接连接数据库，业务逻辑以 Rust / C# 编写的模块编译为 WebAssembly 运行，适合构建大型多人在线游戏。 | 2023-06-17 | 考拉认为 SpacetimeDB 是一个很有意思的开源项目，它把数据库和服务器合二为一，让少量开发者也能构建出大型多人游戏（包括后端逻辑、玩家实时位置、持久化状态），从而不再需要云上复杂的多服务架构。 | [BV1ij5fz2En9 · 01:32](https://www.bilibili.com/video/BV1ij5fz2En9?t=92) | [GitHub](https://github.com/clockworklabs/SpacetimeDB) |
 | VectorVFS | 一个轻量级 Python 包，利用 Linux VFS 扩展属性将向量嵌入直接存储在文件元数据中，把 Linux 文件系统变成无需额外索引或数据库的语义可搜索向量存储，并支持 Meta 的 Perception Encoders 进行图像理解。 | 2025-04-25 | Koala 认为，该工具对于需要处理大量图像、希望通过语言搜索快速找到相关文件的朋友来说非常有用；直接在文件系统上进行向量搜索也是一种有趣的交互形式。 | [BV1vwEuzmErT · 01:30](https://www.bilibili.com/video/BV1vwEuzmErT?t=90) | [GitHub](https://github.com/perone/vectorvfs) |
 | PgDog | 一个用 Rust 编写的 PostgreSQL 自动分片（水平扩展）方案，通过管理逻辑复制与事务池化实现 PG 的水平扩展；支持查询负载均衡，可管理数百个数据库、数千个连接，配置方式类似 PgBouncer。 | 2024-12-27 | Koala 将 pgdog 介绍为 PostgreSQL 的自动分片方案，并指出对曾使用 PgBouncer 等同类项目的用户，其配置和使用方法会感到熟悉。 | [BV1mF7mzzEKm · 04:30](https://www.bilibili.com/video/BV1mF7mzzEKm?t=270) | [GitHub](https://github.com/pgdogdev/pgdog) |
+| Multigres | 由 Vitess 联合创始人主导的 Postgres 扩展方案，目标是为 PostgreSQL 生态构建类似 Vitess 的数据库集群系统，提供分片、连接池、查询路由、故障恢复与运维编排等能力。 | 2025-06-10 | Supabase 团队宣布启动 Multigres 项目，目标是为 Postgres 构建类似 Vitess 的数据库集群系统。Vitess 擅长扩展 MySQL，提供分片、连接池、查询路由、故障恢复和运维编排等功能；Multigres 的目标是将这些优势带给 Postgres 生态，解决 Postgres 在扩展性上遇到的瓶颈。初期将提供简单的连接池，逐步发展到高可用，最终实现拍字节级别的数据分片。该项目由 Vitess 的联合创始人领导。 | [BV1f6Msz6EV7 · 00:01](https://www.bilibili.com/video/BV1f6Msz6EV7?t=1) | [GitHub](https://github.com/multigres/multigres) |
 
 ## 协作与项目管理
 
@@ -362,6 +367,7 @@ toc:
 | ScreenRecorder.me | 浏览器内直接使用的免费在线屏幕录制工具，无需注册登录，支持录制、编辑、分享，并可自定义壁纸、屏幕样式、摄像头效果与放大动画等高级功能。 | 2025-04-28 | 考拉认为，与许多收费的录制工具相比，这款工具的功能完全不落下风；除了基础的录制之外，它还支持自定义壁纸、调整屏幕样式、配置摄像头效果以及设置放大动画等高级功能。 | [BV1wQVFzREBr · 00:57](https://www.bilibili.com/video/BV1wQVFzREBr?t=57) | [官网](https://screenrecorder.me) |
 | Roboflow Sports | Roboflow 开源的计算机视觉与体育工具集，提供球追踪、球衣号码识别、球员追踪与再识别、相机标定等可复用工具及多种数据集，便于在足球、篮球等运动中做检测与分析。 | 2024-05-14 | Koala 认为，对于计算机视觉从业者、爱好者和体育爱好者来说，这是一个值得一看的开源项目。 | [BV1NpjMztEZR · 01:26](https://www.bilibili.com/video/BV1NpjMztEZR?t=86) | [GitHub](https://github.com/roboflow/sports) |
 | OpenCut | 免费开源（MIT）的跨平台视频编辑器，对标 CapCut/剪映，在浏览器中即可使用，所有处理在本地完成（不上传云端）、无水印无订阅，支持 Web/桌面/移动端，可剪辑、合并视频片段并添加图片、文字与音频。 | 2025-06-22 | Koala 认为，OpenCut 简直是视频编辑的福音，特别是对于那些只需简单编辑的用户来说；开源的属性也让它更具吸引力，说不定以后还能看到更多定制化的功能。 | [BV1NpjMztEZR · 03:06](https://www.bilibili.com/video/BV1NpjMztEZR?t=186) | [GitHub](https://github.com/OpenCut-app/OpenCut) |
+| Spark | 为 Three.js 设计的 3D Gaussian Splatting（3D 高斯泼溅）渲染器，将高效渲染方案融入 Three.js 渲染管线，原生支持多种文件格式、GPU Shader Graph 动态编辑，并在 WebGL2 环境下保持高兼容性与流畅度。 | 2025-05-23 | Spark 是一个为 Three.js 设计的 3D Gaussian Splatting 渲染器。Gaussian Splatting 实际上是一种高效渲染方案，可以实现逼真的光照和透明度效果，同时兼顾性能和真实感。Spark 将 Splatting 完美融入 Three.js 渲染管线，原生支持多种文件格式，支持 GPU Shader Graph 实现动态编辑，并在 WebGL2 环境下保持高兼容性和流畅度，为开发者提供灵活的交互和混合渲染能力。 | [BV1f6Msz6EV7 · 03:16](https://www.bilibili.com/video/BV1f6Msz6EV7?t=196) | [GitHub](https://github.com/sparkjsdev/spark) |
 
 ## 办公与演示
 
