@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:20+08:00
+lastmod: 2026-08-19T12:38:23+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -61,6 +61,9 @@ toc:
 | asciinema | 终端会话录制与分享工具，3.0 版本用 Rust 完全重写，启动速度显著提升，并新增实时流媒体功能。 | 2025-09-15 | 发布 3.0 版本，完全使用 Rust 重写，启动速度显著提升；新版本引入了实时流媒体功能，支持本地和远程两种模式，让终端录制可以实时分享给其他人观看；文件格式升级到 V3，采用时间间隔而非绝对时间戳，大幅简化了录制内容的编辑过程。Koala 认为 Rust 重写带来的性能提升和实时流媒体功能都很实用，特别是教学和演示场景。 | [BV1qtWwzLEeS · 00:29](https://www.bilibili.com/video/BV1qtWwzLEeS?t=29) | [官网](https://asciinema.org) |
 | Murex | 现代化、类型感知的 Shell 与脚本环境，原生支持 JSON/YAML/CSV 等数据格式的直接操作，并集成 AI 助手与智能提示。 | 2017-03-26 | 一个现代化的 SHELL 环境，原生支持 JSON、YAML、CSV 等数据格式的直接操作，无需额外的解析工具；这个 SHELL 还集成了 AI 助手和智能提示功能，能够从 man 页面和其他来源提取上下文信息；类 pip 的包管理器让配置共享变得简单，用户可以轻松在不同机器间迁移开发环境。Koala 认为相比传统 bash 的纯文本处理，Murex 的数据感知能力确实解决了现代开发中的痛点，特别是处理 API 响应和配置文件时；不过，智能提示功能的实际效果还需要在复杂场景下验证。 | [BV1qtWwzLEeS · 00:58](https://www.bilibili.com/video/BV1qtWwzLEeS?t=58) | [GitHub](https://github.com/lmorg/murex) |
 | Tracky Mouse | 用头部移动控制鼠标的无障碍技术项目，结合面部检测与光流追踪算法，仅需普通摄像头即可实现精准鼠标控制，支持悬停点击与手势取消，主要服务运动障碍人群。 | 2024-10-07 | 考拉认为这类无障碍技术项目具有重要社会价值，技术实现上比现有方案更准确稳定；开源发布让更多开发者参与改进，有助于推动无障碍技术生态发展。 | [BV1rSnRzFE9i · 02:52](https://www.bilibili.com/video/BV1rSnRzFE9i?t=172) | [GitHub](https://github.com/xuanhoa88/tracky-mouse) |
+| bat | cat 命令的增强替代品（Rust 编写），为终端查看代码文件增加语法高亮与 git diff 显示，自动识别编程语言、显示行号与修改标记，并在非交互场景自动降级为纯文本输出。 | 2018-04-21 | 考拉认为这是一个成熟且克制的工具，没有过度设计，专注解决一个具体问题；对经常在终端查看代码的开发者，使用体验提升明显。 | [BV1Qe4Tz4EGi · 00:01](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=1) | [GitHub](https://github.com/sharkdp/bat) |
+| ut | 用 Rust 编写的开发者命令行工具箱（瑞士军刀），将 Base64、UUID、正则测试、哈希等数十种常用开发辅助功能整合进单一二进制，涵盖编码转换、文本处理与开发工具等领域。 | 2025-06-28 | 考拉认为工具集成度很高，但功能相对基础，适合处理日常开发中的快速任务；对需要深度配置的场景，专用工具可能仍是更好选择。 | [BV1Qe4Tz4EGi · 00:32](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=32) | [GitHub](https://github.com/ksdme/ut) |
+| WinApps | 在 Linux 桌面（Ubuntu/Fedora + GNOME/KDE/XFCE）上运行 Windows 应用（如 Microsoft 365、Adobe）的项目，通过在 Docker/Podman/libvirt 虚拟机中运行 Windows 并用 FreeRDP 渲染，将 Windows 应用无缝集成到 Linux。 | 2023-07-05 | 考拉认为该项目类似 WinApps、KasmVNC 等，但在易用性上有所改进；虚拟化方案天然带来性能开销，对图形密集型应用效果可能有限，且明确不支持 Podman 等容器方案，限制了部分用户；相比 Wine 等原生兼容层，更适合偶尔需要使用 Windows 专用软件的场景。 | [BV1Qe4Tz4EGi · 01:24](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=84) | [GitHub](https://github.com/winapps-org/winapps) |
 
 ## 代码质量与 Code Review
 
@@ -267,6 +270,7 @@ toc:
 | Langfuse | 开源的大语言模型工程平台，为 LLM 应用提供追踪、评估、提示管理与指标监控功能，支持本地自托管及 Python、JavaScript 等 SDK，覆盖从数据到实验平台的完整链路。 | 2023-05-18 | 考拉认为在 LLM 应用爆发的当下，开发者确实需要更专业的工程化工具；不过市面类似产品众多，Langfuse 能否真正解决痛点还需实际使用验证其可用性与稳定性，目前开发者口碑不错。 | [BV16GeEzdEme · 00:01](https://www.bilibili.com/video/BV16GeEzdEme?t=1) | [GitHub](https://github.com/langfuse/langfuse) |
 | Gemini 2.5 Flash Image | Google 推出的先进图像生成与编辑模型（代号 Nano Banana），支持角色一致性保持、自然语言精准局部编辑、多图融合与真实世界知识理解。 | 2025-08-26 | 考栏认为 Nano Banana（Gemini 2.5 Flash Image）核心突破在于精确图片编辑能力，能持续跟随用户的连续编辑指令；在人物相似度保持上实现质的飞跃，即使经过多次编辑人物依然能保持原有面部特征，从给宠物穿芭蕾舞裙到自己放进不同历史年代效果都极其逼真。 | [BV15ThyzLEin · 00:01](https://www.bilibili.com/video/BV15ThyzLEin?t=1) | [官网](https://ai.google.dev/gemini-api/docs/image-generation) |
 | Mooncake | 月之暗面（Moonshot AI）开源的以 KV 缓存为中心的 LLM 推理服务框架，包含 Transfer Engine 与分布式存储，支撑 Kimi AI 线上服务。 | 2024-11-28 | 月之暗面（Moonshot AI）公司开源的 LLM 推理服务框架，专门针对 KV 缓存优化设计；这套系统支撑着 Kimi AI 的线上服务，包含 Transfer Engine 和分布式存储两个核心组件；项目在 FAST 2025 会议上获得最佳论文奖，已与 vLLM、SGLang 等主流推理引擎实现集成。Koala 认为，作为知名 AI 服务商开源的核心架构，Mooncake 技术含金量值得关注，KV 缓存优化对大模型推理性能影响巨大；需要注意，这类基础设施项目的落地门槛相对较高，更适合有一定规模与技术积累的团队使用。 | [BV1qtWwzLEeS · 02:21](https://www.bilibili.com/video/BV1qtWwzLEeS?t=141) | [GitHub](https://github.com/kvcache-ai/Mooncake) |
+| Modal Notebooks | Modal 推出的面向 AI 研发的云端协作笔记本环境，冷启动到可用不到 5 秒，最高可切换 256 核 CPU 与 8 块 H100/B200 GPU，内核自动空闲/恢复，支持多人实时协作编辑、Pyright 与 AI 代码补全。 | 2025-09-09 | 考拉认为 Modal 这款产品设计很聪明，将开发测试与生产环境统一，降低了从实验到部署的差异；快速启动与按需付费解决了 notebook 服务的两大痛点；但运行在云端也意味着网络延迟与厂商锁定，对需要本地数据或离线工作的场景仍有局限。 | [BV1Qe4Tz4EGi · 01:54](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=114) | [官网](https://modal.com/blog/notebooks) |
 
 ## AI Agent 与智能体开发
 
@@ -376,6 +380,7 @@ toc:
 | PageIndex | 无向量、基于推理的 RAG 文档检索框架，将长文档构建为层级树索引并模拟人类专家用树搜索做可追溯检索，在 FinanceBench 金融文档分析测试中达到 98.7% 准确率。 | 2025-04-01 | 考栏认为，从向量相似性到推理检索的转变反映了 AI 系统从传统匹配向逻辑推理的进化；这种方法特别适合处理结构复杂的专业文档，可能会重新定义企业知识管理的标准。 | [BV15ThyzLEin · 00:32](https://www.bilibili.com/video/BV15ThyzLEin?t=32) | [GitHub](https://github.com/VectifyAI/PageIndex) |
 | Fluid | 云原生（Kubernetes）分布式数据集编排与加速平台，通过分布式缓存实现数据预热与加速，主要服务大数据与 AI 应用场景。 | 2020-08-30 | 一个专门为 K8S 环境设计的数据平台，主要服务大数据和 AI 应用场景；平台通过分布式缓存，实现数据预热和加速，支持异构数据源的统一管理；系统还提供数据感知的调度策略，根据应用和数据特性优化云端部署。Koala 认为，在 AI 训练和大数据处理日益普及的背景下，数据 IO 确实是一个值得优化的方向；不过云原生技术栈带来便利的同时，其复杂性也意味着实施成本不低，需要团队具备相当的运维能力。 | [BV1qtWwzLEeS · 01:54](https://www.bilibili.com/video/BV1qtWwzLEeS?t=114) | [官网](https://fluid.cloudnative.io) |
 | TernFS | XTX Markets 开源的艾字节（exabyte）级、多区域分布式文件系统，目标容量约 10EB，专为机器学习等大规模不可变文件负载优化，采用纠删码与多区域复制，并提供快照与数据恢复机制。 | 2025-09-18 | 考拉认为来自生产环境的大规模文件系统开源项目相当罕见，XTX 技术实力可见一斑；不过底层基础设施项目部署门槛极高，更适合有丰富运维经验的大型组织；文件不可变设计简化了数据一致性问题，但也限制了使用场景。 | [BV1rSnRzFE9i · 02:23](https://www.bilibili.com/video/BV1rSnRzFE9i?t=143) | [GitHub](https://github.com/XTXMarkets/ternfs) |
+| Spock | pgEdge 开源的 PostgreSQL 逻辑多主（multi-master）复制扩展，支持 PostgreSQL 15/16/17/18+，允许多个节点同时接受写入并通过逻辑复制同步，要求各节点表结构（表名、列类型、约束）完全一致，需基于打过补丁的 PostgreSQL 源码构建。 | 2022-12-29 | 考拉认为多主复制一直是分布式数据库的难题，冲突处理与一致性保证都需谨慎设计；Spock 需要修改 PostgreSQL 内核，增加了维护成本与升级复杂度；对确实需要多主架构的场景值得尝试，但对大多数应用，主从复制配合读写分离可能是更稳妥的选择。 | [BV1Qe4Tz4EGi · 02:52](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=172) | [GitHub](https://github.com/pgEdge/spock) |
 
 ## 协作与项目管理
 
@@ -565,3 +570,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | HN Overlooked Posts | 纯前端 Web 应用，通过 'Passion Score'（文本长度与互动量之比）从 Hacker News 近期帖子中筛选出高投入、低互动的被忽视好内容。 | 2025-08-28 | 考栏认为，在信息过载的时代，真正有价值的内容往往被流量算法埋没；这个工具提醒我们，有时候最值得阅读的，不是最热门的，而是最用心的。 | [BV15ThyzLEin · 03:14](https://www.bilibili.com/video/BV15ThyzLEin?t=194) | [GitHub](https://github.com/pj4533/hn-overlooked) |
+
+## 安全与逆向工程
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| I'm Building a Browser for Reverse Engineers | 研究者 veritas 的技术文章：通过 fork Chromium/Electron 并在 Blink 渲染引擎层注入自定义 CDP 域（Snitch）原生捕获 Canvas、WebGL、Audio 等指纹 API 调用，避免 JS 层 patch 被检测；并集成自动化混淆代码检测/去混淆与常见指纹库加密 payload 解密，用于逆向分析反爬与指纹追踪。 | 2025-10-06 | 考拉认为这是为数不多真正触及浏览器底层的逆向工程实践，需要 C++ 和 Chromium 架构知识，对安全研究者很有价值。 | [BV1Qe4Tz4EGi · 03:17](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=197) | [官网](https://nullpt.rs/reverse-engineering-browser) |
