@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:15+08:00
+lastmod: 2026-08-19T12:38:16+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -143,6 +143,7 @@ toc:
 | Effect | TypeScript 的标准库补充，提供类型安全的错误处理、可组合效应操作与内置追踪监控功能，旨在以库与最佳实践帮助开发者提升 TS 应用的健壮性、开发体验与更小包体积。 | 2019-11-13 | 考拉认为函数式编程确实能提升代码质量，但学习曲线陡峭是不争事实，对习惯命令式编程的团队而言迁移成本不容忽视；Effect 的成功关键在于能否在实用性与理论优雅间找到平衡。 | [BV16GeEzdEme · 02:22](https://www.bilibili.com/video/BV16GeEzdEme?t=142) | [GitHub](https://github.com/Effect-TS/effect) |
 | StreamDown | Vercel 开源的 react-markdown 替代品，专为 AI 流式输出场景设计，能优雅处理未闭合 Markdown 块，支持 GitHub 风格 Markdown 与数学公式渲染，并内置防提示注入的安全机制。 | 2025-08-15 | 考栏认为，随着 AI 应用的普及，传统的文档渲染库确实暴露出不足；StreamDown 这种针对性优化体现了开发工具与应用场景深度结合的趋势。 | [BV15ThyzLEin · 01:28](https://www.bilibili.com/video/BV15ThyzLEin?t=88) | [GitHub](https://github.com/vercel/streamdown) |
 | Webiny | 开源的、自托管于 AWS serverless（Lambda/DynamoDB/S3）的内容平台与 TypeScript 框架，用 Pulumi 做基础设施即代码，支持多租户、生命周期钩子、GraphQL 扩展与插件化定制，并内置 AI MCP 集成。 | 2018-01-09 | 考栏认为，Webiny 的插件系统设计让定制化不再是痛苦的分叉维护，而是优雅的扩展开发。 | [BV15ThyzLEin · 02:21](https://www.bilibili.com/video/BV15ThyzLEin?t=141) | [GitHub](https://github.com/webiny/webiny-js) |
+| Massimo | 由 Platformatic/Matteo Collina 开源的类型安全 API 客户端生成器，从 OpenAPI 与 GraphQL schema 自动生成 TypeScript 类型安全客户端；Node.js 端基于高性能 Undici，浏览器端使用原生 Fetch API，单条 CLI 命令即可生成含连接池、HTTP/2 与错误处理的客户端。 | 2025-09-01 | 考栏认为，API 客户端生成并非新鲜概念，但 Massimo 在性能优化和平台适配上确实用了心思，作者 Node.js core team member 的身份也提供了背书；不过在 Swagger Codegen 和 OpenAPI Generator 已经占据主流的情况下，新工具想要突围还需要更多差异化优势。 | [BV1TsYVzJEuo · 01:59](https://www.bilibili.com/video/BV1TsYVzJEuo?t=119) | [GitHub](https://github.com/platformatic/massimo) |
 
 ## 测试与质量保障
 
@@ -328,6 +329,9 @@ toc:
 | claude-code-reverse | 可视化 Claude Code 与 LLM 交互、拆解其工作机制的开源逆向工具。 | 2025-02-25 | 本频道发布 Claude Code 逆向系列最新成果，包括两期视频及完整更新的第二代逆向工具开源代码；新版本用行为+API 数据逆向方式直观分析 Claude Code 工作原理，拆解其核心工作流、Context 管理、SubAgent 模式等机制，可在工具中查看运行行为细节。 | [BV1Q3hgzCEvk · 01:24](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=84) | [GitHub](https://github.com/yuyz0112/claude-code-reverse) |
 | VoltAgent | 开源的 TypeScript AI 智能体框架，提供 Agent 构建、工具调用、记忆管理与工作流编排能力，配套 VoltOps 平台用于监控和调试多 Agent 协作与动态路由。 | 2025-04-16 | 考拉认为 AI Agent 框架是当下热门赛道，VoltAgent 提供构建、工具调用、记忆与工作流编排及 VoltOps 监控调试，但市面类似产品已不少、与 Master 功能高度重合；不过 VoltAgent 设计更灵活，其团队曾开发 React 热门框架 Refine，开发体验上有见地。 | [BV1dXbwzdEuy · 01:27](https://www.bilibili.com/video/BV1dXbwzdEuy?t=87) | [GitHub](https://github.com/VoltAgent/voltagent) |
 | DSPy | 斯坦福 NLP 实验室推出的声明式 LLM 编程框架，将提示词与优化器统一为代码结构而非纯文本提示，适合构建可组合、可维护的 AI 系统（如分类器、RAG 管道、智能体循环）。 | 2023-01-09 | 考拉认为将 AI 开发从写提示词转向写代码是正确方向，但 DSPy 学习曲线与习惯转变需要时间，理念前沿，能否在工程实践中广泛采用还要看工具链成熟度。 | [BV1dXbwzdEuy · 02:51](https://www.bilibili.com/video/BV1dXbwzdEuy?t=171) | [GitHub](https://github.com/stanfordnlp/dspy) |
+| GEPA | 反思式提示词/智能体优化器（Genetic-Pareto），由 UC Berkeley、Stanford、MIT、Databricks 等团队提出，通过自然语言反思诊断失败并提出针对性修改，比强化学习（GRPO）用更少 rollout 取得更优提示词，可优化提示词、代码与智能体架构。 | 2025-08-06 | 考栏认为，提示工程正在从手工艺变成工程学科，自动化优化是必然趋势；不过这类工具的实际效果往往高度依赖具体的应用场景，通用性仍然是个挑战。 | [BV1TsYVzJEuo · 00:01](https://www.bilibili.com/video/BV1TsYVzJEuo?t=1) | [GitHub](https://github.com/gepa-ai/gepa) |
+| HumanLayer | 面向 AI 智能体的人机协作（human-in-the-loop）基础设施，允许开发者在智能体执行特定操作前强制要求人类审批，通过装饰器标记需确认的函数调用，被拒绝时可将反馈传回模型，并支持智能体主动联系人类获取建议与帮助。 | 2024-11-21 | 考栏认为，对于 Co-Pilot 模式的 AI 代理，Human Layer 会是一个不错的通用实现，能够节省重复的开发工作。 | [BV1TsYVzJEuo · 01:29](https://www.bilibili.com/video/BV1TsYVzJEuo?t=89) | [GitHub](https://github.com/humanlayer/humanlayer) |
+| Bytebot | 自托管的开源 AI 桌面代理，为 AI 提供完整的容器化 Ubuntu 虚拟桌面环境，可控制鼠标键盘、使用任意桌面应用、处理文件与系统操作，甚至通过密码管理器自动登录，用自然语言即可下达「下载所有供应商门户的发票并整理到文件夹」等跨应用任务。 | 2025-08-19 | 考栏认为，给 AI 一个完整的操作系统环境确实能解锁更多可能性；不过，实际部署的复杂性和安全风险也相应增加，企业级应用还需要考虑更多安全隔离措施。 | [BV1TsYVzJEuo · 03:22](https://www.bilibili.com/video/BV1TsYVzJEuo?t=202) | [GitHub](https://github.com/bytebot-ai/bytebot) |
 
 ## 数据工程与存储
 
@@ -425,6 +429,8 @@ toc:
 | AnimeAI | 聚合 GPT-4o 绘图经验与提示词、可生成动漫风格图片的 AI 绘图平台。 | 2025-07-20 | Anime 是 GPT-4o 绘图平台，除常规 LLM API 集成外，还收集了社交媒体上分享的 GPT-4o 绘图经验，将有趣图片及其提示词思路整理在一起，用户可先浏览风格、再学习修改提示词、最终生成所需图片。 | [BV1FU8Yz9E7w · 01:56](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=116) | [官网](https://animeai.app) |
 | How F1 has evolved since 1950 | ESPN 为庆祝 F1 75 周年制作的交互式可视化专题，用丰富的可视化与交互细节呈现 75 年来 F1 赛车技术的演进之路。 | 2025-08-07 | 考拉认为随着 Web 技术演进，用更生动的网页（丰富可视化与交互）替代静态图文、呈现更有趣的故事，已是许多媒体积极尝试的方向，ESPN 这个 75 年 F1 技术演进网站是其中有趣的例子。 | [BV1dXbwzdEuy · 03:18](https://www.bilibili.com/video/BV1dXbwzdEuy?t=198) | [官网](https://www.espn.com/espn/feature/story/_/id/43832710/how-f1-evolved-1950-where-headed-2026) |
 | EvilCharts | 基于 shadcn/ui 与 Recharts 构建的动画图表组件库，提供美观、可交互的数据可视化组件，可像 shadcn/ui 一样通过 CLI 安装或复制代码自由定制。 | 2025-07-16 | 考拉认为 EvilCharts 在成熟图表库之外提供了更注重视觉效果的新选择，专注美观的动画图表，让枯燥数据更生动有吸引力，且像 shadcn/ui 一样可通过 CLI 安装或复制代码自由修改定制。 | [BV1nQYkzWEcw · 00:01](https://www.bilibili.com/video/BV1nQYkzWEcw?t=1) | [GitHub](https://github.com/legions-developer/evilcharts) |
+| ASCIIFlow | 基于浏览器的 ASCII 流程图/架构图绘制工具，提供方框、箭头、线条、文本与自由绘制，支持标准 ASCII 与扩展 ASCII 模式，可复制到剪贴板并导出纯文本，便于直接嵌入代码注释与文档。 | 2014-01-05 | 考栏认为，在各种现代图表工具泛滥的今天，ASCII 流程图反而显得别有一番实用价值：简单、轻量、兼容性强，这些特点让它在技术文档领域依然有立足之地。 | [BV1TsYVzJEuo · 00:32](https://www.bilibili.com/video/BV1TsYVzJEuo?t=32) | [GitHub](https://github.com/lewish/asciiflow) |
+| Mediabunny | 纯 TypeScript、零依赖的浏览器端媒体处理库，可直接在浏览器/Node.js 中读取、写入与转换 MP4、WebM、MP3 等媒体文件，借助 WebCodecs 硬件加速，支持微秒级精度剪辑、转封装/转码，性能远超传统工具。 | 2025-06-27 | 考栏认为，把复杂的媒体处理搬到浏览器端确实是个有趣的方向；Mediabunny 对在线音视频编辑等场景是一个不错的补充。 | [BV1TsYVzJEuo · 02:54](https://www.bilibili.com/video/BV1TsYVzJEuo?t=174) | [GitHub](https://github.com/Vanilagy/mediabunny) |
 
 ## 办公与演示
 
