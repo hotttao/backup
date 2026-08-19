@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T22:30:08+08:00
+lastmod: 2026-08-19T22:30:10+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -64,6 +64,7 @@ toc:
 | bat | cat 命令的增强替代品（Rust 编写），为终端查看代码文件增加语法高亮与 git diff 显示，自动识别编程语言、显示行号与修改标记，并在非交互场景自动降级为纯文本输出。 | 2018-04-21 | 考拉认为这是一个成熟且克制的工具，没有过度设计，专注解决一个具体问题；对经常在终端查看代码的开发者，使用体验提升明显。 | [BV1Qe4Tz4EGi · 00:01](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=1) | [GitHub](https://github.com/sharkdp/bat) |
 | ut | 用 Rust 编写的开发者命令行工具箱（瑞士军刀），将 Base64、UUID、正则测试、哈希等数十种常用开发辅助功能整合进单一二进制，涵盖编码转换、文本处理与开发工具等领域。 | 2025-06-28 | 考拉认为工具集成度很高，但功能相对基础，适合处理日常开发中的快速任务；对需要深度配置的场景，专用工具可能仍是更好选择。 | [BV1Qe4Tz4EGi · 00:32](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=32) | [GitHub](https://github.com/ksdme/ut) |
 | WinApps | 在 Linux 桌面（Ubuntu/Fedora + GNOME/KDE/XFCE）上运行 Windows 应用（如 Microsoft 365、Adobe）的项目，通过在 Docker/Podman/libvirt 虚拟机中运行 Windows 并用 FreeRDP 渲染，将 Windows 应用无缝集成到 Linux。 | 2023-07-05 | 考拉认为该项目类似 WinApps、KasmVNC 等，但在易用性上有所改进；虚拟化方案天然带来性能开销，对图形密集型应用效果可能有限，且明确不支持 Podman 等容器方案，限制了部分用户；相比 Wine 等原生兼容层，更适合偶尔需要使用 Windows 专用软件的场景。 | [BV1Qe4Tz4EGi · 01:24](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=84) | [GitHub](https://github.com/winapps-org/winapps) |
+| Evan Hahn 的命令行脚本集 | 开发者 Evan Hahn 维护近十年的命令行脚本集合，覆盖书签管理、文件操作等 60 多个实用小工具（如 mkcd、timee、trash），多为几行代码解决高频痛点。 | 2025-10-22 | 这种积累体现了务实的工程思维。工具不在于大，而在于精准切中需求。这类个人脚本往往高度定制化，直接照搬可能水土不服，更有价值的是借鉴其中的自动化思路。 | [BV11QxAzvE7U · 00:30](https://www.bilibili.com/video/BV11QxAzvE7U?t=30) | [官网](https://evanhahn.com/scripts-i-wrote-that-i-use-all-the-time/) |
 
 ## 代码质量与 Code Review
 
@@ -167,6 +168,7 @@ toc:
 | Magnitude | 开源的 AI 原生 Web 应用端到端测试框架，使用视觉 AI Agent 通过自然语言编写测试，能感知界面变化并自动适应，测试运行可被智能缓存以实现快速、低成本、可重复的执行。 | 2025-04-25 | 考拉认为，如果你的应用界面经常变化，或者觉得维护 E2E 测试的成本太高，那么 Magnitude 是一个可行的解决方案；并提到在之前的俱乐部视频中曾对比过几个热门的浏览器自动化与 AI E2E 测试工具，有兴趣的观众可进一步对比 Magnitude 与它们的差异。 | [BV1wQVFzREBr · 01:56](https://www.bilibili.com/video/BV1wQVFzREBr?t=116) | [GitHub](https://github.com/magnitudedev/magnitude) |
 | Evalite | 面向 TypeScript/LLM 应用的轻量级评估（evals）框架，用于测试生成式 AI 输出的质量。 | 2024-11-12 | 一个给 TypeScript 项目做 LLM 评估的小框架，可以像写测试一样写 eval，用来衡量大模型输出是否靠谱，适合在 GenAI 应用里做回归测试。 | [BV1eo3fzBEgV · 00:30](https://www.bilibili.com/video/BV1eo3fzBEgV?t=30) | [GitHub](https://github.com/mattpocock/evalite) |
 | oha | 用 Rust 编写的 HTTP 负载测试（压测）工具，提供实时 TUI 界面与丰富配置选项，支持 HTTP/2、实验性 HTTP/3 及多种输出格式，并支持随机 URL 生成、从文件读取 URL 列表等。 | 2020-03-02 | 考拉认为 Rust 让压测工具本身的性能得到保证，TUI 界面也让压测过程更直观；不过对简单场景功能可能过于丰富，学习成本相对较高。 | [BV1rSnRzFE9i · 01:54](https://www.bilibili.com/video/BV1rSnRzFE9i?t=114) | [GitHub](https://github.com/hatoo/oha) |
+| Vitest | 面向 Vite 生态的 JavaScript/TypeScript 测试框架；4.0 正式发布浏览器模式（Browser Mode），新增视觉回归测试（toMatchScreenshot）、Playwright Traces 支持、类型安全钩子与 Standard Schema 匹配器。 | 2025-10-22 | 本次更新让 Vitest 在 E2E 测试领域更有竞争力，视觉回归测试的加入填补了功能空白。 | [BV11QxAzvE7U · 00:01](https://www.bilibili.com/video/BV11QxAzvE7U?t=1) | [GitHub](https://github.com/vitest-dev/vitest) |
 
 ## 运维、部署与基础设施
 
@@ -232,6 +234,7 @@ toc:
 | Rotel | 用 Rust 编写的高性能 OpenTelemetry 数据收集器，专为高性能和低资源消耗设计，针对 AWS Lambda 等无服务器环境优化，并提供 Python 处理器开发支持。 | 2025-03-25 | 考拉认为性能优化确实是可观测性工具的关键需求，特别是在成本敏感的无服务器场景中，可以节省更多资源与成本。 | [BV16GeEzdEme · 03:19](https://www.bilibili.com/video/BV16GeEzdEme?t=199) | [GitHub](https://github.com/rotel-dev/rotel) |
 | Nitro | Leah Neukirchen 开源的极简 init 系统与进程管理器，所有状态保存在内存、单二进制文件、通过脚本目录配置，可作为 PID 1 或容器/嵌入式环境的进程监管。 | 2025-08-22 | 考栏认为，在 SystemD 一统天下的时代，像 Nitro 这样回归简洁哲学的工具值得关注；对于追求极简部署和资源受限环境的开发者来说，是一个不错的替代方案。 | [BV15ThyzLEin · 01:53](https://www.bilibili.com/video/BV15ThyzLEin?t=113) | [GitHub](https://github.com/leahneukirchen/nitro) |
 | Cloudflare Sandbox | Cloudflare 在 Workers 平台上提供的沙盒执行环境（Sandbox SDK），运行隔离的容器化工作负载，具备完整 Linux 环境与独立文件系统，可执行 Shell、Python、Node.js，并通过 URL 将服务暴露为 HTTP API，适用于 AI 代理执行代码、交互式开发环境与数据分析。 | 2025-08-05 | 考拉认为 Cloudflare 的沙盒功能对于执行 LLM 生成代码的 AI 应用很有吸引力，安全隔离和低延迟是关键优势。 | [BV1LosFzrEW5 · 00:32](https://www.bilibili.com/video/BV1LosFzrEW5?t=32) | [官网](https://developers.cloudflare.com/sandbox/) |
+| PogoCache | 从零编写的缓存系统，基准测试显示在 8 线程下延迟低于 Redis 与 Dragonfly；采用分片哈希表架构，支持 RESP（Redis 协议）与自定义协议，可作为嵌入式组件使用。 | 2025-07-23 | 性能数据看起来很诱人，但要关注的是这些测试场景是否真实反映生产环境。作为 AGPL 协议的开源项目，商业使用需要额外授权，对于追求极致性能且不介意早期风险的团队可以尝试，但大规模部署前建议做充分的压力测试和稳定性验证。 | [BV11QxAzvE7U · 03:22](https://www.bilibili.com/video/BV11QxAzvE7U?t=202) | [GitHub](https://github.com/tidwall/pogocache) |
 
 ## AI 模型与推理
 
@@ -272,6 +275,7 @@ toc:
 | Gemini 2.5 Flash Image | Google 推出的先进图像生成与编辑模型（代号 Nano Banana），支持角色一致性保持、自然语言精准局部编辑、多图融合与真实世界知识理解。 | 2025-08-26 | 考栏认为 Nano Banana（Gemini 2.5 Flash Image）核心突破在于精确图片编辑能力，能持续跟随用户的连续编辑指令；在人物相似度保持上实现质的飞跃，即使经过多次编辑人物依然能保持原有面部特征，从给宠物穿芭蕾舞裙到自己放进不同历史年代效果都极其逼真。 | [BV15ThyzLEin · 00:01](https://www.bilibili.com/video/BV15ThyzLEin?t=1) | [官网](https://ai.google.dev/gemini-api/docs/image-generation) |
 | Mooncake | 月之暗面（Moonshot AI）开源的以 KV 缓存为中心的 LLM 推理服务框架，包含 Transfer Engine 与分布式存储，支撑 Kimi AI 线上服务。 | 2024-11-28 | 月之暗面（Moonshot AI）公司开源的 LLM 推理服务框架，专门针对 KV 缓存优化设计；这套系统支撑着 Kimi AI 的线上服务，包含 Transfer Engine 和分布式存储两个核心组件；项目在 FAST 2025 会议上获得最佳论文奖，已与 vLLM、SGLang 等主流推理引擎实现集成。Koala 认为，作为知名 AI 服务商开源的核心架构，Mooncake 技术含金量值得关注，KV 缓存优化对大模型推理性能影响巨大；需要注意，这类基础设施项目的落地门槛相对较高，更适合有一定规模与技术积累的团队使用。 | [BV1qtWwzLEeS · 02:21](https://www.bilibili.com/video/BV1qtWwzLEeS?t=141) | [GitHub](https://github.com/kvcache-ai/Mooncake) |
 | Modal Notebooks | Modal 推出的面向 AI 研发的云端协作笔记本环境，冷启动到可用不到 5 秒，最高可切换 256 核 CPU 与 8 块 H100/B200 GPU，内核自动空闲/恢复，支持多人实时协作编辑、Pyright 与 AI 代码补全。 | 2025-09-09 | 考拉认为 Modal 这款产品设计很聪明，将开发测试与生产环境统一，降低了从实验到部署的差异；快速启动与按需付费解决了 notebook 服务的两大痛点；但运行在云端也意味着网络延迟与厂商锁定，对需要本地数据或离线工作的场景仍有局限。 | [BV1Qe4Tz4EGi · 01:54](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=114) | [官网](https://modal.com/blog/notebooks) |
+| Easy Dataset | 用于制作大语言模型微调数据集的工具，可上传 PDF、Markdown 等文档，自动完成文本分块、问题生成与答案构建，支持可视化编辑、多种导出格式及 OpenAI 格式 API，并配套 LLaMA Factory 教程。 | 2025-03-04 | 对于需要快速构建领域数据集的团队来说，确实降低了门槛。但合成数据的质量仍然依赖于底层模型的能力，多样性上也存在挑战，批量生成后的人工审核依然不可省略。另外需要注意的是，项目采用 AGPL 协议，需评估是否适合自身的商业项目。 | [BV11QxAzvE7U · 01:54](https://www.bilibili.com/video/BV11QxAzvE7U?t=114) | [GitHub](https://github.com/ConardLi/easy-dataset) |
 
 ## AI Agent 与智能体开发
 
@@ -346,6 +350,7 @@ toc:
 | Chrome DevTools MCP | 谷歌出品的 MCP 服务器，让 AI Agent 直接与 Chrome DevTools 交互，可执行性能分析、网络测试、元素检查等操作，解决 AI 编程时难以理解代码运行效果的问题。 | 2025-09-11 | 考拉认为 Chrome DevTools 是 Web 编程中最常用的开发工具，此次提供 MCP 封装极大提升了 AI 对代码结构的观察能力；虽然目前仍是预览版本，但已展现出巨大潜力。 | [BV1rSnRzFE9i · 00:01](https://www.bilibili.com/video/BV1rSnRzFE9i?t=1) | [GitHub](https://github.com/ChromeDevTools/chrome-devtools-mcp) |
 | Exa Code | Exa 推出的面向编程 Agent 的代码搜索引擎，给定查询可返回精确、密集的几百个 Token 的网页代码上下文（而非冗长文档），通过专门的代码索引与代码样例检索降低编码幻觉。 | 2025-09-25 | 考拉认为针对 AI 编程场景的搜索确实是刚需，尤其在海量开源库和 API 文档面前；Exa Code 的高召回率设计很实用，但实际效果与成本还需用过才知道。 | [BV1rSnRzFE9i · 01:24](https://www.bilibili.com/video/BV1rSnRzFE9i?t=84) | [官网](https://exa.ai/blog/exa-code) |
 | MCP Inspector | 用于测试与调试 MCP（Model Context Protocol）服务器的开发者工具，提供 Web、CLI、TUI 三种检查方式，支持标准输入输出、SSE 与流式 HTTP 等所有传输方式，并内置与大语言模型交互的测试环境。 | 2024-10-03 | 考拉认为随着 AI 应用架构走向标准化，专用调试工具变得必要；该项目填补了 MCP 生态的工具缺口，对正在构建 MCP 服务器的开发者实用性强。 | [BV1LosFzrEW5 · 00:01](https://www.bilibili.com/video/BV1LosFzrEW5?t=1) | [GitHub](https://github.com/modelcontextprotocol/inspector) |
+| Vercel Workflow | Vercel 开源的 TypeScript 持久化工作流框架（Workflow SDK），通过 useWorkflow 指令为普通函数赋予自动持久化、状态保存与可观测性，无需配置队列或调度器，可在本地 Docker 或云平台运行，适合长时间运行流程与 AI Agent。 | 2025-10-23 | 这种声明式的持久化方式确实简化了开发体验，但目前项目还在 Beta 阶段，生产环境使用需要关注其稳定性和性能表现。 | [BV11QxAzvE7U · 02:22](https://www.bilibili.com/video/BV11QxAzvE7U?t=142) | [GitHub](https://github.com/vercel/workflow) |
 
 ## 数据工程与存储
 
