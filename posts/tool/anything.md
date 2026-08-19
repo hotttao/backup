@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:05+08:00
+lastmod: 2026-08-19T12:38:07+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -208,6 +208,10 @@ toc:
 | Cloudflare Containers | Cloudflare Workers 提供的容器能力，允许在 Cloudflare 全球边缘网络上运行有状态/长生命周期的容器化应用。 | 2025-06-24 | Cloudflare Workers 现在支持容器了，可以在其全球网络里跑容器，弥补 Serverless 难以处理有状态、长耗时任务的短板；目前处于公开测试阶段。 | [BV1wTgoz3E8M · 00:59](https://www.bilibili.com/video/BV1wTgoz3E8M?t=59) | [官网](https://developers.cloudflare.com/workers/containers/) |
 | unregistry | 一个无需独立 registry 服务的 Docker 镜像分发方案，可在多台机器间直接推送/拉取镜像。 | 2025-07-22 | 一个把 Docker 镜像直接在对等机器间分发的工具，省去了搭建 registry 的麻烦，适合在没有 registry 的环境下快速共享镜像。 | [BV1wTgoz3E8M · 02:20](https://www.bilibili.com/video/BV1wTgoz3E8M?t=140) | [GitHub](https://github.com/psviderski/unregistry) |
 | Varlock | 通过 Schema 声明集中、安全地管理环境变量与密钥，并自动生成类型定义的开源工具。 | 2025-04-11 | Valalk 通过 Schema 声明集中管理环境变量，自带校验功能可及早发现配置错误，还能自动生成类型定义保持类型安全，并保护敏感信息防止泄漏，安装简单，可对接已有脚本替换传统 .env 管理方式。 | [BV1LDgtzEEGB · 00:01](https://www.bilibili.com/video/BV1LDgtzEEGB?t=1) | [GitHub](https://github.com/dmno-dev/varlock) |
+| KubeSphere | 面向 Kubernetes 的开源容器管理平台（其开源版于 2025 年宣布停止提供）。 | 2018-04-21 | KubeSphere（Coop's Fair）本周宣布关闭开源版下载，理由是适应新时代和 AI 改变计算范式，虽除 UI 外核心代码仍开源，但深夜下架打包物料和文档让社区惊讶，前项目负责人也宣布离开青云。考栏认为此番闭源让社区不舍。 | [BV1Q3hgzCEvk · 00:31](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=31) | [GitHub](https://github.com/kubesphere/kubesphere) |
+| mirrord | 让本地进程以云端 Pod 身份运行、接管其网络与文件系统的 Kubernetes 调试工具。 | 2022-02-01 | MirrorD（mirrord）解决本地调试依赖云上环境的代码痛点：传统做法要么本地搭环境、要么直接云端调试，前者复杂后者危险；mirrord 让本地进程冒充云端 Pod，接管网络流量、文件系统和环境变量。考栏认为它带来额外复杂度，需 Linux 命名空间与集群代理，但对复杂分布式应用调试有价值。 | [BV1Q3hgzCEvk · 01:52](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=112) | [GitHub](https://github.com/metalbear-co/mirrord) |
+| changedetection.io | 开源的网站内容变化监控与告警工具，支持价格/库存追踪。 | 2021-01-27 | ChangeDetection.io 专门监控网页内容变化，支持价格追踪、库存监控等，核心价值在于自动化重复性人工检查；项目提供开源版本，同时有商业化云服务。考栏认为这类小而美的工具说明不是所有软件都需要复杂架构。 | [BV1Q3hgzCEvk · 02:22](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=142) | [GitHub](https://github.com/dgtlmoon/changedetection.io) |
+| wg-easy | 为 WireGuard VPN 提供图形化管理界面（用户、QR 码、流量统计）的开源项目。 | 2021-05-22 | WG-EZ（wg-easy）把 WireGuard 的配置管理包装成傻瓜式 Web 界面，提供用户管理、QR 码生成、流量统计等功能，基本覆盖小团队 VPN 管理需求。考栏认为这种把强大但难用的底层工具包装成普通人可用的产品最有价值。 | [BV1Q3hgzCEvk · 02:52](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=172) | [GitHub](https://github.com/wg-easy/wg-easy) |
 
 ## AI 模型与推理
 
@@ -306,6 +310,7 @@ toc:
 | Kiro | AWS 推出的以规范驱动开发（Spec-Driven Development）为核心的 AI 编程助手/IDE。 | 2025-07-15 | Carol（Kiro）是 AWS 推出的 AI 驱动开发工具，最大特色是预先定义好的开发计划、设计文档、步骤拆分等流程（Spec-Driven Development），用户也可选择轻量 Web Coding 或流程严格的 Spec Coding；依托 Amazon 与 Anthropic 合作获得更多 Claude 模型额度。但考栏认为流程过于严格在灵活性上有所欠缺。 | [BV1LDgtzEEGB · 00:32](https://www.bilibili.com/video/BV1LDgtzEEGB?t=32) | [官网](https://kiro.dev) |
 | Conductor | 在 Mac 上用 Git Worktree 隔离工作区并行运行多个 Claude Code 智能体的桌面应用。 | 2025-07-21 | Kondakta（Conductor）是让 Claude Code 具备多任务并行能力的扩展工具，提供漂亮 UI，用 Git Worktree 技术让多个 Agent 在隔离工作区并行开发，可直观看到谁在工作、谁遇到问题、代码变更情况。考栏建议即便有隔离也应规划 Agent 处理不同区域避免冲突。 | [BV1FU8Yz9E7w · 00:01](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=1) | [官网](https://conductor.build) |
 | Qwen Code | 阿里开源、基于 Gemini CLI 改造的终端 AI 编程智能体（CLI）。 | 2025-06-26 | 签问 CLI（Qwen Code）是阿里随 Qwen3-Coder 一同开源的命令行编程智能体，由 Gemini CLI fork 而来，用于验证模型的 Agent 性能；支持在终端中调用 Qwen 模型完成编码任务。 | [BV1FU8Yz9E7w · 02:25](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=145) | [GitHub](https://github.com/QwenLM/qwen-code) |
+| claude-code-reverse | 可视化 Claude Code 与 LLM 交互、拆解其工作机制的开源逆向工具。 | 2025-02-25 | 本频道发布 Claude Code 逆向系列最新成果，包括两期视频及完整更新的第二代逆向工具开源代码；新版本用行为+API 数据逆向方式直观分析 Claude Code 工作原理，拆解其核心工作流、Context 管理、SubAgent 模式等机制，可在工具中查看运行行为细节。 | [BV1Q3hgzCEvk · 01:24](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=84) | [GitHub](https://github.com/yuyz0112/claude-code-reverse) |
 
 ## 数据工程与存储
 
@@ -338,6 +343,7 @@ toc:
 | bknd | 开源的后端即服务（BaaS）框架，提供数据库、认证、API 等能力，定位为 Firebase/Supabase 的替代方案。 | 2024-11-16 | 一个开源的后端框架，把数据库、认证、API 等打包好，可以作为 Firebase / Supabase 的替代品来用，轻量、可自托管。 | [BV1PYMfz5ENn · 00:01](https://www.bilibili.com/video/BV1PYMfz5ENn?t=1) | [GitHub](https://github.com/bknd-io/bknd) |
 | Meilisearch | 开源的高性能全文搜索引擎，提供简单 API 与毫秒级搜索体验。 | 2018-04-23 | 一个开源的搜索引擎，主打简单好用、速度快、搜索结果相关度好，常被拿来和 Elasticsearch / Algolia 比较，适合给应用加站内搜索。 | [BV1PYMfz5ENn · 02:28](https://www.bilibili.com/video/BV1PYMfz5ENn?t=148) | [GitHub](https://github.com/meilisearch/meilisearch) |
 | RustFS | 用 Rust 编写、兼容 S3 协议的高性能分布式开源对象存储系统。 | 2025-07-02 | RustFS 是用 Rust 开发的高性能分布式对象存储系统，可看作 MinIO 的替代方案，兼容 S3 协议、开源、支持数据湖/AI/大数据，采用 Apache 2.0 许可；在 MinIO 变更 license 后更具竞争力。但考栏提醒其仍处于快速开发阶段，不建议用于生产环境。 | [BV1LDgtzEEGB · 01:30](https://www.bilibili.com/video/BV1LDgtzEEGB?t=90) | [GitHub](https://github.com/rustfs/rustfs) |
+| CopyParty | 单文件实现的便携式多协议文件服务器，集成媒体浏览与上传功能。 | 2019-05-26 | CopyParty 用单个脚本文件搞定文件服务器所有需求，支持 FTP、WebDAV、FTP、TFTP、SMB 多种协议，还能做音乐播放、图片浏览、Markdown 编辑，功能多但文档厚。考栏认为这种瑞士军刀式工具在快速搭建文件共享场景很实用。 | [BV1Q3hgzCEvk · 00:01](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=1) | [GitHub](https://github.com/9001/copyparty) |
 
 ## 协作与项目管理
 
