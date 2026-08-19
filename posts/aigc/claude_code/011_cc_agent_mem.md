@@ -15,16 +15,16 @@ categories: ["agent_core"]
 lightgallery: true
 ---
 
-今天我们来学习 Claude Code 最新实现的记忆系统。内容来自: ![深度拆解 Cluade 云上 Agent 记忆系统](https://app.koala-oss.club/videos/6f968f84-cb35-4243-a0cb-eebc136d7ae9)
+今天我们来学习 Claude Code 最新实现的记忆系统。内容来自: [深度拆解 Cluade 云上 Agent 记忆系统](https://app.koala-oss.club/videos/6f968f84-cb35-4243-a0cb-eebc136d7ae9)
+
+
+<!-- more -->
 
 我个人觉得这篇内容是非常值得反复学习的，里面对如何实现记忆系统有非常深入的理解。接下来我们将详细介绍以下内容:
 1. 什么是 CMA，它的记忆系统与 Claude Code 记忆系统的有何异同，Anthropic 始终坚持基于文件系统实现记忆系统而不是 RAG
 2. 基于文件实现的记忆系统提供给 Agent 的 Interface
 3. 对比文件实现的记忆系统与 RAG 优势与劣势
 4. 如何实现记忆系统里文件到数据库的读写链路
-
-<!-- more -->
-
 
 ## 1. Cloud Managed Agent（CMA）
 ### 1.1 什么是 CMA
@@ -88,7 +88,7 @@ Agent 是否会读取某一个记忆条路，完全由agent自己来驱动了:
 **索引文件的机制，从 skills 开始就被广泛使用**
 
 #### System Prompt
-![System Prompt](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/system-prompt-memory-instructions.md?plain=1)
+[System Prompt](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/system-prompt-memory-instructions.md?plain=1)
 
 <h4>Memory / 记忆</h4>
 
