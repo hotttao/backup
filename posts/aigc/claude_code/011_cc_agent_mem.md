@@ -10,7 +10,7 @@ description: "深入拆解 Cluade 云上 Agent 记忆系统"
 featuredImage:
 
 tags: ["Claude Code"]
-categories: ["Agent"]
+categories: ["agent_core"]
 
 lightgallery: true
 ---

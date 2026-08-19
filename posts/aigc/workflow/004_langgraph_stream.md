@@ -8,7 +8,7 @@ author: "tao"
 description: "从源码理解 LangGraph 的流式事件、Chat Model Callback，以及 interrupt 与 Command 的中断恢复机制"
 
 tags: ["workflow"]
-categories: ["Agent"]
+categories: ["agent_core"]
 
 lightgallery: true
 ---

@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "用统一维度比较 RAGFlow 与 Mem0，并提供可继续加入其他框架的选型方法"
 featuredImage:
 
-tags: ["RAG", "RAGFlow", "Mem0", "选型"]
-categories: ["agent_core"]
+tags: ["RAG"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

@@ -10,7 +10,7 @@ description: "Pocket Flow 流的抽象"
 featuredImage:
 
 tags: ["workflow"]
-categories: ["Agent"]
+categories: ["agent_core"]
 
 lightgallery: true
 ---

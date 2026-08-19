@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "设计一个轻量 Prompt 自动优化器，通过评估、分析和候选生成持续优化 System Prompt 与 Tool Description"
 featuredImage:
 
-tags: ["base_agent"]
-categories: ["agent_core"]
+tags: ["APO"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

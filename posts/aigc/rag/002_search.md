@@ -10,7 +10,7 @@ description: "Rag 信息检索理论"
 featuredImage: 
 
 tags: ["RAG"]
-categories: ["langchain"]
+categories: ["Agent"]
 
 lightgallery: true
 

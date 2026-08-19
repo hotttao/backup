@@ -10,7 +10,7 @@ description: "LangGraph 对 Workflow 的抽象"
 featuredImage:
 
 tags: ["workflow"]
-categories: ["Agent"]
+categories: ["agent_core"]
 
 lightgallery: true
 ---

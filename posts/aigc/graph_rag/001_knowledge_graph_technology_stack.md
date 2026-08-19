@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "从 RDF、本体和 SPARQL 出发，逐步学习语义检索、图数据库与 GraphRAG 的框架和源码"
 featuredImage:
 
-tags: ["Knowledge Graph", "Ontology", "Semantic IR", "GraphRAG"]
-categories: ["agent_core"]
+tags: ["GraphRAG"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

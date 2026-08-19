@@ -1,16 +1,16 @@
 ---
 weight: 1
-title: "Base Agent 设计"
+title: "Agent Platform 架构设计"
 date: 2026-08-01T22:00:00+08:00
 lastmod: 2026-08-17T18:20:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "Base Agent 抽象"
+description: "Agent Platform 架构设计"
 featuredImage:
 
-tags: [""]
-categories: ["agent_core"]
+tags: ["Agent Platform"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

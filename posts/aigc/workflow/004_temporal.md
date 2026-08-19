@@ -8,7 +8,7 @@ author: "tao"
 description: "通过用户下单、支付和创建物流的例子，理解 Temporal 的 Workflow、Activity、数据持久化与恢复过程"
 
 tags: ["workflow"]
-categories: ["Agent"]
+categories: ["agent_core"]
 
 lightgallery: true
 ---

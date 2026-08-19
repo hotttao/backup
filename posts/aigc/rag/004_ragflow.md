@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "从本地代码分析 RAGFlow 的架构、Tenant/KB/Document 层级、摄取、检索、结构增强与引用"
 featuredImage:
 
-tags: ["RAG", "RAGFlow"]
-categories: ["agent_core"]
+tags: ["RAG"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "Agent Platform 中 Session、Turn 队列、Universal Event 持久化、消息广播与 SSE 恢复设计"
 featuredImage:
 
-tags: ["Agent", "SSE", "DDD", "Redis"]
-categories: ["agent_core"]
+tags: ["Agent Platform"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

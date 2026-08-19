@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "用统一的语义模型解释向量索引、关键词索引、实体索引、层级索引与历史存储"
 featuredImage:
 
-tags: ["RAG", "检索", "索引增强"]
-categories: ["agent_core"]
+tags: ["RAG"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

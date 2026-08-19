@@ -9,8 +9,8 @@ authorLink: "https://hotttao.github.io/"
 description: "讨论 RAG 可能遇到的问题"
 featuredImage:
 
-tags: ["base_agent"]
-categories: ["agent_core"]
+tags: ["RAG"]
+categories: ["Agent"]
 
 lightgallery: true
 ---

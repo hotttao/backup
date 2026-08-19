@@ -8,7 +8,7 @@ author: "tao"
 description: "理解 Pydantic AI 的 Model、Profile、Message、结构化输出和 ToolDefinition，并实现完全自控的 AgentLoop"
 
 tags: ["workflow"]
-categories: ["Agent"]
+categories: ["agent_core"]
 
 lightgallery: true
 ---
