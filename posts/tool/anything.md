@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-17T18:43:45+08:00
+lastmod: 2026-08-19T12:37:48+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -53,6 +53,7 @@ toc:
 | Atuin Desktop | 本地优先（local-first）、可执行的可视化 Runbook 编辑器，外观像文档、运行起来像终端；支持链式脚本块、嵌入式终端、数据库客户端与 Prometheus 图表，基于 CRDT 通过 Atuin Hub 同步协作。 | 2025-04-22 | 仅作功能介绍，未给出明确评价。 | [BV1pijczvE8K · 02:44](https://www.bilibili.com/video/BV1pijczvE8K?t=164) | [GitHub](https://github.com/atuinsh/desktop) |
 | Zodest | 基于 Zod 的现代化 CLI 构建器，完全类型安全、极轻量且无运行时依赖（仅依赖 Zod），支持命令别名、嵌套命令以及全局与命令级选项，配置灵活。 | 2025-04-18 | 考拉认为，在构建 CLI 时，参数解析和校验是必不可少的环节；Zodest 基于 Zod 在类型安全与运行时参数校验上的优势可充分发挥，同时保持了轻量化。 | [BV1wQVFzREBr · 03:49](https://www.bilibili.com/video/BV1wQVFzREBr?t=229) | [GitHub](https://github.com/tunnckoCore/zodest) |
 | Makepad | 用 Rust 编写的开源跨平台 UI 框架/创意软件开发平台，支持 Windows、Linux、macOS、iOS、Android 与 Web，采用基于 Shader 的渲染架构与声明式 DSL，编译速度快、支持实时样式调整。 | 2025-05-18 | Koala 介绍 Makepad 采用基于 Shader 的架构，拥有极高的性能和灵活性，支持 Windows/Linux/macOS/iOS/Android 及 Web，并有一套声明式的设计 DSL 方便创建丰富的响应式 UI，编译速度超快且支持实时样式调整，可流畅迭代；主要作功能介绍，未给出明确优劣评价。 | [BV1CqJgziEB1 · 02:43](https://www.bilibili.com/video/BV1CqJgziEB1?t=163) | [GitHub](https://github.com/makepad/makepad) |
+| KeyboardCowboy | 一款为 macOS 用户设计的快捷键工作流生产力工具，用户可将重复操作、应用启动、系统设置、文件操作等工作流定义为快捷键，双手无需离开键盘即可触发；进阶用户可根据上下文定义触发条件、将不同工作流分组管理。 | 2020-09-02 | Koala 认为虽然 KeyboardCowboy 上手会有些难度，但一旦熟悉且完成自定义配置后，效率就能成倍地提升。 | [BV1mF7mzzEKm · 00:40](https://www.bilibili.com/video/BV1mF7mzzEKm?t=40) | [GitHub](https://github.com/zenangst/KeyboardCowboy) |
 
 ## 代码质量与 Code Review
 
@@ -125,6 +126,8 @@ toc:
 | GoVisual | 一款零配置、纯 Go 的 HTTP 请求可视化与调试器，专为本地 Go Web 应用开发设计，可监控并深入检查请求头/体/状态码/时间，追踪中间件执行流程以定位性能瓶颈，并可选集成 OpenTelemetry。 | 2025-05-04 | Koala 认为，GoVisual 就像一个 Go Web 开发的“显微镜”，让调试更直观高效；工具本身虽简单，但十分实用。 | [BV1CqJgziEB1 · 00:58](https://www.bilibili.com/video/BV1CqJgziEB1?t=58) | [GitHub](https://github.com/doganarif/GoVisual) |
 | TanStack DB | 构建在 TanStack Query 之上的嵌入式客户端数据库/响应式数据存储，提供集合（collections）、实时查询（live queries）与乐观变更（optimistic mutations），利用差分数据流实现亚毫秒级的增量更新。 | 2025-07-29 | Koala 认为，TanStack DB 核心是快速查询引擎与细粒度的响应式更新，并支持事务式的数据操作；总体而言，如果你正在寻找一个能够提升前端性能、简化数据管理的工具，TanStack DB 值得关注。 | [BV1CqJgziEB1 · 03:11](https://www.bilibili.com/video/BV1CqJgziEB1?t=191) | [官网](https://tanstack.com/db) |
 | TypeScript Native Preview | 微软 TypeScript 团队将 TypeScript 编译器与工具链移植到 Go 实现的原生预览版（内部代号 Project Corsa），通过 npm 包 @typescript/native-preview 提供 tsgo 可执行文件，编译速度可达约 10 倍提升，最终将演进为 TypeScript 7。 | 2025-05-22 | Koala 介绍 TypeScript 团队推出原生预览版，通过将编译器与工具链移植到原生语言（Go）实现约 10 倍的项目编译提速，可通过 npm 安装预览版编译器并在 VS Code 中体验新的编译功能，未来将演进为 TypeScript 7；主要作功能介绍，未给出明确优劣评价。 | [BV1NpjMztEZR · 00:01](https://www.bilibili.com/video/BV1NpjMztEZR?t=1) | [GitHub](https://github.com/microsoft/typescript-go) |
+| Svelte Flow | 用于构建节点式 UI（工作流编辑器、数据管道、可视化编程环境）的 Svelte 库。1.0 整个库基于 Svelte 5 从零重写，新增 Edge 重连、更强大的 fitView、键盘导航、更好的可访问性（A11y）等，并与 React Flow 功能对齐；由 React Flow（xyflow）团队维护。 | 2025-05-14 | Koala 介绍 Svelte Flow 1.0 基于 Svelte 5 重写、脱胎换骨，并指出对构建 AI 工作流 UI 的开发者，它让 UI 框架的选择更加多变。 | [BV1mF7mzzEKm · 02:35](https://www.bilibili.com/video/BV1mF7mzzEKm?t=155) | [官网](https://xyflow.com/blog/svelte-flow-release) |
+| Linkify | 一款 JavaScript 插件，能把纯文本中的链接转换成 HTML <a> 标签，自动识别 URL、邮箱地址、#话题标签与 @提及；支持 React、jQuery、多语言与 Emoji，压缩后约 11KB（minified 约 20KB）。 | 2013-05-02 | Koala 认为对博客、论坛、评论区等场景使用 Linkify 可节省很多解析文本链接的工作，但需确认文本内容可信时才使用，避免用户输入恶意链接诱导点击。 | [BV1mF7mzzEKm · 08:10](https://www.bilibili.com/video/BV1mF7mzzEKm?t=490) | [官网](https://linkify.js.org/) |
 
 ## 测试与质量保障
 
@@ -301,6 +304,7 @@ toc:
 | Postgres Language Server | Postgres Language Server 是 Supabase 社区推出的 PostgreSQL 语言服务器，实现了 Language Server Protocol，为 PL/pgSQL 代码提供自动补全、语法高亮与代码检查等能力。 | 2023-05-18 | 认为拥有 Language Server 之后，不仅日常的开发体验会有所提升，也能基于它进一步开发代码相关的 AI 工具，提升 SQL 生成的准确性。 | [BV1tYRiYbEt6 · 02:24](https://www.bilibili.com/video/BV1tYRiYbEt6?t=144) | [GitHub](https://github.com/supabase-community/postgres-language-server) |
 | SpacetimeDB | 将数据库与应用服务器合二为一的开源系统，客户端可直接连接数据库，业务逻辑以 Rust / C# 编写的模块编译为 WebAssembly 运行，适合构建大型多人在线游戏。 | 2023-06-17 | 考拉认为 SpacetimeDB 是一个很有意思的开源项目，它把数据库和服务器合二为一，让少量开发者也能构建出大型多人游戏（包括后端逻辑、玩家实时位置、持久化状态），从而不再需要云上复杂的多服务架构。 | [BV1ij5fz2En9 · 01:32](https://www.bilibili.com/video/BV1ij5fz2En9?t=92) | [GitHub](https://github.com/clockworklabs/SpacetimeDB) |
 | VectorVFS | 一个轻量级 Python 包，利用 Linux VFS 扩展属性将向量嵌入直接存储在文件元数据中，把 Linux 文件系统变成无需额外索引或数据库的语义可搜索向量存储，并支持 Meta 的 Perception Encoders 进行图像理解。 | 2025-04-25 | Koala 认为，该工具对于需要处理大量图像、希望通过语言搜索快速找到相关文件的朋友来说非常有用；直接在文件系统上进行向量搜索也是一种有趣的交互形式。 | [BV1vwEuzmErT · 01:30](https://www.bilibili.com/video/BV1vwEuzmErT?t=90) | [GitHub](https://github.com/perone/vectorvfs) |
+| PgDog | 一个用 Rust 编写的 PostgreSQL 自动分片（水平扩展）方案，通过管理逻辑复制与事务池化实现 PG 的水平扩展；支持查询负载均衡，可管理数百个数据库、数千个连接，配置方式类似 PgBouncer。 | 2024-12-27 | Koala 将 pgdog 介绍为 PostgreSQL 的自动分片方案，并指出对曾使用 PgBouncer 等同类项目的用户，其配置和使用方法会感到熟悉。 | [BV1mF7mzzEKm · 04:30](https://www.bilibili.com/video/BV1mF7mzzEKm?t=270) | [GitHub](https://github.com/pgdogdev/pgdog) |
 
 ## 协作与项目管理
 
@@ -384,6 +388,7 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
 | SkillSpector | NVIDIA 开源的 AI Agent Skill 安全扫描器，在安装前用静态分析加可选的 LLM 语义评估检测提示注入、数据外泄、权限提升与供应链投毒等风险，并给出 0–100 风险评分。 | 2026-03-21 | 考拉认为 Agent Skill 和 MCP 生态在快速膨胀，但安全治理几乎是空白，一个第三方 Skill 拿到的权限可能远超想象，而 SkillSpector 能方便地接入现有 CI 安全流水线；值得注意的是它也有局限，只能做静态分析，解析不了运行时行为、加密代码和非英文内容。 | [BV1SVj46KE3c · 04:16](https://www.bilibili.com/video/BV1SVj46KE3c?t=256) | [GitHub](https://github.com/NVIDIA/SkillSpector) |
+| Cap | 一个使用 SHA-256 工作量证明（Proof-of-Work）的开源验证码（CAPTCHA）方案，体积仅为 hCaptcha 的 1/250（约 20KB、零依赖），保护隐私、不追踪也不收集用户数据，并支持自定义前后端；两行代码即可接入网页。 | 2025-01-11 | Koala 推荐尝试 Cap，强调其隐私保护、体积小、两行代码接入的特性，并建议对验证码安全机制感兴趣者可阅读其文稿学习。 | [BV1mF7mzzEKm · 06:20](https://www.bilibili.com/video/BV1mF7mzzEKm?t=380) | [官网](https://capjs.js.org/) |
 
 ## 学习资源与教程
 
