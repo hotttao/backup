@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:23+08:00
+lastmod: 2026-08-19T12:38:24+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -231,6 +231,7 @@ toc:
 | SideQuest.js | 面向 Node.js 的云无关分布式消息队列系统，承诺在 AWS、GCP、Azure 等不同云平台上无需修改代码即可运行，并提供现代化管理界面与简洁 API。 | 2025-07-23 | 考拉认为云中立确实是个好概念，但实际业务往往深度依赖特定云服务的功能，纯粹的云无关性可能牺牲云平台的独特优势，需要在便携性与性能间找到平衡。 | [BV16GeEzdEme · 01:27](https://www.bilibili.com/video/BV16GeEzdEme?t=87) | [GitHub](https://github.com/sidequestjs/sidequest) |
 | Rotel | 用 Rust 编写的高性能 OpenTelemetry 数据收集器，专为高性能和低资源消耗设计，针对 AWS Lambda 等无服务器环境优化，并提供 Python 处理器开发支持。 | 2025-03-25 | 考拉认为性能优化确实是可观测性工具的关键需求，特别是在成本敏感的无服务器场景中，可以节省更多资源与成本。 | [BV16GeEzdEme · 03:19](https://www.bilibili.com/video/BV16GeEzdEme?t=199) | [GitHub](https://github.com/rotel-dev/rotel) |
 | Nitro | Leah Neukirchen 开源的极简 init 系统与进程管理器，所有状态保存在内存、单二进制文件、通过脚本目录配置，可作为 PID 1 或容器/嵌入式环境的进程监管。 | 2025-08-22 | 考栏认为，在 SystemD 一统天下的时代，像 Nitro 这样回归简洁哲学的工具值得关注；对于追求极简部署和资源受限环境的开发者来说，是一个不错的替代方案。 | [BV15ThyzLEin · 01:53](https://www.bilibili.com/video/BV15ThyzLEin?t=113) | [GitHub](https://github.com/leahneukirchen/nitro) |
+| Cloudflare Sandbox | Cloudflare 在 Workers 平台上提供的沙盒执行环境（Sandbox SDK），运行隔离的容器化工作负载，具备完整 Linux 环境与独立文件系统，可执行 Shell、Python、Node.js，并通过 URL 将服务暴露为 HTTP API，适用于 AI 代理执行代码、交互式开发环境与数据分析。 | 2025-08-05 | 考拉认为 Cloudflare 的沙盒功能对于执行 LLM 生成代码的 AI 应用很有吸引力，安全隔离和低延迟是关键优势。 | [BV1LosFzrEW5 · 00:32](https://www.bilibili.com/video/BV1LosFzrEW5?t=32) | [官网](https://developers.cloudflare.com/sandbox/) |
 
 ## AI 模型与推理
 
@@ -344,6 +345,7 @@ toc:
 | Bytebot | 自托管的开源 AI 桌面代理，为 AI 提供完整的容器化 Ubuntu 虚拟桌面环境，可控制鼠标键盘、使用任意桌面应用、处理文件与系统操作，甚至通过密码管理器自动登录，用自然语言即可下达「下载所有供应商门户的发票并整理到文件夹」等跨应用任务。 | 2025-08-19 | 考栏认为，给 AI 一个完整的操作系统环境确实能解锁更多可能性；不过，实际部署的复杂性和安全风险也相应增加，企业级应用还需要考虑更多安全隔离措施。 | [BV1TsYVzJEuo · 03:22](https://www.bilibili.com/video/BV1TsYVzJEuo?t=202) | [GitHub](https://github.com/bytebot-ai/bytebot) |
 | Chrome DevTools MCP | 谷歌出品的 MCP 服务器，让 AI Agent 直接与 Chrome DevTools 交互，可执行性能分析、网络测试、元素检查等操作，解决 AI 编程时难以理解代码运行效果的问题。 | 2025-09-11 | 考拉认为 Chrome DevTools 是 Web 编程中最常用的开发工具，此次提供 MCP 封装极大提升了 AI 对代码结构的观察能力；虽然目前仍是预览版本，但已展现出巨大潜力。 | [BV1rSnRzFE9i · 00:01](https://www.bilibili.com/video/BV1rSnRzFE9i?t=1) | [GitHub](https://github.com/ChromeDevTools/chrome-devtools-mcp) |
 | Exa Code | Exa 推出的面向编程 Agent 的代码搜索引擎，给定查询可返回精确、密集的几百个 Token 的网页代码上下文（而非冗长文档），通过专门的代码索引与代码样例检索降低编码幻觉。 | 2025-09-25 | 考拉认为针对 AI 编程场景的搜索确实是刚需，尤其在海量开源库和 API 文档面前；Exa Code 的高召回率设计很实用，但实际效果与成本还需用过才知道。 | [BV1rSnRzFE9i · 01:24](https://www.bilibili.com/video/BV1rSnRzFE9i?t=84) | [官网](https://exa.ai/blog/exa-code) |
+| MCP Inspector | 用于测试与调试 MCP（Model Context Protocol）服务器的开发者工具，提供 Web、CLI、TUI 三种检查方式，支持标准输入输出、SSE 与流式 HTTP 等所有传输方式，并内置与大语言模型交互的测试环境。 | 2024-10-03 | 考拉认为随着 AI 应用架构走向标准化，专用调试工具变得必要；该项目填补了 MCP 生态的工具缺口，对正在构建 MCP 服务器的开发者实用性强。 | [BV1LosFzrEW5 · 00:01](https://www.bilibili.com/video/BV1LosFzrEW5?t=1) | [GitHub](https://github.com/modelcontextprotocol/inspector) |
 
 ## 数据工程与存储
 
@@ -381,6 +383,7 @@ toc:
 | Fluid | 云原生（Kubernetes）分布式数据集编排与加速平台，通过分布式缓存实现数据预热与加速，主要服务大数据与 AI 应用场景。 | 2020-08-30 | 一个专门为 K8S 环境设计的数据平台，主要服务大数据和 AI 应用场景；平台通过分布式缓存，实现数据预热和加速，支持异构数据源的统一管理；系统还提供数据感知的调度策略，根据应用和数据特性优化云端部署。Koala 认为，在 AI 训练和大数据处理日益普及的背景下，数据 IO 确实是一个值得优化的方向；不过云原生技术栈带来便利的同时，其复杂性也意味着实施成本不低，需要团队具备相当的运维能力。 | [BV1qtWwzLEeS · 01:54](https://www.bilibili.com/video/BV1qtWwzLEeS?t=114) | [官网](https://fluid.cloudnative.io) |
 | TernFS | XTX Markets 开源的艾字节（exabyte）级、多区域分布式文件系统，目标容量约 10EB，专为机器学习等大规模不可变文件负载优化，采用纠删码与多区域复制，并提供快照与数据恢复机制。 | 2025-09-18 | 考拉认为来自生产环境的大规模文件系统开源项目相当罕见，XTX 技术实力可见一斑；不过底层基础设施项目部署门槛极高，更适合有丰富运维经验的大型组织；文件不可变设计简化了数据一致性问题，但也限制了使用场景。 | [BV1rSnRzFE9i · 02:23](https://www.bilibili.com/video/BV1rSnRzFE9i?t=143) | [GitHub](https://github.com/XTXMarkets/ternfs) |
 | Spock | pgEdge 开源的 PostgreSQL 逻辑多主（multi-master）复制扩展，支持 PostgreSQL 15/16/17/18+，允许多个节点同时接受写入并通过逻辑复制同步，要求各节点表结构（表名、列类型、约束）完全一致，需基于打过补丁的 PostgreSQL 源码构建。 | 2022-12-29 | 考拉认为多主复制一直是分布式数据库的难题，冲突处理与一致性保证都需谨慎设计；Spock 需要修改 PostgreSQL 内核，增加了维护成本与升级复杂度；对确实需要多主架构的场景值得尝试，但对大多数应用，主从复制配合读写分离可能是更稳妥的选择。 | [BV1Qe4Tz4EGi · 02:52](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=172) | [GitHub](https://github.com/pgEdge/spock) |
+| Halloy | 用 Rust 编写、基于 Iced GUI 库的现代化开源 IRC 客户端，支持 macOS、Windows 与 Linux，兼容 IRCv3.2 规范与 SASL 认证，具备多服务器/多频道管理、命令自动补全、DCC 文件传输与自定义主题，已发布于 Flathub 与 Snap Store。 | 2022-04-13 | 考拉认为在大多数人眼中 IRC 已过时，但在特定社群仍不可替代；用现代技术栈重构老牌客户端，体验提升明显，对需要接入开源社区或技术讨论的用户是不错的选择。 | [BV1LosFzrEW5 · 03:22](https://www.bilibili.com/video/BV1LosFzrEW5?t=202) | [GitHub](https://github.com/squidowl/halloy) |
 
 ## 协作与项目管理
 

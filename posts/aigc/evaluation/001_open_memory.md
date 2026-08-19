@@ -38,7 +38,7 @@ flowchart TB
         C --> D[实际输出]
     end
 
-    D -- 评估 --> E[分数与失败原因]
+    D -- 评估(打分器) --> E[分数与失败原因]
     E -- 分析 --> F[Analyzer<br/>Meta-Prompt]
     F -- 生成候选 --> A
 ```
