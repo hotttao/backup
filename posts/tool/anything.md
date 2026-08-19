@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:00+08:00
+lastmod: 2026-08-19T12:38:02+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -237,6 +237,7 @@ toc:
 | TensorZero | 开源的工业级 LLM 应用栈，统一了 LLM 网关、可观测性、优化、评估与实验，通过生产数据形成反馈闭环，持续优化模型使其更智能、更快、更便宜。 | 2024-07-16 | 如果你正在开发 LLM 应用，可以试试开源项目 TensorZero。它可以为你的 LLM 应用创建一个反馈回路，通过生产数据不断优化模型，让它们变得更智能、更快速、更便宜。TensorZero 统一了 LLM 网关、可观测性、优化、评估和实验，形成数据和学习的飞轮。你可以用它的网关做 A/B 测试和流量路由，一方面选择最划算的模型完成任务，另一方面收集数据用于后续微调。它使用 Rust 编写，性能强悍，避免在 API 中引入过多延迟。随着 LLM 应用从 Demo 走向生产，这类观测与优化工具还有更大的潜力等待挖掘。 | [BV1f6Msz6EV7 · 00:58](https://www.bilibili.com/video/BV1f6Msz6EV7?t=58) | [GitHub](https://github.com/tensorzero/tensorzero) |
 | RAGgo | 用 Go 编写的轻量级、可用于生产的 RAG（检索增强生成）库，抽象了 RAG 核心组件，可组合文档提取器、切分器、向量数据库等，并提供 SimpleRAG、ContextualRAG 和 MemoryContext 等多种策略。 | 2024-07-25 | RAGO（RAGgo）是一个用 Go 编写的 RAG 库。虽然 Python 和 JS 生态中的 AI 框架和库层出不穷，但 Go 开发者目前的选择还不是很多。如果你想用 Go 语言快速搭建 RAG 系统，可以从 RAGgo 开始尝试。它将 RAG 的核心组件进行抽象，可以组合内置或自行实现的各个组件，例如文档提取器、切分器、向量数据库等，构建最终的 RAG 系统。RAGgo 还提供了多种 RAG 策略，包括 SimpleRAG、ContextualRAG 和 MemoryContext，满足不同的应用场景。不论是实际使用还是学习都很值得一看。 | [BV1bcNDzpERC · 00:31](https://www.bilibili.com/video/BV1bcNDzpERC?t=31) | [GitHub](https://github.com/teilomillet/raggo) |
 | TokenDagger | 高性能的 token 编解码器，作为 tiktoken 的替代实现，用 C++ 编写以加速大模型文本的 token 化。 | 2025-06-22 | 一个用 C++ 写的高性能 token 编码器/解码器，用来替代 Python 的 tiktoken，速度更快，适合在大模型推理与预处理里做文本的 token 化。 | [BV1eo3fzBEgV · 03:23](https://www.bilibili.com/video/BV1eo3fzBEgV?t=203) | [GitHub](https://github.com/M4THYOU/TokenDagger) |
+| Cactus | 面向移动端/手机的开源大模型运行运行时，让本地 LLM 推理跑在手机上。 | 2025-04-23 | 一个把大模型搬到手机上本地运行的运行时，相当于'手机里的 Ollama'，主打在移动设备上进行隐私友好的本地推理，无需联网。 | [BV1PYMfz5ENn · 01:30](https://www.bilibili.com/video/BV1PYMfz5ENn?t=90) | [GitHub](https://github.com/cactus-compute/cactus) |
 
 ## AI Agent 与智能体开发
 
@@ -298,6 +299,7 @@ toc:
 | Suna | Kortix 开源的通用型 AI Agent（Apache-2.0），通过自然语言帮用户完成现实任务，内置浏览器自动化、文件管理、网页爬取、命令行执行、网站部署与各种 API/服务集成。 | 2025-04-22 | Koala 认为，Suna 的开源特性与多功能性使其成为一个值得关注的项目，特别是对于关注复杂 AI Agent 系统的开发者来说，是一个可以研究并参考的项目。 | [BV1NpjMztEZR · 02:40](https://www.bilibili.com/video/BV1NpjMztEZR?t=160) | [GitHub](https://github.com/kortix-ai/suna) |
 | Task Master | 专为 AI Agent 设计的项目管理工具，提供看板、任务分配、进度跟踪等功能，帮助协调、编排和追踪 AI 代理的任务，像管理真实团队一样管理 Agent 工作流。 | 2025-03-04 | TaskMaster 是一个专门为 AI Agent 设计的项目管理工具。你可以用它来组织协调和追踪 AI 代理的任务，就像管理一个真实的团队一样。TaskMaster 提供了看板、任务分配、进度跟踪等功能，帮助你更好地掌握 AI Agent 的工作流程。如果你正在构建复杂的 Agent 系统，TaskMaster 是一个不错的工具，它能通过实现规划和进度追踪的方式，提升 AI Agent 的效率，确保项目按规划进行。也避免 AI 因为上下文有限记不住已经完成和未完成的任务。 | [BV1f6Msz6EV7 · 01:54](https://www.bilibili.com/video/BV1f6Msz6EV7?t=114) | [GitHub](https://github.com/eyaltoledano/claude-task-master) |
 | Gemini CLI | Google 开源的终端 AI agent，可在命令行中理解代码库、执行任务并借助 Gemini 大模型进行对话与自动化操作。 | 2025-04-17 | Google 开源的终端 agent，对标 Claude Code，可在命令行里直接操作代码库、跑命令、做代码修改；免费额度大、速度快，适合在终端中完成编码与自动化任务。 | [BV1wTgoz3E8M · 00:01](https://www.bilibili.com/video/BV1wTgoz3E8M?t=1) | [GitHub](https://github.com/google-gemini/gemini-cli) |
+| BrowserOS | 基于 Chromium 的'智能体浏览器'，内置 AI agent 可在网页中自主执行任务与操作。 | 2025-05-18 | 一个带 AI agent 的浏览器（基于 Chromium），可以让 agent 自动在网页里点按、填表、操作，相当于把智能体装进浏览器里替你干活。 | [BV1PYMfz5ENn · 02:00](https://www.bilibili.com/video/BV1PYMfz5ENn?t=120) | [GitHub](https://github.com/browseros-ai/BrowserOS) |
 
 ## 数据工程与存储
 
@@ -327,6 +329,8 @@ toc:
 | PgDog | 一个用 Rust 编写的 PostgreSQL 自动分片（水平扩展）方案，通过管理逻辑复制与事务池化实现 PG 的水平扩展；支持查询负载均衡，可管理数百个数据库、数千个连接，配置方式类似 PgBouncer。 | 2024-12-27 | Koala 将 pgdog 介绍为 PostgreSQL 的自动分片方案，并指出对曾使用 PgBouncer 等同类项目的用户，其配置和使用方法会感到熟悉。 | [BV1mF7mzzEKm · 04:30](https://www.bilibili.com/video/BV1mF7mzzEKm?t=270) | [GitHub](https://github.com/pgdogdev/pgdog) |
 | Multigres | 由 Vitess 联合创始人主导的 Postgres 扩展方案，目标是为 PostgreSQL 生态构建类似 Vitess 的数据库集群系统，提供分片、连接池、查询路由、故障恢复与运维编排等能力。 | 2025-06-10 | Supabase 团队宣布启动 Multigres 项目，目标是为 Postgres 构建类似 Vitess 的数据库集群系统。Vitess 擅长扩展 MySQL，提供分片、连接池、查询路由、故障恢复和运维编排等功能；Multigres 的目标是将这些优势带给 Postgres 生态，解决 Postgres 在扩展性上遇到的瓶颈。初期将提供简单的连接池，逐步发展到高可用，最终实现拍字节级别的数据分片。该项目由 Vitess 的联合创始人领导。 | [BV1f6Msz6EV7 · 00:01](https://www.bilibili.com/video/BV1f6Msz6EV7?t=1) | [GitHub](https://github.com/multigres/multigres) |
 | Prefect | 用 Python 构建健壮数据管道的工作流编排框架，提供调度、缓存、重试和基于事件的自动化等功能，支持自部署 Prefect Server 或云端 Prefect Cloud，让数据流程更可靠。 | 2018-06-29 | Prefect（Prefact）是一个工作流编排框架，可以帮助你用 Python 构建更健壮的数据管道。简单来说，它能让你把普通的脚本变成可以在生产环境中稳定运行的工作流。Prefect 提供了调度、缓存、重试和基于事件的自动化等功能，让你的数据流程更加可靠。你可以使用自部署的 Prefect Server，也可以选择它的云端服务 Prefect Cloud。编写脚本处理数据并不复杂，但要过渡到大量数据的场景仍然保持健壮和高效就不那么简单了。Prefect 通过框架封装了这一场景的复杂度，让普通开发者也可以构建出灵活强大的数据管道。 | [BV1bcNDzpERC · 01:27](https://www.bilibili.com/video/BV1bcNDzpERC?t=87) | [GitHub](https://github.com/PrefectHQ/prefect) |
+| bknd | 开源的后端即服务（BaaS）框架，提供数据库、认证、API 等能力，定位为 Firebase/Supabase 的替代方案。 | 2024-11-16 | 一个开源的后端框架，把数据库、认证、API 等打包好，可以作为 Firebase / Supabase 的替代品来用，轻量、可自托管。 | [BV1PYMfz5ENn · 00:01](https://www.bilibili.com/video/BV1PYMfz5ENn?t=1) | [GitHub](https://github.com/bknd-io/bknd) |
+| Meilisearch | 开源的高性能全文搜索引擎，提供简单 API 与毫秒级搜索体验。 | 2018-04-23 | 一个开源的搜索引擎，主打简单好用、速度快、搜索结果相关度好，常被拿来和 Elasticsearch / Algolia 比较，适合给应用加站内搜索。 | [BV1PYMfz5ENn · 02:28](https://www.bilibili.com/video/BV1PYMfz5ENn?t=148) | [GitHub](https://github.com/meilisearch/meilisearch) |
 
 ## 协作与项目管理
 
@@ -351,6 +355,7 @@ toc:
 | FreeScout | 一款免费开源的工单/帮助台系统，整合来自邮件、网站表单、聊天等多渠道的客户问题并集中在单一队列，支持自动化分配规则、SLA、知识库与自动化服务。 | 2018-06-22 | 考拉认为 FreeScout 的开源特性允许高度定制化，能够适应不同企业的独特需求；如果你正在寻找一个轻量、高效且功能强大的工单系统，不妨试试 FreeScout。 | [BV1mjNAe4EoR · 03:22](https://www.bilibili.com/video/BV1mjNAe4EoR?t=202) | [GitHub](https://github.com/freescout-help-desk/freescout) |
 | Liveblocks AI Copilots | Liveblocks 推出的 AI Copilots 功能，将 AI 能力集成进其在线协同服务，为文档编辑、评论、问答等场景提供预构建 UI，可快速为产品加入内容续写、总结、翻译和问答等 AI 功能，并支持将结构化 AI 输出渲染为富样式。 | 2025-01-15 | Liveblocks 是一个在线协同服务，能够快速为应用添加各种协同功能，比如多人编辑、评论、通知等。现在它更进一步集成了 AI 功能，把该功能集成为 AI Copilots，在文档编辑、评论、问答等场景中使用它提供的预设 UI，就能快速为产品加入内容续写、总结、翻译和问答等典型 AI 功能。同时，Liveblocks 的设计也保持灵活，例如用户可以将 AI 结构化的输出渲染为丰富的样式而不仅是文本，增强了可读性和交互性。 | [BV1bcNDzpERC · 02:24](https://www.bilibili.com/video/BV1bcNDzpERC?t=144) | [官网](https://liveblocks.io) |
 | Automatisch | 开源的 Zapier 替代品，通过可视化工作流把不同应用和服务连接起来实现自动化。 | 2021-09-30 | 一个开源的自动化工作流工具，相当于自建的 Zapier，可以用可视化方式把各种服务串起来做自动化；强调自托管、数据可控。 | [BV1wTgoz3E8M · 01:51](https://www.bilibili.com/video/BV1wTgoz3E8M?t=111) | [GitHub](https://github.com/automatisch/automatisch) |
+| Backlog.md | 基于本地 Markdown 文件的看板/任务管理工具，用纯文本文件管理项目待办。 | 2025-06-04 | 一个基于 Markdown 文件的看板工具，所有任务和看板状态都存放在本地 .md 文件里，可以用任意编辑器或 Git 管理，主打轻量、可版本化。 | [BV1PYMfz5ENn · 00:32](https://www.bilibili.com/video/BV1PYMfz5ENn?t=32) | [GitHub](https://github.com/MrLesk/Backlog.md) |
 
 ## 多媒体与图形
 
@@ -402,6 +407,7 @@ toc:
 | Inscribed | 基于 Excalidraw 的草图转多页 PPT 工具，支持快捷键、图片导入与 Google 幻灯片导出。 | 2025-02-08 | 考拉认为，在 Excalidraw 强大功能基础上，InScribe 还增加了键盘快捷键、自定义画布大小、图片导入、集成 Google 幻灯片等更贴心的功能，是灵感爆发时的神器。 | [BV1G5ASetENw · 01:54](https://www.bilibili.com/video/BV1G5ASetENw?t=114) | [GitHub](https://github.com/chunrapeepat/inscribed) |
 | Leaflet | 轻量、无需账号即可使用的文档与发布工具，介于 Notion 与 Google Docs 之间，支持富文本块、协作编辑与一键分享，并基于 AT Protocol 实现社交化发布。 | 2024-09-26 | Koala 介绍 Leaflet 是一款快速、灵活、有趣的文档工具，无需注册账号就能直接创建和分享文档，介于 Notion 与 Google Docs 之间，支持富文本块与协作编辑，适合随手记录与发布想法。 | [BV1UYQbYeELx · 01:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=60) | [官网](https://leaflet.pub) |
 | Quarkdown | 基于 Markdown 的现代排版系统，通过扩展语法与配套编译器将文档编译为可印刷书籍与交互式演示文稿，并支持自定义函数和变量实现动态内容。 | 2024-01-30 | Quarkdown 是一款基于 Markdown 的现代排版系统，核心概念是多功能性。通过内置的扩展语法和配套的编译器，它可以将 Quarkdown 文档编译成可直接用于印刷的书籍和交互式演示文稿。它不仅可以用于做复杂的排版布局，还支持自定义函数和变量实现各种动态视图，让你的 Quarkdown 文件更加强大。总的来说，Quarkdown 扩展了 Markdown 的功能，让它不仅仅是简单的文本标记语言，更像是一个轻量级的排版工具。 | [BV1drTUzPEuD · 01:02](https://www.bilibili.com/video/BV1drTUzPEuD?t=62) | [GitHub](https://github.com/iamgio/quarkdown) |
+| 思源笔记 (Siyuan) | 开源的本地优先个人知识管理与笔记软件，支持块级编辑、双向链接与 Markdown。 | 2020-08-30 | 一个开源的本地优先笔记/知识管理工具，支持块级编辑、双向链接、Markdown，数据存在本地可控，适合做个人知识库。 | [BV1PYMfz5ENn · 03:26](https://www.bilibili.com/video/BV1PYMfz5ENn?t=206) | [GitHub](https://github.com/siyuan-note/siyuan) |
 
 ## 开发者认证与招聘
 
