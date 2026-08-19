@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:37:54+08:00
+lastmod: 2026-08-19T12:37:56+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -55,6 +55,7 @@ toc:
 | Makepad | 用 Rust 编写的开源跨平台 UI 框架/创意软件开发平台，支持 Windows、Linux、macOS、iOS、Android 与 Web，采用基于 Shader 的渲染架构与声明式 DSL，编译速度快、支持实时样式调整。 | 2025-05-18 | Koala 介绍 Makepad 采用基于 Shader 的架构，拥有极高的性能和灵活性，支持 Windows/Linux/macOS/iOS/Android 及 Web，并有一套声明式的设计 DSL 方便创建丰富的响应式 UI，编译速度超快且支持实时样式调整，可流畅迭代；主要作功能介绍，未给出明确优劣评价。 | [BV1CqJgziEB1 · 02:43](https://www.bilibili.com/video/BV1CqJgziEB1?t=163) | [GitHub](https://github.com/makepad/makepad) |
 | KeyboardCowboy | 一款为 macOS 用户设计的快捷键工作流生产力工具，用户可将重复操作、应用启动、系统设置、文件操作等工作流定义为快捷键，双手无需离开键盘即可触发；进阶用户可根据上下文定义触发条件、将不同工作流分组管理。 | 2020-09-02 | Koala 认为虽然 KeyboardCowboy 上手会有些难度，但一旦熟悉且完成自定义配置后，效率就能成倍地提升。 | [BV1mF7mzzEKm · 00:40](https://www.bilibili.com/video/BV1mF7mzzEKm?t=40) | [GitHub](https://github.com/zenangst/KeyboardCowboy) |
 | somo | 用 Rust 编写的命令行网络监控工具，以更友好的表格形式展示 Linux 上的端口与网络连接信息，支持按端口、IP、进程名等条件过滤，提供 TUI 交互。 | 2023-05-15 | 如果你经常使用 netstat，或者需要监控网络状态，那就试试 somo 吧。它是一个用 Rust 编写的命令行工具，可以方便地监控 Linux 上的端口和网络连接。同时，它能以更友好的表格形式展示信息，而且支持过滤，你可以根据端口、IP、进程名等条件来查找。somo 以 TUI 的形式提供交互，在排查问题时保持高效。特别对于不熟悉 netstat 工具的用户来说，一个像 somo 这样更直观易用的工具，可以避免在网络异常时还因为工具不顺手而变得更加焦虑。 | [BV1f6Msz6EV7 · 01:26](https://www.bilibili.com/video/BV1f6Msz6EV7?t=86) | [GitHub](https://github.com/theopfr/somo) |
+| NoxDir | 命令行磁盘使用可视化工具，通过检测磁盘和分区并以交互式终端界面展示已用空间、可用空间和总容量，支持键盘操作快速定位占用空间大的文件与目录，跨 Windows、macOS、Linux 平台，完全本地运行不收集数据。 | 2025-05-02 | NOXDEA（NoxDir）是一个命令行工具。它通过检测磁盘和分区，然后用一个交互式的终端界面展示磁盘的使用情况，比如已用空间、可用空间和总容量。你可以用键盘操作，快速找到占用空间大的文件和目录，方便清理。NoxDir 支持 Windows、macOS 和 Linux，而且因为它适配了多种系统指令，整体执行速度很快。它也完全本地运行，不会收集你的任何数据。如果你觉得你的磁盘空间不够用，或者想快速找到占用空间的文件，就可以用它扫描一次看看结果。 | [BV1bcNDzpERC · 00:01](https://www.bilibili.com/video/BV1bcNDzpERC?t=1) | [GitHub](https://github.com/crumbyte/noxdir) |
 
 ## 代码质量与 Code Review
 
@@ -198,6 +199,7 @@ toc:
 | Outpost | Hookdeck 开源的出站 Webhook 与事件目标（Event Destinations）基础设施，可将事件可靠投递到 Webhooks、SQS、RabbitMQ、Pub/Sub、EventBridge、Kafka 等目标，保证至少一次（at least once）投递，并提供用户界面管理指标与调试。 | 2024-11-12 | Koala 认为，若正在寻找一个可靠、灵活的 Webhook 管理方案，Outpost 是一个轻量级、专注的开源方案。 | [BV1vwEuzmErT · 02:57](https://www.bilibili.com/video/BV1vwEuzmErT?t=177) | [GitHub](https://github.com/hookdeck/outpost) |
 | workers-oauth-provider | Cloudflare 官方提供的 Workers OAuth Provider 库，实现了 OAuth 2.1 协议，让开发者无需自行实现认证检查即可在 Workers 应用中获取已认证用户信息。 | 2025-03-11 | 想给你的 Cloudflare Workers 应用加上 OAuth 认证，但又觉得自己从头开始实现太琐碎吗？Cloudflare 发布的 Workers OAuth Provider 帮你搞定。它实现了 OAuth 2.1 协议，你只需要像平常一样写你的 API Handler，就能拿到已经认证的用户信息，不用自己做任何检查。这个库不关心你如何管理用户，也不限制你使用什么 UI 框架，而且它只存储 Token 的哈希值保证安全性。 | [BV1drTUzPEuD · 01:29](https://www.bilibili.com/video/BV1drTUzPEuD?t=89) | [GitHub](https://github.com/cloudflare/workers-oauth-provider) |
 | s3mini | 超轻量级的 S3 客户端，使用 TypeScript 编写，压缩后约 14KB、零依赖，可在 Cloudflare Workers 等边缘计算平台运行，支持 R2、Backblaze B2 等 S3 兼容存储，仅提供核心 S3 API（List、Put、Get、Delete 等）。 | 2025-05-13 | S3 mini 是一个超轻量级的 S3 客户端，使用 TypeScript 编写，非常小巧，压缩后只有大约 14KB，而且性能也不错。最重要的是它没有任何依赖，完美支持以 Cloudflare Worker 为代表的各类边缘计算平台，也兼容 R2、Backblaze B2 等 S3 存储服务。如果你需要在边缘环境处理对象存储，又不想引入 AWS SDK 这种庞大的库，S3 mini 就值得一试。它只提供最核心的 S3 API，比如 List、Put、Get、Delete 等，非常适合轻量级应用。 | [BV1f6Msz6EV7 · 02:48](https://www.bilibili.com/video/BV1f6Msz6EV7?t=168) | [官网](https://codeberg.org/thinking_tools/s3mini) |
+| Canine | 面向 Kubernetes 的开发者友好型 PaaS，目标是提供像 Heroku 一样流畅的部署体验，支持 GitHub 集成与一键部署、自动管理 SSL 证书、实时监控与弹性伸缩。 | 2024-08-22 | K9（Canine）是一款简化 Kubernetes 上部署应用流程的工具，目标是提供像 Heroku 一样流畅的体验。如果你觉得直接操作 K8s 太复杂，但又需要它的强大功能，K9 就能派上用场。它支持 GitHub 集成和一键部署简化日常流程，也能自动管理 SSL 证书避免安全问题，还有实时的监控功能以及弹性伸缩带来更好的可用性。 | [BV1bcNDzpERC · 02:50](https://www.bilibili.com/video/BV1bcNDzpERC?t=170) | [GitHub](https://github.com/CanineHQ/canine) |
 
 ## AI 模型与推理
 
@@ -226,6 +228,7 @@ toc:
 | OpenPipe ART | OpenPipe 开源的强化学习训练库（Agent Reinforcement Trainer），使用 GRPO 对多步智能体进行训练，可在现有代码库中运行 Agent 并将复杂的强化学习训练交给后端，支持 Qwen、Gemma、Llama 等主流 LLM。 | 2025-03-10 | 考拉认为 ART 支持市面上大多数的 LLM 模型，像是 Qwen、Gemma 等；现在已经有了使用 3B 和 7B Qwen 模型成功微调、使它们可以进行 2048、Tic-Tac-Toe 这样的小游戏的 Notebook 实例，大家可以快速上手体验。 | [BV1wQVFzREBr · 01:26](https://www.bilibili.com/video/BV1wQVFzREBr?t=86) | [GitHub](https://github.com/OpenPipe/ART) |
 | Dream 7B | 香港大学与华为诺亚方舟实验室联合开源的离散扩散大语言模型（70 亿参数），采用双向上下文建模与可控生成，在通用、数学与编程能力上超越现有扩散语言模型，并具备更强的规划与推理灵活性；基于 Qwen2.5-7B 初始化，训练 5800 亿 token。 | 2025-04-02 | Koala 介绍 Dream 7B 是港大与华为诺亚方舟实验室联合推出的开源扩散大语言模型，在通用、数学和编程能力上超越了现有的扩散语言模型，并且在规划能力和推理灵活性上表现出色；并提到近期 DeepMind 也发布了基于扩散的大语言模型研究项目，让大家对于这一架构有了更多兴趣；主要作功能/技术介绍。 | [BV1NpjMztEZR · 01:47](https://www.bilibili.com/video/BV1NpjMztEZR?t=107) | [Hugging Face](https://huggingface.co/Dream-org/Dream-v0-Base-7B) |
 | TensorZero | 开源的工业级 LLM 应用栈，统一了 LLM 网关、可观测性、优化、评估与实验，通过生产数据形成反馈闭环，持续优化模型使其更智能、更快、更便宜。 | 2024-07-16 | 如果你正在开发 LLM 应用，可以试试开源项目 TensorZero。它可以为你的 LLM 应用创建一个反馈回路，通过生产数据不断优化模型，让它们变得更智能、更快速、更便宜。TensorZero 统一了 LLM 网关、可观测性、优化、评估和实验，形成数据和学习的飞轮。你可以用它的网关做 A/B 测试和流量路由，一方面选择最划算的模型完成任务，另一方面收集数据用于后续微调。它使用 Rust 编写，性能强悍，避免在 API 中引入过多延迟。随着 LLM 应用从 Demo 走向生产，这类观测与优化工具还有更大的潜力等待挖掘。 | [BV1f6Msz6EV7 · 00:58](https://www.bilibili.com/video/BV1f6Msz6EV7?t=58) | [GitHub](https://github.com/tensorzero/tensorzero) |
+| RAGgo | 用 Go 编写的轻量级、可用于生产的 RAG（检索增强生成）库，抽象了 RAG 核心组件，可组合文档提取器、切分器、向量数据库等，并提供 SimpleRAG、ContextualRAG 和 MemoryContext 等多种策略。 | 2024-07-25 | RAGO（RAGgo）是一个用 Go 编写的 RAG 库。虽然 Python 和 JS 生态中的 AI 框架和库层出不穷，但 Go 开发者目前的选择还不是很多。如果你想用 Go 语言快速搭建 RAG 系统，可以从 RAGgo 开始尝试。它将 RAG 的核心组件进行抽象，可以组合内置或自行实现的各个组件，例如文档提取器、切分器、向量数据库等，构建最终的 RAG 系统。RAGgo 还提供了多种 RAG 策略，包括 SimpleRAG、ContextualRAG 和 MemoryContext，满足不同的应用场景。不论是实际使用还是学习都很值得一看。 | [BV1bcNDzpERC · 00:31](https://www.bilibili.com/video/BV1bcNDzpERC?t=31) | [GitHub](https://github.com/teilomillet/raggo) |
 
 ## AI Agent 与智能体开发
 
@@ -314,6 +317,7 @@ toc:
 | VectorVFS | 一个轻量级 Python 包，利用 Linux VFS 扩展属性将向量嵌入直接存储在文件元数据中，把 Linux 文件系统变成无需额外索引或数据库的语义可搜索向量存储，并支持 Meta 的 Perception Encoders 进行图像理解。 | 2025-04-25 | Koala 认为，该工具对于需要处理大量图像、希望通过语言搜索快速找到相关文件的朋友来说非常有用；直接在文件系统上进行向量搜索也是一种有趣的交互形式。 | [BV1vwEuzmErT · 01:30](https://www.bilibili.com/video/BV1vwEuzmErT?t=90) | [GitHub](https://github.com/perone/vectorvfs) |
 | PgDog | 一个用 Rust 编写的 PostgreSQL 自动分片（水平扩展）方案，通过管理逻辑复制与事务池化实现 PG 的水平扩展；支持查询负载均衡，可管理数百个数据库、数千个连接，配置方式类似 PgBouncer。 | 2024-12-27 | Koala 将 pgdog 介绍为 PostgreSQL 的自动分片方案，并指出对曾使用 PgBouncer 等同类项目的用户，其配置和使用方法会感到熟悉。 | [BV1mF7mzzEKm · 04:30](https://www.bilibili.com/video/BV1mF7mzzEKm?t=270) | [GitHub](https://github.com/pgdogdev/pgdog) |
 | Multigres | 由 Vitess 联合创始人主导的 Postgres 扩展方案，目标是为 PostgreSQL 生态构建类似 Vitess 的数据库集群系统，提供分片、连接池、查询路由、故障恢复与运维编排等能力。 | 2025-06-10 | Supabase 团队宣布启动 Multigres 项目，目标是为 Postgres 构建类似 Vitess 的数据库集群系统。Vitess 擅长扩展 MySQL，提供分片、连接池、查询路由、故障恢复和运维编排等功能；Multigres 的目标是将这些优势带给 Postgres 生态，解决 Postgres 在扩展性上遇到的瓶颈。初期将提供简单的连接池，逐步发展到高可用，最终实现拍字节级别的数据分片。该项目由 Vitess 的联合创始人领导。 | [BV1f6Msz6EV7 · 00:01](https://www.bilibili.com/video/BV1f6Msz6EV7?t=1) | [GitHub](https://github.com/multigres/multigres) |
+| Prefect | 用 Python 构建健壮数据管道的工作流编排框架，提供调度、缓存、重试和基于事件的自动化等功能，支持自部署 Prefect Server 或云端 Prefect Cloud，让数据流程更可靠。 | 2018-06-29 | Prefect（Prefact）是一个工作流编排框架，可以帮助你用 Python 构建更健壮的数据管道。简单来说，它能让你把普通的脚本变成可以在生产环境中稳定运行的工作流。Prefect 提供了调度、缓存、重试和基于事件的自动化等功能，让你的数据流程更加可靠。你可以使用自部署的 Prefect Server，也可以选择它的云端服务 Prefect Cloud。编写脚本处理数据并不复杂，但要过渡到大量数据的场景仍然保持健壮和高效就不那么简单了。Prefect 通过框架封装了这一场景的复杂度，让普通开发者也可以构建出灵活强大的数据管道。 | [BV1bcNDzpERC · 01:27](https://www.bilibili.com/video/BV1bcNDzpERC?t=87) | [GitHub](https://github.com/PrefectHQ/prefect) |
 
 ## 协作与项目管理
 
@@ -336,6 +340,7 @@ toc:
 | WakaTime | 一个为开发者设计的时间管理 / 生产力度量工具，通过开源插件自动记录你在编程上花费的时间，可追踪在每个项目、文件或功能上的时间，帮助分析会议与编码时间的比例、识别代码库瓶颈；还提供排行榜和目标设定功能，可与全球开发者竞争。 | 2013-07-15 | 认为 WakaTime 特别适合那些想要量化自己编码时间的开发者，其自动记录功能让你无需手动操作、只需专注代码本身；无论个人开发者还是团队，都能帮助更好地管理时间、提升效率。 | [BV1TLcgeqEQ8 · 03:20](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=200) | [官网](https://wakatime.com) |
 | SimpleGantt | 一个轻量级的项目管理工具，专为不想安装桌面端软件或使用云端应用的极简主义者设计。完全运行在浏览器中、无需安装其他软件，支持交互式甘特图渲染、任务管理、里程碑跟踪，并且可以离线使用，所有数据都保存在本地，确保隐私和安全。代码不依赖任何 JS 框架，直接使用原生 JS 在约 2000 行的文件内完成所有逻辑。 | 2024-12-18 | 认为虽然功能不如一些大型工具丰富，但对于基本需求管理来说，SimpleGantt 已经足够；其代码实现也很有趣，不借助任何 JS 框架、用原生 JS 在一个约 2000 行文件内完成，对希望提升 UI 编程能力的小伙伴也是值得学习的代码库。 | [BV14Vwqe2EBR · 03:41](https://www.bilibili.com/video/BV14Vwqe2EBR?t=221) | [GitHub](https://github.com/aerugo/simplegantt) |
 | FreeScout | 一款免费开源的工单/帮助台系统，整合来自邮件、网站表单、聊天等多渠道的客户问题并集中在单一队列，支持自动化分配规则、SLA、知识库与自动化服务。 | 2018-06-22 | 考拉认为 FreeScout 的开源特性允许高度定制化，能够适应不同企业的独特需求；如果你正在寻找一个轻量、高效且功能强大的工单系统，不妨试试 FreeScout。 | [BV1mjNAe4EoR · 03:22](https://www.bilibili.com/video/BV1mjNAe4EoR?t=202) | [GitHub](https://github.com/freescout-help-desk/freescout) |
+| Liveblocks AI Copilots | Liveblocks 推出的 AI Copilots 功能，将 AI 能力集成进其在线协同服务，为文档编辑、评论、问答等场景提供预构建 UI，可快速为产品加入内容续写、总结、翻译和问答等 AI 功能，并支持将结构化 AI 输出渲染为富样式。 | 2025-01-15 | Liveblocks 是一个在线协同服务，能够快速为应用添加各种协同功能，比如多人编辑、评论、通知等。现在它更进一步集成了 AI 功能，把该功能集成为 AI Copilots，在文档编辑、评论、问答等场景中使用它提供的预设 UI，就能快速为产品加入内容续写、总结、翻译和问答等典型 AI 功能。同时，Liveblocks 的设计也保持灵活，例如用户可以将 AI 结构化的输出渲染为丰富的样式而不仅是文本，增强了可读性和交互性。 | [BV1bcNDzpERC · 02:24](https://www.bilibili.com/video/BV1bcNDzpERC?t=144) | [官网](https://liveblocks.io) |
 
 ## 多媒体与图形
 
@@ -462,3 +467,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | DoubleMemory | 一款 macOS 原生的本地优先（local-first）信息保存工具，双击 Command+C 即可保存书签、稍后阅读内容与剪贴板历史，数据存于本机并可同步到 iCloud，以美观卡片展示，并提供从 Pocket 等迁移数据的工具。 | 2025-02-25 | Koala 介绍 DoubleMemory 是一个简化信息保存与回忆的工具，双击 Ctrl+C（实为 Command+C）即可激活记忆功能，帮助你轻松管理网页书签、稍后阅读的内容和剪贴板历史；它离线优先、无需扩展、无需注册、无需服务器。有云端备份需求可同步到 iCloud，所有保存内容以美观视觉卡片展示；并提到 Mozilla 维护的同类工具 Pocket 即将停止服务，DoubleMemory 也提供了迁移工具。 | [BV1NpjMztEZR · 00:28](https://www.bilibili.com/video/BV1NpjMztEZR?t=28) | [官网](https://doublememory.com/) |
+
+## 国际化与本地化
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Lingo.dev | 开源的 AI i18n（国际化/本地化）工具包，集成 AI 可帮助开发者快速实现应用本地化；提供 CLI、CI/CD 工具与 SDK，支持 JSON、YAML、Markdown 等多种格式，可调用官方 AI 后端或自有的 LLM 模型。 | 2024-03-13 | LingoDeep（Lingo.dev）是一个开源的 i18n 工具包。它通过与 AI 集成，可以帮助开发者快速实现应用的本地化。你可以选择使用 Lingo.dev 提供的 AI 后端，或者集成你自己的 LLM 模型。Lingo.dev 提供的 CLI、CI/CD 工具和 SDK，方便你在不同阶段进行本地化工作。它还支持多种格式，包括 JSON、YAML 和 Markdown。对开发者来说，配置之后，就可以让 Lingo 像文档工程师一样参与到项目的开发过程中完成翻译工作。 | [BV1bcNDzpERC · 00:59](https://www.bilibili.com/video/BV1bcNDzpERC?t=59) | [GitHub](https://github.com/lingodotdev/lingo.dev) |
