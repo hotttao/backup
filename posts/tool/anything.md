@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:02+08:00
+lastmod: 2026-08-19T12:38:04+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -207,6 +207,7 @@ toc:
 | Canine | 面向 Kubernetes 的开发者友好型 PaaS，目标是提供像 Heroku 一样流畅的部署体验，支持 GitHub 集成与一键部署、自动管理 SSL 证书、实时监控与弹性伸缩。 | 2024-08-22 | K9（Canine）是一款简化 Kubernetes 上部署应用流程的工具，目标是提供像 Heroku 一样流畅的体验。如果你觉得直接操作 K8s 太复杂，但又需要它的强大功能，K9 就能派上用场。它支持 GitHub 集成和一键部署简化日常流程，也能自动管理 SSL 证书避免安全问题，还有实时的监控功能以及弹性伸缩带来更好的可用性。 | [BV1bcNDzpERC · 02:50](https://www.bilibili.com/video/BV1bcNDzpERC?t=170) | [GitHub](https://github.com/CanineHQ/canine) |
 | Cloudflare Containers | Cloudflare Workers 提供的容器能力，允许在 Cloudflare 全球边缘网络上运行有状态/长生命周期的容器化应用。 | 2025-06-24 | Cloudflare Workers 现在支持容器了，可以在其全球网络里跑容器，弥补 Serverless 难以处理有状态、长耗时任务的短板；目前处于公开测试阶段。 | [BV1wTgoz3E8M · 00:59](https://www.bilibili.com/video/BV1wTgoz3E8M?t=59) | [官网](https://developers.cloudflare.com/workers/containers/) |
 | unregistry | 一个无需独立 registry 服务的 Docker 镜像分发方案，可在多台机器间直接推送/拉取镜像。 | 2025-07-22 | 一个把 Docker 镜像直接在对等机器间分发的工具，省去了搭建 registry 的麻烦，适合在没有 registry 的环境下快速共享镜像。 | [BV1wTgoz3E8M · 02:20](https://www.bilibili.com/video/BV1wTgoz3E8M?t=140) | [GitHub](https://github.com/psviderski/unregistry) |
+| Varlock | 通过 Schema 声明集中、安全地管理环境变量与密钥，并自动生成类型定义的开源工具。 | 2025-04-11 | Valalk 通过 Schema 声明集中管理环境变量，自带校验功能可及早发现配置错误，还能自动生成类型定义保持类型安全，并保护敏感信息防止泄漏，安装简单，可对接已有脚本替换传统 .env 管理方式。 | [BV1LDgtzEEGB · 00:01](https://www.bilibili.com/video/BV1LDgtzEEGB?t=1) | [GitHub](https://github.com/dmno-dev/varlock) |
 
 ## AI 模型与推理
 
@@ -238,6 +239,7 @@ toc:
 | RAGgo | 用 Go 编写的轻量级、可用于生产的 RAG（检索增强生成）库，抽象了 RAG 核心组件，可组合文档提取器、切分器、向量数据库等，并提供 SimpleRAG、ContextualRAG 和 MemoryContext 等多种策略。 | 2024-07-25 | RAGO（RAGgo）是一个用 Go 编写的 RAG 库。虽然 Python 和 JS 生态中的 AI 框架和库层出不穷，但 Go 开发者目前的选择还不是很多。如果你想用 Go 语言快速搭建 RAG 系统，可以从 RAGgo 开始尝试。它将 RAG 的核心组件进行抽象，可以组合内置或自行实现的各个组件，例如文档提取器、切分器、向量数据库等，构建最终的 RAG 系统。RAGgo 还提供了多种 RAG 策略，包括 SimpleRAG、ContextualRAG 和 MemoryContext，满足不同的应用场景。不论是实际使用还是学习都很值得一看。 | [BV1bcNDzpERC · 00:31](https://www.bilibili.com/video/BV1bcNDzpERC?t=31) | [GitHub](https://github.com/teilomillet/raggo) |
 | TokenDagger | 高性能的 token 编解码器，作为 tiktoken 的替代实现，用 C++ 编写以加速大模型文本的 token 化。 | 2025-06-22 | 一个用 C++ 写的高性能 token 编码器/解码器，用来替代 Python 的 tiktoken，速度更快，适合在大模型推理与预处理里做文本的 token 化。 | [BV1eo3fzBEgV · 03:23](https://www.bilibili.com/video/BV1eo3fzBEgV?t=203) | [GitHub](https://github.com/M4THYOU/TokenDagger) |
 | Cactus | 面向移动端/手机的开源大模型运行运行时，让本地 LLM 推理跑在手机上。 | 2025-04-23 | 一个把大模型搬到手机上本地运行的运行时，相当于'手机里的 Ollama'，主打在移动设备上进行隐私友好的本地推理，无需联网。 | [BV1PYMfz5ENn · 01:30](https://www.bilibili.com/video/BV1PYMfz5ENn?t=90) | [GitHub](https://github.com/cactus-compute/cactus) |
+| uzu | 专为 Apple Silicon 等 AI 芯片打造的高性能 AI 模型推理引擎。 | 2025-06-23 | UZU 是专为 AI 芯片设计的高性能 AI 模型推理引擎，提供简单 API，支持 GPU Metal 与 MPS Graph 混合架构及统一模型配置，能追踪计算过程确保结果准确；提供 Swift 绑定便于在 iOS/macOS 使用，在多项评测中比 llama.cpp 更胜一筹。 | [BV1LDgtzEEGB · 02:57](https://www.bilibili.com/video/BV1LDgtzEEGB?t=177) | [GitHub](https://github.com/trymirai/uzu) |
 
 ## AI Agent 与智能体开发
 
@@ -300,6 +302,7 @@ toc:
 | Task Master | 专为 AI Agent 设计的项目管理工具，提供看板、任务分配、进度跟踪等功能，帮助协调、编排和追踪 AI 代理的任务，像管理真实团队一样管理 Agent 工作流。 | 2025-03-04 | TaskMaster 是一个专门为 AI Agent 设计的项目管理工具。你可以用它来组织协调和追踪 AI 代理的任务，就像管理一个真实的团队一样。TaskMaster 提供了看板、任务分配、进度跟踪等功能，帮助你更好地掌握 AI Agent 的工作流程。如果你正在构建复杂的 Agent 系统，TaskMaster 是一个不错的工具，它能通过实现规划和进度追踪的方式，提升 AI Agent 的效率，确保项目按规划进行。也避免 AI 因为上下文有限记不住已经完成和未完成的任务。 | [BV1f6Msz6EV7 · 01:54](https://www.bilibili.com/video/BV1f6Msz6EV7?t=114) | [GitHub](https://github.com/eyaltoledano/claude-task-master) |
 | Gemini CLI | Google 开源的终端 AI agent，可在命令行中理解代码库、执行任务并借助 Gemini 大模型进行对话与自动化操作。 | 2025-04-17 | Google 开源的终端 agent，对标 Claude Code，可在命令行里直接操作代码库、跑命令、做代码修改；免费额度大、速度快，适合在终端中完成编码与自动化任务。 | [BV1wTgoz3E8M · 00:01](https://www.bilibili.com/video/BV1wTgoz3E8M?t=1) | [GitHub](https://github.com/google-gemini/gemini-cli) |
 | BrowserOS | 基于 Chromium 的'智能体浏览器'，内置 AI agent 可在网页中自主执行任务与操作。 | 2025-05-18 | 一个带 AI agent 的浏览器（基于 Chromium），可以让 agent 自动在网页里点按、填表、操作，相当于把智能体装进浏览器里替你干活。 | [BV1PYMfz5ENn · 02:00](https://www.bilibili.com/video/BV1PYMfz5ENn?t=120) | [GitHub](https://github.com/browseros-ai/BrowserOS) |
+| Kiro | AWS 推出的以规范驱动开发（Spec-Driven Development）为核心的 AI 编程助手/IDE。 | 2025-07-15 | Carol（Kiro）是 AWS 推出的 AI 驱动开发工具，最大特色是预先定义好的开发计划、设计文档、步骤拆分等流程（Spec-Driven Development），用户也可选择轻量 Web Coding 或流程严格的 Spec Coding；依托 Amazon 与 Anthropic 合作获得更多 Claude 模型额度。但考栏认为流程过于严格在灵活性上有所欠缺。 | [BV1LDgtzEEGB · 00:32](https://www.bilibili.com/video/BV1LDgtzEEGB?t=32) | [官网](https://kiro.dev) |
 
 ## 数据工程与存储
 
@@ -331,6 +334,7 @@ toc:
 | Prefect | 用 Python 构建健壮数据管道的工作流编排框架，提供调度、缓存、重试和基于事件的自动化等功能，支持自部署 Prefect Server 或云端 Prefect Cloud，让数据流程更可靠。 | 2018-06-29 | Prefect（Prefact）是一个工作流编排框架，可以帮助你用 Python 构建更健壮的数据管道。简单来说，它能让你把普通的脚本变成可以在生产环境中稳定运行的工作流。Prefect 提供了调度、缓存、重试和基于事件的自动化等功能，让你的数据流程更加可靠。你可以使用自部署的 Prefect Server，也可以选择它的云端服务 Prefect Cloud。编写脚本处理数据并不复杂，但要过渡到大量数据的场景仍然保持健壮和高效就不那么简单了。Prefect 通过框架封装了这一场景的复杂度，让普通开发者也可以构建出灵活强大的数据管道。 | [BV1bcNDzpERC · 01:27](https://www.bilibili.com/video/BV1bcNDzpERC?t=87) | [GitHub](https://github.com/PrefectHQ/prefect) |
 | bknd | 开源的后端即服务（BaaS）框架，提供数据库、认证、API 等能力，定位为 Firebase/Supabase 的替代方案。 | 2024-11-16 | 一个开源的后端框架，把数据库、认证、API 等打包好，可以作为 Firebase / Supabase 的替代品来用，轻量、可自托管。 | [BV1PYMfz5ENn · 00:01](https://www.bilibili.com/video/BV1PYMfz5ENn?t=1) | [GitHub](https://github.com/bknd-io/bknd) |
 | Meilisearch | 开源的高性能全文搜索引擎，提供简单 API 与毫秒级搜索体验。 | 2018-04-23 | 一个开源的搜索引擎，主打简单好用、速度快、搜索结果相关度好，常被拿来和 Elasticsearch / Algolia 比较，适合给应用加站内搜索。 | [BV1PYMfz5ENn · 02:28](https://www.bilibili.com/video/BV1PYMfz5ENn?t=148) | [GitHub](https://github.com/meilisearch/meilisearch) |
+| RustFS | 用 Rust 编写、兼容 S3 协议的高性能分布式开源对象存储系统。 | 2025-07-02 | RustFS 是用 Rust 开发的高性能分布式对象存储系统，可看作 MinIO 的替代方案，兼容 S3 协议、开源、支持数据湖/AI/大数据，采用 Apache 2.0 许可；在 MinIO 变更 license 后更具竞争力。但考栏提醒其仍处于快速开发阶段，不建议用于生产环境。 | [BV1LDgtzEEGB · 01:30](https://www.bilibili.com/video/BV1LDgtzEEGB?t=90) | [GitHub](https://github.com/rustfs/rustfs) |
 
 ## 协作与项目管理
 
@@ -389,6 +393,7 @@ toc:
 | OpenCut | 免费开源（MIT）的跨平台视频编辑器，对标 CapCut/剪映，在浏览器中即可使用，所有处理在本地完成（不上传云端）、无水印无订阅，支持 Web/桌面/移动端，可剪辑、合并视频片段并添加图片、文字与音频。 | 2025-06-22 | Koala 认为，OpenCut 简直是视频编辑的福音，特别是对于那些只需简单编辑的用户来说；开源的属性也让它更具吸引力，说不定以后还能看到更多定制化的功能。 | [BV1NpjMztEZR · 03:06](https://www.bilibili.com/video/BV1NpjMztEZR?t=186) | [GitHub](https://github.com/OpenCut-app/OpenCut) |
 | Spark | 为 Three.js 设计的 3D Gaussian Splatting（3D 高斯泼溅）渲染器，将高效渲染方案融入 Three.js 渲染管线，原生支持多种文件格式、GPU Shader Graph 动态编辑，并在 WebGL2 环境下保持高兼容性与流畅度。 | 2025-05-23 | Spark 是一个为 Three.js 设计的 3D Gaussian Splatting 渲染器。Gaussian Splatting 实际上是一种高效渲染方案，可以实现逼真的光照和透明度效果，同时兼顾性能和真实感。Spark 将 Splatting 完美融入 Three.js 渲染管线，原生支持多种文件格式，支持 GPU Shader Graph 实现动态编辑，并在 WebGL2 环境下保持高兼容性和流畅度，为开发者提供灵活的交互和混合渲染能力。 | [BV1f6Msz6EV7 · 03:16](https://www.bilibili.com/video/BV1f6Msz6EV7?t=196) | [GitHub](https://github.com/sparkjsdev/spark) |
 | Graphite | 用 Rust 编写的开源 2D 图形编辑器，定位为兼具光栅与矢量能力的下一代创作工具。 | 2020-04-26 | 一个用 Rust 写的新一代开源图形编辑器，目标是做成像 Photoshop + Illustrator 那样既支持位图又支持矢量的强大工具，性能与跨平台体验是卖点。 | [BV1eo3fzBEgV · 00:01](https://www.bilibili.com/video/BV1eo3fzBEgV?t=1) | [GitHub](https://github.com/GraphiteEditor/Graphite) |
+| AmazingHand | 可 3D 打印、低成本可定制的人形机械手开源硬件项目。 | 2025-06-25 | Amazing Hand 是低成本可定制人形机械手，8 自由度、4 手指、驱动器全内置、可 3D 打印、重 400 克、成本低于 200 欧元；提供构建材料清单、CAD 文件和组装指南及 Python/Arduino 控制示例。考栏认为它降低了机器人技术研发门槛。 | [BV1LDgtzEEGB · 03:25](https://www.bilibili.com/video/BV1LDgtzEEGB?t=205) | [GitHub](https://github.com/pollen-robotics/AmazingHand) |
 
 ## 办公与演示
 
