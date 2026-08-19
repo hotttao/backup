@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:11+08:00
+lastmod: 2026-08-19T12:38:13+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -139,6 +139,8 @@ toc:
 | Glass3D generator | 一个在线工具，可根据文本或图片快速生成玻璃拟态（glassmorphism）风格的 3D CSS 视觉效果。 | 2025-07-02 | 一个网页小工具，输入文字或图片就能生成那种玻璃质感的 3D 视觉效果（CSS 实现），适合做海报、封面或网页装饰，纯前端、即开即用。 | [BV1eo3fzBEgV · 01:55](https://www.bilibili.com/video/BV1eo3fzBEgV?t=115) | [官网](https://glass3d.dev) |
 | Vercel AI Elements | 由 Vercel 推出的、基于 shadcn/ui 的开源 React 组件库，用于快速构建聊天、推理面板等 AI 交互界面，并与 Vercel AI SDK 深度集成。 | 2025-08-06 | 考拉认为中立的 AI 组件库很有必要，目前该项目组件质量不错，唯一局限是实际对接的是 AI SDK 封装过的 API 格式，而非更通用的 OpenAI 兼容 API。 | [BV1dXbwzdEuy · 00:29](https://www.bilibili.com/video/BV1dXbwzdEuy?t=29) | [官网](https://vercel.com/changelog/introducing-ai-elements) |
 | EmbedPDF | MIT 许可、框架无关的网页 PDF 查看器，支持 React、Vue、Svelte 与原生 JS，具备虚拟滚动、缩放平移、大纲、文本搜索与插件化架构，并提供完整 TypeScript 类型。 | 2025-01-18 | 考拉认为此前浏览器中查看 PDF 主要靠 PDF.js，而 EmbedPDF 让易用性进一步提升，其插件化架构与跨框架、完整 TypeScript 类型支持是一大优势。 | [BV1nQYkzWEcw · 02:52](https://www.bilibili.com/video/BV1nQYkzWEcw?t=172) | [GitHub](https://github.com/embedpdf/embed-pdf-viewer) |
+| Hyperclay | 提出一种可自我修改的单文件 HTML 应用开发模式，应用可在运行时直接编辑并保存更改、无需构建步骤，支持在线协作与版本控制，并提供桌面版本。 | 2025-06-18 | 考拉认为这种回归 HTML 本源、可自我修改的想法颇具创意，但在现代复杂应用开发中可能过于理想化，特别是面对多用户复杂状态的场景。 | [BV16GeEzdEme · 01:54](https://www.bilibili.com/video/BV16GeEzdEme?t=114) | [官网](https://hyperclay.com) |
+| Effect | TypeScript 的标准库补充，提供类型安全的错误处理、可组合效应操作与内置追踪监控功能，旨在以库与最佳实践帮助开发者提升 TS 应用的健壮性、开发体验与更小包体积。 | 2019-11-13 | 考拉认为函数式编程确实能提升代码质量，但学习曲线陡峭是不争事实，对习惯命令式编程的团队而言迁移成本不容忽视；Effect 的成功关键在于能否在实用性与理论优雅间找到平衡。 | [BV16GeEzdEme · 02:22](https://www.bilibili.com/video/BV16GeEzdEme?t=142) | [GitHub](https://github.com/Effect-TS/effect) |
 
 ## 测试与质量保障
 
@@ -215,6 +217,8 @@ toc:
 | changedetection.io | 开源的网站内容变化监控与告警工具，支持价格/库存追踪。 | 2021-01-27 | ChangeDetection.io 专门监控网页内容变化，支持价格追踪、库存监控等，核心价值在于自动化重复性人工检查；项目提供开源版本，同时有商业化云服务。考栏认为这类小而美的工具说明不是所有软件都需要复杂架构。 | [BV1Q3hgzCEvk · 02:22](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=142) | [GitHub](https://github.com/dgtlmoon/changedetection.io) |
 | wg-easy | 为 WireGuard VPN 提供图形化管理界面（用户、QR 码、流量统计）的开源项目。 | 2021-05-22 | WG-EZ（wg-easy）把 WireGuard 的配置管理包装成傻瓜式 Web 界面，提供用户管理、QR 码生成、流量统计等功能，基本覆盖小团队 VPN 管理需求。考栏认为这种把强大但难用的底层工具包装成普通人可用的产品最有价值。 | [BV1Q3hgzCEvk · 02:52](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=172) | [GitHub](https://github.com/wg-easy/wg-easy) |
 | ShellHub | 开源的集中式 SSH 网关服务，让用户通过 Web 浏览器或移动应用远程访问 Linux 服务器与设备，免去公网 IP、路由器与防火墙配置，并支持审计、防火墙规则等企业功能。 | 2019-05-16 | 考拉认为在云原生时代，这类统一接入方案确实有价值，但需考虑安全性与单点故障风险，毕竟所有访问都要经过一个中心化网关。 | [BV1nQYkzWEcw · 01:54](https://www.bilibili.com/video/BV1nQYkzWEcw?t=114) | [GitHub](https://github.com/shellhub-io/shellhub) |
+| SideQuest.js | 面向 Node.js 的云无关分布式消息队列系统，承诺在 AWS、GCP、Azure 等不同云平台上无需修改代码即可运行，并提供现代化管理界面与简洁 API。 | 2025-07-23 | 考拉认为云中立确实是个好概念，但实际业务往往深度依赖特定云服务的功能，纯粹的云无关性可能牺牲云平台的独特优势，需要在便携性与性能间找到平衡。 | [BV16GeEzdEme · 01:27](https://www.bilibili.com/video/BV16GeEzdEme?t=87) | [GitHub](https://github.com/sidequestjs/sidequest) |
+| Rotel | 用 Rust 编写的高性能 OpenTelemetry 数据收集器，专为高性能和低资源消耗设计，针对 AWS Lambda 等无服务器环境优化，并提供 Python 处理器开发支持。 | 2025-03-25 | 考拉认为性能优化确实是可观测性工具的关键需求，特别是在成本敏感的无服务器场景中，可以节省更多资源与成本。 | [BV16GeEzdEme · 03:19](https://www.bilibili.com/video/BV16GeEzdEme?t=199) | [GitHub](https://github.com/rotel-dev/rotel) |
 
 ## AI 模型与推理
 
@@ -251,6 +255,7 @@ toc:
 | GPT-OSS | OpenAI 于 2025-08 发布的开放权重语言模型 gpt-oss-120b 与 gpt-oss-20b，基于 Apache 2.0 许可，支持本地或数据中心部署，具备完整思维链与工具调用能力。 | 2025-08-05 | 考拉认为 GPT-OSS 具备完整思维链与工具调用能力，适合智能体任务和深度定制；并评价 OpenAI 一边发布最强闭源模型拉开距离，一边开源模型示好开发者社区。 | [BV1dXbwzdEuy · 00:40](https://www.bilibili.com/video/BV1dXbwzdEuy?t=40) | [GitHub](https://github.com/openai/gpt-oss) |
 | GPT-5 | OpenAI 于 2025-08 发布的统一大模型系统，具备快速响应与深度推理能力，可按对话内容智能调度不同子模型，覆盖编码、写作、健康等多领域。 | 2025-08-07 | 考拉介绍 GPT-5 为一个统一系统，具备快速响应与深度推理能力，可按对话内容智能调度子模型，在编码、写作、健康等多领域性能提升，并更注重减少幻觉、提升安全性；评价 OpenAI 双管齐下。 | [BV1dXbwzdEuy · 00:58](https://www.bilibili.com/video/BV1dXbwzdEuy?t=58) | [官网](https://openai.com/index/introducing-gpt-5/) |
 | POML | 微软推出的提示词编排标记语言（Prompt Orchestration Markup Language），采用类似 HTML 的语法，通过 Raw、Task、Example 等组件化标签组织提示词结构，支持多数据类型集成与 VSCode 扩展、多语言 SDK。 | 2024-11-29 | 考拉认为标准化提示词确实是行业需求，但能否被广泛采用还要看生态建设，毕竟提示词工程目前更多依赖经验而非工具。 | [BV1nQYkzWEcw · 03:21](https://www.bilibili.com/video/BV1nQYkzWEcw?t=201) | [GitHub](https://github.com/microsoft/poml) |
+| Langfuse | 开源的大语言模型工程平台，为 LLM 应用提供追踪、评估、提示管理与指标监控功能，支持本地自托管及 Python、JavaScript 等 SDK，覆盖从数据到实验平台的完整链路。 | 2023-05-18 | 考拉认为在 LLM 应用爆发的当下，开发者确实需要更专业的工程化工具；不过市面类似产品众多，Langfuse 能否真正解决痛点还需实际使用验证其可用性与稳定性，目前开发者口碑不错。 | [BV16GeEzdEme · 00:01](https://www.bilibili.com/video/BV16GeEzdEme?t=1) | [GitHub](https://github.com/langfuse/langfuse) |
 
 ## AI Agent 与智能体开发
 
@@ -435,6 +440,7 @@ toc:
 | Quarkdown | 基于 Markdown 的现代排版系统，通过扩展语法与配套编译器将文档编译为可印刷书籍与交互式演示文稿，并支持自定义函数和变量实现动态内容。 | 2024-01-30 | Quarkdown 是一款基于 Markdown 的现代排版系统，核心概念是多功能性。通过内置的扩展语法和配套的编译器，它可以将 Quarkdown 文档编译成可直接用于印刷的书籍和交互式演示文稿。它不仅可以用于做复杂的排版布局，还支持自定义函数和变量实现各种动态视图，让你的 Quarkdown 文件更加强大。总的来说，Quarkdown 扩展了 Markdown 的功能，让它不仅仅是简单的文本标记语言，更像是一个轻量级的排版工具。 | [BV1drTUzPEuD · 01:02](https://www.bilibili.com/video/BV1drTUzPEuD?t=62) | [GitHub](https://github.com/iamgio/quarkdown) |
 | 思源笔记 (Siyuan) | 开源的本地优先个人知识管理与笔记软件，支持块级编辑、双向链接与 Markdown。 | 2020-08-30 | 一个开源的本地优先笔记/知识管理工具，支持块级编辑、双向链接、Markdown，数据存在本地可控，适合做个人知识库。 | [BV1PYMfz5ENn · 03:26](https://www.bilibili.com/video/BV1PYMfz5ENn?t=206) | [GitHub](https://github.com/siyuan-note/siyuan) |
 | Maybe | 设计优雅的开源个人理财应用（现已停止开源维护，转向 B2B）。 | 2024-01-01 | 个人理财工具 Maybe 在 v0.6.0 版本宣布停止开源维护，公司转向 B2B 金融预测业务；该应用曾被誉设计优雅的开源理财工具，支持多货币、AI 聊天助手、预算管理等。团队在告别信中分析了个人理财应用面临的银行数据、隐私等挑战。 | [BV1FU8Yz9E7w · 03:24](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=204) | [GitHub](https://github.com/maybe-finance/maybe) |
+| OverType | 极简的 Markdown 编辑器，将透明文本框叠加在渲染预览之上实现所见即所得，体积仅约 54KB、无需 NPM/构建/配置，黏贴代码即可集成。 | 2025-08-15 | 考拉认为回归技术本质的设计思路值得赞赏，不过这种实现经测试也有一定局限性，例如想在预览时去除 Markdown 标记格式就有一定困难。 | [BV16GeEzdEme · 00:27](https://www.bilibili.com/video/BV16GeEzdEme?t=27) | [GitHub](https://github.com/panphora/overtype) |
 
 ## 开发者认证与招聘
 
