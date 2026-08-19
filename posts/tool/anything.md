@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:37:48+08:00
+lastmod: 2026-08-19T12:37:51+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -67,6 +67,8 @@ toc:
 | Diffs (@pierre/diffs) | 由 The Pierre Computer Company 开源的 diff 与代码渲染库,基于 Shiki 3 实现语法高亮与主题(自动浅色/深色),提供 split(并排)与 stacked(合并)两种布局、词级差异高亮、自定义 hunk 分隔与头部、合并冲突解决 UI、评论线程、行选择(点击拖拽)与 token hover 回调等原语;提供 Web Components、React、SSR、Cloudflare Worker 多种入口,不捆绑任何上层产品,作为独立工具维护。 | 2025-12-10 | 考拉认为,在 AI Coding 盛行的时代,开发者对 AI 产出的代码进行 Code Review 越来越重要,更智能的 Dev 工具是大势所趋。Diffs 让 Review 的关注点更加集中,未来我们还可能看到这个领域的更多创新。 | [BV1h56SBtEzh · 01:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=115) | [GitHub](https://github.com/pierrecomputer/pierre) |
 | GitDiagram | 将任意 GitHub 仓库一键转换为交互式系统架构图，可点击图中组件直接跳转对应源码文件，帮助快速理解代码库结构与模块依赖关系。 | 2024-12-15 | Koala 认为 GitDiagram 使用 Claude 3.5 Sonnet 模型，图表生成速度快、准确度高，无论是快速上手新项目还是梳理已有代码都很有帮助，是代码结合 AI 的有趣运用。 | [BV1QyAueyEjX · 00:01](https://www.bilibili.com/video/BV1QyAueyEjX?t=1) | [GitHub](https://github.com/ahmedkhaleel2004/gitdiagram) |
 | Ty | 由 Astral（UV/Ruff 团队）用 Rust 编写的高性能 Python 类型检查器兼语言服务器，可快速检查 Python 代码中的类型错误并提供编辑时智能提示。 | 2025-05-03 | Koala 认为，Ty 由开发了高性能 Python 工具链 UV 和 Ruff 的 Astral 团队开源，该团队已证明其重塑 Python 工具链的实力，因此 Ty 同样值得关注；不过目前仍处 Pre-release 阶段，可能仍有 bug 或功能缺失，但团队正在积极开发。 | [BV1vwEuzmErT · 00:01](https://www.bilibili.com/video/BV1vwEuzmErT?t=1) | [GitHub](https://github.com/astral-sh/ty) |
+| ast-grep | 基于抽象语法树（AST）的多语言代码搜索与重构工具，支持 CLI、编辑器插件和程序化 API，可用于代码审查、重构与自定义 Lint 规则。 | 2022-07-01 | ast-grep 是一个支持多语言的代码搜索与重构工具，基于抽象语法树进行结构化搜索。它允许开发者使用模式精准定位源码，支持 CLI、编译器插件和程序 API，适合代码审查、重构和自定义 Lint 规则等场景。 | [BV1drTUzPEuD · 00:32](https://www.bilibili.com/video/BV1drTUzPEuD?t=32) | [GitHub](https://github.com/ast-grep/ast-grep) |
+| go-binsize-treemap | Go 语言编写的二进制文件大小分析工具，可生成 SVG 格式的 Treemap 可视化，帮助开发者了解二进制各部分的占比与第三方依赖构成，从而优化代码、减小可执行文件体积。 | 2022-01-21 | go-binsize-treemap 这个工具可以帮你分析 Go 语言编译出的二进制文件，然后生成一个 SVG 格式的 Treemap，让你清晰地看到二进制文件中各个部分的大小占比。这工具有啥用呢？如果你想研究编译器的工作原理，或者想看看你的项目里都包含了哪些第三方依赖，再或者你想优化你的 Go 代码、减少最终生成的可执行文件的大小，那么这个工具绝对能帮得上你。使用起来也很简单，一条命令就能搞定。 | [BV1drTUzPEuD · 02:00](https://www.bilibili.com/video/BV1drTUzPEuD?t=120) | [GitHub](https://github.com/nikolaydubina/go-binsize-treemap) |
 
 ## Web 与 JavaScript 开发
 
@@ -128,6 +130,7 @@ toc:
 | TypeScript Native Preview | 微软 TypeScript 团队将 TypeScript 编译器与工具链移植到 Go 实现的原生预览版（内部代号 Project Corsa），通过 npm 包 @typescript/native-preview 提供 tsgo 可执行文件，编译速度可达约 10 倍提升，最终将演进为 TypeScript 7。 | 2025-05-22 | Koala 介绍 TypeScript 团队推出原生预览版，通过将编译器与工具链移植到原生语言（Go）实现约 10 倍的项目编译提速，可通过 npm 安装预览版编译器并在 VS Code 中体验新的编译功能，未来将演进为 TypeScript 7；主要作功能介绍，未给出明确优劣评价。 | [BV1NpjMztEZR · 00:01](https://www.bilibili.com/video/BV1NpjMztEZR?t=1) | [GitHub](https://github.com/microsoft/typescript-go) |
 | Svelte Flow | 用于构建节点式 UI（工作流编辑器、数据管道、可视化编程环境）的 Svelte 库。1.0 整个库基于 Svelte 5 从零重写，新增 Edge 重连、更强大的 fitView、键盘导航、更好的可访问性（A11y）等，并与 React Flow 功能对齐；由 React Flow（xyflow）团队维护。 | 2025-05-14 | Koala 介绍 Svelte Flow 1.0 基于 Svelte 5 重写、脱胎换骨，并指出对构建 AI 工作流 UI 的开发者，它让 UI 框架的选择更加多变。 | [BV1mF7mzzEKm · 02:35](https://www.bilibili.com/video/BV1mF7mzzEKm?t=155) | [官网](https://xyflow.com/blog/svelte-flow-release) |
 | Linkify | 一款 JavaScript 插件，能把纯文本中的链接转换成 HTML <a> 标签，自动识别 URL、邮箱地址、#话题标签与 @提及；支持 React、jQuery、多语言与 Emoji，压缩后约 11KB（minified 约 20KB）。 | 2013-05-02 | Koala 认为对博客、论坛、评论区等场景使用 Linkify 可节省很多解析文本链接的工作，但需确认文本内容可信时才使用，避免用户输入恶意链接诱导点击。 | [BV1mF7mzzEKm · 08:10](https://www.bilibili.com/video/BV1mF7mzzEKm?t=490) | [官网](https://linkify.js.org/) |
+| Rolldown-Vite | 基于 Rust 打包器 Rolldown 驱动的 Vite 直替构建工具，可作为默认 vite 包的替换项，显著提升构建速度、降低内存占用，未来将成为 Vite 的默认打包器。 | 2025-05-30 | Vite 团队正式推出 Rolldown-Vite，这是一个基于 Rust 的下一代打包工具，目标是成为 Vite 默认的打包器。简单来说，你可以通过替换 vite 包为 rolldown-vite 来体验它，已经有早期用户反馈构建速度提升了 3-16 倍，内存占用也大大降低。切换之后 esbuild 也变成了可选依赖。如果你想让你的 Vite 项目速度起飞，不妨试试 Rolldown-Vite。 | [BV1drTUzPEuD · 00:01](https://www.bilibili.com/video/BV1drTUzPEuD?t=1) | [GitHub](https://github.com/vitejs/rolldown-vite) |
 
 ## 测试与质量保障
 
@@ -192,6 +195,7 @@ toc:
 | Tilt | 面向 Kubernetes 上微服务应用的开发环境工具，可自动构建、部署并实时更新（LiveUpdate），让开发者像本地一样流畅地调试微服务。 | 2018-08-09 | Koala 认为，随着微服务和 Kubernetes 的流行，开发者们既享受其强大功能，也被它们引入的额外开发流程而烦恼；Tilt 正是面向这一痛点的解决方案，且因其价值已被 Docker 收购。 | [BV1vwEuzmErT · 00:30](https://www.bilibili.com/video/BV1vwEuzmErT?t=30) | [GitHub](https://github.com/tilt-dev/tilt) |
 | kubectl-ai | Google Cloud 开源的 AI 驱动 Kubernetes 助手，可用自然语言管理 K8s 集群（创建 deployment、查看状态、排查问题等），支持 Gemini、OpenAI、Anthropic 与本地 Ollama 等多种模型。 | 2025-01-20 | Koala 认为，由谷歌云开源的 kubectl-ai 颇具竞争力，可用自然语言管理 Kubernetes 集群，支持 Gemini、OpenAI、Anthropic 和本地 Ollama 等多种模型，选择丰富且安装简单（一条命令或 brew 即可）。 | [BV1vwEuzmErT · 01:59](https://www.bilibili.com/video/BV1vwEuzmErT?t=119) | [GitHub](https://github.com/GoogleCloudPlatform/kubectl-ai) |
 | Outpost | Hookdeck 开源的出站 Webhook 与事件目标（Event Destinations）基础设施，可将事件可靠投递到 Webhooks、SQS、RabbitMQ、Pub/Sub、EventBridge、Kafka 等目标，保证至少一次（at least once）投递，并提供用户界面管理指标与调试。 | 2024-11-12 | Koala 认为，若正在寻找一个可靠、灵活的 Webhook 管理方案，Outpost 是一个轻量级、专注的开源方案。 | [BV1vwEuzmErT · 02:57](https://www.bilibili.com/video/BV1vwEuzmErT?t=177) | [GitHub](https://github.com/hookdeck/outpost) |
+| workers-oauth-provider | Cloudflare 官方提供的 Workers OAuth Provider 库，实现了 OAuth 2.1 协议，让开发者无需自行实现认证检查即可在 Workers 应用中获取已认证用户信息。 | 2025-03-11 | 想给你的 Cloudflare Workers 应用加上 OAuth 认证，但又觉得自己从头开始实现太琐碎吗？Cloudflare 发布的 Workers OAuth Provider 帮你搞定。它实现了 OAuth 2.1 协议，你只需要像平常一样写你的 API Handler，就能拿到已经认证的用户信息，不用自己做任何检查。这个库不关心你如何管理用户，也不限制你使用什么 UI 框架，而且它只存储 Token 的哈希值保证安全性。 | [BV1drTUzPEuD · 01:29](https://www.bilibili.com/video/BV1drTUzPEuD?t=89) | [GitHub](https://github.com/cloudflare/workers-oauth-provider) |
 
 ## AI 模型与推理
 
@@ -375,6 +379,7 @@ toc:
 | Memos | 自托管的轻量级笔记中心,纯 Markdown 存储,无隐私追踪,MIT 授权,承诺永久免费;提供轻量、易部署的笔记体验,适合想快速记录、不愿在复杂编辑器上折腾的技术用户。 | 2021-12-08 | 考拉认为,自托管不该成为折腾的代名词。Memos 在极简与可用性之间找到平衡点,特别适合那些想逃离(Notion)绑架、又不愿投入大量时间维护的技术用户;真正的隐私工具,应让人忘记隐私设置的存在。 | [BV1h56SBtEzh · 03:24](https://www.bilibili.com/video/BV1h56SBtEzh?t=204) | [GitHub](https://github.com/usememos/memos) |
 | Inscribed | 基于 Excalidraw 的草图转多页 PPT 工具，支持快捷键、图片导入与 Google 幻灯片导出。 | 2025-02-08 | 考拉认为，在 Excalidraw 强大功能基础上，InScribe 还增加了键盘快捷键、自定义画布大小、图片导入、集成 Google 幻灯片等更贴心的功能，是灵感爆发时的神器。 | [BV1G5ASetENw · 01:54](https://www.bilibili.com/video/BV1G5ASetENw?t=114) | [GitHub](https://github.com/chunrapeepat/inscribed) |
 | Leaflet | 轻量、无需账号即可使用的文档与发布工具，介于 Notion 与 Google Docs 之间，支持富文本块、协作编辑与一键分享，并基于 AT Protocol 实现社交化发布。 | 2024-09-26 | Koala 介绍 Leaflet 是一款快速、灵活、有趣的文档工具，无需注册账号就能直接创建和分享文档，介于 Notion 与 Google Docs 之间，支持富文本块与协作编辑，适合随手记录与发布想法。 | [BV1UYQbYeELx · 01:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=60) | [官网](https://leaflet.pub) |
+| Quarkdown | 基于 Markdown 的现代排版系统，通过扩展语法与配套编译器将文档编译为可印刷书籍与交互式演示文稿，并支持自定义函数和变量实现动态内容。 | 2024-01-30 | Quarkdown 是一款基于 Markdown 的现代排版系统，核心概念是多功能性。通过内置的扩展语法和配套的编译器，它可以将 Quarkdown 文档编译成可直接用于印刷的书籍和交互式演示文稿。它不仅可以用于做复杂的排版布局，还支持自定义函数和变量实现各种动态视图，让你的 Quarkdown 文件更加强大。总的来说，Quarkdown 扩展了 Markdown 的功能，让它不仅仅是简单的文本标记语言，更像是一个轻量级的排版工具。 | [BV1drTUzPEuD · 01:02](https://www.bilibili.com/video/BV1drTUzPEuD?t=62) | [GitHub](https://github.com/iamgio/quarkdown) |
 
 ## 开发者认证与招聘
 
