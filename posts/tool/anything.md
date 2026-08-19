@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:37:56+08:00
+lastmod: 2026-08-19T12:37:58+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -56,6 +56,8 @@ toc:
 | KeyboardCowboy | 一款为 macOS 用户设计的快捷键工作流生产力工具，用户可将重复操作、应用启动、系统设置、文件操作等工作流定义为快捷键，双手无需离开键盘即可触发；进阶用户可根据上下文定义触发条件、将不同工作流分组管理。 | 2020-09-02 | Koala 认为虽然 KeyboardCowboy 上手会有些难度，但一旦熟悉且完成自定义配置后，效率就能成倍地提升。 | [BV1mF7mzzEKm · 00:40](https://www.bilibili.com/video/BV1mF7mzzEKm?t=40) | [GitHub](https://github.com/zenangst/KeyboardCowboy) |
 | somo | 用 Rust 编写的命令行网络监控工具，以更友好的表格形式展示 Linux 上的端口与网络连接信息，支持按端口、IP、进程名等条件过滤，提供 TUI 交互。 | 2023-05-15 | 如果你经常使用 netstat，或者需要监控网络状态，那就试试 somo 吧。它是一个用 Rust 编写的命令行工具，可以方便地监控 Linux 上的端口和网络连接。同时，它能以更友好的表格形式展示信息，而且支持过滤，你可以根据端口、IP、进程名等条件来查找。somo 以 TUI 的形式提供交互，在排查问题时保持高效。特别对于不熟悉 netstat 工具的用户来说，一个像 somo 这样更直观易用的工具，可以避免在网络异常时还因为工具不顺手而变得更加焦虑。 | [BV1f6Msz6EV7 · 01:26](https://www.bilibili.com/video/BV1f6Msz6EV7?t=86) | [GitHub](https://github.com/theopfr/somo) |
 | NoxDir | 命令行磁盘使用可视化工具，通过检测磁盘和分区并以交互式终端界面展示已用空间、可用空间和总容量，支持键盘操作快速定位占用空间大的文件与目录，跨 Windows、macOS、Linux 平台，完全本地运行不收集数据。 | 2025-05-02 | NOXDEA（NoxDir）是一个命令行工具。它通过检测磁盘和分区，然后用一个交互式的终端界面展示磁盘的使用情况，比如已用空间、可用空间和总容量。你可以用键盘操作，快速找到占用空间大的文件和目录，方便清理。NoxDir 支持 Windows、macOS 和 Linux，而且因为它适配了多种系统指令，整体执行速度很快。它也完全本地运行，不会收集你的任何数据。如果你觉得你的磁盘空间不够用，或者想快速找到占用空间的文件，就可以用它扫描一次看看结果。 | [BV1bcNDzpERC · 00:01](https://www.bilibili.com/video/BV1bcNDzpERC?t=1) | [GitHub](https://github.com/crumbyte/noxdir) |
+| Terminalizer | 可将终端会话录制为 YAML 文件并一键生成 GIF 动画，方便分享命令行操作过程。 | 2018-07-22 | 一个能把你的终端录制成 GIF 的小工具，先把终端操作录成 YAML，再生成 GIF，适合在文档或社交平台展示命令行用法。 | [BV1wTgoz3E8M · 00:31](https://www.bilibili.com/video/BV1wTgoz3E8M?t=31) | [GitHub](https://github.com/faressoft/terminalizer) |
+| neko | 基于 WebRTC 的虚拟浏览器，可在浏览器中多人共享、协作使用同一个远程浏览器实例。 | 2020-03-14 | 一个通过浏览器就能访问的远程虚拟浏览器，支持多人同时看到并操作同一个浏览器画面，适合演示、协作或做隔离的网页环境。 | [BV1wTgoz3E8M · 03:17](https://www.bilibili.com/video/BV1wTgoz3E8M?t=197) | [GitHub](https://github.com/m1k1o/neko) |
 
 ## 代码质量与 Code Review
 
@@ -200,6 +202,8 @@ toc:
 | workers-oauth-provider | Cloudflare 官方提供的 Workers OAuth Provider 库，实现了 OAuth 2.1 协议，让开发者无需自行实现认证检查即可在 Workers 应用中获取已认证用户信息。 | 2025-03-11 | 想给你的 Cloudflare Workers 应用加上 OAuth 认证，但又觉得自己从头开始实现太琐碎吗？Cloudflare 发布的 Workers OAuth Provider 帮你搞定。它实现了 OAuth 2.1 协议，你只需要像平常一样写你的 API Handler，就能拿到已经认证的用户信息，不用自己做任何检查。这个库不关心你如何管理用户，也不限制你使用什么 UI 框架，而且它只存储 Token 的哈希值保证安全性。 | [BV1drTUzPEuD · 01:29](https://www.bilibili.com/video/BV1drTUzPEuD?t=89) | [GitHub](https://github.com/cloudflare/workers-oauth-provider) |
 | s3mini | 超轻量级的 S3 客户端，使用 TypeScript 编写，压缩后约 14KB、零依赖，可在 Cloudflare Workers 等边缘计算平台运行，支持 R2、Backblaze B2 等 S3 兼容存储，仅提供核心 S3 API（List、Put、Get、Delete 等）。 | 2025-05-13 | S3 mini 是一个超轻量级的 S3 客户端，使用 TypeScript 编写，非常小巧，压缩后只有大约 14KB，而且性能也不错。最重要的是它没有任何依赖，完美支持以 Cloudflare Worker 为代表的各类边缘计算平台，也兼容 R2、Backblaze B2 等 S3 存储服务。如果你需要在边缘环境处理对象存储，又不想引入 AWS SDK 这种庞大的库，S3 mini 就值得一试。它只提供最核心的 S3 API，比如 List、Put、Get、Delete 等，非常适合轻量级应用。 | [BV1f6Msz6EV7 · 02:48](https://www.bilibili.com/video/BV1f6Msz6EV7?t=168) | [官网](https://codeberg.org/thinking_tools/s3mini) |
 | Canine | 面向 Kubernetes 的开发者友好型 PaaS，目标是提供像 Heroku 一样流畅的部署体验，支持 GitHub 集成与一键部署、自动管理 SSL 证书、实时监控与弹性伸缩。 | 2024-08-22 | K9（Canine）是一款简化 Kubernetes 上部署应用流程的工具，目标是提供像 Heroku 一样流畅的体验。如果你觉得直接操作 K8s 太复杂，但又需要它的强大功能，K9 就能派上用场。它支持 GitHub 集成和一键部署简化日常流程，也能自动管理 SSL 证书避免安全问题，还有实时的监控功能以及弹性伸缩带来更好的可用性。 | [BV1bcNDzpERC · 02:50](https://www.bilibili.com/video/BV1bcNDzpERC?t=170) | [GitHub](https://github.com/CanineHQ/canine) |
+| Cloudflare Containers | Cloudflare Workers 提供的容器能力，允许在 Cloudflare 全球边缘网络上运行有状态/长生命周期的容器化应用。 | 2025-06-24 | Cloudflare Workers 现在支持容器了，可以在其全球网络里跑容器，弥补 Serverless 难以处理有状态、长耗时任务的短板；目前处于公开测试阶段。 | [BV1wTgoz3E8M · 00:59](https://www.bilibili.com/video/BV1wTgoz3E8M?t=59) | [官网](https://developers.cloudflare.com/workers/containers/) |
+| unregistry | 一个无需独立 registry 服务的 Docker 镜像分发方案，可在多台机器间直接推送/拉取镜像。 | 2025-07-22 | 一个把 Docker 镜像直接在对等机器间分发的工具，省去了搭建 registry 的麻烦，适合在没有 registry 的环境下快速共享镜像。 | [BV1wTgoz3E8M · 02:20](https://www.bilibili.com/video/BV1wTgoz3E8M?t=140) | [GitHub](https://github.com/psviderski/unregistry) |
 
 ## AI 模型与推理
 
@@ -289,6 +293,7 @@ toc:
 | SuperMemory | 面向 AI 的通用记忆与上下文引擎（API），为 LLM/Agent 提供长期记忆与上下文，内部封装向量数据库、数据解析与扩展性，开发者无需自行搭建底层基础设施即可开箱即用。 | 2024-02-22 | Koala 认为，SuperMemory 为想快速构建有记忆、能理解用户历史对话与数据的 AI 应用的开发者，提供了一个非常方便的开箱即用方案，省去了许多底层基础设施（向量库、数据解析、扩展性）的搭建工作。 | [BV1CqJgziEB1 · 01:52](https://www.bilibili.com/video/BV1CqJgziEB1?t=112) | [GitHub](https://github.com/supermemoryai/supermemory) |
 | Suna | Kortix 开源的通用型 AI Agent（Apache-2.0），通过自然语言帮用户完成现实任务，内置浏览器自动化、文件管理、网页爬取、命令行执行、网站部署与各种 API/服务集成。 | 2025-04-22 | Koala 认为，Suna 的开源特性与多功能性使其成为一个值得关注的项目，特别是对于关注复杂 AI Agent 系统的开发者来说，是一个可以研究并参考的项目。 | [BV1NpjMztEZR · 02:40](https://www.bilibili.com/video/BV1NpjMztEZR?t=160) | [GitHub](https://github.com/kortix-ai/suna) |
 | Task Master | 专为 AI Agent 设计的项目管理工具，提供看板、任务分配、进度跟踪等功能，帮助协调、编排和追踪 AI 代理的任务，像管理真实团队一样管理 Agent 工作流。 | 2025-03-04 | TaskMaster 是一个专门为 AI Agent 设计的项目管理工具。你可以用它来组织协调和追踪 AI 代理的任务，就像管理一个真实的团队一样。TaskMaster 提供了看板、任务分配、进度跟踪等功能，帮助你更好地掌握 AI Agent 的工作流程。如果你正在构建复杂的 Agent 系统，TaskMaster 是一个不错的工具，它能通过实现规划和进度追踪的方式，提升 AI Agent 的效率，确保项目按规划进行。也避免 AI 因为上下文有限记不住已经完成和未完成的任务。 | [BV1f6Msz6EV7 · 01:54](https://www.bilibili.com/video/BV1f6Msz6EV7?t=114) | [GitHub](https://github.com/eyaltoledano/claude-task-master) |
+| Gemini CLI | Google 开源的终端 AI agent，可在命令行中理解代码库、执行任务并借助 Gemini 大模型进行对话与自动化操作。 | 2025-04-17 | Google 开源的终端 agent，对标 Claude Code，可在命令行里直接操作代码库、跑命令、做代码修改；免费额度大、速度快，适合在终端中完成编码与自动化任务。 | [BV1wTgoz3E8M · 00:01](https://www.bilibili.com/video/BV1wTgoz3E8M?t=1) | [GitHub](https://github.com/google-gemini/gemini-cli) |
 
 ## 数据工程与存储
 
@@ -341,6 +346,7 @@ toc:
 | SimpleGantt | 一个轻量级的项目管理工具，专为不想安装桌面端软件或使用云端应用的极简主义者设计。完全运行在浏览器中、无需安装其他软件，支持交互式甘特图渲染、任务管理、里程碑跟踪，并且可以离线使用，所有数据都保存在本地，确保隐私和安全。代码不依赖任何 JS 框架，直接使用原生 JS 在约 2000 行的文件内完成所有逻辑。 | 2024-12-18 | 认为虽然功能不如一些大型工具丰富，但对于基本需求管理来说，SimpleGantt 已经足够；其代码实现也很有趣，不借助任何 JS 框架、用原生 JS 在一个约 2000 行文件内完成，对希望提升 UI 编程能力的小伙伴也是值得学习的代码库。 | [BV14Vwqe2EBR · 03:41](https://www.bilibili.com/video/BV14Vwqe2EBR?t=221) | [GitHub](https://github.com/aerugo/simplegantt) |
 | FreeScout | 一款免费开源的工单/帮助台系统，整合来自邮件、网站表单、聊天等多渠道的客户问题并集中在单一队列，支持自动化分配规则、SLA、知识库与自动化服务。 | 2018-06-22 | 考拉认为 FreeScout 的开源特性允许高度定制化，能够适应不同企业的独特需求；如果你正在寻找一个轻量、高效且功能强大的工单系统，不妨试试 FreeScout。 | [BV1mjNAe4EoR · 03:22](https://www.bilibili.com/video/BV1mjNAe4EoR?t=202) | [GitHub](https://github.com/freescout-help-desk/freescout) |
 | Liveblocks AI Copilots | Liveblocks 推出的 AI Copilots 功能，将 AI 能力集成进其在线协同服务，为文档编辑、评论、问答等场景提供预构建 UI，可快速为产品加入内容续写、总结、翻译和问答等 AI 功能，并支持将结构化 AI 输出渲染为富样式。 | 2025-01-15 | Liveblocks 是一个在线协同服务，能够快速为应用添加各种协同功能，比如多人编辑、评论、通知等。现在它更进一步集成了 AI 功能，把该功能集成为 AI Copilots，在文档编辑、评论、问答等场景中使用它提供的预设 UI，就能快速为产品加入内容续写、总结、翻译和问答等典型 AI 功能。同时，Liveblocks 的设计也保持灵活，例如用户可以将 AI 结构化的输出渲染为丰富的样式而不仅是文本，增强了可读性和交互性。 | [BV1bcNDzpERC · 02:24](https://www.bilibili.com/video/BV1bcNDzpERC?t=144) | [官网](https://liveblocks.io) |
+| Automatisch | 开源的 Zapier 替代品，通过可视化工作流把不同应用和服务连接起来实现自动化。 | 2021-09-30 | 一个开源的自动化工作流工具，相当于自建的 Zapier，可以用可视化方式把各种服务串起来做自动化；强调自托管、数据可控。 | [BV1wTgoz3E8M · 01:51](https://www.bilibili.com/video/BV1wTgoz3E8M?t=111) | [GitHub](https://github.com/automatisch/automatisch) |
 
 ## 多媒体与图形
 
