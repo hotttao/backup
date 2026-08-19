@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:07+08:00
+lastmod: 2026-08-19T12:38:09+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -137,6 +137,7 @@ toc:
 | Linkify | 一款 JavaScript 插件，能把纯文本中的链接转换成 HTML <a> 标签，自动识别 URL、邮箱地址、#话题标签与 @提及；支持 React、jQuery、多语言与 Emoji，压缩后约 11KB（minified 约 20KB）。 | 2013-05-02 | Koala 认为对博客、论坛、评论区等场景使用 Linkify 可节省很多解析文本链接的工作，但需确认文本内容可信时才使用，避免用户输入恶意链接诱导点击。 | [BV1mF7mzzEKm · 08:10](https://www.bilibili.com/video/BV1mF7mzzEKm?t=490) | [官网](https://linkify.js.org/) |
 | Rolldown-Vite | 基于 Rust 打包器 Rolldown 驱动的 Vite 直替构建工具，可作为默认 vite 包的替换项，显著提升构建速度、降低内存占用，未来将成为 Vite 的默认打包器。 | 2025-05-30 | Vite 团队正式推出 Rolldown-Vite，这是一个基于 Rust 的下一代打包工具，目标是成为 Vite 默认的打包器。简单来说，你可以通过替换 vite 包为 rolldown-vite 来体验它，已经有早期用户反馈构建速度提升了 3-16 倍，内存占用也大大降低。切换之后 esbuild 也变成了可选依赖。如果你想让你的 Vite 项目速度起飞，不妨试试 Rolldown-Vite。 | [BV1drTUzPEuD · 00:01](https://www.bilibili.com/video/BV1drTUzPEuD?t=1) | [GitHub](https://github.com/vitejs/rolldown-vite) |
 | Glass3D generator | 一个在线工具，可根据文本或图片快速生成玻璃拟态（glassmorphism）风格的 3D CSS 视觉效果。 | 2025-07-02 | 一个网页小工具，输入文字或图片就能生成那种玻璃质感的 3D 视觉效果（CSS 实现），适合做海报、封面或网页装饰，纯前端、即开即用。 | [BV1eo3fzBEgV · 01:55](https://www.bilibili.com/video/BV1eo3fzBEgV?t=115) | [官网](https://glass3d.dev) |
+| Vercel AI Elements | 由 Vercel 推出的、基于 shadcn/ui 的开源 React 组件库，用于快速构建聊天、推理面板等 AI 交互界面，并与 Vercel AI SDK 深度集成。 | 2025-08-06 | 考拉认为中立的 AI 组件库很有必要，目前该项目组件质量不错，唯一局限是实际对接的是 AI SDK 封装过的 API 格式，而非更通用的 OpenAI 兼容 API。 | [BV1dXbwzdEuy · 00:29](https://www.bilibili.com/video/BV1dXbwzdEuy?t=29) | [官网](https://vercel.com/changelog/introducing-ai-elements) |
 
 ## 测试与质量保障
 
@@ -245,6 +246,8 @@ toc:
 | Cactus | 面向移动端/手机的开源大模型运行运行时，让本地 LLM 推理跑在手机上。 | 2025-04-23 | 一个把大模型搬到手机上本地运行的运行时，相当于'手机里的 Ollama'，主打在移动设备上进行隐私友好的本地推理，无需联网。 | [BV1PYMfz5ENn · 01:30](https://www.bilibili.com/video/BV1PYMfz5ENn?t=90) | [GitHub](https://github.com/cactus-compute/cactus) |
 | uzu | 专为 Apple Silicon 等 AI 芯片打造的高性能 AI 模型推理引擎。 | 2025-06-23 | UZU 是专为 AI 芯片设计的高性能 AI 模型推理引擎，提供简单 API，支持 GPU Metal 与 MPS Graph 混合架构及统一模型配置，能追踪计算过程确保结果准确；提供 Swift 绑定便于在 iOS/macOS 使用，在多项评测中比 llama.cpp 更胜一筹。 | [BV1LDgtzEEGB · 02:57](https://www.bilibili.com/video/BV1LDgtzEEGB?t=177) | [GitHub](https://github.com/trymirai/uzu) |
 | Qwen3-Coder | 阿里开源的 480B 参数 Agent 编程大模型，擅长长上下文与软件工程任务。 | 2025-07-22 | 阿里云通义千问团队开源 Qwen3-Coder，在 SWE-bench 基准达 69.6% 准确率，性能媲美 Claude Sonnet 4，支持 256K 原生上下文、可扩展至 100 万 Token；团队还 fork Gemini CLI 开源了 Qwen Code 用于验证模型 Agent 性能。考栏认为发布后虽有阿里云 API 收费争议，但模型本身为开源编程模型带来新选择。 | [BV1FU8Yz9E7w · 02:25](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=145) | [GitHub](https://github.com/QwenLM/Qwen3-Coder) |
+| GPT-OSS | OpenAI 于 2025-08 发布的开放权重语言模型 gpt-oss-120b 与 gpt-oss-20b，基于 Apache 2.0 许可，支持本地或数据中心部署，具备完整思维链与工具调用能力。 | 2025-08-05 | 考拉认为 GPT-OSS 具备完整思维链与工具调用能力，适合智能体任务和深度定制；并评价 OpenAI 一边发布最强闭源模型拉开距离，一边开源模型示好开发者社区。 | [BV1dXbwzdEuy · 00:40](https://www.bilibili.com/video/BV1dXbwzdEuy?t=40) | [GitHub](https://github.com/openai/gpt-oss) |
+| GPT-5 | OpenAI 于 2025-08 发布的统一大模型系统，具备快速响应与深度推理能力，可按对话内容智能调度不同子模型，覆盖编码、写作、健康等多领域。 | 2025-08-07 | 考拉介绍 GPT-5 为一个统一系统，具备快速响应与深度推理能力，可按对话内容智能调度子模型，在编码、写作、健康等多领域性能提升，并更注重减少幻觉、提升安全性；评价 OpenAI 双管齐下。 | [BV1dXbwzdEuy · 00:58](https://www.bilibili.com/video/BV1dXbwzdEuy?t=58) | [官网](https://openai.com/index/introducing-gpt-5/) |
 
 ## AI Agent 与智能体开发
 
@@ -311,6 +314,8 @@ toc:
 | Conductor | 在 Mac 上用 Git Worktree 隔离工作区并行运行多个 Claude Code 智能体的桌面应用。 | 2025-07-21 | Kondakta（Conductor）是让 Claude Code 具备多任务并行能力的扩展工具，提供漂亮 UI，用 Git Worktree 技术让多个 Agent 在隔离工作区并行开发，可直观看到谁在工作、谁遇到问题、代码变更情况。考栏建议即便有隔离也应规划 Agent 处理不同区域避免冲突。 | [BV1FU8Yz9E7w · 00:01](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=1) | [官网](https://conductor.build) |
 | Qwen Code | 阿里开源、基于 Gemini CLI 改造的终端 AI 编程智能体（CLI）。 | 2025-06-26 | 签问 CLI（Qwen Code）是阿里随 Qwen3-Coder 一同开源的命令行编程智能体，由 Gemini CLI fork 而来，用于验证模型的 Agent 性能；支持在终端中调用 Qwen 模型完成编码任务。 | [BV1FU8Yz9E7w · 02:25](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=145) | [GitHub](https://github.com/QwenLM/qwen-code) |
 | claude-code-reverse | 可视化 Claude Code 与 LLM 交互、拆解其工作机制的开源逆向工具。 | 2025-02-25 | 本频道发布 Claude Code 逆向系列最新成果，包括两期视频及完整更新的第二代逆向工具开源代码；新版本用行为+API 数据逆向方式直观分析 Claude Code 工作原理，拆解其核心工作流、Context 管理、SubAgent 模式等机制，可在工具中查看运行行为细节。 | [BV1Q3hgzCEvk · 01:24](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=84) | [GitHub](https://github.com/yuyz0112/claude-code-reverse) |
+| VoltAgent | 开源的 TypeScript AI 智能体框架，提供 Agent 构建、工具调用、记忆管理与工作流编排能力，配套 VoltOps 平台用于监控和调试多 Agent 协作与动态路由。 | 2025-04-16 | 考拉认为 AI Agent 框架是当下热门赛道，VoltAgent 提供构建、工具调用、记忆与工作流编排及 VoltOps 监控调试，但市面类似产品已不少、与 Master 功能高度重合；不过 VoltAgent 设计更灵活，其团队曾开发 React 热门框架 Refine，开发体验上有见地。 | [BV1dXbwzdEuy · 01:27](https://www.bilibili.com/video/BV1dXbwzdEuy?t=87) | [GitHub](https://github.com/VoltAgent/voltagent) |
+| DSPy | 斯坦福 NLP 实验室推出的声明式 LLM 编程框架，将提示词与优化器统一为代码结构而非纯文本提示，适合构建可组合、可维护的 AI 系统（如分类器、RAG 管道、智能体循环）。 | 2023-01-09 | 考拉认为将 AI 开发从写提示词转向写代码是正确方向，但 DSPy 学习曲线与习惯转变需要时间，理念前沿，能否在工程实践中广泛采用还要看工具链成熟度。 | [BV1dXbwzdEuy · 02:51](https://www.bilibili.com/video/BV1dXbwzdEuy?t=171) | [GitHub](https://github.com/stanfordnlp/dspy) |
 
 ## 数据工程与存储
 
@@ -405,6 +410,7 @@ toc:
 | Graphite | 用 Rust 编写的开源 2D 图形编辑器，定位为兼具光栅与矢量能力的下一代创作工具。 | 2020-04-26 | 一个用 Rust 写的新一代开源图形编辑器，目标是做成像 Photoshop + Illustrator 那样既支持位图又支持矢量的强大工具，性能与跨平台体验是卖点。 | [BV1eo3fzBEgV · 00:01](https://www.bilibili.com/video/BV1eo3fzBEgV?t=1) | [GitHub](https://github.com/GraphiteEditor/Graphite) |
 | AmazingHand | 可 3D 打印、低成本可定制的人形机械手开源硬件项目。 | 2025-06-25 | Amazing Hand 是低成本可定制人形机械手，8 自由度、4 手指、驱动器全内置、可 3D 打印、重 400 克、成本低于 200 欧元；提供构建材料清单、CAD 文件和组装指南及 Python/Arduino 控制示例。考栏认为它降低了机器人技术研发门槛。 | [BV1LDgtzEEGB · 03:25](https://www.bilibili.com/video/BV1LDgtzEEGB?t=205) | [GitHub](https://github.com/pollen-robotics/AmazingHand) |
 | AnimeAI | 聚合 GPT-4o 绘图经验与提示词、可生成动漫风格图片的 AI 绘图平台。 | 2025-07-20 | Anime 是 GPT-4o 绘图平台，除常规 LLM API 集成外，还收集了社交媒体上分享的 GPT-4o 绘图经验，将有趣图片及其提示词思路整理在一起，用户可先浏览风格、再学习修改提示词、最终生成所需图片。 | [BV1FU8Yz9E7w · 01:56](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=116) | [官网](https://animeai.app) |
+| How F1 has evolved since 1950 | ESPN 为庆祝 F1 75 周年制作的交互式可视化专题，用丰富的可视化与交互细节呈现 75 年来 F1 赛车技术的演进之路。 | 2025-08-07 | 考拉认为随着 Web 技术演进，用更生动的网页（丰富可视化与交互）替代静态图文、呈现更有趣的故事，已是许多媒体积极尝试的方向，ESPN 这个 75 年 F1 技术演进网站是其中有趣的例子。 | [BV1dXbwzdEuy · 03:18](https://www.bilibili.com/video/BV1dXbwzdEuy?t=198) | [官网](https://www.espn.com/espn/feature/story/_/id/43832710/how-f1-evolved-1950-where-headed-2026) |
 
 ## 办公与演示
 
@@ -507,3 +513,9 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Lingo.dev | 开源的 AI i18n（国际化/本地化）工具包，集成 AI 可帮助开发者快速实现应用本地化；提供 CLI、CI/CD 工具与 SDK，支持 JSON、YAML、Markdown 等多种格式，可调用官方 AI 后端或自有的 LLM 模型。 | 2024-03-13 | LingoDeep（Lingo.dev）是一个开源的 i18n 工具包。它通过与 AI 集成，可以帮助开发者快速实现应用的本地化。你可以选择使用 Lingo.dev 提供的 AI 后端，或者集成你自己的 LLM 模型。Lingo.dev 提供的 CLI、CI/CD 工具和 SDK，方便你在不同阶段进行本地化工作。它还支持多种格式，包括 JSON、YAML 和 Markdown。对开发者来说，配置之后，就可以让 Lingo 像文档工程师一样参与到项目的开发过程中完成翻译工作。 | [BV1bcNDzpERC · 00:59](https://www.bilibili.com/video/BV1bcNDzpERC?t=59) | [GitHub](https://github.com/lingodotdev/lingo.dev) |
+
+## 学习与教程
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| FFmpeg asm-lessons | FFmpeg 团队在 GitHub 发布的汇编语言教学项目，为参与 FFmpeg 开发的程序员提供从基础到实战的汇编学习路径教程，要求具备 C 语言与高中数学基础。 | 2024-12-28 | 考拉认为在高级语言盛行的今天，FFmpeg 团队仍推广汇编语言教学，体现了对性能优化的极致追求，但学习投入产出比是否值得，大多数开发者需要权衡考虑。 | [BV1dXbwzdEuy · 02:23](https://www.bilibili.com/video/BV1dXbwzdEuy?t=143) | [GitHub](https://github.com/FFmpeg/asm-lessons) |
