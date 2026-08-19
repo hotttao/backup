@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T22:30:12+08:00
+lastmod: 2026-08-19T22:30:14+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -66,6 +66,8 @@ toc:
 | WinApps | 在 Linux 桌面（Ubuntu/Fedora + GNOME/KDE/XFCE）上运行 Windows 应用（如 Microsoft 365、Adobe）的项目，通过在 Docker/Podman/libvirt 虚拟机中运行 Windows 并用 FreeRDP 渲染，将 Windows 应用无缝集成到 Linux。 | 2023-07-05 | 考拉认为该项目类似 WinApps、KasmVNC 等，但在易用性上有所改进；虚拟化方案天然带来性能开销，对图形密集型应用效果可能有限，且明确不支持 Podman 等容器方案，限制了部分用户；相比 Wine 等原生兼容层，更适合偶尔需要使用 Windows 专用软件的场景。 | [BV1Qe4Tz4EGi · 01:24](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=84) | [GitHub](https://github.com/winapps-org/winapps) |
 | Evan Hahn 的命令行脚本集 | 开发者 Evan Hahn 维护近十年的命令行脚本集合，覆盖书签管理、文件操作等 60 多个实用小工具（如 mkcd、timee、trash），多为几行代码解决高频痛点。 | 2025-10-22 | 这种积累体现了务实的工程思维。工具不在于大，而在于精准切中需求。这类个人脚本往往高度定制化，直接照搬可能水土不服，更有价值的是借鉴其中的自动化思路。 | [BV11QxAzvE7U · 00:30](https://www.bilibili.com/video/BV11QxAzvE7U?t=30) | [官网](https://evanhahn.com/scripts-i-wrote-that-i-use-all-the-time/) |
 | GPUI Component | 长桥（Longbridge）开源的基于 GPUI 框架的 Rust 跨平台桌面 UI 组件库，采用无状态组件设计，提供 60+ 开箱即用组件，补充了基于 GPUI 开发桌面应用的 UI 能力。 | 2024-06-13 | 从实际表现来看，GPUI 在性能方面确实有独到之处。更多的 UI 组件也让 GPUI 的上手难度大大降低。 | [BV1DFyoBREyw · 01:54](https://www.bilibili.com/video/BV1DFyoBREyw?t=114) | [GitHub](https://github.com/longbridge/gpui-component) |
+| Fang | Charm 团队（charmbracelet）出的实验性 CLI 脚手架库，为 Cobra 应用一站式提供美化后的帮助/用法页、自动版本管理、隐藏的 man 命令生成与 Shell 补全，只需调用一个函数即可。 | 2025-06-18 | Charm 团队在命令行工具的美学上一直很有追求，延续了这个传统，让 CLI 开发者也能做出像样的命令行程序。 | [BV1rXkSBEEvC · 00:01](https://www.bilibili.com/video/BV1rXkSBEEvC?t=1) | [GitHub](https://github.com/charmbracelet/fang) |
+| OpenTUI | SST 团队开发的 TypeScript 终端 UI 库，原生核心用 Zig 编写并提供 TypeScript 绑定，提供 React 与 SolidJS 两种 Reconciler，声明式构建 TUI，将作为 OpenCode 与 terminal.shop 的基础设施。 | 2025-07-21 | 用前端框架思维做终端应用是个有趣的方向。之前开源的 Ink 项目也支撑了许多 TUI 形态 AI Agent 的开发，但 Ink 的维护不算活跃。OpenTUI 在功能与 UI 组件丰富度以及性能上都有更大的野心，已有生产级项目基于它开发，是值得关注的新项目。 | [BV1rXkSBEEvC · 00:32](https://www.bilibili.com/video/BV1rXkSBEEvC?t=32) | [GitHub](https://github.com/sst/opentui) |
 
 ## 代码质量与 Code Review
 
@@ -277,6 +279,7 @@ toc:
 | Mooncake | 月之暗面（Moonshot AI）开源的以 KV 缓存为中心的 LLM 推理服务框架，包含 Transfer Engine 与分布式存储，支撑 Kimi AI 线上服务。 | 2024-11-28 | 月之暗面（Moonshot AI）公司开源的 LLM 推理服务框架，专门针对 KV 缓存优化设计；这套系统支撑着 Kimi AI 的线上服务，包含 Transfer Engine 和分布式存储两个核心组件；项目在 FAST 2025 会议上获得最佳论文奖，已与 vLLM、SGLang 等主流推理引擎实现集成。Koala 认为，作为知名 AI 服务商开源的核心架构，Mooncake 技术含金量值得关注，KV 缓存优化对大模型推理性能影响巨大；需要注意，这类基础设施项目的落地门槛相对较高，更适合有一定规模与技术积累的团队使用。 | [BV1qtWwzLEeS · 02:21](https://www.bilibili.com/video/BV1qtWwzLEeS?t=141) | [GitHub](https://github.com/kvcache-ai/Mooncake) |
 | Modal Notebooks | Modal 推出的面向 AI 研发的云端协作笔记本环境，冷启动到可用不到 5 秒，最高可切换 256 核 CPU 与 8 块 H100/B200 GPU，内核自动空闲/恢复，支持多人实时协作编辑、Pyright 与 AI 代码补全。 | 2025-09-09 | 考拉认为 Modal 这款产品设计很聪明，将开发测试与生产环境统一，降低了从实验到部署的差异；快速启动与按需付费解决了 notebook 服务的两大痛点；但运行在云端也意味着网络延迟与厂商锁定，对需要本地数据或离线工作的场景仍有局限。 | [BV1Qe4Tz4EGi · 01:54](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=114) | [官网](https://modal.com/blog/notebooks) |
 | Easy Dataset | 用于制作大语言模型微调数据集的工具，可上传 PDF、Markdown 等文档，自动完成文本分块、问题生成与答案构建，支持可视化编辑、多种导出格式及 OpenAI 格式 API，并配套 LLaMA Factory 教程。 | 2025-03-04 | 对于需要快速构建领域数据集的团队来说，确实降低了门槛。但合成数据的质量仍然依赖于底层模型的能力，多样性上也存在挑战，批量生成后的人工审核依然不可省略。另外需要注意的是，项目采用 AGPL 协议，需评估是否适合自身的商业项目。 | [BV11QxAzvE7U · 01:54](https://www.bilibili.com/video/BV11QxAzvE7U?t=114) | [GitHub](https://github.com/ConardLi/easy-dataset) |
+| Slime | 智谱 AI（Zhipu AI / THUDM）开源的面向 RL Scaling 的 LLM 后训练框架，支撑 GLM-4.5/4.6 等模型；通过连接 Megatron 与 SGLang 实现高性能训练，并提供灵活的数据生成接口，也支持 Qwen、DeepSeek、Llama 等系列。 | 2025-06-18 | 大模型训练框架的开源对行业是好事，能降低后训练的技术门槛。不过，这类框架的使用门槛仍然不低，更适合有 GPU 集群和训练经验的专业模型团队。 | [BV1rXkSBEEvC · 02:56](https://www.bilibili.com/video/BV1rXkSBEEvC?t=176) | [GitHub](https://github.com/THUDM/slime) |
 
 ## AI Agent 与智能体开发
 
@@ -352,6 +355,7 @@ toc:
 | Exa Code | Exa 推出的面向编程 Agent 的代码搜索引擎，给定查询可返回精确、密集的几百个 Token 的网页代码上下文（而非冗长文档），通过专门的代码索引与代码样例检索降低编码幻觉。 | 2025-09-25 | 考拉认为针对 AI 编程场景的搜索确实是刚需，尤其在海量开源库和 API 文档面前；Exa Code 的高召回率设计很实用，但实际效果与成本还需用过才知道。 | [BV1rSnRzFE9i · 01:24](https://www.bilibili.com/video/BV1rSnRzFE9i?t=84) | [官网](https://exa.ai/blog/exa-code) |
 | MCP Inspector | 用于测试与调试 MCP（Model Context Protocol）服务器的开发者工具，提供 Web、CLI、TUI 三种检查方式，支持标准输入输出、SSE 与流式 HTTP 等所有传输方式，并内置与大语言模型交互的测试环境。 | 2024-10-03 | 考拉认为随着 AI 应用架构走向标准化，专用调试工具变得必要；该项目填补了 MCP 生态的工具缺口，对正在构建 MCP 服务器的开发者实用性强。 | [BV1LosFzrEW5 · 00:01](https://www.bilibili.com/video/BV1LosFzrEW5?t=1) | [GitHub](https://github.com/modelcontextprotocol/inspector) |
 | Vercel Workflow | Vercel 开源的 TypeScript 持久化工作流框架（Workflow SDK），通过 useWorkflow 指令为普通函数赋予自动持久化、状态保存与可观测性，无需配置队列或调度器，可在本地 Docker 或云平台运行，适合长时间运行流程与 AI Agent。 | 2025-10-23 | 这种声明式的持久化方式确实简化了开发体验，但目前项目还在 Beta 阶段，生产环境使用需要关注其稳定性和性能表现。 | [BV11QxAzvE7U · 02:22](https://www.bilibili.com/video/BV11QxAzvE7U?t=142) | [GitHub](https://github.com/vercel/workflow) |
+| Skyvern | 基于 AI 的浏览器自动化平台，用自然语言指令完成网页操作，支持验证码识别、2FA 认证、代理网络等，典型场景包括批量填表、发票下载、自动采购，定位偏企业集成、API First。 | 2024-02-28 | 和其他 AI 浏览器工具相比，Skyvern 的定位更偏企业集成。Browser Use 等开源框架虽然灵活，但需要自己搭建基础设施；Stagehand 在 Playwright 上加了 AI 层，仍需开发者混合写代码和自然语言。Skyvern 走的是 API First 路线，专注更具体的企业办公场景，牺牲一点通用性，但保证开箱即用。 | [BV1rXkSBEEvC · 02:29](https://www.bilibili.com/video/BV1rXkSBEEvC?t=149) | [GitHub](https://github.com/Skyvern-AI/skyvern) |
 
 ## 数据工程与存储
 
@@ -390,6 +394,8 @@ toc:
 | Spock | pgEdge 开源的 PostgreSQL 逻辑多主（multi-master）复制扩展，支持 PostgreSQL 15/16/17/18+，允许多个节点同时接受写入并通过逻辑复制同步，要求各节点表结构（表名、列类型、约束）完全一致，需基于打过补丁的 PostgreSQL 源码构建。 | 2022-12-29 | 考拉认为多主复制一直是分布式数据库的难题，冲突处理与一致性保证都需谨慎设计；Spock 需要修改 PostgreSQL 内核，增加了维护成本与升级复杂度；对确实需要多主架构的场景值得尝试，但对大多数应用，主从复制配合读写分离可能是更稳妥的选择。 | [BV1Qe4Tz4EGi · 02:52](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=172) | [GitHub](https://github.com/pgEdge/spock) |
 | Halloy | 用 Rust 编写、基于 Iced GUI 库的现代化开源 IRC 客户端，支持 macOS、Windows 与 Linux，兼容 IRCv3.2 规范与 SASL 认证，具备多服务器/多频道管理、命令自动补全、DCC 文件传输与自定义主题，已发布于 Flathub 与 Snap Store。 | 2022-04-13 | 考拉认为在大多数人眼中 IRC 已过时，但在特定社群仍不可替代；用现代技术栈重构老牌客户端，体验提升明显，对需要接入开源社区或技术讨论的用户是不错的选择。 | [BV1LosFzrEW5 · 03:22](https://www.bilibili.com/video/BV1LosFzrEW5?t=202) | [GitHub](https://github.com/squidowl/halloy) |
 | Apache Iceberg | Apache 软件基金会的开源表格式（open table format），面向海量分析型数据，在文件之上增加元数据层，实现 schema 演进、分区隐藏与时间旅行等特性，允许多个查询引擎（Spark、Trino、Flink、Presto、Hive 等）同时安全读写同一张表，支持增量更新与数据压缩。 | 2018-11-19 | 考拉认为数据湖格式之争已趋于明朗，Iceberg 在企业级应用中占据优势地位，相比 Delta Lake 和 Hudi，其中立性与多引擎支持更具吸引力；不过学习曲线陡峭、复杂度不低，适合有专业数据团队的组织，对中小规模数据需求可能过度工程化。 | [BV1LosFzrEW5 · 01:57](https://www.bilibili.com/video/BV1LosFzrEW5?t=117) | [GitHub](https://github.com/apache/iceberg) |
+| pg_lake | Snowflake 开源的 PostgreSQL 扩展集，让 Postgres 用标准 SQL 直接查询、管理与写入 Iceberg 表及数据湖中的 CSV/JSON/Parquet 文件，无需额外 ETL，源自其收购的 Crunchy Data。 | 2025-11-04 | 对于重度依赖 Postgres 的团队来说是个实用工具，不需要额外的 ETL 就能接入数据湖。不过 Snowflake 开源这个项目的动机也很明显，就是为自家的 Lakehouse 生态进一步铺路，也是收购 Crunch Data 之后成功推出的产品功能。 | [BV1rXkSBEEvC · 01:00](https://www.bilibili.com/video/BV1rXkSBEEvC?t=60) | [GitHub](https://github.com/Snowflake-Labs/pg_lake) |
+| TOON | 专为 LLM 设计的序列化格式（Token-Oriented Object Notation），在保持可读性的同时大幅减少 Token 消耗；对表格型数据比 JSON 节省 30%–60% Token，融合 YAML 缩进与 CSV 表格思路，并针对 LLM 解析优化。 | 2025-10-22 | 这个工具在 Token 成本敏感的场景下确实有价值，但额外的抽象也意味着学习与维护成本较高。考虑到对应的实现并不复杂且自定义需求多，自行维护一个更加可定制的版本，也许也是一个好的选择。 | [BV1rXkSBEEvC · 01:30](https://www.bilibili.com/video/BV1rXkSBEEvC?t=90) | [GitHub](https://github.com/toon-format/toon) |
 
 ## 协作与项目管理
 
