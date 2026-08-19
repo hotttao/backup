@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:04+08:00
+lastmod: 2026-08-19T12:38:05+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -240,6 +240,7 @@ toc:
 | TokenDagger | 高性能的 token 编解码器，作为 tiktoken 的替代实现，用 C++ 编写以加速大模型文本的 token 化。 | 2025-06-22 | 一个用 C++ 写的高性能 token 编码器/解码器，用来替代 Python 的 tiktoken，速度更快，适合在大模型推理与预处理里做文本的 token 化。 | [BV1eo3fzBEgV · 03:23](https://www.bilibili.com/video/BV1eo3fzBEgV?t=203) | [GitHub](https://github.com/M4THYOU/TokenDagger) |
 | Cactus | 面向移动端/手机的开源大模型运行运行时，让本地 LLM 推理跑在手机上。 | 2025-04-23 | 一个把大模型搬到手机上本地运行的运行时，相当于'手机里的 Ollama'，主打在移动设备上进行隐私友好的本地推理，无需联网。 | [BV1PYMfz5ENn · 01:30](https://www.bilibili.com/video/BV1PYMfz5ENn?t=90) | [GitHub](https://github.com/cactus-compute/cactus) |
 | uzu | 专为 Apple Silicon 等 AI 芯片打造的高性能 AI 模型推理引擎。 | 2025-06-23 | UZU 是专为 AI 芯片设计的高性能 AI 模型推理引擎，提供简单 API，支持 GPU Metal 与 MPS Graph 混合架构及统一模型配置，能追踪计算过程确保结果准确；提供 Swift 绑定便于在 iOS/macOS 使用，在多项评测中比 llama.cpp 更胜一筹。 | [BV1LDgtzEEGB · 02:57](https://www.bilibili.com/video/BV1LDgtzEEGB?t=177) | [GitHub](https://github.com/trymirai/uzu) |
+| Qwen3-Coder | 阿里开源的 480B 参数 Agent 编程大模型，擅长长上下文与软件工程任务。 | 2025-07-22 | 阿里云通义千问团队开源 Qwen3-Coder，在 SWE-bench 基准达 69.6% 准确率，性能媲美 Claude Sonnet 4，支持 256K 原生上下文、可扩展至 100 万 Token；团队还 fork Gemini CLI 开源了 Qwen Code 用于验证模型 Agent 性能。考栏认为发布后虽有阿里云 API 收费争议，但模型本身为开源编程模型带来新选择。 | [BV1FU8Yz9E7w · 02:25](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=145) | [GitHub](https://github.com/QwenLM/Qwen3-Coder) |
 
 ## AI Agent 与智能体开发
 
@@ -303,6 +304,8 @@ toc:
 | Gemini CLI | Google 开源的终端 AI agent，可在命令行中理解代码库、执行任务并借助 Gemini 大模型进行对话与自动化操作。 | 2025-04-17 | Google 开源的终端 agent，对标 Claude Code，可在命令行里直接操作代码库、跑命令、做代码修改；免费额度大、速度快，适合在终端中完成编码与自动化任务。 | [BV1wTgoz3E8M · 00:01](https://www.bilibili.com/video/BV1wTgoz3E8M?t=1) | [GitHub](https://github.com/google-gemini/gemini-cli) |
 | BrowserOS | 基于 Chromium 的'智能体浏览器'，内置 AI agent 可在网页中自主执行任务与操作。 | 2025-05-18 | 一个带 AI agent 的浏览器（基于 Chromium），可以让 agent 自动在网页里点按、填表、操作，相当于把智能体装进浏览器里替你干活。 | [BV1PYMfz5ENn · 02:00](https://www.bilibili.com/video/BV1PYMfz5ENn?t=120) | [GitHub](https://github.com/browseros-ai/BrowserOS) |
 | Kiro | AWS 推出的以规范驱动开发（Spec-Driven Development）为核心的 AI 编程助手/IDE。 | 2025-07-15 | Carol（Kiro）是 AWS 推出的 AI 驱动开发工具，最大特色是预先定义好的开发计划、设计文档、步骤拆分等流程（Spec-Driven Development），用户也可选择轻量 Web Coding 或流程严格的 Spec Coding；依托 Amazon 与 Anthropic 合作获得更多 Claude 模型额度。但考栏认为流程过于严格在灵活性上有所欠缺。 | [BV1LDgtzEEGB · 00:32](https://www.bilibili.com/video/BV1LDgtzEEGB?t=32) | [官网](https://kiro.dev) |
+| Conductor | 在 Mac 上用 Git Worktree 隔离工作区并行运行多个 Claude Code 智能体的桌面应用。 | 2025-07-21 | Kondakta（Conductor）是让 Claude Code 具备多任务并行能力的扩展工具，提供漂亮 UI，用 Git Worktree 技术让多个 Agent 在隔离工作区并行开发，可直观看到谁在工作、谁遇到问题、代码变更情况。考栏建议即便有隔离也应规划 Agent 处理不同区域避免冲突。 | [BV1FU8Yz9E7w · 00:01](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=1) | [官网](https://conductor.build) |
+| Qwen Code | 阿里开源、基于 Gemini CLI 改造的终端 AI 编程智能体（CLI）。 | 2025-06-26 | 签问 CLI（Qwen Code）是阿里随 Qwen3-Coder 一同开源的命令行编程智能体，由 Gemini CLI fork 而来，用于验证模型的 Agent 性能；支持在终端中调用 Qwen 模型完成编码任务。 | [BV1FU8Yz9E7w · 02:25](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=145) | [GitHub](https://github.com/QwenLM/qwen-code) |
 
 ## 数据工程与存储
 
@@ -360,6 +363,7 @@ toc:
 | Liveblocks AI Copilots | Liveblocks 推出的 AI Copilots 功能，将 AI 能力集成进其在线协同服务，为文档编辑、评论、问答等场景提供预构建 UI，可快速为产品加入内容续写、总结、翻译和问答等 AI 功能，并支持将结构化 AI 输出渲染为富样式。 | 2025-01-15 | Liveblocks 是一个在线协同服务，能够快速为应用添加各种协同功能，比如多人编辑、评论、通知等。现在它更进一步集成了 AI 功能，把该功能集成为 AI Copilots，在文档编辑、评论、问答等场景中使用它提供的预设 UI，就能快速为产品加入内容续写、总结、翻译和问答等典型 AI 功能。同时，Liveblocks 的设计也保持灵活，例如用户可以将 AI 结构化的输出渲染为丰富的样式而不仅是文本，增强了可读性和交互性。 | [BV1bcNDzpERC · 02:24](https://www.bilibili.com/video/BV1bcNDzpERC?t=144) | [官网](https://liveblocks.io) |
 | Automatisch | 开源的 Zapier 替代品，通过可视化工作流把不同应用和服务连接起来实现自动化。 | 2021-09-30 | 一个开源的自动化工作流工具，相当于自建的 Zapier，可以用可视化方式把各种服务串起来做自动化；强调自托管、数据可控。 | [BV1wTgoz3E8M · 01:51](https://www.bilibili.com/video/BV1wTgoz3E8M?t=111) | [GitHub](https://github.com/automatisch/automatisch) |
 | Backlog.md | 基于本地 Markdown 文件的看板/任务管理工具，用纯文本文件管理项目待办。 | 2025-06-04 | 一个基于 Markdown 文件的看板工具，所有任务和看板状态都存放在本地 .md 文件里，可以用任意编辑器或 Git 管理，主打轻量、可版本化。 | [BV1PYMfz5ENn · 00:32](https://www.bilibili.com/video/BV1PYMfz5ENn?t=32) | [GitHub](https://github.com/MrLesk/Backlog.md) |
+| Fider | 开源的产品反馈收集与优先级排序平台，支持投票与自托管。 | 2017-01-17 | Fyder（Fider）是开源产品反馈管理平台，帮助团队集中收集、讨论和优先排序用户建议，支持用户投票、多语言界面、自定义品牌、SSO 登录等；相比 Kenneth 等商业竞品提供更经济的自托管方案，适合初创和中小团队。 | [BV1FU8Yz9E7w · 00:28](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=28) | [GitHub](https://github.com/getfider/fider) |
 
 ## 多媒体与图形
 
@@ -394,6 +398,7 @@ toc:
 | Spark | 为 Three.js 设计的 3D Gaussian Splatting（3D 高斯泼溅）渲染器，将高效渲染方案融入 Three.js 渲染管线，原生支持多种文件格式、GPU Shader Graph 动态编辑，并在 WebGL2 环境下保持高兼容性与流畅度。 | 2025-05-23 | Spark 是一个为 Three.js 设计的 3D Gaussian Splatting 渲染器。Gaussian Splatting 实际上是一种高效渲染方案，可以实现逼真的光照和透明度效果，同时兼顾性能和真实感。Spark 将 Splatting 完美融入 Three.js 渲染管线，原生支持多种文件格式，支持 GPU Shader Graph 实现动态编辑，并在 WebGL2 环境下保持高兼容性和流畅度，为开发者提供灵活的交互和混合渲染能力。 | [BV1f6Msz6EV7 · 03:16](https://www.bilibili.com/video/BV1f6Msz6EV7?t=196) | [GitHub](https://github.com/sparkjsdev/spark) |
 | Graphite | 用 Rust 编写的开源 2D 图形编辑器，定位为兼具光栅与矢量能力的下一代创作工具。 | 2020-04-26 | 一个用 Rust 写的新一代开源图形编辑器，目标是做成像 Photoshop + Illustrator 那样既支持位图又支持矢量的强大工具，性能与跨平台体验是卖点。 | [BV1eo3fzBEgV · 00:01](https://www.bilibili.com/video/BV1eo3fzBEgV?t=1) | [GitHub](https://github.com/GraphiteEditor/Graphite) |
 | AmazingHand | 可 3D 打印、低成本可定制的人形机械手开源硬件项目。 | 2025-06-25 | Amazing Hand 是低成本可定制人形机械手，8 自由度、4 手指、驱动器全内置、可 3D 打印、重 400 克、成本低于 200 欧元；提供构建材料清单、CAD 文件和组装指南及 Python/Arduino 控制示例。考栏认为它降低了机器人技术研发门槛。 | [BV1LDgtzEEGB · 03:25](https://www.bilibili.com/video/BV1LDgtzEEGB?t=205) | [GitHub](https://github.com/pollen-robotics/AmazingHand) |
+| AnimeAI | 聚合 GPT-4o 绘图经验与提示词、可生成动漫风格图片的 AI 绘图平台。 | 2025-07-20 | Anime 是 GPT-4o 绘图平台，除常规 LLM API 集成外，还收集了社交媒体上分享的 GPT-4o 绘图经验，将有趣图片及其提示词思路整理在一起，用户可先浏览风格、再学习修改提示词、最终生成所需图片。 | [BV1FU8Yz9E7w · 01:56](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=116) | [官网](https://animeai.app) |
 
 ## 办公与演示
 
@@ -413,6 +418,7 @@ toc:
 | Leaflet | 轻量、无需账号即可使用的文档与发布工具，介于 Notion 与 Google Docs 之间，支持富文本块、协作编辑与一键分享，并基于 AT Protocol 实现社交化发布。 | 2024-09-26 | Koala 介绍 Leaflet 是一款快速、灵活、有趣的文档工具，无需注册账号就能直接创建和分享文档，介于 Notion 与 Google Docs 之间，支持富文本块与协作编辑，适合随手记录与发布想法。 | [BV1UYQbYeELx · 01:00](https://www.bilibili.com/video/BV1UYQbYeELx?t=60) | [官网](https://leaflet.pub) |
 | Quarkdown | 基于 Markdown 的现代排版系统，通过扩展语法与配套编译器将文档编译为可印刷书籍与交互式演示文稿，并支持自定义函数和变量实现动态内容。 | 2024-01-30 | Quarkdown 是一款基于 Markdown 的现代排版系统，核心概念是多功能性。通过内置的扩展语法和配套的编译器，它可以将 Quarkdown 文档编译成可直接用于印刷的书籍和交互式演示文稿。它不仅可以用于做复杂的排版布局，还支持自定义函数和变量实现各种动态视图，让你的 Quarkdown 文件更加强大。总的来说，Quarkdown 扩展了 Markdown 的功能，让它不仅仅是简单的文本标记语言，更像是一个轻量级的排版工具。 | [BV1drTUzPEuD · 01:02](https://www.bilibili.com/video/BV1drTUzPEuD?t=62) | [GitHub](https://github.com/iamgio/quarkdown) |
 | 思源笔记 (Siyuan) | 开源的本地优先个人知识管理与笔记软件，支持块级编辑、双向链接与 Markdown。 | 2020-08-30 | 一个开源的本地优先笔记/知识管理工具，支持块级编辑、双向链接、Markdown，数据存在本地可控，适合做个人知识库。 | [BV1PYMfz5ENn · 03:26](https://www.bilibili.com/video/BV1PYMfz5ENn?t=206) | [GitHub](https://github.com/siyuan-note/siyuan) |
+| Maybe | 设计优雅的开源个人理财应用（现已停止开源维护，转向 B2B）。 | 2024-01-01 | 个人理财工具 Maybe 在 v0.6.0 版本宣布停止开源维护，公司转向 B2B 金融预测业务；该应用曾被誉设计优雅的开源理财工具，支持多货币、AI 聊天助手、预算管理等。团队在告别信中分析了个人理财应用面临的银行数据、隐私等挑战。 | [BV1FU8Yz9E7w · 03:24](https://www.bilibili.com/video/BV1FU8Yz9E7w?t=204) | [GitHub](https://github.com/maybe-finance/maybe) |
 
 ## 开发者认证与招聘
 
