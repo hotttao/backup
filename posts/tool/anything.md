@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:16+08:00
+lastmod: 2026-08-19T12:38:19+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -58,6 +58,8 @@ toc:
 | NoxDir | 命令行磁盘使用可视化工具，通过检测磁盘和分区并以交互式终端界面展示已用空间、可用空间和总容量，支持键盘操作快速定位占用空间大的文件与目录，跨 Windows、macOS、Linux 平台，完全本地运行不收集数据。 | 2025-05-02 | NOXDEA（NoxDir）是一个命令行工具。它通过检测磁盘和分区，然后用一个交互式的终端界面展示磁盘的使用情况，比如已用空间、可用空间和总容量。你可以用键盘操作，快速找到占用空间大的文件和目录，方便清理。NoxDir 支持 Windows、macOS 和 Linux，而且因为它适配了多种系统指令，整体执行速度很快。它也完全本地运行，不会收集你的任何数据。如果你觉得你的磁盘空间不够用，或者想快速找到占用空间的文件，就可以用它扫描一次看看结果。 | [BV1bcNDzpERC · 00:01](https://www.bilibili.com/video/BV1bcNDzpERC?t=1) | [GitHub](https://github.com/crumbyte/noxdir) |
 | Terminalizer | 可将终端会话录制为 YAML 文件并一键生成 GIF 动画，方便分享命令行操作过程。 | 2018-07-22 | 一个能把你的终端录制成 GIF 的小工具，先把终端操作录成 YAML，再生成 GIF，适合在文档或社交平台展示命令行用法。 | [BV1wTgoz3E8M · 00:31](https://www.bilibili.com/video/BV1wTgoz3E8M?t=31) | [GitHub](https://github.com/faressoft/terminalizer) |
 | neko | 基于 WebRTC 的虚拟浏览器，可在浏览器中多人共享、协作使用同一个远程浏览器实例。 | 2020-03-14 | 一个通过浏览器就能访问的远程虚拟浏览器，支持多人同时看到并操作同一个浏览器画面，适合演示、协作或做隔离的网页环境。 | [BV1wTgoz3E8M · 03:17](https://www.bilibili.com/video/BV1wTgoz3E8M?t=197) | [GitHub](https://github.com/m1k1o/neko) |
+| asciinema | 终端会话录制与分享工具，3.0 版本用 Rust 完全重写，启动速度显著提升，并新增实时流媒体功能。 | 2025-09-15 | 发布 3.0 版本，完全使用 Rust 重写，启动速度显著提升；新版本引入了实时流媒体功能，支持本地和远程两种模式，让终端录制可以实时分享给其他人观看；文件格式升级到 V3，采用时间间隔而非绝对时间戳，大幅简化了录制内容的编辑过程。Koala 认为 Rust 重写带来的性能提升和实时流媒体功能都很实用，特别是教学和演示场景。 | [BV1qtWwzLEeS · 00:29](https://www.bilibili.com/video/BV1qtWwzLEeS?t=29) | [官网](https://asciinema.org) |
+| Murex | 现代化、类型感知的 Shell 与脚本环境，原生支持 JSON/YAML/CSV 等数据格式的直接操作，并集成 AI 助手与智能提示。 | 2017-03-26 | 一个现代化的 SHELL 环境，原生支持 JSON、YAML、CSV 等数据格式的直接操作，无需额外的解析工具；这个 SHELL 还集成了 AI 助手和智能提示功能，能够从 man 页面和其他来源提取上下文信息；类 pip 的包管理器让配置共享变得简单，用户可以轻松在不同机器间迁移开发环境。Koala 认为相比传统 bash 的纯文本处理，Murex 的数据感知能力确实解决了现代开发中的痛点，特别是处理 API 响应和配置文件时；不过，智能提示功能的实际效果还需要在复杂场景下验证。 | [BV1qtWwzLEeS · 00:58](https://www.bilibili.com/video/BV1qtWwzLEeS?t=58) | [GitHub](https://github.com/lmorg/murex) |
 
 ## 代码质量与 Code Review
 
@@ -144,6 +146,7 @@ toc:
 | StreamDown | Vercel 开源的 react-markdown 替代品，专为 AI 流式输出场景设计，能优雅处理未闭合 Markdown 块，支持 GitHub 风格 Markdown 与数学公式渲染，并内置防提示注入的安全机制。 | 2025-08-15 | 考栏认为，随着 AI 应用的普及，传统的文档渲染库确实暴露出不足；StreamDown 这种针对性优化体现了开发工具与应用场景深度结合的趋势。 | [BV15ThyzLEin · 01:28](https://www.bilibili.com/video/BV15ThyzLEin?t=88) | [GitHub](https://github.com/vercel/streamdown) |
 | Webiny | 开源的、自托管于 AWS serverless（Lambda/DynamoDB/S3）的内容平台与 TypeScript 框架，用 Pulumi 做基础设施即代码，支持多租户、生命周期钩子、GraphQL 扩展与插件化定制，并内置 AI MCP 集成。 | 2018-01-09 | 考栏认为，Webiny 的插件系统设计让定制化不再是痛苦的分叉维护，而是优雅的扩展开发。 | [BV15ThyzLEin · 02:21](https://www.bilibili.com/video/BV15ThyzLEin?t=141) | [GitHub](https://github.com/webiny/webiny-js) |
 | Massimo | 由 Platformatic/Matteo Collina 开源的类型安全 API 客户端生成器，从 OpenAPI 与 GraphQL schema 自动生成 TypeScript 类型安全客户端；Node.js 端基于高性能 Undici，浏览器端使用原生 Fetch API，单条 CLI 命令即可生成含连接池、HTTP/2 与错误处理的客户端。 | 2025-09-01 | 考栏认为，API 客户端生成并非新鲜概念，但 Massimo 在性能优化和平台适配上确实用了心思，作者 Node.js core team member 的身份也提供了背书；不过在 Swagger Codegen 和 OpenAPI Generator 已经占据主流的情况下，新工具想要突围还需要更多差异化优势。 | [BV1TsYVzJEuo · 01:59](https://www.bilibili.com/video/BV1TsYVzJEuo?t=119) | [GitHub](https://github.com/platformatic/massimo) |
+| Jetzig | 基于 Zig 语言编写的 Web 框架，采用文件式路由与 RESTful 设计，默认渲染 JSON，并支持 Zmpl 模板系统与中间件。 | 2024-01-20 | 基于 Zig 编写的 Web 框架，采用文件式路由和 RESTful 设计；框架默认渲染 JSON 结果，同时支持 Zmpl 模板系统处理 HTML 渲染逻辑；提供了对 HTTP 的中间件支持以及会话管理和数据库查询功能，提升开发效率。Koala 认为 Zig 语言的性能优势确实吸引人，但相比成熟的 Web 框架，Zig 的文档和社区支持还有待完善，更适合愿意投入和学习 Zig 语言的开发者。 | [BV1qtWwzLEeS · 03:19](https://www.bilibili.com/video/BV1qtWwzLEeS?t=199) | [官网](https://jetzig.dev) |
 
 ## 测试与质量保障
 
@@ -261,6 +264,7 @@ toc:
 | POML | 微软推出的提示词编排标记语言（Prompt Orchestration Markup Language），采用类似 HTML 的语法，通过 Raw、Task、Example 等组件化标签组织提示词结构，支持多数据类型集成与 VSCode 扩展、多语言 SDK。 | 2024-11-29 | 考拉认为标准化提示词确实是行业需求，但能否被广泛采用还要看生态建设，毕竟提示词工程目前更多依赖经验而非工具。 | [BV1nQYkzWEcw · 03:21](https://www.bilibili.com/video/BV1nQYkzWEcw?t=201) | [GitHub](https://github.com/microsoft/poml) |
 | Langfuse | 开源的大语言模型工程平台，为 LLM 应用提供追踪、评估、提示管理与指标监控功能，支持本地自托管及 Python、JavaScript 等 SDK，覆盖从数据到实验平台的完整链路。 | 2023-05-18 | 考拉认为在 LLM 应用爆发的当下，开发者确实需要更专业的工程化工具；不过市面类似产品众多，Langfuse 能否真正解决痛点还需实际使用验证其可用性与稳定性，目前开发者口碑不错。 | [BV16GeEzdEme · 00:01](https://www.bilibili.com/video/BV16GeEzdEme?t=1) | [GitHub](https://github.com/langfuse/langfuse) |
 | Gemini 2.5 Flash Image | Google 推出的先进图像生成与编辑模型（代号 Nano Banana），支持角色一致性保持、自然语言精准局部编辑、多图融合与真实世界知识理解。 | 2025-08-26 | 考栏认为 Nano Banana（Gemini 2.5 Flash Image）核心突破在于精确图片编辑能力，能持续跟随用户的连续编辑指令；在人物相似度保持上实现质的飞跃，即使经过多次编辑人物依然能保持原有面部特征，从给宠物穿芭蕾舞裙到自己放进不同历史年代效果都极其逼真。 | [BV15ThyzLEin · 00:01](https://www.bilibili.com/video/BV15ThyzLEin?t=1) | [官网](https://ai.google.dev/gemini-api/docs/image-generation) |
+| Mooncake | 月之暗面（Moonshot AI）开源的以 KV 缓存为中心的 LLM 推理服务框架，包含 Transfer Engine 与分布式存储，支撑 Kimi AI 线上服务。 | 2024-11-28 | 月之暗面（Moonshot AI）公司开源的 LLM 推理服务框架，专门针对 KV 缓存优化设计；这套系统支撑着 Kimi AI 的线上服务，包含 Transfer Engine 和分布式存储两个核心组件；项目在 FAST 2025 会议上获得最佳论文奖，已与 vLLM、SGLang 等主流推理引擎实现集成。Koala 认为，作为知名 AI 服务商开源的核心架构，Mooncake 技术含金量值得关注，KV 缓存优化对大模型推理性能影响巨大；需要注意，这类基础设施项目的落地门槛相对较高，更适合有一定规模与技术积累的团队使用。 | [BV1qtWwzLEeS · 02:21](https://www.bilibili.com/video/BV1qtWwzLEeS?t=141) | [GitHub](https://github.com/kvcache-ai/Mooncake) |
 
 ## AI Agent 与智能体开发
 
@@ -366,6 +370,7 @@ toc:
 | RustFS | 用 Rust 编写、兼容 S3 协议的高性能分布式开源对象存储系统。 | 2025-07-02 | RustFS 是用 Rust 开发的高性能分布式对象存储系统，可看作 MinIO 的替代方案，兼容 S3 协议、开源、支持数据湖/AI/大数据，采用 Apache 2.0 许可；在 MinIO 变更 license 后更具竞争力。但考栏提醒其仍处于快速开发阶段，不建议用于生产环境。 | [BV1LDgtzEEGB · 01:30](https://www.bilibili.com/video/BV1LDgtzEEGB?t=90) | [GitHub](https://github.com/rustfs/rustfs) |
 | CopyParty | 单文件实现的便携式多协议文件服务器，集成媒体浏览与上传功能。 | 2019-05-26 | CopyParty 用单个脚本文件搞定文件服务器所有需求，支持 FTP、WebDAV、FTP、TFTP、SMB 多种协议，还能做音乐播放、图片浏览、Markdown 编辑，功能多但文档厚。考栏认为这种瑞士军刀式工具在快速搭建文件共享场景很实用。 | [BV1Q3hgzCEvk · 00:01](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=1) | [GitHub](https://github.com/9001/copyparty) |
 | PageIndex | 无向量、基于推理的 RAG 文档检索框架，将长文档构建为层级树索引并模拟人类专家用树搜索做可追溯检索，在 FinanceBench 金融文档分析测试中达到 98.7% 准确率。 | 2025-04-01 | 考栏认为，从向量相似性到推理检索的转变反映了 AI 系统从传统匹配向逻辑推理的进化；这种方法特别适合处理结构复杂的专业文档，可能会重新定义企业知识管理的标准。 | [BV15ThyzLEin · 00:32](https://www.bilibili.com/video/BV15ThyzLEin?t=32) | [GitHub](https://github.com/VectifyAI/PageIndex) |
+| Fluid | 云原生（Kubernetes）分布式数据集编排与加速平台，通过分布式缓存实现数据预热与加速，主要服务大数据与 AI 应用场景。 | 2020-08-30 | 一个专门为 K8S 环境设计的数据平台，主要服务大数据和 AI 应用场景；平台通过分布式缓存，实现数据预热和加速，支持异构数据源的统一管理；系统还提供数据感知的调度策略，根据应用和数据特性优化云端部署。Koala 认为，在 AI 训练和大数据处理日益普及的背景下，数据 IO 确实是一个值得优化的方向；不过云原生技术栈带来便利的同时，其复杂性也意味着实施成本不低，需要团队具备相当的运维能力。 | [BV1qtWwzLEeS · 01:54](https://www.bilibili.com/video/BV1qtWwzLEeS?t=114) | [官网](https://fluid.cloudnative.io) |
 
 ## 协作与项目管理
 
@@ -431,6 +436,7 @@ toc:
 | EvilCharts | 基于 shadcn/ui 与 Recharts 构建的动画图表组件库，提供美观、可交互的数据可视化组件，可像 shadcn/ui 一样通过 CLI 安装或复制代码自由定制。 | 2025-07-16 | 考拉认为 EvilCharts 在成熟图表库之外提供了更注重视觉效果的新选择，专注美观的动画图表，让枯燥数据更生动有吸引力，且像 shadcn/ui 一样可通过 CLI 安装或复制代码自由修改定制。 | [BV1nQYkzWEcw · 00:01](https://www.bilibili.com/video/BV1nQYkzWEcw?t=1) | [GitHub](https://github.com/legions-developer/evilcharts) |
 | ASCIIFlow | 基于浏览器的 ASCII 流程图/架构图绘制工具，提供方框、箭头、线条、文本与自由绘制，支持标准 ASCII 与扩展 ASCII 模式，可复制到剪贴板并导出纯文本，便于直接嵌入代码注释与文档。 | 2014-01-05 | 考栏认为，在各种现代图表工具泛滥的今天，ASCII 流程图反而显得别有一番实用价值：简单、轻量、兼容性强，这些特点让它在技术文档领域依然有立足之地。 | [BV1TsYVzJEuo · 00:32](https://www.bilibili.com/video/BV1TsYVzJEuo?t=32) | [GitHub](https://github.com/lewish/asciiflow) |
 | Mediabunny | 纯 TypeScript、零依赖的浏览器端媒体处理库，可直接在浏览器/Node.js 中读取、写入与转换 MP4、WebM、MP3 等媒体文件，借助 WebCodecs 硬件加速，支持微秒级精度剪辑、转封装/转码，性能远超传统工具。 | 2025-06-27 | 考栏认为，把复杂的媒体处理搬到浏览器端确实是个有趣的方向；Mediabunny 对在线音视频编辑等场景是一个不错的补充。 | [BV1TsYVzJEuo · 02:54](https://www.bilibili.com/video/BV1TsYVzJEuo?t=174) | [GitHub](https://github.com/Vanilagy/mediabunny) |
+| LÖVE | 基于 Lua 的开源 2D 游戏开发框架，支持 Windows、macOS、Linux、Android、iOS 多平台，提供简洁 API，以《小丑牌》等作品证明了商业化可行性。 | 2008-01-13 | 基于 Lua 的开源 2D 游戏开发框架，支持 Windows、macOS、Linux、Android 和 iOS 多平台，提供简洁的 API，Lua 脚本语言降低了学习门槛；今年大热的独立游戏《小丑牌》就是用 LÖVE 开发的，证明了这个框架的商业化可行性。 | [BV1qtWwzLEeS · 00:01](https://www.bilibili.com/video/BV1qtWwzLEeS?t=1) | [官网](https://love2d.org) |
 
 ## 办公与演示
 
