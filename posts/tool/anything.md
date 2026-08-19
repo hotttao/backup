@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T12:38:24+08:00
+lastmod: 2026-08-19T22:30:08+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -351,7 +351,6 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
-| Apache Iceberg | 开放式数据湖表格式 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/apache/iceberg) |
 | ZeroFS | 开源日志结构文件系统，将 S3 兼容对象存储直接挂载为 POSIX 文件系统，支持 NFS 与 9P 协议并通过 NBD 暴露为块设备，数据以 XChaCha20-Poly1305 加密、Zstd 压缩，通过了 pjdfstest（8600+ 用例）与 Jepsen 验证，可在其上编译 Linux 内核。 | 2026-01-13 | 把对象存储当本地盘用的方案不少（如 JuiceFS、S3BucketFS），ZeroFS 的激进之处在于单进程完成所有事并直接支持块设备语义；测试投入也远超多数同类开源项目，适合用 S3 的价格拿到本地盘体验的场景，但延迟敏感型复杂场景上生产前还需要仔细加测。 | [BV1SYMM6FEeT · 02:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=147) | [GitHub](https://github.com/Barre/ZeroFS) |
 | F3 | 一种把 WebAssembly 解码器直接内嵌进每个文件的开源列式存储格式，让任何平台无需原生库即可解码数据。 | 2025-05-31 | 考拉认为 Parquet 这类格式都是为上一代硬件设计的，编码方案一旦固化就很难演进，这是整个数据湖生态的隐疾；F3 用 Wasm 把解码逻辑随数据一起分发，相当于给文件格式装上可插拔的引擎，思路很巧妙，不过把解码器塞进文件也意味着要为 Wasm 运行时开销买单；目前项目还只是研究原型，作者明确不建议上生产，但有 Wes McKinney 这样的 Arrow 核心人物背书，这个方向值得长期关注。 | [BV1EWTK6iEGj · 00:01](https://www.bilibili.com/video/BV1EWTK6iEGj?t=1) | [GitHub](https://github.com/future-file-format/F3) |
 | DBX | 基于 Rust 与 Tauri 的轻量级开源数据库客户端，把 50 多种数据库的连接管理、SQL 编辑、ER 图、Schema 对比与跨引擎数据导入导出收进一个约 15MB 的应用。 | 2026-04-29 | 考拉认为 DBX 的卖点是又全又轻，不过对单一数据库的支持未必比得过垂直工具，它更适合广度优先的全栈开发者。 | [BV1SVj46KE3c · 03:38](https://www.bilibili.com/video/BV1SVj46KE3c?t=218) | [GitHub](https://github.com/t8y2/dbx) |
@@ -384,6 +383,7 @@ toc:
 | TernFS | XTX Markets 开源的艾字节（exabyte）级、多区域分布式文件系统，目标容量约 10EB，专为机器学习等大规模不可变文件负载优化，采用纠删码与多区域复制，并提供快照与数据恢复机制。 | 2025-09-18 | 考拉认为来自生产环境的大规模文件系统开源项目相当罕见，XTX 技术实力可见一斑；不过底层基础设施项目部署门槛极高，更适合有丰富运维经验的大型组织；文件不可变设计简化了数据一致性问题，但也限制了使用场景。 | [BV1rSnRzFE9i · 02:23](https://www.bilibili.com/video/BV1rSnRzFE9i?t=143) | [GitHub](https://github.com/XTXMarkets/ternfs) |
 | Spock | pgEdge 开源的 PostgreSQL 逻辑多主（multi-master）复制扩展，支持 PostgreSQL 15/16/17/18+，允许多个节点同时接受写入并通过逻辑复制同步，要求各节点表结构（表名、列类型、约束）完全一致，需基于打过补丁的 PostgreSQL 源码构建。 | 2022-12-29 | 考拉认为多主复制一直是分布式数据库的难题，冲突处理与一致性保证都需谨慎设计；Spock 需要修改 PostgreSQL 内核，增加了维护成本与升级复杂度；对确实需要多主架构的场景值得尝试，但对大多数应用，主从复制配合读写分离可能是更稳妥的选择。 | [BV1Qe4Tz4EGi · 02:52](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=172) | [GitHub](https://github.com/pgEdge/spock) |
 | Halloy | 用 Rust 编写、基于 Iced GUI 库的现代化开源 IRC 客户端，支持 macOS、Windows 与 Linux，兼容 IRCv3.2 规范与 SASL 认证，具备多服务器/多频道管理、命令自动补全、DCC 文件传输与自定义主题，已发布于 Flathub 与 Snap Store。 | 2022-04-13 | 考拉认为在大多数人眼中 IRC 已过时，但在特定社群仍不可替代；用现代技术栈重构老牌客户端，体验提升明显，对需要接入开源社区或技术讨论的用户是不错的选择。 | [BV1LosFzrEW5 · 03:22](https://www.bilibili.com/video/BV1LosFzrEW5?t=202) | [GitHub](https://github.com/squidowl/halloy) |
+| Apache Iceberg | Apache 软件基金会的开源表格式（open table format），面向海量分析型数据，在文件之上增加元数据层，实现 schema 演进、分区隐藏与时间旅行等特性，允许多个查询引擎（Spark、Trino、Flink、Presto、Hive 等）同时安全读写同一张表，支持增量更新与数据压缩。 | 2018-11-19 | 考拉认为数据湖格式之争已趋于明朗，Iceberg 在企业级应用中占据优势地位，相比 Delta Lake 和 Hudi，其中立性与多引擎支持更具吸引力；不过学习曲线陡峭、复杂度不低，适合有专业数据团队的组织，对中小规模数据需求可能过度工程化。 | [BV1LosFzrEW5 · 01:57](https://www.bilibili.com/video/BV1LosFzrEW5?t=117) | [GitHub](https://github.com/apache/iceberg) |
 
 ## 协作与项目管理
 
@@ -415,7 +415,6 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
-| WebAV | Web 端音视频处理库 | —（原文未记录） | —（原文未记录） | —（原文未记录） | [GitHub](https://github.com/WebAV-Tech/WebAV) |
 | Decoy Font | Mixfont 推出的 TTF 字体，利用混合图像（hybrid image）原理制作隐写效果：每个字母近看是诱饵文字、远看或眯眼则显示另一段隐藏信息，基于 DejaVu Sans Mono，免费用于个人与商业项目 | 2026-07-17 | 作者实测能骗过 ChatGPT、Gemini 等主流大模型的 OCR 识别，却作为普通字体文件即可使用。在 AI 抓取无处不在的今天，这类对抗性设计正在从学术界走向实用工具，验证码、隐私水印都是可能的落地方向；它更大的价值也许是作为视觉语言模型的基准测试素材，探出模型在感知层面和人眼的差距。当然作者也承认这不是可靠的保护手段，指令得当的模型依然可能识破，把它当安全方案不如当一个精巧的视觉实验。 | [BV17vKB6sEYR · 03:17](https://www.bilibili.com/video/BV17vKB6sEYR?t=197) | [项目页](https://www.mixfont.com/experiments/decoy-font) |
 | Godogen | 自动游戏生成器，用自然语言描述游戏概念，调度 Claude Code 或 Codex 自动完成项目脚手架、代码编写、素材生成和引擎配置，产出可运行游戏；支持 Godot 4、Bevy 和 Babylon.js 三种引擎，素材侧接入 Gemini、Grok 和 Tripo3D 生成图像、纹理与 3D 模型。 | 2026-03-13 | AI 生成游戏的难点在于验证——画面是否正确、玩法能否跑通，模型需要更多的校验能力。Godogen 把运行时录屏当作反馈信号，等于给代理装上了“眼睛”，比单纯生成代码的同类项目更进一步；但离生成有可玩性的作品还很远，当作快速原型工具更实际。 | [BV19qNT6ZEmL · 02:22](https://www.bilibili.com/video/BV19qNT6ZEmL?t=142) | [GitHub](https://github.com/htdt/godogen) |
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
@@ -450,6 +449,7 @@ toc:
 | ASCIIFlow | 基于浏览器的 ASCII 流程图/架构图绘制工具，提供方框、箭头、线条、文本与自由绘制，支持标准 ASCII 与扩展 ASCII 模式，可复制到剪贴板并导出纯文本，便于直接嵌入代码注释与文档。 | 2014-01-05 | 考栏认为，在各种现代图表工具泛滥的今天，ASCII 流程图反而显得别有一番实用价值：简单、轻量、兼容性强，这些特点让它在技术文档领域依然有立足之地。 | [BV1TsYVzJEuo · 00:32](https://www.bilibili.com/video/BV1TsYVzJEuo?t=32) | [GitHub](https://github.com/lewish/asciiflow) |
 | Mediabunny | 纯 TypeScript、零依赖的浏览器端媒体处理库，可直接在浏览器/Node.js 中读取、写入与转换 MP4、WebM、MP3 等媒体文件，借助 WebCodecs 硬件加速，支持微秒级精度剪辑、转封装/转码，性能远超传统工具。 | 2025-06-27 | 考栏认为，把复杂的媒体处理搬到浏览器端确实是个有趣的方向；Mediabunny 对在线音视频编辑等场景是一个不错的补充。 | [BV1TsYVzJEuo · 02:54](https://www.bilibili.com/video/BV1TsYVzJEuo?t=174) | [GitHub](https://github.com/Vanilagy/mediabunny) |
 | LÖVE | 基于 Lua 的开源 2D 游戏开发框架，支持 Windows、macOS、Linux、Android、iOS 多平台，提供简洁 API，以《小丑牌》等作品证明了商业化可行性。 | 2008-01-13 | 基于 Lua 的开源 2D 游戏开发框架，支持 Windows、macOS、Linux、Android 和 iOS 多平台，提供简洁的 API，Lua 脚本语言降低了学习门槛；今年大热的独立游戏《小丑牌》就是用 LÖVE 开发的，证明了这个框架的商业化可行性。 | [BV1qtWwzLEeS · 00:01](https://www.bilibili.com/video/BV1qtWwzLEeS?t=1) | [官网](https://love2d.org) |
+| WebAV | 基于浏览器原生 WebCodecs API 构建的网页视频编辑 SDK，可在浏览器与 Electron 中创建/编辑视频文件，官方称比 ffmpeg.wasm 快 10–20 倍，体积约 50KB，所有计算在客户端完成，并提供画布交互层便于构建视频编辑类产品。 | 2023-03-27 | 考拉认为 WebCodecs 确实改变了浏览器音视频处理的性能天花板，让 Web 应用处理音视频有了更大的发挥空间。 | [BV1LosFzrEW5 · 02:56](https://www.bilibili.com/video/BV1LosFzrEW5?t=176) | [GitHub](https://github.com/WebAV-Tech/WebAV) |
 
 ## 办公与演示
 
