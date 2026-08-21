@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-21T23:33:31+08:00
+lastmod: 2026-08-21T23:55:12+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -189,6 +189,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| celld | Deno 团队开源的 Apache-2.0 守护进程，让 Cloudflare Workers 与 Durable Objects 能跑在自有机器上；用 S3 兼容对象存储做分布式协调器（compare-and-swap 租约），每个对象即一个 SQLite 数据库，交付为 58MB 静态可执行文件或容器镜像，故障转移约 20 秒且零数据丢失。 | 2026-08-05 | Durable Objects 是近几年最优雅的有状态编程抽象之一，但代价是深度锁定 Cloudflare；celld 打破了这一限制，由 Deno 团队维护，目标或许是从 Cloudflare 争取用户。 | [BV1d6bU63Emy · 00:01](https://www.bilibili.com/video/BV1d6bU63Emy?t=1) | [GitHub](https://github.com/denoland/celld) |
 | Supapool | 为并行开发的 Agent 临时创建隔离 Supabase 实例，自动执行迁移并注入环境变量 | 2026-07-30 | 这是典型的 Agent 催生的基础设施；相比长期维护数据库分支，它主打快速、便宜、用完即抛。 | [BV1Fz3X62ETW · 03:22](https://www.bilibili.com/video/BV1Fz3X62ETW?t=202) | [官网](https://supapool.io/) |
 | Iroh | 开源点对点连接工具包，用加密公钥替代 IP 地址建立设备直连，自带 QUIC 传输、NAT/防火墙穿透与无状态中继兜底。 | 2026-06-15 | 考拉认为 Iroh 用 Rust 编写、能下沉到 MCU 级别设备，定位比一般的 WebRTC 方案更底层、更通用，适合需要自己掌控连接层的团队，但要落地仍然要求开发者理解 P2P 的复杂性。 | [BV1SVj46KE3c · 02:54](https://www.bilibili.com/video/BV1SVj46KE3c?t=174) | [GitHub](https://github.com/n0-computer/iroh) |
 | container | 苹果官方开源的命令行工具，在 Apple 芯片 Mac 上以轻量虚拟机方式运行 Linux 容器，完全用 Swift 编写，底层基于 Containerization 包，兼容 OCI 标准镜像与现有容器生态。 | 2026-06-09 | 长期以来 Mac 上跑容器主要靠 Docker Desktop（背后是一个大虚拟机）；苹果这次的思路是给每个容器分配独立的轻量虚拟机，隔离性更好、启动更快，并深度绑定 Apple 芯片做优化。 | [BV1CWJF6xE1d · 01:54](https://www.bilibili.com/video/BV1CWJF6xE1d?t=114) | [GitHub](https://github.com/apple/container) |
@@ -244,6 +245,7 @@ toc:
 | Lima | 在 macOS 上启动 Linux 虚拟机的开源工具，自动完成文件共享与端口转发，使用体验接近 Windows 上的 WSL2。支持 Alpine、Arch、Debian、Fedora、Ubuntu 等多种发行版，内置 containerd/nerdctl 支持，也可运行 Docker、Podman、Kubernetes。 | 2021-05-14 | Colima、Rancher Desktop、Finch 等知名工具都基于 Lima 构建，这种被上层项目广泛采用的事实，本身就说明了它的可靠性与设计合理性；对于不想被 Docker Desktop 绑定的 macOS 开发者，它是很实在的替代方案。 | [BV1ENUNBNEoh · 01:00](https://www.bilibili.com/video/BV1ENUNBNEoh?t=60) | [GitHub](https://github.com/lima-vm/lima) |
 | Quickwit | 一个专为可观测性设计的云原生搜索引擎，支持日志、追踪（以及即将推出的指标）数据。可作为 Datadog、Elasticsearch、Loki 和 Tempo 的开源替代方案；具备高性能与低成本，能在云存储上实现亚秒级搜索，并支持与 Elasticsearch 兼容的 API，便于迁移。 | 2021-04-13 | 认为 Quickwit 特别适合需要处理大规模日志和追踪数据的团队，其架构设计优化云存储的 I/O 路径、显著降低的成本，对已在用 Elasticsearch 的用户提供了无缝迁移路径且能享受更低运营成本；并提及近期 Datadog 宣布收购 Quickwit，二者未来融合值得关注。 | [BV1TLcgeqEQ8 · 00:32](https://www.bilibili.com/video/BV1TLcgeqEQ8?t=32) | [GitHub](https://github.com/quickwit-oss/quickwit) |
 | changedetection.io | 开源的网站内容变化监控与告警工具，支持价格/库存追踪。 | 2021-01-27 | ChangeDetection.io 专门监控网页内容变化，支持价格追踪、库存监控等，核心价值在于自动化重复性人工检查；项目提供开源版本，同时有商业化云服务。考栏认为这类小而美的工具说明不是所有软件都需要复杂架构。 | [BV1Q3hgzCEvk · 02:22](https://www.bilibili.com/video/BV1Q3hgzCEvk?t=142) | [GitHub](https://github.com/dgtlmoon/changedetection.io) |
+| Perses | CNCF 沙箱项目（原 Amadeus 开源，Apache-2.0），GitOps 原生的 Dashboard-as-Code 可观测可视化平台；原生支持 Prometheus/Tempo/Loki/Pyroscope，提供 SDK、percli CLI、Kubernetes Operator（CRD）与 Grafana 导入工具，仪表盘以公开 Schema 定义、可进 CI 静态校验。 | 2021-01-26 | 这个项目的野心不在于做一个更好的 Grafana，而是聚焦开放规范；Grafana 的仪表盘 JSON 事实上是私有格式，Perses 使用公开 Schema 进行替换且支持从 Grafana 迁移。 | [BV1d6bU63Emy · 02:18](https://www.bilibili.com/video/BV1d6bU63Emy?t=138) | [GitHub](https://github.com/perses/perses) |
 | Coolify | 一个可自托管、开箱即用的 PaaS 平台，相当于 Vercel/Heroku/Netlify 的开源替代品，提供现代化 UI 与完整 API，可一键部署静态站点、数据库、全栈应用等。 | 2021-01-25 | 考拉认为，如果你是 DevOps 工程师，或者正在寻找一款好用的自动化工具，Coolify 值得尝试；对于基础需求，它的 UI 可以让你使用起来更加轻松愉快，对复杂需求，它的 API 也能让你轻松扩展基础设施规模。 | [BV1jjN1etEa8 · 00:28](https://www.bilibili.com/video/BV1jjN1etEa8?t=28) | [GitHub](https://github.com/coollabsio/coolify) |
 | goshs | 用 Go 编写的 SimpleHTTPServer 现代替代（视频中称 Ghost）；V2 在简单文件分享之外加入了基于 ACL 的权限控制、带二维码的限时分享链接、WebDAV 与 SFTP 支持、IP 白名单与 Webhook 通知等企业级特性。 | 2020-10-02 | 考拉认为：Python SimpleHTTPServer 流行了二十年但功能止步于最基础的 HTTP，想要 HTTPS、鉴权、配额得多自己折腾；goshs 把这些杂事一次解决，从内网文件传输到对外有限分享，都能用一个二进制覆盖。 | [BV1U19ZBLEcf · 01:58](https://www.bilibili.com/video/BV1U19ZBLEcf?t=118) | [GitHub](https://github.com/goshs-labs/goshs) |
 | hl | 一款用 Rust 重写的命令行日志查看与处理工具，将 JSON 或 logfmt 结构化日志转换为清晰可读的多行格式，支持字段/级别过滤、时间范围查询、实时 tail 与多主题，处理 GB 级日志时扫描速度可达 GiB/s 量级，专注解析而非存储。 | 2020-08-04 | Koala 评价 hl 用 Rust 实现了极致的日志解析性能，处理 GB 级日志轻松自如，是运维排查的利器。 | [BV1srSPByEuQ · 05:30](https://www.bilibili.com/video/BV1srSPByEuQ?t=330) | [GitHub](https://github.com/pamburus/hl) |
@@ -456,6 +458,7 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Decoy Font | Mixfont 推出的 TTF 字体，利用混合图像（hybrid image）原理制作隐写效果：每个字母近看是诱饵文字、远看或眯眼则显示另一段隐藏信息，基于 DejaVu Sans Mono，免费用于个人与商业项目 | 2026-07-17 | 作者实测能骗过 ChatGPT、Gemini 等主流大模型的 OCR 识别，却作为普通字体文件即可使用。在 AI 抓取无处不在的今天，这类对抗性设计正在从学术界走向实用工具，验证码、隐私水印都是可能的落地方向；它更大的价值也许是作为视觉语言模型的基准测试素材，探出模型在感知层面和人眼的差距。当然作者也承认这不是可靠的保护手段，指令得当的模型依然可能识破，把它当安全方案不如当一个精巧的视觉实验。 | [BV17vKB6sEYR · 03:17](https://www.bilibili.com/video/BV17vKB6sEYR?t=197) | [项目页](https://www.mixfont.com/experiments/decoy-font) |
+| Flint | 微软研究院联合中国人民大学 IDEAS Lab 开源的可视化中间语言与编译器，面向 AI Agent：用一份简洁的语义化 spec 自动推导刻度、配色、布局等，编译为 Vega-Lite / ECharts / Chart.js（及 Plotly、Excel），并提供 flint-chart-mcp 的 MCP 服务器供 Agent 调用。 | 2026-07-08 | 不加约束时 Agent 绘制图表的效率与美观性都有所欠缺；Flint 的思路是把审美决策从模型手里收回到编译器里，让模型少一些灵活性，但在绝大多数场景提升了最终图表质量。 | [BV1d6bU63Emy · 00:57](https://www.bilibili.com/video/BV1d6bU63Emy?t=57) | [GitHub](https://github.com/microsoft/flint-chart) |
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
 | Box3D | Box2D 作者 Erin Catto 开源的 3D 物理引擎，以 Box2D 为基底扩展三角网格/高度场/烘焙复合碰撞等 3D 特性，全部库代码使用 C17，支持连续碰撞、宽 SIMD 接触求解器、多线程钩子、跨平台确定性与录制回放。 | 2026-06-30 | Box2D 作为 2D 物理引擎近 20 年广受好评，Erin Catto 的口碑让 Box3D 天生自带信任度；3D 开源物理领域此前靠 Godot 整合站稳脚跟，Box3D 的入场会让这个长期被商业引擎主导的领域更有看头。游戏开发者值得持续关注。 | [BV1SYMM6FEeT · 01:27](https://www.bilibili.com/video/BV1SYMM6FEeT?t=87) | [GitHub](https://github.com/erincatto/box3d) |
 | Open Design | 本地优先的开源 AI 设计生成平台，定位为 Claude Design 的开源替代；不内置 Agent，而是复用用户本地的 Coding Agent（Claude Code、Codex、Cursor 等），负责 Design System 注入、提示词堆栈编排与沙盒化预览渲染，并支持 HTML/PDF/PPTX 等多格式导出。 | 2026-04-28 | 考拉认为：AI 设计赛道关注度迅速上升，但闭源供应商绑定让许多团队观望；Open Design 以极快速度做出可插拔、多后端替代，并内植 71 个品牌级 Design System，本质是把 Claude Design 的工作流封装价值提取成开放工具；但作为商业产品的 Claude Design 仍能像 Claude Code 一样通过数据驱动持续改进模型与产品，这是开源项目一时难以匹敌的。 | [BV1U19ZBLEcf · 00:01](https://www.bilibili.com/video/BV1U19ZBLEcf?t=1) | [GitHub](https://github.com/nexu-io/open-design) |
@@ -546,6 +549,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| Neuberg | 开源（BSL 1.1）的彭博终端风格金融终端，以 Web 仪表盘形态提供 500+ 真实数据面板，覆盖行情报价、财务、新闻流、全球指数、经济日历等，并内置券商/链上交易（Alpaca、Hyperliquid、Polymarket 等）；名字致敬 Bloomberg。 | 2026-07-09 | 要注意，Bloomberg 终端卖的从来不是界面，而是高质量数据、合规审计和那套买方卖方互联的独家消息网络，这些是开源项目替代不了的；Neuberg 更适合的定位是个人研究者的快速查询工具，了解市场行情，但不建议拿它做机构级决策。 | [BV1d6bU63Emy · 03:13](https://www.bilibili.com/video/BV1d6bU63Emy?t=193) | [GitHub](https://github.com/KoNananachan/Neuberg) |
 | SNAGRA Trading | 一个实时展示 GPT-4o、Gemini 1.5 Pro、Claude 3.5 Sonnet 三大 AI 模型股票交易水平的在线竞技场平台（项目名 “Battle of the Bots: AI Trading Arena”）。每天清晨自动分析市场新闻、各自推荐一只股票并以真实资金（每笔 5 美元）执行交易，实时追踪各模型的收益、胜率与整体表现，用户可查看每日交易总结、性能指标与 AI 的交易决策逻辑。 | 2024-12-20 | 认为这个竞技场不仅真实测评了 AI 在金融领域的应用潜力，也为普通用户提供了一个学习和评判 AI 交易策略的机会。 | [BV1nrrPYdEHH · 00:30](https://www.bilibili.com/video/BV1nrrPYdEHH?t=30) | [官网](https://trading.snagra.com) |
 
 ## 学习工具
@@ -578,6 +582,8 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| git-knife | 用 Tauri 构建的桌面 GUI 工具，像电子表格一样批量编辑 Git 提交元数据（提交说明、作者/提交者姓名、邮箱与日期）；直接调用系统 git CLI 并以 git commit-tree 重建提交，复用原 tree 保证文件内容不变，改写前自动打备份 Ref 并支持正则批量替换与签名提交重签。 | 2026-08-10 | 仅作功能介绍，未给出明确评价。 | [BV1d6bU63Emy · 04:09](https://www.bilibili.com/video/BV1d6bU63Emy?t=249) | [GitHub](https://github.com/TheRealYT/git-knife) |
+| unbash | webpro 用 TypeScript 写的零依赖 Bash 解析器，把 Shell 源码解析为带类型与源码位置（startIndex/endIndex）的 AST；覆盖命令、管道、重定向、控制流等语法，对错误或不完整输入也能返回尽力而为的部分 AST，纯同步实现便于在浏览器与 Serverless 环境部署（无需 WASM）。 | 2026-02-27 | 这类工具此前几乎被 tree-sitter 垄断，但 tree-sitter 需带原生插件或 WASM 运行时，在浏览器和 Serverless 环境里部署别扭；unbash 用纯 TypeScript 同步实现绕开了这个包袱。AI 现在会大量生成和执行 Shell 命令，执行前做静态审计、判断风险时需要轻量的解析层。 | [BV1d6bU63Emy · 01:53](https://www.bilibili.com/video/BV1d6bU63Emy?t=113) | [GitHub](https://github.com/webpro-nl/unbash) |
 | mdq | 类 jq 的命令行工具，专为提取与操作 Markdown 文档中的标题、列表、链接等内容而设计。 | 2024-05-25 | 考拉认为 mdq 特别适合需要自动化处理 Markdown 文档的场景（如 GitHub PR 模板检查），语法设计与 Markdown 高度一致，使用顺手。 | [BV1xc9FYDED3 · 02:27](https://www.bilibili.com/video/BV1xc9FYDED3?t=147) | [GitHub](https://github.com/yshavit/mdq) |
 
 ## 跨平台原生 UI 框架
