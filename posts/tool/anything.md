@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T22:30:16+08:00
+lastmod: 2026-08-21T23:32:40+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -502,6 +502,7 @@ toc:
 | Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
 | SkillSpector | NVIDIA 开源的 AI Agent Skill 安全扫描器，在安装前用静态分析加可选的 LLM 语义评估检测提示注入、数据外泄、权限提升与供应链投毒等风险，并给出 0–100 风险评分。 | 2026-03-21 | 考拉认为 Agent Skill 和 MCP 生态在快速膨胀，但安全治理几乎是空白，一个第三方 Skill 拿到的权限可能远超想象，而 SkillSpector 能方便地接入现有 CI 安全流水线；值得注意的是它也有局限，只能做静态分析，解析不了运行时行为、加密代码和非英文内容。 | [BV1SVj46KE3c · 04:16](https://www.bilibili.com/video/BV1SVj46KE3c?t=256) | [GitHub](https://github.com/NVIDIA/SkillSpector) |
 | thermoptic | HTTP 隐身代理，通过 Chrome DevTools Protocol 控制真实 Chrome 浏览器代为发起请求，使 curl 等非浏览器客户端在 TCP、TLS、HTTP 各层指纹与真实 Chrome 完全一致（JA3/JA4+ 等无法区分）。提供本地代理接口与 Docker 部署，可用于红队侦察、反爬采集与 C2 流量伪装。 | 2025-09-02 | 考拉认为 thermoptic 用'真浏览器代发请求'的思路优雅解决了指纹伪造的脆性问题，比手写 TLS/JA3 伪装稳得多，对反爬与红队价值很高；但运行真实 Chrome 有额外资源开销，且指纹一致不等于行为一致，仍要配合合理的速率与交互模拟。 | [BV1hKCXB3E4z · 07:30](https://www.bilibili.com/video/BV1hKCXB3E4z?t=450) | [GitHub](https://github.com/mandatoryprogrammer/thermoptic) |
+| Strix | 开源的 AI 渗透测试智能体，行为模式类似真实黑客：动态运行代码、发现漏洞并用实际攻击验证，附带可复现的 PoC。配合 GPT-5 / Claude Sonnet 4.5 等大模型，多智能体并行协作，可在数小时完成传统需数周的渗透测试，支持代码扫描、漏洞验证、POC 生成，可集成 CI/CD。 | 2025-08-05 | 考拉认为 Strix 真正'攻击并用 PoC 证明'，从根本上解决传统扫描器误报泛滥的痛点，把渗透测试从数周压缩到数小时，适合红队与 DevSecOps；但自动化攻击能力双刃剑，务必只在授权范围内使用，并评估其对企业安全流程的冲击。 | [BV1hKCXB3E4z · 05:00](https://www.bilibili.com/video/BV1hKCXB3E4z?t=300) | [GitHub](https://github.com/usestrix/strix) |
 | Cap | 一个使用 SHA-256 工作量证明（Proof-of-Work）的开源验证码（CAPTCHA）方案，体积仅为 hCaptcha 的 1/250（约 20KB、零依赖），保护隐私、不追踪也不收集用户数据，并支持自定义前后端；两行代码即可接入网页。 | 2025-01-11 | Koala 推荐尝试 Cap，强调其隐私保护、体积小、两行代码接入的特性，并建议对验证码安全机制感兴趣者可阅读其文稿学习。 | [BV1mF7mzzEKm · 06:20](https://www.bilibili.com/video/BV1mF7mzzEKm?t=380) | [官网](https://capjs.js.org/) |
 
 ## 学习资源与教程
