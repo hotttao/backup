@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-08-19T22:30:14+08:00
+lastmod: 2026-08-19T22:30:16+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -68,6 +68,7 @@ toc:
 | GPUI Component | 长桥（Longbridge）开源的基于 GPUI 框架的 Rust 跨平台桌面 UI 组件库，采用无状态组件设计，提供 60+ 开箱即用组件，补充了基于 GPUI 开发桌面应用的 UI 能力。 | 2024-06-13 | 从实际表现来看，GPUI 在性能方面确实有独到之处。更多的 UI 组件也让 GPUI 的上手难度大大降低。 | [BV1DFyoBREyw · 01:54](https://www.bilibili.com/video/BV1DFyoBREyw?t=114) | [GitHub](https://github.com/longbridge/gpui-component) |
 | Fang | Charm 团队（charmbracelet）出的实验性 CLI 脚手架库，为 Cobra 应用一站式提供美化后的帮助/用法页、自动版本管理、隐藏的 man 命令生成与 Shell 补全，只需调用一个函数即可。 | 2025-06-18 | Charm 团队在命令行工具的美学上一直很有追求，延续了这个传统，让 CLI 开发者也能做出像样的命令行程序。 | [BV1rXkSBEEvC · 00:01](https://www.bilibili.com/video/BV1rXkSBEEvC?t=1) | [GitHub](https://github.com/charmbracelet/fang) |
 | OpenTUI | SST 团队开发的 TypeScript 终端 UI 库，原生核心用 Zig 编写并提供 TypeScript 绑定，提供 React 与 SolidJS 两种 Reconciler，声明式构建 TUI，将作为 OpenCode 与 terminal.shop 的基础设施。 | 2025-07-21 | 用前端框架思维做终端应用是个有趣的方向。之前开源的 Ink 项目也支撑了许多 TUI 形态 AI Agent 的开发，但 Ink 的维护不算活跃。OpenTUI 在功能与 UI 组件丰富度以及性能上都有更大的野心，已有生产级项目基于它开发，是值得关注的新项目。 | [BV1rXkSBEEvC · 00:32](https://www.bilibili.com/video/BV1rXkSBEEvC?t=32) | [GitHub](https://github.com/sst/opentui) |
+| Ratatui | 用 Rust 编写终端用户界面（TUI）的 crate，采用即时模式渲染加差分缓冲区，亚毫秒级刷新、零 C 依赖。内置图表、表格、列表、进度条等丰富组件，支持约束式响应式布局，可用于仪表盘、命令行游戏与现代终端应用。 | 2023-02-12 | 考拉认为 Ratatui 已是 Rust 终端 UI 生态的事实标准，连 Codex、grok-build 等顶级 AI 编程工具的终端界面都选它，证明即时模式渲染加差分输出的设计足够好；但每个 minor 版本几乎都有破坏性变更，升级前要细看 BREAKING-CHANGES。 | [BV1hKCXB3E4z · 02:30](https://www.bilibili.com/video/BV1hKCXB3E4z?t=150) | [GitHub](https://github.com/ratatui/ratatui) |
 
 ## 代码质量与 Code Review
 
@@ -155,6 +156,7 @@ toc:
 | Massimo | 由 Platformatic/Matteo Collina 开源的类型安全 API 客户端生成器，从 OpenAPI 与 GraphQL schema 自动生成 TypeScript 类型安全客户端；Node.js 端基于高性能 Undici，浏览器端使用原生 Fetch API，单条 CLI 命令即可生成含连接池、HTTP/2 与错误处理的客户端。 | 2025-09-01 | 考栏认为，API 客户端生成并非新鲜概念，但 Massimo 在性能优化和平台适配上确实用了心思，作者 Node.js core team member 的身份也提供了背书；不过在 Swagger Codegen 和 OpenAPI Generator 已经占据主流的情况下，新工具想要突围还需要更多差异化优势。 | [BV1TsYVzJEuo · 01:59](https://www.bilibili.com/video/BV1TsYVzJEuo?t=119) | [GitHub](https://github.com/platformatic/massimo) |
 | Jetzig | 基于 Zig 语言编写的 Web 框架，采用文件式路由与 RESTful 设计，默认渲染 JSON，并支持 Zmpl 模板系统与中间件。 | 2024-01-20 | 基于 Zig 编写的 Web 框架，采用文件式路由和 RESTful 设计；框架默认渲染 JSON 结果，同时支持 Zmpl 模板系统处理 HTML 渲染逻辑；提供了对 HTTP 的中间件支持以及会话管理和数据库查询功能，提升开发效率。Koala 认为 Zig 语言的性能优势确实吸引人，但相比成熟的 Web 框架，Zig 的文档和社区支持还有待完善，更适合愿意投入和学习 Zig 语言的开发者。 | [BV1qtWwzLEeS · 03:19](https://www.bilibili.com/video/BV1qtWwzLEeS?t=199) | [官网](https://jetzig.dev) |
 | ArkRegex | ArkType 推出的类型安全正则表达式库，作为 new RegExp() 的替代品，能从正则字符串静态推断出 TS 类型（含位置与命名捕获组），支持 RegExp 全部特性且零运行时开销。 | 2025-10-28 | 这是 TypeScript 类型体操的又一次胜利。对于重度使用正则表达式的项目，能在编译期捕获引用错误确实有价值。不过复杂正则可能会遇到类型推断性能问题，需要手动标注。 | [BV1DFyoBREyw · 00:31](https://www.bilibili.com/video/BV1DFyoBREyw?t=31) | [GitHub](https://github.com/arktypeio/arktype) |
+| Valdi | Snapchat 开源的跨平台 UI 框架，用声明式 TypeScript（TSX）编写界面，直接编译成 iOS/Android/macOS 原生视图，不依赖 WebView 或 JavaScript Bridge。内置全局视图回收池、视口感知渲染和毫秒级热重载，主打原生性能与开发效率兼得。 | 2025-11-06 | 考拉认为 Valdi 把 TypeScript 的研发效率直接编译成原生视图的运行性能，跨平台方案第一次做到不妥协，是对 React Native/Flutter 双寡头的有力挑战；但生态微小、文档与工具链仍需在开源世界打磨，建议先在小模块试水、别 all in。 | [BV1hKCXB3E4z · 00:30](https://www.bilibili.com/video/BV1hKCXB3E4z?t=30) | [GitHub](https://github.com/Snapchat/Valdi) |
 
 ## 测试与质量保障
 
@@ -500,6 +502,7 @@ toc:
 | Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
 | SkillSpector | NVIDIA 开源的 AI Agent Skill 安全扫描器，在安装前用静态分析加可选的 LLM 语义评估检测提示注入、数据外泄、权限提升与供应链投毒等风险，并给出 0–100 风险评分。 | 2026-03-21 | 考拉认为 Agent Skill 和 MCP 生态在快速膨胀，但安全治理几乎是空白，一个第三方 Skill 拿到的权限可能远超想象，而 SkillSpector 能方便地接入现有 CI 安全流水线；值得注意的是它也有局限，只能做静态分析，解析不了运行时行为、加密代码和非英文内容。 | [BV1SVj46KE3c · 04:16](https://www.bilibili.com/video/BV1SVj46KE3c?t=256) | [GitHub](https://github.com/NVIDIA/SkillSpector) |
 | Cap | 一个使用 SHA-256 工作量证明（Proof-of-Work）的开源验证码（CAPTCHA）方案，体积仅为 hCaptcha 的 1/250（约 20KB、零依赖），保护隐私、不追踪也不收集用户数据，并支持自定义前后端；两行代码即可接入网页。 | 2025-01-11 | Koala 推荐尝试 Cap，强调其隐私保护、体积小、两行代码接入的特性，并建议对验证码安全机制感兴趣者可阅读其文稿学习。 | [BV1mF7mzzEKm · 06:20](https://www.bilibili.com/video/BV1mF7mzzEKm?t=380) | [官网](https://capjs.js.org/) |
+| thermoptic | HTTP 隐身代理，通过 Chrome DevTools Protocol 控制真实 Chrome 浏览器代为发起请求，使 curl 等非浏览器客户端在 TCP、TLS、HTTP 各层指纹与真实 Chrome 完全一致（JA3/JA4+ 等无法区分）。提供本地代理接口与 Docker 部署，可用于红队侦察、反爬采集与 C2 流量伪装。 | 2025-09-02 | 考拉认为 thermoptic 用'真浏览器代发请求'的思路优雅解决了指纹伪造的脆性问题，比手写 TLS/JA3 伪装稳得多，对反爬与红队价值很高；但运行真实 Chrome 有额外资源开销，且指纹一致不等于行为一致，仍要配合合理的速率与交互模拟。 | [BV1hKCXB3E4z · 07:30](https://www.bilibili.com/video/BV1hKCXB3E4z?t=450) | [GitHub](https://github.com/mandatoryprogrammer/thermoptic) |
 
 ## 学习资源与教程
 
