@@ -421,7 +421,7 @@ function CustomCardHeader() {
   flow={flow}
   config={config}
   components={{
-    Card: { CardHeader: CustomCardHeader },
+    Card: { Header: CustomCardHeader },
   }}
 />
 ```
@@ -453,7 +453,260 @@ function CustomCardHeader() {
 
 `transientPayload` 会随 Flow 提交给 Kratos，再进入 webhook 或邮件模板；它不是 Identity Traits，不能用于保存长期用户资料。事件回调适合埋点，但不能改变 Kratos 对认证成功与否的判断。
 
-## 9. SessionProvider 的作用
+## 9. 如何接入项目自己的 UI 样式
+
+### 9.1 先理解样式由谁控制
+
+Kratos 不定义页面样式，Kratos 配置文件里也没有“按钮颜色”或“输入框圆角”。它只产生 `ui.nodes`。样式全部发生在运行 Elements 的前端项目中：
+
+```text
+项目 Design Token
+  │
+  ├── 映射为 Elements CSS Variables   -> 改颜色、字体、边框、圆角
+  │
+  ├── components Renderer Overrides   -> 改 Card、Button、Input 的结构
+  │
+  └── 页面 Layout                     -> 改背景、导航、左右分栏和响应式布局
+```
+
+因此，接入项目样式时应按下面的顺序进行：
+
+1. 保留 Elements 默认主题和 Flow renderer；
+2. 将项目 Design Token 映射成 Elements CSS Variables；
+3. 默认组件结构无法满足设计稿时，只替换相应组件；
+4. 只有整体交互完全不同时，才自行实现完整 Flow renderer。
+
+这种顺序能保留 Elements 对 Code、Passkey、OIDC、AAL2 和新增 UI Node 的兼容能力。
+
+### 9.2 第一层：品牌名称和 Logo
+
+默认 `Card.Logo` 会读取 `project.logo_light_url`；没有 Logo 时显示 `project.name`：
+
+```typescript
+const config: OryClientConfiguration = {
+  project: {
+    name: "Example Docs",
+    logo_light_url: "/brand/logo.svg",
+    hide_ory_branding: true,
+    // 其他 Flow URL 省略
+  },
+}
+```
+
+Logo 应放入本项目的静态资源并走相同 CDN。如果使用外部域名，还要把域名加入 CSP 的 `img-src`。`hide_ory_branding` 是否可用以及是否受套餐限制，应以实际使用的 Ory 部署形态为准。
+
+### 9.3 第二层：把项目 Design Token 映射为 CSS Variables
+
+先在应用入口导入 Elements 默认样式，再导入项目覆盖样式。以 Next.js App Router 为例：
+
+```tsx
+// app/layout.tsx
+import "@ory/elements-react/theme/styles.css"
+import "@/styles/globals.css"
+import "@/styles/ory-theme.css" // 放在默认主题之后
+```
+
+源码的 PostCSS 构建使用 `postcss-scope(".ory-elements")`，默认 `Card.Root` 也会添加 `ory-elements` class，因此发布包中的 Tailwind Preflight 和组件规则被限制在 Elements 根节点内，不应扩散成整个项目的全局 Reset。自己的组件如果完全替换了 `Card.Root`，应继续保留 `ory-elements` class，否则默认主题规则可能失效。
+
+不要复制并修改 Elements 发布包中的 `styles.css`。升级依赖后那份副本不会自动更新。应在自己的 `ory-theme.css` 中覆盖公开的 CSS Variables：
+
+```css
+/* 项目已有的 Design Token */
+:root {
+  --app-color-primary: #2563eb;
+  --app-color-primary-hover: #1d4ed8;
+  --app-color-surface: #ffffff;
+  --app-color-surface-muted: #f8fafc;
+  --app-color-border: #cbd5e1;
+  --app-color-text: #0f172a;
+  --app-color-text-muted: #475569;
+  --app-font-sans: Inter, "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+/* 只影响认证页面，不污染业务页面 */
+.auth-theme {
+  --font-sans: var(--app-font-sans);
+
+  --interface-background-brand-primary: var(--app-color-primary);
+  --interface-background-brand-primary-hover: var(--app-color-primary-hover);
+  --interface-background-default-primary: var(--app-color-surface);
+  --interface-background-default-secondary: var(--app-color-surface-muted);
+
+  --interface-border-brand-brand: var(--app-color-primary);
+  --interface-border-default-primary: var(--app-color-border);
+
+  --interface-foreground-brand-primary: var(--app-color-primary);
+  --interface-foreground-default-primary: var(--app-color-text);
+  --interface-foreground-default-secondary: var(--app-color-text-muted);
+
+  --border-radius-buttons: 0.5rem;
+  --border-radius-forms: 0.5rem;
+  --border-radius-cards: 1rem;
+}
+```
+
+然后在认证 Layout 上设置作用域：
+
+```tsx
+// app/auth/layout.tsx
+export default function AuthLayout({ children }: React.PropsWithChildren) {
+  return (
+    <main className="auth-theme auth-page">
+      <section className="auth-brand-panel">Example Docs</section>
+      <section className="auth-form-panel">{children}</section>
+    </main>
+  )
+}
+```
+
+页面背景、双栏布局和导航属于项目 Layout，不应塞进 Flow 组件：
+
+```css
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: minmax(20rem, 1fr) minmax(30rem, 1fr);
+  background: var(--app-color-surface-muted);
+}
+
+.auth-brand-panel,
+.auth-form-panel {
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .auth-page { grid-template-columns: 1fr; }
+  .auth-brand-panel { display: none; }
+}
+```
+
+Elements 的变量大致分为三层：
+
+| 层级 | 示例 | 适用场景 |
+| --- | --- | --- |
+| 基础色 | `--ui-500`、`--brand-500` | 整体换一套色板，会影响大量下游变量 |
+| 语义色 | `--interface-background-brand-primary`、`--interface-border-default-primary` | 推荐与项目 Design Token 对接 |
+| 具体组件 | `--button-primary-background-default`、`--input-border-focus` | 只调整某一类控件 |
+| 形状 | `--border-radius-buttons`、`--border-radius-forms`、`--border-radius-cards` | 统一项目圆角体系 |
+
+一般优先覆盖语义层。只有“登录按钮必须与其他主按钮不同”时，才覆盖具体组件变量。不要依赖 `bg-form-background-default`、`sm:w-[480px]` 这类内部 Tailwind class 名称作为长期扩展 API，它们可能随 Elements 升级变化。
+
+### 9.4 第三层：替换成项目组件库
+
+当项目的 Button、Input 或 Card 不只是颜色不同，而是 DOM 结构、Loading、图标或无障碍行为都不同，就通过 `components` 注入项目组件。
+
+Elements 当前开放的主要替换点是：
+
+```text
+Card    -> Root / Header / Content / Footer / Logo / Divider
+Node    -> Button / SsoButton / Input / Select / CodeInput / Checkbox / Label ...
+Form    -> Root / Group / SsoRoot / 各 Settings renderer
+Message -> Root / Content / Toast
+Page    -> Header
+```
+
+建议集中定义一份适配器，让 Login、Registration、Recovery、Verification 和 Settings 共用：
+
+```tsx
+// auth/ory-components.tsx
+"use client"
+
+import { getNodeLabel } from "@ory/client-fetch"
+import type {
+  OryFlowComponentOverrides,
+  OryNodeButtonProps,
+} from "@ory/elements-react"
+
+function AppButton({ node, buttonProps, isSubmitting }: OryNodeButtonProps) {
+  const label = getNodeLabel(node)
+
+  return (
+    <button
+      {...buttonProps} // 保留 type、name、value、disabled 等 Flow 语义
+      disabled={isSubmitting || buttonProps.disabled}
+      className="app-button app-button--primary"
+    >
+      {isSubmitting ? "提交中…" : label?.text}
+    </button>
+  )
+}
+
+function AppCardHeader() {
+  return (
+    <header className="app-auth-header">
+      <img src="/brand/logo.svg" alt="Example Docs" />
+      <h1>登录 Example Docs</h1>
+    </header>
+  )
+}
+
+export const oryComponents: OryFlowComponentOverrides = {
+  Card: { Header: AppCardHeader },
+  Node: { Button: AppButton },
+}
+```
+
+所有 Flow 使用同一份覆盖：
+
+```tsx
+<Login
+  flow={flow}
+  config={config}
+  components={oryComponents}
+/>
+```
+
+替换 Node renderer 时，外观是次要问题，首要要求是完整保留 Kratos 节点协议：
+
+- `<input type="hidden">` 和 `csrf_token` 必须继续提交；
+- Button 的 `name`、`value` 用于区分 `password`、`code`、`oidc` 等 method，不能丢；
+- Input 的 `name`、`type`、`required`、`disabled`、`autocomplete` 不能随意重写；
+- 必须展示 `node.messages` 和 Flow 级错误；
+- Loading 时防止重复提交，但不能永久禁用其他认证 method；
+- Passkey、WebAuthn、TOTP、OIDC、Recovery 和 Settings 页面都要回归测试。
+
+如果只替换 `Input`，还要处理普通输入框、密码框和隐藏字段；如果只按邮箱输入框实现，CSRF 或密码节点会被破坏。本地源码中的 `examples/nextjs-app-router-custom-components` 展示了完整的组件覆盖入口，可以作为适配项目组件库的起点。
+
+### 9.5 深色模式和多品牌
+
+CSS Variables 可以放在主题作用域中，所以不需要维护两份 Elements CSS：
+
+```css
+.dark .auth-theme {
+  --interface-background-default-primary: #111827;
+  --interface-background-default-secondary: #1f2937;
+  --interface-border-default-primary: #374151;
+  --interface-foreground-default-primary: #f9fafb;
+  --interface-foreground-default-secondary: #d1d5db;
+}
+
+.auth-theme[data-brand="acme"] {
+  --interface-background-brand-primary: #7c3aed;
+  --interface-background-brand-primary-hover: #6d28d9;
+  --interface-border-brand-brand: #7c3aed;
+}
+```
+
+多租户场景应由服务端根据可信租户配置选择 `data-brand` 和 Logo，不能允许 URL 参数直接注入任意 CSS 或资源地址。认证页也应在首次渲染前确定主题，避免服务端与客户端主题不同造成闪烁或 Hydration mismatch。
+
+### 9.6 推荐落地方式
+
+对于已有 React/Next.js 项目，推荐目录如下：
+
+```text
+src/
+├── app/auth/layout.tsx          # 项目认证页布局
+├── auth/ory-components.tsx      # Elements -> 项目组件库适配
+├── auth/ory-config.ts           # Flow URL、名称、Logo、语言
+├── styles/tokens.css            # 项目 Design Token
+└── styles/ory-theme.css         # Design Token -> Elements Variables
+```
+
+最终原则是：**CSS Variables 解决视觉一致性，Component Overrides 解决组件结构一致性，页面 Layout 解决产品页面结构；不要为了改颜色重写 Flow renderer。**
+
+## 10. SessionProvider 的作用
 
 `SessionProvider` 在客户端调用 `GET /sessions/whoami`，并向子组件提供：
 
@@ -478,13 +731,13 @@ function UserMenu() {
 
 它解决的是前端页面显示当前用户，不是 Gateway 认证。业务 API 仍应由 Gateway/Oathkeeper 校验 Cookie 或内部 JWT，不能因为 React Context 中存在 Session 就信任客户端身份。
 
-## 10. Docker 与 Kubernetes 部署
+## 11. Docker 与 Kubernetes 部署
 
 Elements 自身是 npm 包，没有数据库、Migration、Public/Admin API，也没有必须运行的 `ory/elements` 服务进程。
 
 有两种部署形态：
 
-### 10.1 集成进现有前端
+### 11.1 集成进现有前端
 
 如果 Elements 页面就在现有 React/Next.js 应用中，它随应用一起构建和部署，不新增容器：
 
@@ -496,7 +749,7 @@ frontend image
   └── @ory/elements-react
 ```
 
-### 10.2 独立 Account UI
+### 11.2 独立 Account UI
 
 大型系统可以把登录界面做成独立 Next.js 应用：
 
@@ -538,7 +791,7 @@ spec:
 
 Elements UI 是无状态前端，可以水平扩容。真正需要数据库迁移、持久化和备份的是 Kratos；Elements 需要关注的是静态资源缓存、Node 运行时、健康检查、环境变量、CSP、Gateway 路由和端到端 Flow 测试。官方 `ory/kratos` Chart 不会替你部署 Elements UI。
 
-## 11. 什么时候应该使用 Elements
+## 12. 什么时候应该使用 Elements
 
 适合使用：
 
@@ -556,7 +809,7 @@ Elements UI 是无状态前端，可以水平扩容。真正需要数据库迁�
 
 如果不用 Elements，也不能写死一张只包含邮箱和密码的表单。仍应基于 `ui.nodes` 实现自己的通用 Flow renderer，否则启用 Code、OIDC、Passkey 或 MFA 后会迅速出现两套不一致的认证逻辑。
 
-## 12. 推荐学习顺序
+## 13. 推荐学习顺序
 
 1. 先阅读上一篇 Kratos Flow，理解 Elements 的输入为什么是 Flow；
 2. 运行 `examples/nextjs-app-router`，依次打开 Login、Registration、Recovery、Verification 和 Settings；
@@ -577,7 +830,7 @@ Kratos 是否创建 Flow
   -> Kratos 返回的是字段错误、重启 Flow 还是成功跳转
 ```
 
-## 13. 总结
+## 14. 总结
 
 Ory Elements 的价值不是“提供一张漂亮登录页”，而是为 Kratos Flow 提供一套可复用的 React 解释器：Flow 决定当前允许用户做什么，Elements 决定如何把这些节点变成可操作界面。
 

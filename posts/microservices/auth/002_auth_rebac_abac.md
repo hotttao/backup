@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "通过企业文档 SaaS，理解 Ory Kratos、OpenFGA 和 OPA 的职责边界"
 featuredImage:
 
-tags: ["auth", "rebac", "abac", "ory-kratos", "openfga", "opa"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

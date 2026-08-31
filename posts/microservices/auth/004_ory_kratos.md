@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "从使用者视角理解 Ory Kratos 的结构、数据模型、配置、API 与部署"
 featuredImage:
 
-tags: ["auth", "ory", "kratos"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "从数据库存储、角色计算到 Access Token，理解 Keycloak 如何实现 RBAC"
 featuredImage:
 
-tags: ["auth", "rbac", "keycloak"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

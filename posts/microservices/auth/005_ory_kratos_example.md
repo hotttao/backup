@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "以一个 Web 应用为例，讲清 Kratos Flow、前后端交互、认证方式、数据存储、迁移和生产配置"
 featuredImage:
 
-tags: ["auth", "ory", "kratos"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true
