@@ -706,6 +706,45 @@ Oathkeeper 的管理/决策 API 很小：
 
 `/decisions` 在 OpenAPI 中显示为 GET，但 Handler 接受所有 HTTP Method；Gateway 应通过当前请求方法或 `X-Forwarded-Method` 告诉 Oathkeeper 原始 Method。
 
+### 7.1 两个监听端口的实际请求流程
+
+4455 和 4456 是同一个 Oathkeeper 进程的两种入口：
+
+```text
+4455：Reverse Proxy
+
+Client
+  │ 业务请求 + 外部凭证
+  ▼
+Oathkeeper :4455
+  │ 认证、授权、签发 Internal JWT
+  │ 直接代理业务请求
+  ▼
+Upstream Service
+```
+
+```text
+4456：Decision API
+
+Client -> Traefik
+           │ 业务请求
+           ├──> Oathkeeper :4456/decisions
+           │      认证、授权、签发 Internal JWT
+           │      返回 200 + Authorization Header
+           └──> Upstream Service
+                  原始请求 + Internal JWT
+```
+
+Decision API 模式下，下游服务从 Oathkeeper API 获取验签公钥：
+
+```text
+GET http://oathkeeper:4456/.well-known/jwks.json
+```
+
+该接口只返回公钥；签名私钥由 `id_token` Mutator 通过本地 JWKS 文件读取。
+4455 是直接代理业务的入口，4456 是只返回鉴权决策的入口。Gateway 架构应
+使用 4456，并限制该 API 只能由 Gateway 和内部服务访问。
+
 ## 8. Docker 与 Kubernetes
 
 本地源码提供 Compose：
