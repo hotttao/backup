@@ -91,6 +91,15 @@ React / Next.js Login UI
 
 主要技术依赖也能直接从 `package.json` 看出：React、TypeScript、React Hook Form、React Intl、Radix UI、Tailwind CSS、`@ory/client-fetch`，测试和构建使用 Jest、Storybook、Vite、tsup 与 Nx。
 
+本教学项目的 `ui_example` 当前以已安装版本为准：
+
+```text
+@ory/elements-react  1.2.1
+@ory/client-fetch    1.22.22
+```
+
+后文关于默认主题的 CSS Variable、组件 Props 和运行行为，均以这两个版本实际发布到 `node_modules` 的代码为准。升级依赖后，应重新检查 `dist/theme/default/index.css` 和类型定义，不要只根据旧示例推断变量名称。
+
 旧的 `@ory/elements`、`@ory/elements-markup` 和 `@ory/elements-preact` 已经迁到 `elements-legacy` 仓库。新项目应使用 `@ory/elements-react`，不要再按旧教程安装这些包。
 
 ## 3. 核心运行模型
@@ -539,11 +548,13 @@ import "@/styles/ory-theme.css" // 放在默认主题之后
   --interface-foreground-default-primary: var(--app-color-text);
   --interface-foreground-default-secondary: var(--app-color-text-muted);
 
-  --border-radius-buttons: 0.5rem;
-  --border-radius-forms: 0.5rem;
-  --border-radius-cards: 1rem;
+  --radius-buttons: 0.5rem;
+  --radius-forms: 0.5rem;
+  --radius-cards: 1rem;
 }
 ```
+
+注意：在当前 `@ory/elements-react@1.2.1` 发布包的运行时 CSS 中，圆角变量名称是 `--radius-*`，不是源码生成文件中可能出现的 `--border-radius-*`。当前版本实际使用的公开圆角变量包括 `--radius-buttons`、`--radius-forms`、`--radius-general`、`--radius-branding`、`--radius-cards` 和 `--radius-identifier`。如果升级 Elements，应以最终导入的 `theme/styles.css` 实际引用名称为准。
 
 然后在认证 Layout 上设置作用域：
 
@@ -589,7 +600,7 @@ Elements 的变量大致分为三层：
 | 基础色 | `--ui-500`、`--brand-500` | 整体换一套色板，会影响大量下游变量 |
 | 语义色 | `--interface-background-brand-primary`、`--interface-border-default-primary` | 推荐与项目 Design Token 对接 |
 | 具体组件 | `--button-primary-background-default`、`--input-border-focus` | 只调整某一类控件 |
-| 形状 | `--border-radius-buttons`、`--border-radius-forms`、`--border-radius-cards` | 统一项目圆角体系 |
+| 形状 | `--radius-buttons`、`--radius-forms`、`--radius-cards` | 统一项目圆角体系 |
 
 一般优先覆盖语义层。只有“登录按钮必须与其他主按钮不同”时，才覆盖具体组件变量。不要依赖 `bg-form-background-default`、`sm:w-[480px]` 这类内部 Tailwind class 名称作为长期扩展 API，它们可能随 Elements 升级变化。
 
@@ -618,9 +629,12 @@ import type {
   OryFlowComponentOverrides,
   OryNodeButtonProps,
 } from "@ory/elements-react"
+import { uiTextToFormattedMessage } from "@ory/elements-react"
+import { useIntl } from "react-intl"
 
 function AppButton({ node, buttonProps, isSubmitting }: OryNodeButtonProps) {
   const label = getNodeLabel(node)
+  const intl = useIntl()
 
   return (
     <button
@@ -628,7 +642,11 @@ function AppButton({ node, buttonProps, isSubmitting }: OryNodeButtonProps) {
       disabled={isSubmitting || buttonProps.disabled}
       className="app-button app-button--primary"
     >
-      {isSubmitting ? "提交中…" : label?.text}
+      {isSubmitting
+        ? "提交中…"
+        : label
+          ? uiTextToFormattedMessage(label, intl)
+          : node.attributes.name}
     </button>
   )
 }
@@ -666,6 +684,26 @@ export const oryComponents: OryFlowComponentOverrides = {
 - 必须展示 `node.messages` 和 Flow 级错误；
 - Loading 时防止重复提交，但不能永久禁用其他认证 method；
 - Passkey、WebAuthn、TOTP、OIDC、Recovery 和 Settings 页面都要回归测试。
+
+当前版本中，`OryNodeInputProps` 同时提供两类信息：`attributes` 描述 Kratos 节点约束，`inputProps` 描述 React Hook Form 运行时字段。完全替换 `Input` 时至少要从两者读取：
+
+```tsx
+function AppInput({ attributes, inputProps }: OryNodeInputProps) {
+  return (
+    <input
+      {...inputProps}
+      required={attributes.required}
+      name={attributes.name}
+      type={inputProps.type}
+      disabled={inputProps.disabled}
+      autoComplete={inputProps.autoComplete}
+      ref={inputProps.ref}
+    />
+  )
+}
+```
+
+`inputProps.ref` 必须连接到最终的真实输入元素；如果组件还接收外部 ref，需要用 `forwardRef` 合并两个 ref。密码输入、验证码输入和隐藏的 `csrf_token` 不能简单地按邮箱文本框处理。
 
 如果只替换 `Input`，还要处理普通输入框、密码框和隐藏字段；如果只按邮箱输入框实现，CSRF 或密码节点会被破坏。本地源码中的 `examples/nextjs-app-router-custom-components` 展示了完整的组件覆盖入口，可以作为适配项目组件库的起点。
 

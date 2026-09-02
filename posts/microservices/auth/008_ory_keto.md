@@ -217,23 +217,31 @@ Bob：普通成员
 - `User`：主体，ID 来自 Kratos `identity.id`；
 - `Organization`：被操作的业务对象，例如组织 `G`。
 
-Organization 有两种 Relation：
+Organization 的 Relation 分为三组：
 
-- `members`：普通成员；
-- `admins`：管理员。
+- 用户角色：`members`、`admins`；
+- 组织权限上限：`entitled_start_crawl`、`entitled_view_content`、`entitled_modify_keywords`；
+- 角色授权：`granted_start_crawl`、`granted_view_content`、`granted_modify_keywords`。
 
 业务动作则定义成三个 Permission：
 
-- `start_crawl`：member 或 admin 都可以；
-- `view_content`：member 或 admin 都可以；
-- `modify_keywords`：只有 admin 可以。
+- `start_crawl`：组织启用且用户角色获准时允许；
+- `view_content`：组织启用且用户角色获准时允许；
+- `modify_keywords`：组织启用且用户角色获准时允许。
 
-注意，Relation 记录“用户是什么”，Permission 回答“用户能做什么”。数据库中只需要保存 Alice 是 admin、Bob 是 member，不需要再为每个动作保存一份关系。
+最终权限统一按照下面的交集计算：
+
+```text
+最终权限 = 组织 entitled ∩ 角色 granted
+```
+
+这使组织权限成为上限。例如组织 W 只有 `view_content`，即使管理员角色配置了
+`granted_start_crawl`，最终仍然不能启动抓取。
 
 ### 4.2 第二步：编写 `namespaces.ts`
 
 ```typescript
-import { Namespace, Context } from "@ory/keto-namespace-types"
+import { Namespace, Context, SubjectSet } from "@ory/keto-namespace-types"
 
 class User implements Namespace {}
 
@@ -241,19 +249,28 @@ class Organization implements Namespace {
   related: {
     members: User[]
     admins: User[]
+
+    entitled_start_crawl: (SubjectSet<Organization, "members"> | SubjectSet<Organization, "admins">)[]
+    entitled_view_content: (SubjectSet<Organization, "members"> | SubjectSet<Organization, "admins">)[]
+    entitled_modify_keywords: (SubjectSet<Organization, "members"> | SubjectSet<Organization, "admins">)[]
+
+    granted_start_crawl: (SubjectSet<Organization, "members"> | SubjectSet<Organization, "admins">)[]
+    granted_view_content: (SubjectSet<Organization, "members"> | SubjectSet<Organization, "admins">)[]
+    granted_modify_keywords: (SubjectSet<Organization, "members"> | SubjectSet<Organization, "admins">)[]
   }
 
   permits = {
     start_crawl: (ctx: Context): boolean =>
-      this.related.members.includes(ctx.subject) ||
-      this.related.admins.includes(ctx.subject),
+      this.related.entitled_start_crawl.includes(ctx.subject) &&
+      this.related.granted_start_crawl.includes(ctx.subject),
 
     view_content: (ctx: Context): boolean =>
-      this.related.members.includes(ctx.subject) ||
-      this.related.admins.includes(ctx.subject),
+      this.related.entitled_view_content.includes(ctx.subject) &&
+      this.related.granted_view_content.includes(ctx.subject),
 
     modify_keywords: (ctx: Context): boolean =>
-      this.related.admins.includes(ctx.subject),
+      this.related.entitled_modify_keywords.includes(ctx.subject) &&
+      this.related.granted_modify_keywords.includes(ctx.subject),
   }
 }
 ```
@@ -261,10 +278,13 @@ class Organization implements Namespace {
 逐段理解：
 
 1. `class User` 和 `class Organization` 定义 Keto 能识别的对象类型；
-2. `related.members` 和 `related.admins` 声明 Organization 允许保存哪些关系；
-3. `ctx.subject` 是本次权限检查的调用主体；
-4. `includes(ctx.subject)` 表示检查主体是否属于该关系；
-5. `permits` 中的函数名就是 Check API 使用的 Permission 名称。
+2. `members`、`admins` 保存用户角色；
+3. `entitled_*` 保存组织拥有的操作上限；
+4. `granted_*` 保存组织内角色获得的操作；
+5. `SubjectSet<Organization, "members">` 表示把整个角色集合作为 Relation 主体；
+6. `ctx.subject` 是本次权限检查的用户；
+7. `&&` 要求组织权限和角色权限同时命中；
+8. `permits` 中的函数名就是 Check API 使用的 Permission 名称。
 
 OPL 看起来像 TypeScript，但 Keto 不会启动 Node.js 执行这段代码。它只解析受限制的 TypeScript 子集，将其编译成关系遍历规则。因此不能在里面调用数据库、HTTP 服务、读取时间或执行任意 JavaScript。
 
@@ -292,7 +312,7 @@ namespaces:
 ```yaml
 services:
   keto:
-    image: oryd/keto:v26.2.0
+    image: ghcr.io/hotttao/ory-keto:v26.2.0
     command: serve -c /etc/config/keto/keto.yml
     volumes:
       - ./keto.yml:/etc/config/keto/keto.yml:ro
@@ -328,95 +348,214 @@ ory patch opl -f file://./namespaces.ts
 
 ### 4.4 第四步：写入 Alice 和 Bob 的关系
 
-创建组织或用户时不一定要调用 Keto；只有关系发生变化时才写 Tuple。例如，Alice 成为管理员时向 Write API 提交：
+初始化脚本先通过 Kratos Admin API 按邮箱查询真实的 `identity.id`：
 
 ```http
+GET http://kratos:4434/admin/identities?credentials_identifier=alice%40example.com
+GET http://kratos:4434/admin/identities?credentials_identifier=bob%40example.com
+```
+
+然后通过 Keto Write API 写入用户角色：
+
+```text
 PUT http://keto:4467/admin/relation-tuples
+Organization:G#admins@User:<alice-identity-id>
+
+PUT http://keto:4467/admin/relation-tuples
+Organization:G#members@User:<bob-identity-id>
+```
+
+组织 G 启用全部三个操作，因此把 `entitled_*` 关联到两个角色集合：
+
+```text
+Organization:G#entitled_start_crawl@Organization:G#members
+Organization:G#entitled_start_crawl@Organization:G#admins
+Organization:G#entitled_view_content@Organization:G#members
+Organization:G#entitled_view_content@Organization:G#admins
+Organization:G#entitled_modify_keywords@Organization:G#members
+Organization:G#entitled_modify_keywords@Organization:G#admins
+```
+
+普通成员和管理员都能启动、查看，只有管理员能修改关键词：
+
+```text
+Organization:G#granted_start_crawl@Organization:G#members
+Organization:G#granted_start_crawl@Organization:G#admins
+Organization:G#granted_view_content@Organization:G#members
+Organization:G#granted_view_content@Organization:G#admins
+Organization:G#granted_modify_keywords@Organization:G#admins
+```
+
+`start_crawl` 等 Permission 不作为 Tuple 写入。它们由 OPL 对 `entitled_*` 和
+`granted_*` 求交集得到。Write API 只能由初始化 Job 或可信管理服务调用，不能
+暴露给浏览器。
+
+### 4.5 第五步：UI 查询当前用户所属组织
+
+以 Alice 打开 XHS 页面为例，各层实际请求如下：
+
+| 顺序 | 调用方 | 请求 URL | 返回/下一步 |
+| ---: | --- | --- | --- |
+| 1 | Browser | `GET http://192.168.2.41:5173/v1/xhs/me/organizations` | Vite 代理同一路径到 Traefik `:8080` |
+| 2 | Traefik | `GET http://oathkeeper:4456/decisions` | ForwardAuth 携带原始 URL 和 Session Cookie |
+| 3 | Oathkeeper | `GET http://kratos:4433/sessions/whoami` | 得到 Alice 的 `identity.id` |
+| 4 | Traefik | `GET http://xhs_service:8082/v1/xhs/me/organizations` | 携带 Oathkeeper 签发的 Internal JWT |
+| 5 | xhs_service | `GET http://keto:4466/relation-tuples?namespace=Organization&subject_id=User%3A<alice-identity-id>&page_size=250` | 查询 Alice 的直接组织角色 |
+| 6 | xhs_service | 返回浏览器 | `{"organizations":[{"id":"G","roles":["admins"]}]}` |
+
+Bob 使用同一条流程，最后返回：
+
+```json
+{"organizations":[{"id":"G","roles":["members"]}]}
+```
+
+Internal JWT 只携带稳定的 `sub=<identity.id>`，不携带组织、角色和 Permission。
+UI 自动选择接口返回的组织，不能再使用写死的 `demo`。
+
+### 4.6 第六步：业务接口映射到 Permission
+
+浏览器请求都先经过 Vite `:5173` 和 Traefik `:8080`，最终由 `xhs_service` 根据
+请求路径选择 Permission：
+
+| 浏览器请求 | xhs_service 检查 |
+| --- | --- |
+| `POST /v1/xhs/organizations/G/crawl/tasks` | `Organization:G#start_crawl@User:<identity-id>` |
+| `GET /v1/xhs/organizations/G/crawl/contents` | `Organization:G#view_content@User:<identity-id>` |
+| `GET /v1/xhs/organizations/G/crawl/keywords` | `Organization:G#view_content@User:<identity-id>` |
+| `PUT /v1/xhs/organizations/G/crawl/keywords` | `Organization:G#modify_keywords@User:<identity-id>` |
+
+`xhs_service` 实际使用 Keto OpenAPI Check：
+
+```http
+POST http://keto:4466/relation-tuples/check/openapi
 Content-Type: application/json
 
 {
   "namespace": "Organization",
   "object": "G",
-  "relation": "admins",
-  "subject_id": "User:alice"
+  "relation": "modify_keywords",
+  "subject_id": "User:<identity-id>"
 }
 ```
 
-Bob 加入组织时提交：
+Keto 返回：
 
-```http
-PUT http://keto:4467/admin/relation-tuples
-Content-Type: application/json
-
-{
-  "namespace": "Organization",
-  "object": "G",
-  "relation": "members",
-  "subject_id": "User:bob"
-}
+```json
+{"allowed":true}
 ```
 
-数据库最终只有两条核心事实：
+或：
 
-```text
-Organization:G#admins@User:alice
-Organization:G#members@User:bob
+```json
+{"allowed":false}
 ```
 
-这里没有 `start_crawl`、`view_content` 或 `modify_keywords` Tuple，因为它们是 OPL 根据 admins/members 计算出来的 Permission。
+### 4.7 第七步：完整执行一次 Bob 修改关键词
 
-当 Bob 升级为管理员时，业务服务应在一个受控写操作中删除 members Tuple、增加 admins Tuple。Write API 只能由可信业务服务调用，不能暴露给普通客户端。
+1. 浏览器发送：
 
-### 4.5 第五步：业务请求到来时检查 Permission
+   ```http
+   PUT http://192.168.2.41:5173/v1/xhs/organizations/G/crawl/keywords
+   Cookie: ory_kratos_session=<session-cookie>
+   Content-Type: application/json
 
-Bob 请求启动抓取任务时，业务服务调用 Keto Read API：
+   {"values":["Keto"]}
+   ```
 
-```http
-GET http://keto:4466/relation-tuples/check?namespace=Organization&object=G&relation=start_crawl&subject_id=User%3Abob
-```
+2. Vite 把请求代理到：
 
-Keto 的计算过程是：
+   ```http
+   PUT http://192.168.2.41:8080/v1/xhs/organizations/G/crawl/keywords
+   ```
 
-```text
-检查 Organization:G 的 start_crawl
-  -> 执行 OPL 中 permits.start_crawl
-  -> Bob 不在 admins
-  -> Bob 在 members
-  -> allowed = true
-```
+3. Traefik 调用：
 
-如果 Bob 请求修改关键词：
+   ```http
+   GET http://oathkeeper:4456/decisions
+   X-Forwarded-Method: PUT
+   X-Forwarded-Uri: /v1/xhs/organizations/G/crawl/keywords
+   Cookie: ory_kratos_session=<session-cookie>
+   ```
 
-```text
-检查 Organization:G 的 modify_keywords
-  -> 执行 OPL 中 permits.modify_keywords
-  -> Bob 不在 admins
-  -> allowed = false
-```
+4. Oathkeeper 调用：
 
-最终结果应当是：
+   ```http
+   GET http://kratos:4433/sessions/whoami
+   Cookie: ory_kratos_session=<session-cookie>
+   ```
 
-| 检查 | Alice | Bob |
-| --- | --- | --- |
-| `start_crawl` | 允许 | 允许 |
-| `view_content` | 允许 | 允许 |
-| `modify_keywords` | 允许 | 拒绝 |
+5. Kratos 返回 Bob 的 `identity.id`；Oathkeeper 签发 Internal JWT，Traefik 将请求
+   转发到：
 
-认证系统只需把 Kratos `identity.id` 规范化成稳定的 `User:<id>`。Keto 不知道 Cookie、Session 或邮箱，也不应该接收可变邮箱作为主体 ID。完整请求链路是：
+   ```http
+   PUT http://xhs_service:8082/v1/xhs/organizations/G/crawl/keywords
+   Authorization: Bearer <internal-jwt>
+   ```
 
-```text
-Gateway 验证 Kratos Session
-  -> 得到 identity.id = alice
-  -> 业务服务构造 subject = User:alice
-  -> 调 Keto Check(Organization:G, modify_keywords, User:alice)
-  -> Keto 使用 OPL + Tuple 返回 allow / deny
-```
+6. `xhs_service` 验证 JWT。首次验签、缓存超过 300 秒或 JWT 使用未知 `kid`
+   时，它会读取 Oathkeeper 发布的公钥：
+
+   ```http
+   GET http://oathkeeper:4456/.well-known/jwks.json
+   ```
+
+   验签成功后调用 Keto：
+
+   ```http
+   POST http://keto:4466/relation-tuples/check/openapi
+   Content-Type: application/json
+
+   {
+     "namespace": "Organization",
+     "object": "G",
+     "relation": "modify_keywords",
+     "subject_id": "User:<bob-identity-id>"
+   }
+   ```
+
+7. Keto 执行：
+
+   ```text
+   entitled_modify_keywords 包含 Organization:G#members -> true
+   granted_modify_keywords 不包含 Organization:G#members -> false
+   true && false -> allowed=false
+   ```
+
+8. `xhs_service` 不执行修改，向浏览器返回：
+
+   ```http
+   HTTP/1.1 403 Forbidden
+   Content-Type: application/json
+
+   {"error":"permission denied"}
+   ```
+
+Alice 的前六步相同，但她属于 `admins`，两个 Relation 都命中，因此最终返回
+`200 OK`。
+
+### 4.8 权限矩阵和错误边界
+
+真实登录验证结果如下：
+
+| 操作 | Permission | Alice | Bob |
+| --- | --- | ---: | ---: |
+| 启动抓取 | `start_crawl` | `200` | `200` |
+| 查看内容 | `view_content` | `200` | `200` |
+| 修改关键词 | `modify_keywords` | `200` | `403` |
+
+不同状态码表示失败发生在不同层：
+
+| 状态码 | 失败位置 | 含义 |
+| ---: | --- | --- |
+| `401` | Oathkeeper / Internal JWT Middleware | 未登录、Session 或 JWT 无效 |
+| `403` | xhs_service + Keto | 已认证，但 Permission 为 `allowed=false` |
+| `503` | xhs_service | Keto 不可用，采用 fail-closed，不执行业务操作 |
 
 ## 5. 配置
 
 ```yaml
-version: v0.13.0
-dsn: postgres://keto:${DB_PASSWORD}@postgres:5432/keto?sslmode=require
+version: v0.8.0-alpha.2
+dsn: postgres://keto:keto@postgres:5432/keto?sslmode=disable
 
 serve:
   read:
@@ -429,15 +568,14 @@ serve:
 namespaces:
   location: file:///etc/config/keto/namespaces.ts
 
-limit:
-  max_read_depth: 12
-
 log:
   level: info
-  format: json
 ```
 
-关键配置只有四组：数据库、Read/Write 监听地址、OPL 文件和遍历限制。Read API 可以按检查流量水平扩容；Write API 仅允许可信业务后台调用。
+这是当前 `deployments/003_keto/keto/keto.yml` 使用的配置。关键配置是数据库、
+Read/Write 监听地址和 OPL 文件。Read API 可以按检查流量水平扩容；Write API
+仅允许可信业务后台调用。生产环境应从 Secret 注入数据库口令并启用 TLS，不能
+直接复用这里的教学环境 DSN。
 
 本文示例使用 `subject_id = User:<identity-id>`，因此没有直接启用 `feature_flags.strict_mode`。新版本的 strict mode 要求创建关系和检查权限时使用 Subject Set，普通 `subject_id` 会被拒绝。启用前必须根据目标版本的迁移指南改造历史 Tuple 和 Check 请求，并完成权限回归测试，不能只改一个配置开关。
 
@@ -447,7 +585,7 @@ log:
 
 | 接口 | 作用 |
 | --- | --- |
-| `GET/POST /relation-tuples/check` | 检查单个权限，拒绝时返回错误 |
+| `POST /relation-tuples/check/openapi` | 检查单个权限，返回 `{"allowed":true/false}` |
 | `POST /relation-tuples/batch/check` | 批量检查 |
 | `GET /relation-tuples/expand` | 展开 Subject Tree，解释权限来源 |
 | `GET /relation-tuples` | 按部分 Tuple 查询关系 |
@@ -470,11 +608,10 @@ Proto 还定义了 `CheckService`、`ExpandService`、`ReadService`、`WriteServ
 本地启动：
 
 ```bash
-cd ddd-learn/third_party/keto
-docker compose up
+docker compose -f deployments/003_keto/docker-compose.yml up -d
 ```
 
-仓库 Compose 使用 `oryd/keto:v26.2.0`，暴露 4466/4467。生产环境先迁移再启动：
+仓库 Compose 使用 `ghcr.io/hotttao/ory-keto:v26.2.0`，暴露 4466/4467。生产环境先迁移再启动：
 
 ```bash
 keto migrate up -c /etc/config/keto/keto.yml

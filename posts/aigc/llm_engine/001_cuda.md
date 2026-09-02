@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "CUDA 心智模型"
 featuredImage:
 
-tags: ["APO"]
+tags: ["llm engine"]
 categories: ["Agent"]
 
 lightgallery: true
