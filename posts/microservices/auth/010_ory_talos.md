@@ -1,452 +1,825 @@
 ---
-weight: 6
-title: "6 Ory Talos：API Key 与机器身份凭证"
+weight: 10
+title: "Ory Talos：API Key 如何关联用户、服务与权限"
 date: 2026-08-29T16:30:00+08:00
-lastmod: 2026-08-29T16:30:00+08:00
+lastmod: 2026-09-02T18:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "理解 Ory Talos 的 API Key、派生 Token、数据模型、接口和部署边界"
-tags: ["auth", "ory", "talos", "api-key"]
+description: "理解 Talos API Key 如何绑定 Actor，以及如何与 Kratos、Oathkeeper、Keto 组成完整认证鉴权链路"
+tags: ["auth", "ory", "talos", "api-key", "machine-identity"]
 categories: ["microservice"]
 toc:
   auto: false
 ---
 
-Talos 管理的是非人类调用者的长期 API Key，以及由长期 Key 派生的短期 JWT/Macaroon。它解决密钥签发、导入、校验、轮换和撤销问题，不负责用户登录，也不负责资源关系权限。
+Talos 管理 API Key，以及由长期 Key 派生的短期 JWT 或 Macaroon。真正需要理解的不是“如何生成一段 Token”，而是下面三个问题：
 
 ```text
-管理员 / Secret Provisioner
-          │ issue / import / rotate / revoke
-          ▼
-       Talos Admin API ─────> API Key Store
-          │
-          ├── verify API Key
-          ├── derive short-lived JWT / Macaroon
-          └── publish JWKS
-
-Agent / CLI / Service ── API Key 或派生 Token ──> Gateway
+Token 代表谁？
+如何从 Token 找到对应的用户或服务？
+这个主体最终具有什么业务权限？
 ```
 
-本文依据本地 `ddd-learn/third_party/talos` 源码提交 `8d8d26f`、Proto、配置 Schema、迁移和项目自带文档整理。当前接口版本仍是 `v2alpha1`，升级前必须核对兼容性。
+答案可以先概括为：
+
+```text
+Talos actor_id  → Token 代表的直接调用者
+Talos scopes    → 这把凭证允许申请的能力上限
+Kratos Identity → 人类用户
+Keto Relation   → 用户、Agent、服务和资源之间的当前关系
+Oathkeeper      → 验证入口凭证并生成统一的内部身份上下文
+```
 
 <!-- more -->
 
-## 1. Talos 与其他认证组件的边界
+## 1. 先看最终数据链路
 
-| 组件 | 管理的主体或凭证 |
-| --- | --- |
-| Kratos | 人类用户、登录凭证与 Session |
-| Hydra | OAuth2 Client、Access Token 与 OIDC Token |
-| Talos | API Key 和由它派生的短期 Token |
-| Keto/OPA | 调用者对业务资源的权限 |
-| Oathkeeper/Gateway | 在请求入口验证凭证、执行策略并传递身份 |
+假设 Alice 创建了一个抓取 Agent，系统为这个 Agent 签发 Talos API Key：
 
-Talos 适用于 Agent、CLI、Webhook 调用者、CI/CD 和内部服务需要 API Key 的场景。如果已经有标准 OAuth2 Client Credentials，并且调用方能安全执行 OAuth2 流程，不必为了“统一”再增加 Talos。
+```mermaid
+flowchart LR
+    K[Kratos Identity<br/>user:alice-id]
+    R[Agent Registry / Keto<br/>Agent:agent-17 owner User:alice-id]
+    T[Talos API Key<br/>actor_id=agent:agent-17]
+    I[Internal JWT<br/>sub=user:alice-id<br/>act=agent:agent-17]
 
-## 2. 为什么要区分长期 Key 和短期 Token
-
-长期 API Key 便于初始化，但长期暴露在每次请求中会扩大泄漏风险。Talos 支持把它转换成短期、缩小权限范围的凭证：
-
-```text
-长期 API Key
-   │ 认证并请求 derive
-   ▼
-短期 JWT / Macaroon
-   ├── 更短有效期
-   ├── 权限不超过父 Key
-   └── 可在边缘离线验签
+    K --> R
+    R --> T
+    T --> I
+    R --> I
 ```
 
-代价是派生 Token 通常是无状态的：父 Key 被撤销后，已经签发的短期 Token 不一定立即失效，只能等待其过期。因此派生 Token 必须短命，不能把一年有效期的 API Key 变成另一个一年有效期的 JWT。
-
-## 3. 程序结构与技术栈
-
-Talos 使用 Go 编写，Proto 是接口事实来源，通过 gRPC-Gateway 暴露 JSON/HTTP API。
-
-| 目录 | 职责 |
-| --- | --- |
-| `cmd` | `serve`、`migrate`、`keys`、`jwk` 和 `proxy` CLI |
-| `api/talos/v2alpha1` | Proto、HTTP 映射和 API 模型 |
-| `internal/service` | Key 生命周期与验证用例 |
-| `internal/verifier` | API Key、JWT、Macaroon 验证 |
-| `internal/persistence` | SQLC、迁移和数据库实现 |
-| `internal/cache` | 验证结果缓存抽象 |
-| `internal/crypto` | HMAC、签名与 Token 处理 |
-| `spec/config.schema.json` | 完整配置 Schema |
-| `docs` | 项目内自带的使用与运维文档 |
-
-主要依赖包括 Cobra、gRPC-Gateway、Protocol Buffers、SQLX/PGX、`golang-migrate`、JWX 与 OpenTelemetry。业务服务应使用生成 Client 或 HTTP API，而不是导入 `internal/*`。
-
-## 4. Credential 模型
+这里存在两种身份：
 
 ```text
-API Credential
- ├── Issued API Key            Talos 生成，Secret 只返回一次
- ├── Imported API Key          从旧系统导入，只保存哈希
- ├── Derived JWT              公钥验证的短期 Token
- └── Derived Macaroon         可附加限制条件的短期 Token
+Subject：本次业务操作代表谁？
+→ user:alice-id
 
-API Key
- ├── key_id
- ├── actor_id
- ├── scopes / metadata
- ├── status / expires_at
- ├── allowed_cidrs
- └── rate-limit policy
+Actor：实际拿着凭证发起请求的是谁？
+→ agent:agent-17
 ```
 
-Talos 生成的 Key 格式为：
+Talos 只能直接证明 `agent:agent-17` 持有有效凭证。Agent 是否属于 Alice，应查询 Agent Registry 或 Keto；Alice 是否能操作目标资源，也应查询 Keto。
+
+因此完整关系不是简单的 `Token → User`，而是：
 
 ```text
-{prefix}_v1_{identifier}_{HMAC-SHA256 checksum}
+Talos Token
+→ actor_id
+→ Agent / Service
+→ owner 或 delegated_by Relation
+→ Kratos Identity
+→ Resource Permission
 ```
 
-`key_id` 可从 identifier 定位，checksum 使用 HMAC 校验完整性。HMAC 配置允许 `current + retired`，用于零停机轮换。
+如果 API Key 本身就是 Alice 创建的个人 Key，可以直接把 `actor_id` 设置成 `user:<kratos-identity-id>`，此时才是直接的 `Token → User`。
 
-### 核心表
+## 2. Talos 如何把 Token 与主体关联
 
-| 表 | 关键字段 | 含义 |
-| --- | --- | --- |
-| `issued_api_keys` | `key_id`、`token_prefix`、`version` | Talos 签发 Key 的标识与格式 |
-|  | `actor_id`、`scopes`、`metadata` | 调用主体与授权上下文 |
-|  | `status`、`expires_at`、`last_used_at` | 生命周期与审计状态 |
-|  | `allowed_cidrs` | 使用来源限制 |
-| `imported_api_keys` | `key_id` | 外部 Key 的 SHA-512/256 摘要；该摘要同时作为 Key 标识，不另设 `key_hash` |
-|  | `actor_id`、`scopes`、`metadata` | 统一后的主体与上下文 |
-|  | `status`、`expires_at` | 生命周期 |
+### 2.1 关联发生在签发时
 
-数据库不保存 Talos 已签发 Key 的可恢复明文；签发响应中的 Secret 必须当场写入 Secret Manager，之后无法再次查询。
+签发 API Key 时，调用方必须提供 `actor_id`：
 
-## 5. API Surface
+```http
+POST /v2alpha1/admin/issuedApiKeys
+Content-Type: application/json
 
-Talos 是一个二进制，但有两个安全级别完全不同的接口面：
-
-```text
-talos serve admin   -> /v2alpha1/admin/*
-talos serve public  -> /v2alpha1/apiKeys:selfRevoke
-talos serve         -> 两者同时提供，适合开发
-```
-
-Admin API **没有内置认证**。任何能够到达它的请求都被视为可信，所以必须放在 mTLS、认证代理、API Gateway Authorizer 或严格的内部网络之后。
-
-### Admin API
-
-| 接口 | 作用 |
-| --- | --- |
-| `POST /v2alpha1/admin/issuedApiKeys` | 签发 API Key，Secret 只返回一次 |
-| `GET/PATCH /v2alpha1/admin/issuedApiKeys/{key_id}` | 查询或修改签发 Key |
-| `GET /v2alpha1/admin/issuedApiKeys` | 分页查询签发 Key |
-| `POST .../{key_id}:rotate` | 生成新 Key 并撤销旧 Key |
-| `POST .../{key_id}:revoke` | 撤销签发 Key |
-| `POST /v2alpha1/admin/importedApiKeys` | 导入外部 API Key |
-| `POST /v2alpha1/admin/importedApiKeys:batchCreate` | 批量导入 |
-| `GET/PATCH/DELETE /v2alpha1/admin/importedApiKeys/{key_id}` | 管理导入 Key |
-| `POST .../{key_id}:revoke` | 软撤销导入 Key |
-| `POST /v2alpha1/admin/apiKeys:verify` | 校验任意受支持 Credential |
-| `POST /v2alpha1/admin/apiKeys:batchVerify` | 批量校验 |
-| `POST /v2alpha1/admin/apiKeys:derive` | 派生 JWT 或 Macaroon |
-
-### Public API
-
-| 接口 | 作用 |
-| --- | --- |
-| `POST /v2alpha1/apiKeys:selfRevoke` | 持有者用完整 Credential 证明所有权并自行撤销 |
-| `GET /v2alpha1/derivedKeys/jwks.json` | 发布派生 JWT 的验证公钥，各模式均可提供 |
-
-这里必须区分三种 Credential：
-
-| Credential | 是否携带身份信息 | Gateway 从哪里得到身份 |
-| --- | --- | --- |
-| Talos API Key | 不携带可供 Gateway 直接读取的 `actor_id`、`scopes` | 调用 Talos `apiKeys:verify`，从验证响应取得 |
-| Talos 派生 JWT | 携带 Talos 签名的 `act`、`scp` 等 Claim | 使用 Talos JWKS 验签后读取 Claim |
-| Internal JWT | 由 Gateway 根据可信验证结果重新签发 | 内部服务使用 Gateway JWKS 验签后读取 Claim |
-
-因此，“Gateway 写入 Internal JWT”并不是从不透明 API Key 中解码出了身份。它必须先完成一次可信验证，再把验证结果转换成内部统一身份格式。
-
-## 6. 一次完整执行
-
-在执行流程之前，先确定请求主体是谁：
-
-| 请求主体 | 外部 Credential | 身份来源 | 是否需要 Kratos |
-| --- | --- | --- | --- |
-| 登录用户 | Kratos Session Cookie | Kratos Session 中的 `identity.id`、AAL 和 Traits | 需要 |
-| 系统 CLI、系统 Agent、定时任务、内部服务 | Talos API Key 或派生 JWT | Talos 返回或签名的 `actor_id`、scopes、metadata | 不需要 |
-| 用户创建的 Agent | Talos API Key 或派生 JWT | Talos 证明 Agent 身份；Agent Registry/Keto 证明它属于哪个 Kratos 用户 | 两者都需要，但作用不同 |
-
-Talos 不负责登录用户，也不应该为了验证机器 API Key 而临时查询 Kratos。签发机器 Key 时写入的 `actor_id` 应当使用明确的机器主体，例如 `agent:agent-17`，避免与 Kratos 的用户 Identity ID 混淆。
-
-对于浏览器用户，请求流程是：
-
-```text
-Browser -> Gateway: Cookie: ory_kratos_session=...
-Gateway -> Kratos /sessions/whoami: 携带原始 Session Cookie
-Kratos -> Gateway: active=true、identity.id=user-123、aal=aal1/aal2、traits
-Gateway -> Keto/OPA: user-123 是否允许执行目标操作
-Gateway -> 业务服务: Gateway 签发的短期 Internal JWT
-```
-
-因此，Gateway 确实要从 Kratos 获得用户身份，但不必再用 Talos 验证同一个用户请求。Gateway 应把不同认证源的结果规范成相同的内部 Claim，例如都使用 `sub` 表示业务主体 ID，同时增加 `subject_type=user|service` 和 `auth_source=kratos|talos`，让业务服务能够区分用户与机器。
-
-还有一种情况是“用户创建个人 API Key”。创建 Key 时，用户先通过 Kratos Session 证明自己是 `user-123`，Key 管理服务再向 Talos 写入 `actor_id=user:user-123`。此后使用 Key 时，Talos 验证响应就能返回这条直接绑定关系，不需要 Gateway 每次再查询 Kratos：
-
-```text
-创建时：Kratos Session -> identity.id=user-123 -> Talos actor_id=user:user-123
-使用时：Talos API Key -> apiKeys:verify -> actor_id=user:user-123
-```
-
-Kratos 仍是用户身份的事实来源，Talos 只是保存“这把 Key 代表哪个主体”的引用。用户被禁用或删除时，身份管理流程必须同步撤销该用户的 Talos Key；如果业务要求禁用立即生效，也可以增加实时状态检查，但这不是解析 API Key 所必需的步骤。
-
-### 用户 Agent 必须同时保存机器身份和用户关系
-
-假设 Alice 在系统中创建了一个专属抓取 Agent。这里存在两个不同事实：
-
-```text
-谁正在调用？          agent:agent-17        <- Talos 负责证明
-Agent 属于哪个用户？  user:<alice-identity> <- Agent Registry/Keto 负责证明
-```
-
-不能只保存第二个事实。如果把 Agent 直接冒充成 Alice，审计日志将无法判断操作来自 Alice 的浏览器还是她创建的自动化 Agent；Agent 泄露时也无法单独撤销。Talos Token 的直接作用，就是证明当前调用方确实是 `agent:agent-17`，并限制这台 Agent 最多可以申请哪些操作。
-
-两者在创建 Agent 时建立关联：
-
-```text
-1. Alice -> Gateway: 携带 Kratos Session，创建 Agent
-2. Gateway -> Kratos /sessions/whoami
-3. Kratos -> Gateway: identity.id=<alice-identity>
-4. Agent Service 创建业务记录：
-   Agent{id=agent-17, owner_identity_id=<alice-identity>}
-5. Agent Service 写入 Keto Relation Tuple：
-   namespace=Agent
-   object=agent-17
-   relation=owner
-   subject_id=<alice-identity>
-6. Agent Service -> Talos: 签发 actor_id=agent:agent-17 的 API Key
-7. Secret 只交给 agent-17
-```
-
-因此关联链不是 `Token -> User`，而是：
-
-```text
-Talos Token -> Agent Identity -> owner Relation -> Kratos Identity
-```
-
-这种间接关联更准确：Talos 管凭证，Kratos 管用户，Agent Service 管 Agent，Keto 管 Agent 与用户的关系。`owner_identity_id` 也可以复制进 Talos metadata 方便审计，但授权时应以 Agent Registry/Keto 中当前关系为准，避免 Agent 转移所有者后仍使用旧信息。
-
-下面完整执行一次 Alice 的 Agent 请求。为 Agent 签发 Key 时向 Talos 提交：
-
-```jsonc
 {
-  "actor_id": "agent:agent-17",    // 这把 Key 属于哪个 Agent
-  "scopes": ["crawl:start"],       // 这把 Key 被授予的能力
-  "metadata": {"tenant_id": "G"}   // 随 Key 保存的辅助信息
+  "name": "agent-17",
+  "actor_id": "agent:agent-17",
+  "scopes": ["crawl:start", "content:read"],
+  "ttl": "720h",
+  "metadata": {
+    "organization_id": "G"
+  }
 }
 ```
 
-Talos 把这些信息和 Key 记录保存在数据库中，只把 Secret 返回给 Agent。Agent 后续提交的 `<api-key>` 是一段不透明凭证，其中没有可供 Gateway 直接信任的 `actor_id` 和 `scopes`。
-
-一次请求按下面的顺序执行：
+Talos 保存：
 
 ```text
-Agent                    Gateway                    Talos                   业务服务
-  | Authorization:         |                         |                        |
-  | Bearer <api-key> ----> |                         |                        |
-  |                        | credential=<api-key> -> |                        |
-  |                        |                         | 校验 Key 并查询数据库   |
-  |                        | <- is_valid=true,       |                        |
-  |                        |    actor_id=agent:agent-17,                      |
-  |                        |    scopes=[crawl:start],|                        |
-  |                        |    metadata={tenant:G}  |                        |
-  |                        |                         |                        |
-  |                        | 查询 Agent Registry/Keto，得到 owner=Alice       |
-  |                        | 调用 Keto/OPA 检查 Agent 能否代表 Alice 执行动作  |
-  |                        | 签发短期 Internal JWT -------------------------> |
+key_id
+actor_id
+scopes
+metadata
+status
+expire_time
 ```
 
-Gateway 调用的验证请求只有原始凭证：
+并把完整 Secret 返回一次。之后数据库只保存验证所需的信息，不再返回可恢复的明文 Secret。
 
-```jsonc
+`actor_id` 的值由业务系统定义，Talos 不会检查它是否真的存在于 Kratos、Agent Registry 或其他系统。因此要建立统一命名规则：
+
+```text
+user:<kratos-identity-id>
+agent:<agent-id>
+service:<service-id>
+cli:<cli-installation-id>
+```
+
+前缀让下游能够区分人类用户和机器主体，也避免不同系统使用相同 UUID 时发生歧义。
+
+### 2.2 API Key 本身不能直接解码
+
+Talos 签发的长期 API Key 是不透明凭证：
+
+```text
+<prefix>_v1_<identifier>_<checksum>
+```
+
+它的 identifier 用于定位 `key_id`，但外部服务不能从 Key 中直接、安全地读取 `actor_id` 或 `scopes`。
+
+API Key 不能在微服务中直接解码。需要立即确认 Key 当前状态时，可以调用 Talos Verify：
+
+```http
+POST /v2alpha1/admin/apiKeys:verify
+Content-Type: application/json
+
 {
   "credential": "<api-key>"
 }
 ```
 
-Talos 根据凭证定位 Key 记录，校验密码学完整性、状态、过期时间和 CIDR，成功后返回：
+验证成功后，Talos 返回与 Key 绑定的信息：
 
-```jsonc
+```json
 {
   "is_valid": true,
-  "key_id": "key-8f3...",
+  "key_id": "key-8f3",
   "actor_id": "agent:agent-17",
-  "scopes": ["crawl:start"],
-  "metadata": {"tenant_id": "G"},
-  "status": "KEY_STATUS_ACTIVE"
-}
-```
-
-这份响应只能证明 Agent 身份。Gateway 还要根据 `agent-17` 查询可信的 Agent 记录，并用 Keto 确认 `Alice owner Agent:agent-17` 关系仍然成立，然后才能构造“Agent 代表 Alice”的内部身份。Internal JWT 可以采用下面的约定：
-
-```jsonc
-{
-  "iss": "https://gateway.internal", // Internal JWT 的签发者
-  "sub": "user:<alice-identity>",    // 当前操作代表的业务主体
-  "subject_type": "user",           // sub 是用户
-  "act": {
-    "sub": "agent:agent-17"          // 实际发起请求的 Agent
+  "scopes": ["crawl:start", "content:read"],
+  "metadata": {
+    "organization_id": "G"
   },
-  "auth_source": "talos",           // Agent 凭证由 Talos 验证
-  "aud": ["crawler-service"],        // 只允许目标服务使用
-  "scope": ["crawl:start"],          // Talos 验证后返回的能力
-  "tenant_id": "G",                  // 经白名单选取的业务上下文
-  "credential_id": "key-8f3...",     // 本次认证所用 Key，便于审计
-  "iat": 1788062400,
-  "exp": 1788062700                   // 短期有效，例如 5 分钟
+  "status": "KEY_STATUS_ACTIVE",
+  "expire_time": "2026-10-02T10:00:00Z"
 }
 ```
 
-这里的 `sub` 与 `act.sub` 不能互换：
-
-- `sub` 是当前业务操作代表的用户，Keto 用它检查 Alice 对目标资源的权限；
-- `act.sub` 是实际持有 Credential 并发起请求的 Agent，用于限制委托和审计；
-- 如果是完全自主的系统 Agent，没有代表任何用户，则 `sub` 直接写 Agent ID，不写 `act`。
-
-最终允许条件是多项约束的交集：
+Verify 同时完成两件事：
 
 ```text
-allow = Talos Credential 有效
-     && agent-17 当前属于 Alice
-     && Token scope 包含 crawl:start
-     && Alice 对目标资源拥有相应权限
-     && OPA 动态策略允许本次环境和操作
+验证 Credential 是否有效
+解析它对应的 actor_id、scopes 和 metadata
 ```
 
-这也正是 Agent Token 的价值：用户权限回答“Alice 能不能做”，Agent Token 回答“现在是不是 Alice 授权的那台 Agent 在做，以及这台 Agent 最多能做什么”。
+不过，对于持续的内部调用，官方推荐使用下一节的 Derive API 把长期 Key 换成短期 JWT，而不是让每个请求都调用 Verify。
 
-所谓“删除客户端伪造的身份 Header”，指的是 Gateway 在认证前无条件删除外部请求中的 `X-Actor-ID`、`X-Scopes`、`X-Tenant-ID` 以及内部认证 Header。否则客户端完全可以自己发送 `X-Actor-ID: admin`。Gateway 完成认证后，不再信任或透传这些原值，而是把自己签名的 Internal JWT 放入约定的内部 Header。业务服务只信任 Gateway 的签名、`iss`、`aud` 和有效期，不信任普通身份 Header。
+### 2.3 派生 JWT 可以本地解析
 
-### 请求量大时：先派生 JWT，再本地验证
+Talos 可以用长期 API Key 派生短期 JWT：
 
-也可以先用长期 API Key 调用 `apiKeys:derive`，换取短期 Talos JWT。这个 JWT **不是不透明的**；结合代码，其主要 Claim 是：
+```http
+POST /v2alpha1/admin/apiKeys:derive
+Content-Type: application/json
 
-```jsonc
 {
-  "iss": "https://talos.example.com",
-  "sub": "key-8f3...",       // 父 API Key 的 ID，不是 actor_id
-  "act": "agent:agent-17",   // Talos 自定义字段：actor_id
-  "scp": ["crawl:start"],    // scopes
-  "akid": "key-8f3...",      // API Key ID
-  "pid": "key-8f3...",       // 父 Key ID
-  "meta": {"tenant_id": "G"},
-  "iat": 1788062400,
-  "nbf": 1788062400,
-  "exp": 1788063300
+  "credential": "<api-key>",
+  "algorithm": "TOKEN_ALGORITHM_JWT",
+  "ttl": "15m",
+  "scopes": ["content:read"]
 }
 ```
 
-此时 Gateway 从 Talos JWKS 获取公钥，本地验证签名、`iss`、`nbf`、`exp` 后，直接从已验签的 Claim 得到 `act` 和 `scp`，无须每次调用 Talos。Gateway 可以继续把它规范化为统一的 Internal JWT，使业务服务不必理解 Talos 专用字段。代价是父 Key 被撤销后，已经签发的派生 JWT 仍会有效到自身过期，因此必须使用较短 TTL。
+请求中的 scopes 必须是父 Key scopes 的子集，Token 有效期也不能超过父 Key 的剩余时间。
 
-注意，Talos 派生 JWT 中的 `act` 是字符串形式的 Talos 自定义 `actor_id`；上面的 Internal JWT 则把 `act` 规范成包含 `sub` 的委托 Actor 对象。Gateway 转换时必须明确处理，不能直接原样复制。
+派生 JWT 的核心 Claim 是：
 
-## 7. 配置
+```json
+{
+  "sub": "key-8f3",
+  "act": "agent:agent-17",
+  "scp": ["content:read"],
+  "exp": 1788344100
+}
+```
+
+字段含义：
+
+| Claim | 含义 |
+| --- | --- |
+| `sub` | 父 API Key 的 ID，不是 Kratos 用户 ID |
+| `act` | 父 Key 的 `actor_id` |
+| `scp` | 当前 Token 的 scopes |
+| `exp` | Token 过期时间 |
+
+服务从 Talos 的 JWKS 接口获得公钥：
+
+```http
+GET /v2alpha1/derivedKeys/jwks.json
+```
+
+验证签名、Issuer、`nbf` 和 `exp` 后，即可读取 `act` 与 `scp`，不需要每次调用 Talos Verify。
+
+长期 API Key 与派生 JWT 的区别是：
+
+| Credential | 如何得到 Actor 和 scopes | 撤销效果 |
+| --- | --- | --- |
+| API Key | 调用 Talos Verify，从数据库记录解析 | 撤销后验证失败，受缓存窗口影响 |
+| 派生 JWT | 使用 Talos JWKS 验签后读取 Claim | 父 Key 撤销不会立刻使已签发 JWT 失效 |
+
+派生 JWT 必须保持较短 TTL，因为它的验证是无状态的，不会重新查询父 Key 是否已经撤销。
+
+## 3. Talos 与 Kratos 如何关联
+
+Talos 与 Kratos 没有自动同步关系。Kratos 管用户，Talos 管 API Key，关联由业务中的 Key Management Service 建立。
+
+### 3.1 用户创建个人 API Key
+
+Alice 登录后创建一把个人 API Key：
+
+```mermaid
+sequenceDiagram
+    participant B as Browser
+    participant G as Gateway / Oathkeeper
+    participant K as Kratos
+    participant M as Key Management Service
+    participant T as Talos
+
+    B->>G: POST /me/api-keys + Kratos Cookie
+    G->>K: GET /sessions/whoami
+    K-->>G: identity.id = alice-id
+    G->>M: Internal JWT, sub=alice-id
+    M->>T: Issue actor_id=user:alice-id
+    T-->>M: key_id + secret
+    M-->>B: Secret 只返回一次
+```
+
+创建时的关键转换是：
+
+```text
+Kratos identity.id = alice-id
+→ Talos actor_id = user:alice-id
+```
+
+以后使用这把 Key 时不需要再次查询 Kratos：
+
+```text
+API Key
+→ Talos Derive
+→ Derived JWT act=user:alice-id
+→ Oathkeeper / 微服务使用 Talos JWKS 本地验签
+```
+
+Kratos 仍然是用户身份的事实来源。用户被禁用或删除时，身份生命周期处理程序需要撤销该用户对应的 Talos Keys。Talos 不会自动监听 Kratos Identity 的状态变化。
+
+### 3.2 用户创建 Agent 或 CLI Key
+
+如果 Key 发给 Alice 创建的 Agent，不应让 Agent 直接冒充 Alice：
+
+```text
+不推荐：actor_id=user:alice-id
+推荐：  actor_id=agent:agent-17
+```
+
+创建 Agent 时同时保存两类数据：
+
+```text
+Talos
+→ actor_id=agent:agent-17
+
+Agent Registry / Keto
+→ Agent:agent-17#owner@User:alice-id
+```
+
+这样可以区分：
+
+```text
+Alice 在浏览器中亲自操作
+Alice 的 agent-17 自动执行操作
+```
+
+Agent Key 泄漏时可以只撤销 `agent-17`，审计日志也能保留真正的调用来源。
+
+### 3.3 内部服务 Key
+
+内部服务通常代表自己，而不是代表某个用户：
+
+```text
+actor_id=service:crawler-worker
+scopes=[crawl:execute]
+```
+
+这类请求不应该强行查询“对应用户”，因为它本来就没有用户。Keto 可以直接为服务主体建模：
+
+```text
+Crawler:production#executors@Service:crawler-worker
+```
+
+如果服务正在代表某个用户执行异步任务，应同时保留 Subject 和 Actor：
+
+```text
+Subject = user:alice-id
+Actor   = service:crawler-worker
+```
+
+用户触发的异步任务如何保存这两种身份，已经在 [定时任务与异步任务](./003_auth.md#7-定时任务与异步任务) 中说明。
+
+## 4. Talos 与 Oathkeeper 如何交互
+
+Talos 与 Oathkeeper 没有自动开启的专用集成，Oathkeeper 也没有内置 `talos` Authenticator。官方推荐的 Talos 数据路径是：
+
+```text
+长期 API Key
+→ Gateway / Proxy 调用 Talos Derive API
+→ 短期、权限收窄的 Talos JWT
+→ 后端使用 Talos JWKS 本地验签
+```
+
+因此，Talos 与 Oathkeeper 的组合应当以派生 JWT 为主，不应让每次业务请求都经过 Adapter 调用 Talos Verify。
+
+### 4.1 第一步：在入口交换短期 Token
+
+机器先把长期 API Key 交给受保护的 Machine Token Exchange 接口：
+
+```mermaid
+sequenceDiagram
+    participant M as Machine
+    participant E as Machine Token Exchange
+    participant T as Talos Admin API
+
+    M->>E: API Key + 申请的 scopes
+    E->>T: POST /admin/apiKeys:derive
+    T->>T: 验证父 Key、状态、TTL 和 scopes
+    T-->>E: 短期 Talos Derived JWT
+    E-->>M: Derived JWT
+```
+
+Token Exchange 可以是 Gateway 插件、Auth Context Service 的一个接口，或者独立的小服务。它的职责只有：
+
+```text
+接收长期 API Key
+调用 Talos Derive API
+限制允许申请的 scopes 和 TTL
+返回派生 Token
+```
+
+它不是每次业务请求都调用的 Verify Adapter。调用方在 JWT 有效期内重复使用派生 Token，长期 API Key 不再进入业务请求链路。
+
+派生请求示例：
+
+```http
+POST /v2alpha1/admin/apiKeys:derive
+Content-Type: application/json
+
+{
+  "credential": "<long-lived-api-key>",
+  "algorithm": "TOKEN_ALGORITHM_JWT",
+  "ttl": "15m",
+  "scopes": ["crawl:start"]
+}
+```
+
+Talos Admin API 没有内置认证，所以客户端不能直接访问该接口。Token Exchange 必须位于可信网络内，并使用 mTLS、Workload Identity 或 Service Mesh Policy 访问 Talos。
+
+### 4.2 第二步：Oathkeeper 本地验证 Talos JWT
+
+机器后续只携带 Derived JWT：
+
+```text
+Machine
+→ Talos Derived JWT
+→ Gateway
+→ Oathkeeper jwt Authenticator
+→ Talos JWKS 本地验签
+```
+
+Oathkeeper 配置 Talos JWKS、可信 Issuer 和允许的签名算法：
 
 ```yaml
-serve:
-  http:
-    host: 0.0.0.0
-    port: 4420
-
-credentials:
-  issuer: https://talos.example.com
-  api_keys:
-    default_ttl: 720h
-    max_ttl: 8760h
-    prefix:
-      current: prod
-      retired: []
-  derived_tokens:
-    default_ttl: 15m
-    jwt:
-      signing_keys:
-        urls:
-          - file:///etc/talos/jwks.json
-
-db:
-  dsn: sqlite3:///var/lib/talos/talos.db?_journal_mode=WAL
-
-secrets:
-  hmac:
-    current: "${TALOS_HMAC_SECRET}"
-    retired: []
-
-cache:
-  type: noop
-  ttl: 5m
-
-log:
-  level: info
-  format: json
+authenticators:
+  jwt:
+    enabled: true
+    config:
+      jwks_urls:
+        - http://talos:4420/v2alpha1/derivedKeys/jwks.json
+      trusted_issuers:
+        - https://talos.internal
+      allowed_algorithms:
+        - EdDSA
+        - RS256
 ```
 
-必须保护 HMAC Secret 和包含私钥的 JWKS。所有实例必须使用相同的 HMAC/JWKS，否则一个实例签发的 Key 或 Token 无法被另一个实例验证。
+Oathkeeper 验证签名、Issuer、Audience、`nbf` 和 `exp`。验签过程只读取并缓存 JWKS，不访问 Talos 数据库。
 
-## 8. OSS 与商业版边界
+Oathkeeper 的 Matcher、Authenticator、Authorizer 和 Mutator 流水线见 [Ory Oathkeeper](./009_ory_oathkeeper.md#4-请求流水线)。
 
-源码自带文档明确区分：
+### 4.3 第三步：是否重新签发 Internal JWT
 
-| 能力 | OSS | 商业版 |
-| --- | --- | --- |
-| Key 生命周期、验证、派生 | 支持 | 支持 |
-| Admin/Public 分进程 | 支持 | 支持 |
-| 数据库 | SQLite | SQLite、PostgreSQL、MySQL、CockroachDB |
-| Cache | `noop` | memory、Redis |
-| 多租户、强制限流、Edge Proxy | 不支持 | 支持 |
-| Helm Chart | 未提供 | 提供 |
+有两种方式把身份交给微服务。
 
-这意味着 OSS 更适合本地学习、单机或低流量场景。不要根据 `go.mod` 中存在 PGX 就推断 OSS 可以直接使用 PostgreSQL；Edition 的运行时能力以源码文档和构建标签为准。
-
-## 9. Docker 与 Kubernetes
-
-本地启动：
-
-```bash
-cd ddd-learn/third_party/talos
-docker compose -f docker-compose.oss.yaml up --build
-```
-
-当前 Compose 实际暴露 API `4420`、健康端口 `4422`。本地 `docs/operate/install.md` 中仍有一处写成 `8080`，与 Compose 和配置不一致，应以当前配置文件为准。
-
-生产启动前执行迁移：
-
-```bash
-talos migrate up --database "sqlite:///var/lib/talos/talos.db"
-talos serve admin --config /etc/talos/config.yaml
-```
-
-当前源码同时接受 `sqlite://` 和 `sqlite3://`，本文统一使用 `sqlite:///var/lib/talos/talos.db`。Kubernetes 必须先用一个 Job 执行 `talos migrate up`，成功后再启动应用；迁移 Job 与应用镜像必须固定为同一版本，不能使用 `latest`。
-
-Talos 的 Helm 边界与其他 Ory 服务不同：
-
-| 版本 | 官方 Helm | Kubernetes 建议 |
-| --- | --- | --- |
-| OSS | **没有** | 自建 Job、PVC、ConfigMap/Secret、Deployment 和 Service |
-| Commercial | 有 | 使用 Ory 提供的商业 Chart 和外部 PostgreSQL/MySQL/CockroachDB |
-
-OSS 只有 SQLite，适合单副本验证或小规模部署：
+#### 直接传递 Talos JWT
 
 ```text
-Migration Job ──> PVC(talos.db)
-                       │
-                 Talos Deployment x1
-                       ├── ClusterIP :4420
-                       └── probes /health/alive、/health/ready
+Talos Derived JWT
+→ Oathkeeper 验签
+→ 微服务继续验证 Talos JWT
 ```
 
-SQLite PVC 通常是 `ReadWriteOnce`，不应据此设计多副本 Talos。若目标是生产多副本 Kubernetes，应选择支持外部数据库的商业版，或者改用已经具备成熟 API Key 管理能力的平台。
+微服务使用统一的 JWT Middleware，但需要信任两个 Issuer：
 
-商业版生产拓扑应把 Admin 与 Public 分成不同 Deployment/Service；只为 Public 创建 Ingress，并只公开 self-revoke 和按需公开的 JWKS。Admin Service 必须通过 Gateway/mTLS/Service Mesh Policy 保护。OSS 在 Kubernetes 上主要用于单副本验证，直接运行 `talos serve` 更符合 SQLite 的限制。商业 Chart 的仓库地址、镜像凭证和具体 values 属于商业交付内容，不在公开的 Ory Helm 仓库中。
+```text
+Oathkeeper Issuer → 用户 Internal JWT
+Talos Issuer      → 机器 Derived JWT
+```
 
-## 10. 总结
+这最接近 Talos 官方流程，没有重复签名，但需要维护两组 JWKS 配置。
 
-Talos 的核心价值不是“生成一段随机字符串”，而是集中管理机器凭证的生命周期，并允许把长期 Key 降权成短期 Token。架构选择前必须先确认两个约束：Admin API 没有内置认证；当前 OSS 只支持 SQLite 单节点能力。
+#### 重新签发统一 Internal JWT
 
-参考：[Talos 官方文档](https://www.ory.com/docs/talos)、本地 `docs/concepts`、`docs/operate`、`api/talos/v2alpha1/talos.proto` 与 `spec/config.schema.json`。
+```text
+Talos Derived JWT
+→ Oathkeeper 验签
+→ id_token Mutator
+→ Oathkeeper Internal JWT
+```
+
+微服务只需要信任 Oathkeeper 的 Issuer 和 JWKS。这不违背 Talos 的设计，因为 Oathkeeper 只进行本地验签和格式转换，没有在每次请求中查询 Talos 数据库。
+
+但是必须注意一个字段限制：
+
+```text
+Talos JWT sub = 父 key_id
+Talos JWT act = actor_id
+```
+
+Oathkeeper 的 JWT Authenticator 固定把上游 JWT 的 `sub` 作为 Authentication Session Subject；`id_token` Mutator 又固定把 Session Subject 写入新 JWT 的 `sub`。所以只靠标准配置，不能把 Talos 的 `act` 改写成新 JWT 的 `sub`。
+
+可行的统一格式是保留 `sub=key_id`，把真正的机器主体放进 `actor_id`：
+
+```json
+{
+  "iss": "https://identity.internal",
+  "sub": "key-8f3",
+  "actor_id": "agent:agent-17",
+  "principal_type": "agent",
+  "scope": ["crawl:start"],
+  "auth_source": "talos",
+  "aud": ["internal-api"],
+  "exp": 1788343800
+}
+```
+
+Oathkeeper Mutator 从已验证的 Talos Claims 中复制 `act` 和 `scp`：
+
+```yaml
+mutators:
+  - handler: id_token
+    config:
+      claims: |
+        {
+          "actor_id": "{{ print .Extra.act }}",
+          "principal_type": "agent",
+          "scope": {{ .Extra.scp | toJson }},
+          "auth_source": "talos"
+        }
+```
+
+如果系统强制要求 `sub=agent:agent-17`，就需要自定义 Token Exchange/Issuer 重新签名，不能仅依赖 Oathkeeper 标准 `id_token` Mutator。
+
+### 4.4 不透明 API Key 的兼容路径
+
+旧 CLI、第三方 Webhook 等调用方可能无法先执行 Token Exchange。此时才使用兼容 Adapter：
+
+```text
+API Key
+→ Talos Auth Adapter
+→ Talos Verify
+→ Oathkeeper bearer_token
+→ Internal JWT
+```
+
+Adapter 将 Talos 的 `actor_id`、`scopes` 和 `metadata` 转换为 Oathkeeper 的 Subject 与 Extra。它适合低频兼容请求，不应成为高频内部调用的主路径。
+
+最终选择是：
+
+| 路径 | 定位 |
+| --- | --- |
+| API Key → Derive → JWT → 本地验签 | 官方推荐的主路径 |
+| API Key → Adapter → Verify | 不支持 Token Exchange 的兼容路径 |
+
+## 5. 内部服务如何查询用户和权限
+
+业务服务收到 Internal JWT 后，需要按顺序回答三个问题。
+
+### 5.1 第一个问题：实际调用者是谁
+
+对于普通机器身份：
+
+```json
+{
+  "iss": "https://identity.internal",
+  "sub": "key-8f3",
+  "actor_id": "agent:agent-17",
+  "principal_type": "agent",
+  "scope": ["crawl:start", "content:read"],
+  "auth_source": "talos",
+  "aud": ["crawler-service"],
+  "exp": 1788343800
+}
+```
+
+业务服务验证签名、Issuer、Audience 和有效期后，可以直接得到：
+
+```text
+Credential = key-8f3
+Actor = agent:agent-17
+Credential scopes = crawl:start, content:read
+```
+
+不需要拿 Internal JWT 再去查询 Talos。
+
+微服务的统一认证中间件按照下面的规则得到业务 Principal：
+
+```text
+actor_id 存在 → principal_id = actor_id
+actor_id 不存在 → principal_id = sub
+```
+
+因此：
+
+```text
+Kratos 用户 Token
+sub=user:alice-id
+→ principal_id=user:alice-id
+
+Talos 机器 Token
+sub=key-8f3, actor_id=agent:agent-17
+→ principal_id=agent:agent-17
+```
+
+微服务仍然只实现一套 Internal JWT 验签和 Principal 构造逻辑。
+
+### 5.2 第二个问题：它是否代表某个用户
+
+先使用上一节的规则得到 `principal_id`。如果它是 `user:<id>`，可以直接得到对应的 Kratos Identity ID：
+
+```text
+principal_id=user:alice-id
+→ Kratos identity.id=alice-id
+```
+
+如果 `principal_id` 是 Agent 或 Service，则根据业务需要查询关系：
+
+```text
+Agent:agent-17#owner@User:alice-id
+```
+
+可以从 Agent Registry 查询：
+
+```http
+GET /internal/agents/agent-17
+```
+
+或者通过 Keto 检查、展开相关 Relation。不要从 Talos `metadata.owner_id` 直接决定当前授权，因为 metadata 是签发时的快照，Agent 转移所有者后可能已经过期。
+
+### 5.3 第三个问题：它拥有哪些权限
+
+必须区分 Talos scope 和业务资源权限：
+
+```text
+Talos scope
+→ 这把 Credential 最多可以申请哪些动作
+
+Keto Permission
+→ 当前 Subject 或 Actor 对具体资源是否有权限
+```
+
+例如 Agent 请求启动组织 G 的抓取任务：
+
+```text
+Scope Check
+→ scope 是否包含 crawl:start？
+
+Ownership Check
+→ agent-17 是否仍属于 Alice？
+
+Keto Check
+→ Alice 是否拥有 Organization:G#start_crawl？
+
+Policy Check
+→ 当前风险、时间和任务状态是否允许？
+```
+
+最终结果是交集：
+
+```text
+Allow
+= CredentialValid
+  AND ScopeAllowed
+  AND DelegationValid
+  AND ResourcePermissionAllowed
+  AND ContextPolicyAllowed
+```
+
+对应到组件：
+
+| 判断 | 组件 |
+| --- | --- |
+| Key 或派生 Token 是否有效 | Talos / Oathkeeper |
+| Token 直接代表哪个 Actor | Talos `actor_id` 或派生 JWT `act` |
+| Agent 或服务是否属于某个用户 | Agent Registry / Keto |
+| 用户或机器能否操作具体资源 | Keto |
+| 当前动态条件是否允许 | 业务服务 / OPA |
+
+Keto 的 Relation 和 Permission 计算见 [Ory Keto](./008_ory_keto.md#1-先建立-keto-的核心模型)。
+
+## 6. 如何构造 Subject 与 Actor
+
+### 6.1 机器只代表自己
+
+```json
+{
+  "sub": "service:crawler-worker",
+  "principal_type": "service",
+  "scope": ["crawl:execute"]
+}
+```
+
+此时 Keto 使用 `Service:crawler-worker` 检查权限，不查询用户。
+
+### 6.2 个人 API Key 代表用户本人
+
+```json
+{
+  "sub": "user:alice-id",
+  "principal_type": "user",
+  "scope": ["content:read"],
+  "auth_source": "talos"
+}
+```
+
+它表示 Alice 使用个人 API Key，而不是 Kratos Session。审计日志应记录 `auth_source=talos` 和 `credential_id`。
+
+### 6.3 Agent 代表用户执行任务
+
+```json
+{
+  "sub": "user:alice-id",
+  "principal_type": "user",
+  "act": {
+    "sub": "agent:agent-17"
+  },
+  "scope": ["crawl:start"],
+  "auth_source": "talos"
+}
+```
+
+这里：
+
+```text
+sub     最终业务操作代表 Alice
+act.sub 实际调用者是 agent-17
+```
+
+这个 Internal JWT 不能仅凭 Talos Verify 直接生成。Gateway 或 Auth Context Service 必须先确认 `agent-17 → Alice` 的当前委托关系，再签发这种 Subject/Actor 结构。
+
+## 7. 一个完整请求
+
+下面执行一次 `agent-17` 代表 Alice 启动组织 G 的抓取任务：
+
+```mermaid
+sequenceDiagram
+    participant A as agent-17
+    participant G as Gateway
+    participant O as Oathkeeper
+    participant T as Talos / Adapter
+    participant R as Agent Registry / Keto
+    participant S as Crawl Service
+    participant K as Keto
+
+    A->>G: POST /organizations/G/crawl/tasks + API Key
+    G->>O: Decision Request
+    O->>T: 验证 Credential
+    T-->>O: actor=agent-17, scopes=[crawl:start]
+    O->>R: 查询 agent-17 的 owner
+    R-->>O: owner=user:alice-id
+    O-->>G: Internal JWT: sub=Alice, act=agent-17
+    G->>S: 原始请求 + Internal JWT
+    S->>S: 验签并检查 crawl:start scope
+    S->>K: Check Alice 对 Organization:G 的 start_crawl
+    K-->>S: allowed=true
+    S-->>A: 201 Created
+```
+
+需要注意：Oathkeeper 本身是否直接查询 Agent Registry，取决于具体设计。常见实现是让 Remote Authorizer 或独立 Auth Context Service 完成 `Actor → Subject` 解析，再由 Mutator 生成 Internal JWT。
+
+失败边界如下：
+
+| 失败 | 结果 |
+| --- | --- |
+| API Key 无效、过期或撤销 | `401 Unauthorized` |
+| scope 不包含 `crawl:start` | `403 Forbidden` |
+| Agent 已不再属于 Alice | `403 Forbidden` |
+| Alice 没有组织 G 的权限 | `403 Forbidden` |
+| Talos、关系服务或 Keto 不可用 | 失败关闭，通常返回 `503 Service Unavailable` |
+
+## 8. 四种 Credential
+
+Talos 管理四种 Credential：
+
+| 类型 | 适用场景 | 如何验证 |
+| --- | --- | --- |
+| Issued API Key | Talos 负责生成、轮换和撤销 | Talos Verify |
+| Imported API Key | 接管已有 Key | Talos Verify |
+| Derived JWT | 高频内部调用、边缘本地验证 | Talos JWKS |
+| Derived Macaroon | 多级委托并继续收窄能力 | Talos 或持有共享验证能力的组件 |
+
+长期 API Key 适合保存于 Secret Manager，并用于换取短期 Token；不应该在每一跳微服务调用中不断透传长期 Secret。
+
+## 9. API 与安全边界
+
+Talos 提供两个安全级别不同的接口面：
+
+```text
+Admin API  → 签发、验证、查询、轮换、撤销和派生
+Public API → Key 持有者证明持有后自行撤销
+```
+
+常用接口：
+
+| 接口 | 作用 |
+| --- | --- |
+| `POST /v2alpha1/admin/issuedApiKeys` | 签发 API Key |
+| `GET /v2alpha1/admin/issuedApiKeys` | 按 `actor_id` 等条件查询 Keys |
+| `POST /v2alpha1/admin/apiKeys:verify` | 验证 API Key 或派生 Token |
+| `POST /v2alpha1/admin/apiKeys:derive` | 派生 JWT 或 Macaroon |
+| `POST .../{key_id}:rotate` | 轮换 Key |
+| `POST .../{key_id}:revoke` | 撤销 Key |
+| `POST /v2alpha1/apiKeys:selfRevoke` | 持有者自行撤销 |
+| `GET /v2alpha1/derivedKeys/jwks.json` | 发布派生 JWT 公钥 |
+
+Admin API 没有内置认证，不能暴露到公网。Talos Auth Adapter、Key Management Service 等调用方必须通过内网、mTLS、Service Mesh Policy 或认证代理访问。
+
+按用户查询 Key 时，可以使用签发时写入的 `actor_id`：
+
+```http
+GET /v2alpha1/admin/issuedApiKeys?filter=actor_id%3D%22user%3Aalice-id%22
+```
+
+这只能找到直接绑定 Alice 的个人 Keys。`actor_id=agent:agent-17` 的 Key 必须先从 Agent Registry 查询 Alice 拥有哪些 Agents，再按 Agent actor_id 查询。
+
+## 10. 部署边界
+
+Talos OSS 使用单节点 SQLite，适合学习、原型和低流量部署；商业版本提供外部数据库、多节点、分布式缓存等能力。
+
+生产拓扑应分开接口面：
+
+```text
+Key Management / Auth Adapter
+        │ mTLS / NetworkPolicy
+        ▼
+Talos Admin API
+        │
+        └── Credential Store
+
+Public Client
+        │
+        ▼
+Talos Public API
+        └── 只开放 selfRevoke 和按需开放 JWKS
+```
+
+部署时需要保护：
+
+```text
+API Key HMAC Secret
+JWT 签名私钥
+Admin API 网络边界
+数据库与备份
+验证缓存的撤销窗口
+```
+
+所有实例必须使用一致的 HMAC 和 JWKS。轮换 JWT 签名密钥时，需要在最长 Token TTL 与 JWKS 缓存窗口内保留旧公钥。
+
+## 11. 总结
+
+Talos 的身份关联规则很简单：
+
+```text
+签发时写入 actor_id
+验证时取回 actor_id、scopes 和 metadata
+派生 JWT 中使用 act 和 scp 携带这些信息
+```
+
+但 `actor_id` 不一定是用户：
+
+```text
+个人 API Key → actor_id 可以直接引用 Kratos Identity
+Agent Key    → actor_id 是 Agent，再通过 Registry/Keto 找 owner
+Service Key  → actor_id 是 Service，可能根本没有对应用户
+```
+
+权限也不能只看 Talos scopes。Scopes 是凭证能力上限，Keto 才计算主体对具体资源的当前权限。完整结果始终是 Credential、Scope、委托关系、资源权限和动态策略的交集。
+
+## 参考资料
+
+- [Ory Talos](https://www.ory.com/docs/talos)
+- [Issue and verify API keys](https://www.ory.com/docs/talos/integrate/issue-and-verify)
+- [Derive tokens](https://www.ory.com/docs/talos/integrate/derive-tokens)
+- [Talos credential types](https://www.ory.com/docs/talos/concepts/credential-types)
+- [Talos token format](https://www.ory.com/docs/talos/reference/token-format)
+- [Ory Talos GitHub](https://github.com/ory/talos)
+- [Ory Oathkeeper](./009_ory_oathkeeper.md)
+- [Ory Keto](./008_ory_keto.md)

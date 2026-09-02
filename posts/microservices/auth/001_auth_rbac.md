@@ -1,15 +1,15 @@
 ---
 weight: 1
-title: "1 RBAC：Keycloak 数据模型与角色计算"
+title: "Keycloak 数据模型与 RBAC 权限计算"
 date: 2026-08-28T08:00:00+08:00
-lastmod: 2026-08-28T08:00:00+08:00
+lastmod: 2026-09-02T08:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "从数据库存储、角色计算到 Access Token，理解 Keycloak 如何实现 RBAC"
+description: "通过一个完整示例理解 Keycloak 的数据模型、角色计算、Token 输出与服务鉴权"
 featuredImage:
 
-tags: ["auth"]
+tags: ["auth", "rbac", "keycloak"]
 categories: ["microservice"]
 
 lightgallery: true
@@ -18,279 +18,131 @@ toc:
   auto: false
 ---
 
-这一节我们将通过 Keycloak 这个组件去理解认证鉴权里的 RBAC。
+Keycloak 实现 RBAC 的核心过程是：保存用户、组织、组和角色之间的关系，登录后把当前应用需要的有效角色写入 Access Token，最后由业务服务根据 Token 执行鉴权。
 
-下面是一个典型的业务场景，这个业务场景会贯穿我们整个系列：
-
-```text
-组织 G 有两名用户：
-
-Alice：管理员
-Bob：普通成员
-
-普通成员可以：
-- 启动抓取任务
-- 查看抓取内容
-
-管理员还可以：
-- 修改抓取关键词
-```
-
-先给出结论：
-
-> Keycloak 保存 User、Group、Role 和 Client 之间的关系。生成 Access Token 时，先计算用户真正拥有的角色，再根据当前应用可见的角色范围进行裁剪，最后把结果写入 Token。Gateway 和业务服务负责执行 Allow/Deny。
+本文以 Keycloak 26.7.3 为准，先介绍数据模型，再定义一个包含所有知识点的示例，最后沿着一次角色计算完整走一遍。
 
 <!-- more -->
 
-## 1. 先明确 Web 系统中的对象
+## 1. Keycloak 的数据模型
 
-```text
-Alice
-  ↓ 操作
-Browser
-  ↓ 访问
-运营控制台 operations-console
-  ↓
-Gateway
-  ├── crawler-service：创建抓取任务、修改关键词
-  └── content-service：查询抓取内容
+Keycloak 中与认证和 RBAC 直接相关的对象如下：
+
+```mermaid
+flowchart TD
+    Realm[Realm]
+    User[User]
+    Credential[Credential]
+    Organization[Organization]
+    Group[Organization Group]
+    Role[Realm Role / Client Role]
+    Client[Client]
+    Mapping[Role Mapping]
+    Scope[Client Scope / Role Scope Mapping]
+    Session[User Session / Client Session]
+    Token[Access Token]
+
+    Realm --> User
+    Realm --> Organization
+    Realm --> Client
+    User --> Credential
+    User --> Session
+    Organization --> Group
+    User -->|membership| Group
+    Client -->|defines| Role
+    User --> Mapping
+    Group --> Mapping
+    Mapping --> Role
+    Client --> Scope
+    Session --> Token
+    Role --> Token
+    Scope --> Token
 ```
 
-它们与 Keycloak 对象的对应关系是：
+各对象的职责是：
 
-| 系统对象 | Keycloak 对象 | 含义 |
-| --- | --- | --- |
-| Alice | User | 被认证和授权的人 |
-| Browser | 无 | Browser 是 User Agent，不是 Keycloak Client |
-| `operations-console` | Client | 代表运营控制台应用 |
-| `crawler-service` | Client | 代表抓取服务及其角色命名空间 |
-| `content-service` | Client | 代表内容服务及其角色命名空间 |
+| 对象 | 职责 |
+| --- | --- |
+| Realm | 隔离一整套用户、组织、角色和 Client |
+| User | 表示被认证和授权的人 |
+| Credential | 证明当前操作者是哪一个 User |
+| Organization | 表示 Realm 中的业务组织 |
+| Organization Group | 表示用户在某个组织中的团队或角色 |
+| Role | 表示身份或业务权限 |
+| Role Mapping | 把 Role 分配给 User 或 Group |
+| Client | 表示接入 Keycloak 的应用或服务 |
+| Client Scope / Role Scope Mapping | 控制 Token 可以包含什么信息和角色 |
+| Session | 保存当前登录状态 |
+| Protocol Mapper | 把已经选出的信息写入 Token Claim |
 
-> Keycloak Client 不是“浏览器客户端”。它是 Keycloak 对一个应用或服务的逻辑登记，用来承载该应用的角色命名空间和 Token 输出规则。
-
-本文只讨论 RBAC，不展开登录流程。
-
-### 1.1 Client 有两个不同的 ID
-
-创建 Client 时，管理员填写一个可读的 `client_id`；Keycloak 入库时再生成内部主键：
-
-```text
-CLIENT
-ID          REALM_ID   CLIENT_ID
-----------  ---------  ------------------
-client-web  realm-001  operations-console
-client-cr   realm-001  crawler-service
-client-ct   realm-001  content-service
-```
-
-两者用途不同：
-
-| 标识 | 谁定义 | 用在哪里 |
-| --- | --- | --- |
-| `CLIENT.CLIENT_ID` | 管理员定义，例如 `operations-console` | 应用配置、请求参数、Token Claim 等外部语义 |
-| `CLIENT.ID` | Keycloak 生成，例如 `client-web` | Keycloak 数据库表之间的内部关联 |
-
-`CLIENT_ID` 在同一个 Realm 内唯一，因此完整查找条件是：
+这些对象最终组成四条关系：
 
 ```text
-REALM_ID = realm-001
-CLIENT_ID = operations-console
+User --属于--> Organization Group
+User / Group --获得--> Role
+Composite Role --包含--> Child Role
+Client --控制--> Token 中允许出现的角色和 Claim
 ```
 
-### 1.2 当前 Client 是怎么传到角色计算中的
+## 2. 完整示例
 
-每次 Keycloak 生成 Token 时，请求上下文必须标识“正在为哪个 Client 生成 Token”。常见形式是传入逻辑 `client_id`，具体登录方式不影响后面的 RBAC 计算：
+系统是一套自媒体运营平台，所有对象位于：
 
 ```text
-Token 生成请求上下文
-realm     = media-platform
-client_id = operations-console
+Realm: media-platform
 ```
 
-Keycloak 的处理过程是：
+### 2.1 用户与组织
+
+平台有两个组织：
 
 ```text
-收到 client_id = operations-console
-        ↓
-在 media-platform Realm 查询 CLIENT
-        ↓
-找到 CLIENT.CLIENT_ID = operations-console
-        ↓
-得到内部 CLIENT.ID = client-web
-        ↓
-将 client-web 对应的 ClientModel 传给角色计算逻辑
-        ↓
-查询 client-web 的 FULL_SCOPE_ALLOWED 和 SCOPE_MAPPING
+组织 G 启用了：
+- 启动抓取任务
+- 查看抓取内容
+- 修改抓取关键词
+
+组织 W 只启用了：
+- 查看抓取内容
 ```
 
-所以后文的“当前 Client”指 `operations-console`，而查询 `SCOPE_MAPPING` 时使用的是它的内部主键 `client-web`。
-
-## 2. Keycloak 的整体数据模型
+用户在组织中的角色是：
 
 ```text
-Realm
-│
-├── User
-│   ├── Credential
-│   ├── Group Membership
-│   ├── Direct Role Mapping
-│   └── Session
-│
-├── Group
-│   ├── Subgroup
-│   └── Role Mapping
-│
-├── Role
-│   ├── Realm Role
-│   ├── Client Role
-│   └── Composite Role
-│
-└── Client
-    ├── Client Role
-    ├── Role Scope Mapping
-    └── Protocol Mapper
+Alice 是 G 的管理员
+Bob   是 G 的普通成员
+Alice 是 W 的管理员
 ```
 
-核心关系只有四条：
+因此创建：
 
 ```text
-User --属于--> Group
-User / Group --分配--> Role
-Role --组合--> Role
-Client --定义--> Client Role 和 Token 输出规则
+Organization G，alias = g
+├── /members → Bob
+└── /admins  → Alice
+
+Organization W，alias = w
+└── /admins  → Alice
 ```
 
+G 的 `/admins` 和 W 的 `/admins` 是两个不同的 Organization Group。相同的 Group 路径不会让两个组织共享角色关系。
 
-## 3. Realm、User 与 Credential
+### 2.2 应用与服务
 
-### 3.1 Realm：所属边界
+平台包含四个 Keycloak Client：
 
-`REALM`：
+| Client ID | 用途 |
+| --- | --- |
+| `operations-console` | 用户登录和操作平台的 Web 应用 |
+| `crawler-service` | 创建抓取任务、修改关键词 |
+| `content-service` | 查询抓取内容 |
+| `billing-service` | 财务服务，用来演示无关角色如何被排除 |
 
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `ID` | `VARCHAR(36)` | Realm 主键 |
-| `NAME` | `VARCHAR` | Realm 名称 |
-| `ENABLED` | `BOOLEAN` | Realm 是否启用 |
+浏览器是 User Agent，不是这里所说的 Client。`operations-console` 才是 Keycloak 中登记的应用。
 
-用户、组、角色和 Client 都通过 `REALM_ID` 归属于某个 Realm。Realm 是身份和角色的隔离边界，不应机械地等同于业务租户。
+### 2.3 角色
 
-### 3.2 User：RBAC 主体
-
-`USER_ENTITY`：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `ID` | `VARCHAR(36)` | User 主键，对应 Token 中稳定的 `sub` |
-| `REALM_ID` | `VARCHAR(36)` | 所属 Realm |
-| `USERNAME` | `VARCHAR` | 用户名 |
-| `ENABLED` | `BOOLEAN` | 用户是否可用 |
-
-授权关系应关联 User ID，而不是可能修改的 username 或 email。
-
-### 3.3 Credential：如何证明身份
-
-`CREDENTIAL` 通过 `USER_ID` 关联 User，保存凭证类型及密钥数据。它决定“当前操作者是不是 Alice”，不决定“Alice 能做什么”，因此本文不继续展开其字段。
-
-## 4. Group：批量给用户分配角色
-
-`KEYCLOAK_GROUP`：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `ID` | `VARCHAR(36)` | Group 主键 |
-| `REALM_ID` | `VARCHAR(36)` | 所属 Realm |
-| `NAME` | `VARCHAR` | Group 名称 |
-| `PARENT_GROUP` | `VARCHAR(36)` | 父 Group；顶层组为空 |
-
-User 和 Group 是多对多关系，存放在 `USER_GROUP_MEMBERSHIP`：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `USER_ID` | `VARCHAR(36)` | User ID，联合主键之一 |
-| `GROUP_ID` | `VARCHAR(36)` | Group ID，联合主键之一 |
-
-用户属于子组时，会继承该子组及父组的 Role Mapping。
-
-## 5. Realm Role 与 Client Role
-
-两种 Role 都存放在 `KEYCLOAK_ROLE`：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `ID` | `VARCHAR(36)` | Role 主键 |
-| `NAME` | `VARCHAR` | Role 名称 |
-| `REALM_ID` | `VARCHAR(36)` | 所属 Realm |
-| `CLIENT_ROLE` | `BOOLEAN` | `false` 为 Realm Role，`true` 为 Client Role |
-| `CLIENT` | `VARCHAR` | Client Role 所属的 `CLIENT.ID`；Realm Role 为空 |
-
-底层区别就是：
-
-```text
-Realm Role:
-CLIENT_ROLE = false
-CLIENT      = NULL
-
-Client Role:
-CLIENT_ROLE = true
-CLIENT      = 某个 CLIENT.ID
-```
-
-### 5.1 Realm Role
-
-假设 `media-platform` Realm 中有三个系统：
-
-```text
-运营控制台 operations-console
-抓取服务   crawler-service
-内容服务   content-service
-```
-
-Alice 在整个自媒体平台中都是组织 G 的成员，同时还是组织管理员。这两个身份不属于某一个具体服务：以后新增报表服务，它们仍然成立。
-
-因此可以定义为 Realm Role：
-
-```text
-organization-operator
-organization-admin
-```
-
-数据记录类似：
-
-```text
-KEYCLOAK_ROLE
-ID           NAME                 CLIENT_ROLE  CLIENT
------------  -------------------  -----------  ------
-role-operator organization-operator false        NULL
-role-admin   organization-admin   false        NULL
-```
-
-Realm Role 的关键不是“权限更大”，而是：
-
-> 它属于 Realm 的全局角色命名空间，不归任何一个 Client 所有。
-
-所以 Realm 中不能再创建第二个同名的 `organization-admin`。默认情况下，它们写入 Token 的公共角色区域：
-
-```text
-realm_access.roles = [
-  "organization-operator",
-  "organization-admin"
-]
-```
-
-抓取服务、内容服务或以后新增的服务，都可以在业务需要时判断这些 Realm Role。但 Realm Role 出现在 Token 中，并不代表所有服务必须接受它，也不代表它会自动放行任何 API；最终语义仍由服务的授权规则决定。
-
-### 5.2 Client Role
-
-现在看具体操作权限：
-
-```text
-启动抓取任务 只对 crawler-service 有意义
-修改抓取关键词 只对 crawler-service 有意义
-查看抓取内容 只对 content-service 有意义
-```
-
-因此分别创建 Client Role：
+具体业务权限使用 Client Role：
 
 ```text
 crawler-service
@@ -299,549 +151,481 @@ crawler-service
 
 content-service
 └── content.read
+
+billing-service
+└── invoice.refund
 ```
 
-底层记录通过 `CLIENT` 列指向所属 Client：
+平台还定义一个 Realm Role：
 
 ```text
-KEYCLOAK_ROLE
-ID            NAME            CLIENT_ROLE  CLIENT
-------------  --------------  -----------  -----------
-role-start    task.start      true         client-cr
-role-keyword  keyword.update  true         client-cr
-role-read     content.read    true         client-ct
+platform-user
 ```
 
-Client Role 的关键是：
+它只表示“可以登录自媒体运营平台”，不直接放行任何业务接口。
 
-> 它的完整身份是“所属 Client + Role 名称”，而不只是 Role 名称。
-
-例如抓取服务和内容服务都可以定义 `viewer`：
+为了演示 Composite Role，再定义：
 
 ```text
-crawler-service:viewer
-content-service:viewer
+content-viewer（Realm Role）
+├── platform-user
+└── content-service:content.read
 ```
 
-这两个 Role 不冲突，也不是同一个权限。前者只能由抓取服务解释，后者只能由内容服务解释。
+Composite Role 只是角色集合。分配 `content-viewer` 后，Keycloak 会递归展开它的子角色。
 
-默认情况下，Client Role 按所属 Client 分组写入 Token：
+### 2.4 Role Mapping
+
+根据组织实际启用的能力配置 Group Role Mapping：
+
+| Organization Group | Role Mapping |
+| --- | --- |
+| G `/members` | `platform-user`、`crawler-service:task.start`、`content-service:content.read` |
+| G `/admins` | `platform-user`、`crawler-service:task.start`、`crawler-service:keyword.update`、`content-service:content.read` |
+| W `/admins` | `content-viewer` |
+
+W 的 `/admins` 虽然代表管理员，却没有映射抓取相关角色。Composite Role `content-viewer` 展开后也只有平台身份和查看内容权限，所以 Alice 在 W 中不能启动抓取或修改关键词。
+
+为了演示直接分配，额外给 Alice 分配：
 
 ```text
-resource_access = {
-  "crawler-service": {
-    "roles": ["task.start", "keyword.update"]
-  },
-  "content-service": {
-    "roles": ["content.read"]
-  }
-}
+billing-service:invoice.refund
 ```
 
-请求到达抓取服务时，它只读取：
+这个角色与运营控制台无关，后面会被 `operations-console` 的角色范围排除。
+
+### 2.5 Token 输出配置
+
+`operations-console` 使用内置的 `organization` Client Scope，并添加：
+
+```text
+Organization Group Membership Mapper
+├── Add to access token = On
+└── Add group role mappings = On
+```
+
+登录时应用明确请求当前组织：
+
+```text
+scope=openid organization:g
+```
+
+同时关闭 `operations-console` 的 `Full Scope Allowed`，只允许它获得下面这些运营角色：
+
+```text
+platform-user
+content-viewer
+crawler-service:task.start
+crawler-service:keyword.update
+content-service:content.read
+```
+
+`billing-service:invoice.refund` 不在允许范围内。
+
+## 3. 结合示例理解各个对象
+
+### 3.1 Realm：系统边界，不是业务租户
+
+`media-platform` Realm 包含 G、W、Alice、Bob 和所有 Client。
+
+G、W 不应机械地拆成两个 Realm，因为 Alice 同时属于两个组织，两个组织也共用同一套应用和登录入口。Realm 适合隔离一整套身份系统；Realm 内的业务租户使用 Organization 表达。
+
+### 3.2 User 与 Credential：身份和凭证分开
+
+Alice 对应一个 User，授权关系关联她稳定的 User ID。用户名和邮箱可能变化，不适合充当权限关系主键。
+
+Credential 保存密码、OTP 或 Passkey 等认证材料：
+
+```text
+Credential 验证成功
+→ 当前操作者是 Alice
+
+Role 与 Group 计算成功
+→ Alice 在当前组织中能做什么
+```
+
+Credential 负责认证，不负责授权。
+
+### 3.3 Organization Group：保存角色的组织作用域
+
+Alice 同时加入：
+
+```text
+G 的 /admins
+W 的 /admins
+```
+
+`/admins` 只是 Organization 内部的相对路径。真正的作用域来自它所属的 Organization，所以系统始终能区分 Alice 管理的是 G 还是 W。
+
+### 3.4 Realm Role 与 Client Role
+
+Realm Role 位于 Realm 的全局角色命名空间，适合表达跨多个应用仍然成立的身份：
+
+```text
+platform-user
+content-viewer
+```
+
+Client Role 位于某个 Client 的角色命名空间，适合表达具体服务的原子权限：
+
+```text
+crawler-service:task.start
+crawler-service:keyword.update
+content-service:content.read
+```
+
+判断方法是：
+
+```text
+如果删除这个服务，角色是否仍有意义？
+
+有   → 更接近 Realm Role
+没有 → 更接近该服务的 Client Role
+```
+
+业务接口应优先检查 Client Role。这样 `crawler-service` 只需要理解自己的角色，不必解释全平台角色的业务含义。
+
+### 3.5 Role Mapping 与 Composite Role
+
+Role Mapping 回答：
+
+```text
+这个 User 或 Group 获得了哪些 Role？
+```
+
+角色可以直接分配给 User，也可以映射给 Group。稳定的组织职责适合通过 Group 分配；少量特殊权限才考虑直接分配。
+
+Composite Role 回答：
+
+```text
+一个 Role 展开后还包含哪些 Role？
+```
+
+本例中：
+
+```text
+W /admins
+  ↓ Role Mapping
+content-viewer
+  ↓ Composite 展开
+platform-user
+content-service:content.read
+```
+
+Composite Role 会自动展开，因此不要给所有组织复用一个包含全部权限的全局 `admin` Composite Role。否则 W 的管理员也会获得它的全部子角色。
+
+### 3.6 Client 的两个身份
+
+这次登录涉及两类 Client：
+
+```text
+发起登录的 Client
+= operations-console
+
+定义权限的 Client
+= crawler-service、content-service、billing-service
+```
+
+授权请求中的：
+
+```text
+client_id=operations-console
+```
+
+表示 Keycloak 正在为哪个应用处理登录。它不表示 Token 只能包含 `operations-console` 自己定义的角色。
+
+Client Role 的所属 Client 决定它在 Token 中的命名空间，例如：
 
 ```text
 resource_access.crawler-service.roles
+resource_access.content-service.roles
 ```
 
-即使 Alice 拥有 `content-service:content.read`，这个角色对抓取服务也没有授权意义。
+### 3.7 Effective Roles 与 Role Scope Mapping
 
-将两者放在同一个场景中对比：
-
-| 问题 | 使用的 Role | 原因 |
-| --- | --- | --- |
-| Alice 是否是组织 G 的运营成员？ | Realm Role `organization-operator` | 这个身份跨多个服务成立 |
-| Alice 是否是组织 G 的管理员？ | Realm Role `organization-admin` | 多个服务都可能使用这个业务身份 |
-| Alice 能否启动抓取任务？ | Client Role `crawler-service:task.start` | 只属于抓取服务 |
-| Alice 能否查看抓取内容？ | Client Role `content-service:content.read` | 只属于内容服务 |
-
-可以用一个判断题决定选择：
-
-```text
-如果删除这个 Client，Role 是否仍然有业务意义？
-
-有  → 更接近 Realm Role
-没有 → 更接近该 Client 的 Client Role
-```
-
-### 5.3 如何选择
-
-| 角色语义 | 选择 |
-| --- | --- |
-| 跨多个应用都表示同一种身份或职责 | Realm Role |
-| 只对某个应用或服务有意义 | Client Role |
-| 一个业务角色需要聚合多个服务权限 | Composite Realm Role 可以包含多个 Client Role |
-
-本文用 Realm Role 表达跨服务业务角色，用 Client Role 表达各服务的权限原子。这是业务建模选择，不是 Keycloak 的强制规则。
-
-## 6. Role Mapping 与 Composite Role
-
-直接给 User 分配 Role：
-
-```text
-USER_ROLE_MAPPING(USER_ID, ROLE_ID)
-```
-
-给 Group 分配 Role：
-
-```text
-GROUP_ROLE_MAPPING(GROUP_ID, ROLE_ID)
-```
-
-本文通过 Group 分配业务角色：
-
-```text
-GROUP_ID  ROLE_ID
---------  -----------------
-group-m   role-operator
-group-a   role-admin
-```
-
-角色包含关系存放在：
-
-```text
-COMPOSITE_ROLE(COMPOSITE, CHILD_ROLE)
-```
-
-本文的组合关系：
-
-```text
-organization-operator（Realm Role）
-├── platform-user（Realm Role）
-├── crawler-service:task.start（Client Role）
-└── content-service:content.read（Client Role）
-
-organization-admin（Realm Role）
-├── organization-operator（Realm Role）
-└── crawler-service:keyword.update（Client Role）
-```
-
-Composite Role 可以同时包含 Realm Role 和 Client Role，Keycloak 会递归展开。
-
-## 7. Client 与 Role Scope Mapping
-
-`CLIENT` 只保留与本文相关的字段：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `ID` | `VARCHAR` | 数据库内部主键 |
-| `REALM_ID` | `VARCHAR(36)` | 所属 Realm |
-| `CLIENT_ID` | `VARCHAR` | 可读的逻辑名称，如 `crawler-service` |
-| `FULL_SCOPE_ALLOWED` | `BOOLEAN` | 是否允许该 Client 看见用户的全部有效角色 |
-
-`KEYCLOAK_ROLE.CLIENT` 保存内部 `CLIENT.ID`；Token 中 `resource_access` 使用可读的 `CLIENT.CLIENT_ID`。
-
-这里要区分两个 Client：
-
-```text
-当前 Client
-= 正在请求生成 Token 的应用
-= operations-console / client-web
-
-Role 所属 Client
-= 定义某个 Client Role 的服务
-= crawler-service / client-cr
-```
-
-`operations-console` 决定自己的 Token 能看见哪些角色；`crawler-service` 则是 `task.start` 这个 Client Role 的所有者。它们不是同一个 Client。
-
-### 7.1 两个角色集合
-
-用户是否拥有角色，与当前应用能否在 Token 中看到该角色，是两个问题：
+生成 Token 时要区分两个集合：
 
 ```text
 Effective Roles
-= 用户通过直接分配、Group 和 Composite 真正拥有的全部角色
+= User 直接角色
+ + Group 角色
+ + Composite Role 展开的子角色
 
 Scope-Permitted Roles
-= 当前 Client 允许投射到 Token 的角色范围
+= 当前 Client 允许进入 Token 的角色范围
 ```
 
 最终：
 
 ```text
-Token Roles = Effective Roles ∩ Scope-Permitted Roles
+Token Roles
+= Effective Roles
+∩ Scope-Permitted Roles
 ```
 
-`Scope-Permitted Roles` 是本文为了讲解使用的集合名称，不是 Keycloak 中名为 Allowed Roles 的对象。
+`Full Scope Allowed=true` 时，当前 Client 可以获得用户的全部有效角色。生产环境中应按最小权限原则关闭它，并通过 Role Scope Mapping 或 Client Scope 明确允许范围。
 
-### 7.2 Role Scope Mapping 如何存储
-
-直接配置在 Client 上的 Role Scope Mapping 存放在：
+在本例中，`operations-console` 允许运营相关角色，但不允许：
 
 ```text
-SCOPE_MAPPING(CLIENT_ID, ROLE_ID)
+billing-service:invoice.refund
 ```
 
-虽然列名叫 `CLIENT_ID`，这里保存的是内部 `CLIENT.ID`，不是可读的 `CLIENT.CLIENT_ID`。
+因此 Alice 虽然拥有财务角色，它也不会进入运营控制台获得的 Token。
 
-例如运营控制台只需要组织运营相关角色：
+### 3.8 Client Scope、Protocol Mapper 与 Session
+
+这三个对象解决不同问题：
+
+| 对象 | 回答的问题 |
+| --- | --- |
+| Client Scope | 本次请求需要哪些成组的 Claim 和 Role 范围配置？ |
+| Protocol Mapper | 已有信息写到 Token 的哪个 Claim？ |
+| Session | 当前用户是否已经登录，以及登录属于哪个 User 和 Client？ |
+
+本例请求 `organization:g` 后，内置 `organization` Client Scope 把组织上下文加入本次 Token 生成过程。Organization Group Membership Mapper 再把 G 的 Group 和 Group Role Mapping 写入 `organization.g`。
+
+Mapper 不分配角色，也不改变 Alice 的 Group Membership；它只改变 Token 的输出结构。
+
+## 4. 完整计算 Alice 在 G 中的角色
+
+现在沿数据关系计算一次：
+
+```mermaid
+flowchart TD
+    Alice[User: Alice]
+    GAdmin[G /admins]
+    Direct[billing-service:invoice.refund]
+    Mapped[G 的 Group Role Mapping]
+    Effective[Effective Roles]
+    Scope[operations-console 允许范围]
+    TokenRoles[Token Roles]
+    Mapper[Organization Group Membership Mapper]
+    Claim[organization.g Claim]
+
+    Alice -->|membership| GAdmin
+    Alice -->|direct mapping| Direct
+    GAdmin --> Mapped
+    Mapped --> Effective
+    Direct --> Effective
+    Effective -->|与允许范围求交集| TokenRoles
+    Scope --> TokenRoles
+    TokenRoles --> Mapper
+    Mapper --> Claim
+```
+
+### 4.1 计算 Effective Roles
+
+Effective Roles 来自用户的全部直接 Role 和全部 Group Membership，不会因为这次请求了组织 G，就忽略 Alice 在 W 中的成员关系。
+
+Alice 从 G 的 `/admins` 获得：
 
 ```text
-CLIENT_ID  ROLE_ID
----------  ----------------
-client-web role-admin
-```
-
-`role-admin` 是 Composite Role，所以它的子角色也进入允许范围。
-
-如果 `FULL_SCOPE_ALLOWED=true`，Keycloak 不做角色范围裁剪，用户的全部有效角色都有资格进入 Token。关闭它并显式配置 Role Scope，更符合最小权限原则。
-
-## 8. Session：当前认证状态
-
-Session 不定义权限，只记录当前认证状态。在线 Session 主要存在于 Infinispan；需要持久化时，当前源码使用 `OFFLINE_USER_SESSION`，理解 RBAC 只需关注：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `USER_SESSION_ID` | `VARCHAR(36)` | Session ID |
-| `REALM_ID` | `VARCHAR(36)` | 所属 Realm |
-| `USER_ID` | `VARCHAR` | 所属 User |
-| `DATA` | `TEXT` | Session 生命周期和状态等序列化数据 |
-
-具体是缓存、持久化还是二者结合，取决于 Keycloak 版本和 Session 配置。
-
-## 9. Protocol Mapper：决定写到哪个 Claim
-
-Protocol Mapper 不分配角色，也不裁剪角色。它只把已经筛选完成的 Token Roles 写到指定 Claim。
-
-`PROTOCOL_MAPPER` 的核心字段：
-
-| 字段 | 类型 | 含义 |
-| --- | --- | --- |
-| `ID` | `VARCHAR(36)` | Mapper 主键 |
-| `PROTOCOL_MAPPER_NAME` | `VARCHAR` | Mapper 类型 |
-| `CLIENT_ID` / `CLIENT_SCOPE_ID` | `VARCHAR` | Mapper 属于哪个 Client 或 Client Scope |
-
-具体输出位置保存在 `PROTOCOL_MAPPER_CONFIG` 中。内置角色 Mapper 可以抽象为：
-
-```text
-Realm Role Mapper
-claim.name = realm_access.roles
-
-Client Role Mapper
-claim.name = resource_access.${client_id}.roles
-```
-
-`${client_id}` 是每个 Client Role 所属的 `CLIENT.CLIENT_ID`。
-
-### 9.1 用一组数据走完整个映射过程
-
-假设前面的角色计算已经结束，得到以下 Token Roles：
-
-| Role | `CLIENT_ROLE` | 所属 Client |
-| --- | --- | --- |
-| `organization-admin` | `false` | `NULL` |
-| `organization-operator` | `false` | `NULL` |
-| `task.start` | `true` | `crawler-service` |
-| `keyword.update` | `true` | `crawler-service` |
-| `content.read` | `true` | `content-service` |
-
-注意：这一步已经决定了 Token 中可以出现哪些角色。Protocol Mapper 接收到的就是这组结果。
-
-现在配置两个 Mapper：
-
-```text
-PROTOCOL_MAPPER
-ID             PROTOCOL_MAPPER_NAME
--------------  ---------------------------------
-mapper-realm   oidc-usermodel-realm-role-mapper
-mapper-client  oidc-usermodel-client-role-mapper
-
-PROTOCOL_MAPPER_CONFIG
-PROTOCOL_MAPPER_ID  NAME        VALUE
-------------------  ----------  ------------------------------------
-mapper-realm        claim.name  realm_access.roles
-mapper-client       claim.name  resource_access.${client_id}.roles
-```
-
-Realm Role Mapper 只处理 `CLIENT_ROLE=false` 的角色：
-
-```text
-输入：
-organization-admin
-organization-operator
-
-输出位置：
-realm_access.roles
-```
-
-Client Role Mapper 处理 `CLIENT_ROLE=true` 的角色，并根据所属 Client 分组：
-
-```text
-输入：
-crawler-service:task.start
-crawler-service:keyword.update
-content-service:content.read
-
-输出位置：
-resource_access.crawler-service.roles
-resource_access.content-service.roles
-```
-
-最终生成：
-
-```jsonc
-{
-  "realm_access": { // 由 Realm Role Mapper 创建
-    "roles": [
-      "organization-admin",
-      "organization-operator"
-    ]
-  },
-  "resource_access": { // 由 Client Role Mapper 创建
-    "crawler-service": { // ${client_id} 被替换为 crawler-service
-      "roles": ["task.start", "keyword.update"]
-    },
-    "content-service": { // ${client_id} 被替换为 content-service
-      "roles": ["content.read"]
-    }
-  }
-}
-```
-
-所以 Protocol Mapper 做的是数据格式转换：
-
-```text
-Role 对象集合
-    ↓ 按 Realm Role / Client Role 分类
-    ↓ 按 claim.name 组装 JSON 路径
-Token Claim
-```
-
-即使把 `claim.name` 改成其他路径，Alice 拥有的角色也不会变化；改变的只是角色在 Token 中的存放位置，读取 Token 的服务也必须同步修改取值路径。
-
-三步必须分开理解：
-
-```text
-Role Mapping
-回答：用户拥有什么角色？
-
-Role Scope Mapping
-回答：当前应用的 Token 可以看见哪些角色？
-
-Protocol Mapper
-回答：筛选后的角色写入哪个 Claim？
-```
-
-## 10. 完整计算一次 Alice 的角色
-
-假设 Alice 除了组织管理员，还拥有与运营控制台无关的财务权限：
-
-```text
-Alice
-├── Group: /organizations/G/admins
-│   └── Realm Role: organization-admin
-└── Direct Role: finance-admin
-    └── Client Role: billing-service:invoice.refund
-```
-
-### 10.1 先确定当前 Client
-
-这次是运营控制台请求生成 Token，请求上下文携带：
-
-```text
-client_id = operations-console
-```
-
-Keycloak 在当前 Realm 中找到：
-
-```text
-CLIENT.CLIENT_ID = operations-console
-CLIENT.ID        = client-web
-```
-
-后续 Scope 计算因此读取：
-
-```text
-CLIENT.ID = client-web 的 FULL_SCOPE_ALLOWED
-SCOPE_MAPPING.CLIENT_ID = client-web 的所有记录
-```
-
-### 10.2 Effective Roles
-
-Keycloak 合并直接 Role、Group Role，再递归展开 Composite Role：
-
-```text
-Effective Roles =
-
-Realm Roles:
-- organization-admin
-- organization-operator
+Realm Role:
 - platform-user
-- finance-admin
 
-Client Roles:
+Client Role:
 - crawler-service:task.start
 - crawler-service:keyword.update
 - content-service:content.read
+```
+
+Alice 从 W 的 `/admins` 获得 Composite Role 及其子角色：
+
+```text
+- content-viewer
+- platform-user
+- content-service:content.read
+```
+
+再加上直接分配的财务角色：
+
+```text
 - billing-service:invoice.refund
 ```
 
-### 10.3 Scope-Permitted Roles
+这些角色去重后组成 Alice 的 Effective Roles。标准顶层角色 Claim 可能因此包含来自 G、W 和直接分配的角色，这也是组织级接口不能只检查顶层角色的原因。
 
-`operations-console` 设置：
+### 4.2 根据当前 Client 裁剪角色
 
-```text
-FULL_SCOPE_ALLOWED = false
-SCOPE_MAPPING      = organization-admin
-```
-
-展开 `organization-admin` 后，允许范围是：
+当前 Client 是 `operations-console`。它的允许范围不包含财务角色，因此求交集后得到：
 
 ```text
-- organization-admin
-- organization-operator
+Realm Role:
 - platform-user
+- content-viewer
+
+Client Role:
 - crawler-service:task.start
 - crawler-service:keyword.update
 - content-service:content.read
 ```
 
-### 10.4 Token Roles
+这里的 Token Roles 仍是当前 Client 允许的全局集合。Organization Group Membership Mapper 接下来只选择当前 `organization:g` 对应 Group 所映射的那部分角色，不会把 W 的 `content-viewer` 写进 G 的组织 Claim。
 
-```text
-Token Roles
-= Effective Roles
- ∩ Scope-Permitted Roles
-```
+### 4.3 Mapper 输出组织级 Claim
 
-财务角色被排除，因为它与运营控制台无关。剩余角色交给 Protocol Mapper 输出。
+启用 Group Role Mapping 输出后，Access Token 中与本例相关的部分是：
 
-## 11. Access Token
-
-JWT 由 Header、Payload 和 Signature 三部分组成：
-
-```text
-base64url(header).base64url(payload).signature
-```
-
-下面用 `jsonc` 添加教学注释，真实 Token 中不包含这些注释。
-
-### 11.1 Header
-
-```jsonc
+```json
 {
-  "alg": "RS256",  // 签名算法；服务端只能接受预先允许的算法
-  "typ": "JWT",    // JWT 封装类型
-  "kid": "KcX..." // 密钥 ID；用它从 Realm JWKS 中选择公钥
-}
-```
-
-### 11.2 Payload
-
-```jsonc
-{
-  "exp": 1787880000, // 过期时间；达到该时间后必须拒绝
-  "iat": 1787879700, // 签发时间
-  "jti": "c35c...", // 当前 JWT 的唯一 ID
-
-  "iss": "https://auth.example.com/realms/media-platform", // 签发 Token 的 Realm
-  "aud": ["crawler-service", "content-service"],           // 允许接收 Token 的服务
-  "sub": "user-alice",                                     // Token 代表的 User ID
-  "typ": "Bearer",                                         // Payload 中的 Token 类型
-  "sid": "session-a71e",                                   // 关联的 User Session ID
-
-  "realm_access": { // Realm Role Mapper 创建的容器
-    "roles": [      // 筛选后写入 Token 的 Realm Role
-      "organization-admin",    // 组织管理员
-      "organization-operator", // 继承的组织运营角色
-      "platform-user"           // 继承的平台基础角色
-    ]
-  },
-
-  "resource_access": { // Client Role Mapper 创建的容器
-    "crawler-service": { // Client Role 所属的 Client ID
-      "roles": [          // 对抓取服务的权限
-        "task.start",     // 启动抓取任务
-        "keyword.update"  // 修改抓取关键词
-      ]
-    },
-    "content-service": { // Client Role 所属的 Client ID
-      "roles": [         // 对内容服务的权限
-        "content.read"   // 查看抓取内容
-      ]
+  "sub": "user-alice",
+  "azp": "operations-console",
+  "aud": ["crawler-service", "content-service"],
+  "organization": {
+    "g": {
+      "groups": ["/admins"],
+      "realm_access": {
+        "roles": ["platform-user"]
+      },
+      "resource_access": {
+        "crawler-service": {
+          "roles": ["task.start", "keyword.update"]
+        },
+        "content-service": {
+          "roles": ["content.read"]
+        }
+      }
     }
   }
 }
 ```
 
-资源服务验证签名后，必须校验：
+`billing-service:invoice.refund` 没有进入 Token，因为它不在 `operations-console` 的允许范围中。
 
-```text
-iss：是否由可信 Realm 签发
-aud：当前服务是否是 Token 的受众
-exp / nbf：Token 当前是否有效
-sub：当前用户的稳定 ID
-resource_access.<当前服务>.roles：是否包含接口所需权限
+## 5. 业务服务如何鉴权
+
+假设 Alice 调用：
+
+```http
+PUT /organizations/g/crawler/keywords
+Authorization: Bearer <access-token>
 ```
 
-## 12. Gateway 与服务如何执行授权
+`crawler-service` 依次检查：
 
 ```text
-1. 读取 Authorization: Bearer <access-token>
-2. 根据 kid 从缓存的 JWKS 中选择公钥
-3. 验证签名和允许的 alg
-4. 校验 iss、aud、exp，存在时校验 nbf
-5. 读取当前服务在 resource_access 下的 roles
-6. 判断是否包含接口要求的权限
+1. 根据 kid 获取并缓存 Realm 公钥
+2. 验证 JWT 签名和允许的 alg
+3. 验证 iss、aud、exp，存在时验证 nbf
+4. 确认请求资源真实属于组织 g
+5. 确认 Token 中存在 organization.g
+6. 检查 organization.g.resource_access.crawler-service.roles
+7. 确认其中包含 keyword.update
 ```
 
-| 服务 | API | 所需权限 |
+结果为 Allow。
+
+如果 Alice 使用组织 W 的上下文，Token 只包含：
+
+```json
+{
+  "organization": {
+    "w": {
+      "groups": ["/admins"],
+      "realm_access": {
+        "roles": ["platform-user", "content-viewer"]
+      },
+      "resource_access": {
+        "content-service": {
+          "roles": ["content.read"]
+        }
+      }
+    }
+  }
+}
+```
+
+其中没有 `crawler-service:keyword.update`，所以修改 W 的关键词得到 Deny。
+
+### 5.1 为什么不能只检查顶层角色
+
+标准顶层 `realm_access` 和 `resource_access` 可能合并用户从多个 Group，包括多个 Organization Group，继承的角色。
+
+如果 Alice 在 G 中拥有 `keyword.update`，服务只检查顶层角色，可能错误地允许她修改 W 的资源。组织资源必须检查：
+
+```text
+organization.<当前组织>.resource_access.<当前服务>.roles
+```
+
+请求中的组织也不能完全相信前端参数。服务应从 URL 对应的资源、数据库记录或可信路由上下文确认资源真实属于哪个组织，再与 Token Claim 比较。
+
+### 5.2 401 与 403
+
+```text
+Token 缺失、签名无效或过期
+→ 401 Unauthorized
+
+Token 有效，但组织不匹配或缺少 Client Role
+→ 403 Forbidden
+```
+
+Access Token 是签发时的权限快照。用户被移出 Group 后，旧 Token 通常仍可使用到过期，因此 Token 生命周期不宜过长。
+
+## 6. 数据关系与 Token 的对应
+
+| 配置关系 | 回答的问题 | Token 中的结果 |
 | --- | --- | --- |
-| `crawler-service` | `POST /crawler/tasks` | `task.start` |
-| `crawler-service` | `PUT /crawler/keywords` | `keyword.update` |
-| `content-service` | `GET /crawler/contents` | `content.read` |
+| User → Organization Group | Alice 在哪个组织中担任什么角色？ | `organization.g.groups` |
+| Group → Role | 该组织角色拥有哪些有效权限？ | 组织 Claim 中的角色 |
+| Composite → Child Role | 一个角色还包含哪些角色？ | 展开后的子角色 |
+| Client Role → Client | 权限属于哪个服务？ | `resource_access.<client>.roles` |
+| Role Scope Mapping | 当前应用能获得哪些角色？ | 不允许的角色被排除 |
+| Protocol Mapper | 信息写到哪里？ | `organization.<alias>` 等 Claim |
+| Session | 当前登录属于谁和哪个 Client？ | `sub`、`sid`、`azp` 等上下文 |
 
-- Token 缺失、无效或过期：`401 Unauthorized`；
-- Token 有效但缺少权限：`403 Forbidden`。
+## 7. RBAC 的边界
 
-Access Token 是角色快照。用户被移出 Group 后，已经签发的 Token 通常仍可使用到过期，因此 Access Token 应保持较短生命周期。
-
-## 13. RBAC 的边界
-
-RBAC 适合回答“管理员能否修改抓取配置”，不适合回答：
+Keycloak Role 适合表达稳定的职责和业务操作，例如：
 
 ```text
-Alice 能否修改组织 G 的 task-123？
-Alice 能否查看 Bob 单独分享给她的内容？
-当前时间、IP、设备风险是否允许这次操作？
+管理员能否修改关键词？
+普通成员能否启动抓取任务？
 ```
 
-前两类问题适合 ReBAC，最后一类适合 ABAC。不要为每个组织、项目或资源创建 Keycloak Role，否则会产生 Role Explosion。
-
-## 14. 总结
-
-从存储到执行，完整链路是：
+它不适合为每一个任务、文档或项目创建 Role，例如：
 
 ```text
-USER_ENTITY
-  ↓ USER_GROUP_MEMBERSHIP
-KEYCLOAK_GROUP
-  ↓ GROUP_ROLE_MAPPING
-KEYCLOAK_ROLE
-  ↓ COMPOSITE_ROLE 递归展开
+Alice 能否修改 task-123？
+Alice 能否查看 Bob 单独分享的 content-456？
+```
+
+大量资源级 Role 会造成 Role Explosion。这类“某个用户与某个具体对象是什么关系”的问题，更适合交给 ReBAC；时间、IP、设备风险等请求上下文更适合使用 ABAC。
+
+## 8. 总结
+
+Keycloak 中的组织级 RBAC 链路是：
+
+```text
+User
+  ↓ Organization Group Membership
+Organization Group
+  ↓ Group Role Mapping
+Realm Role / Client Role
+  ↓ Composite 展开
 Effective Roles
-  ↓ 与 SCOPE_MAPPING 求交集
+  ↓ 当前 Client 的允许范围
 Token Roles
-  ↓ PROTOCOL_MAPPER
-realm_access / resource_access
-  ↓ Gateway / Service
+  ↓ Protocol Mapper
+organization.<alias> Claim
+  ↓ 业务服务校验 Token、组织和 Client Role
 Allow / Deny
 ```
 
-最重要的区别是：
+理解这条链路时，最重要的是分清：
 
 ```text
-Realm Role：Realm 全局角色命名空间
-Client Role：某个应用或服务自己的角色命名空间
-Effective Roles：用户真正拥有的全部角色
-Scope-Permitted Roles：当前应用允许投射到 Token 的角色范围
-Protocol Mapper：决定筛选后的角色写入哪个 Claim
+Organization Group：保存角色的组织作用域
+Role Mapping：决定用户或 Group 拥有什么角色
+Composite Role：展开角色集合
+Role Scope Mapping：限制当前应用能获得什么角色
+Protocol Mapper：决定筛选后的信息写到哪里
+业务服务：执行最终 Allow / Deny
 ```
-
-这五个概念区分清楚以后，Keycloak 的数据库关系、角色配置和 Token 内容就能一一对应起来。
 
 ## 参考资料
 
-- [Keycloak Server Administration Guide](https://www.keycloak.org/docs/latest/server_admin/)
-- [Keycloak Admin REST API](https://www.keycloak.org/docs-api/latest/rest-api/index.html)
+- [Keycloak Server Administration Guide：Managing organizations](https://www.keycloak.org/docs/latest/server_admin/index.html#_managing_organizations)
+- [Keycloak Server Administration Guide：Assigning permissions using roles and groups](https://www.keycloak.org/docs/latest/server_admin/index.html#assembly-managing-users_server_administration_guide)
+- [Keycloak Server Administration Guide：Mapping organization claims](https://www.keycloak.org/docs/latest/server_admin/index.html#_organization_claims)
+- [Keycloak Securing Applications Guide](https://www.keycloak.org/securing-apps/oidc-layers)

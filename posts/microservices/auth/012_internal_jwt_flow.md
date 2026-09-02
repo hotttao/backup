@@ -50,7 +50,7 @@ xhs_service 收到同样的 /v1/xhs/...
 ## 2. 先获得 Kratos Session
 
 登录页面的 Browser Flow 细节见
-[006_ory_kratos_flow.md](./006_ory_kratos_flow.md)。与本模块业务链路有关的实际请求是：
+[005_ory_kratos_example.md](./005_ory_kratos_example.md)。与本模块业务链路有关的实际请求是：
 
 ```text
 GET  http://192.168.2.41:5173/kratos/self-service/login/browser
