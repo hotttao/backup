@@ -40,27 +40,35 @@ Oathkeeper      → 验证入口凭证并生成统一的内部身份上下文
 ```mermaid
 flowchart LR
     K[Kratos Identity<br/>user:alice-id]
-    R[Agent Registry / Keto<br/>Agent:agent-17 owner User:alice-id]
+    R[Agent Registry / Keto<br/>owner 与资源权限]
     T[Talos API Key<br/>actor_id=agent:agent-17]
-    I[Internal JWT<br/>sub=user:alice-id<br/>act=agent:agent-17]
+    I[Internal JWT<br/>sub=key-id<br/>actor_id=agent:agent-17]
 
     K --> R
     R --> T
     T --> I
-    R --> I
 ```
 
-这里存在两种身份：
+默认情况下，Token 直接代表 Agent：
 
 ```text
-Subject：本次业务操作代表谁？
-→ user:alice-id
-
-Actor：实际拿着凭证发起请求的是谁？
-→ agent:agent-17
+Credential = key-id
+Actor / Principal = agent:agent-17
 ```
 
-Talos 只能直接证明 `agent:agent-17` 持有有效凭证。Agent 是否属于 Alice，应查询 Agent Registry 或 Keto；Alice 是否能操作目标资源，也应查询 Keto。
+Talos 证明 `agent:agent-17` 持有有效凭证。Keto 再判断这个 Agent 能否操作具体资源：
+
+```text
+Organization:G#crawl_agents@Agent:agent-17
+```
+
+Agent 是否属于 Alice 是另一条关系：
+
+```text
+Agent:agent-17#owner@User:alice-id
+```
+
+`owner` 用于管理和审计，不表示 Agent 自动继承 Alice 的全部权限。只有业务确实要求 Agent 代表用户时，才进一步构造 Subject 与 Actor，具体见后文的 On-Behalf-Of 模型。
 
 因此完整关系不是简单的 `Token → User`，而是：
 
@@ -68,9 +76,12 @@ Talos 只能直接证明 `agent:agent-17` 持有有效凭证。Agent 是否属�
 Talos Token
 → actor_id
 → Agent / Service
-→ owner 或 delegated_by Relation
+→ Keto Resource Permission
+
+需要查询所有者时：
+Agent / Service
+→ owner Relation
 → Kratos Identity
-→ Resource Permission
 ```
 
 如果 API Key 本身就是 Alice 创建的个人 Key，可以直接把 `actor_id` 设置成 `user:<kratos-identity-id>`，此时才是直接的 `Token → User`。
@@ -631,89 +642,127 @@ Keto 的 Relation 和 Permission 计算见 [Ory Keto](./008_ory_keto.md#1-先建
 
 ```json
 {
-  "sub": "service:crawler-worker",
+  "sub": "key-8f3",
+  "actor_id": "service:crawler-worker",
   "principal_type": "service",
-  "scope": ["crawl:execute"]
+  "scope": ["crawl:execute"],
+  "auth_source": "talos"
 }
 ```
 
-此时 Keto 使用 `Service:crawler-worker` 检查权限，不查询用户。
+认证中间件将 `actor_id` 规范化为 `principal_id=service:crawler-worker`，Keto 使用 `Service:crawler-worker` 检查权限，不查询用户。
 
 ### 6.2 个人 API Key 代表用户本人
 
 ```json
 {
-  "sub": "user:alice-id",
+  "sub": "key-user-01",
+  "actor_id": "user:alice-id",
   "principal_type": "user",
   "scope": ["content:read"],
   "auth_source": "talos"
 }
 ```
 
-它表示 Alice 使用个人 API Key，而不是 Kratos Session。审计日志应记录 `auth_source=talos` 和 `credential_id`。
+认证中间件得到 `principal_id=user:alice-id`。它表示 Alice 使用个人 API Key，而不是 Kratos Session，审计日志应同时记录 `auth_source=talos` 和 `sub=key-user-01`。
 
-### 6.3 Agent 代表用户执行任务
+### 6.3 Agent 以独立主体执行任务
 
 ```json
 {
-  "sub": "user:alice-id",
-  "principal_type": "user",
-  "act": {
-    "sub": "agent:agent-17"
-  },
+  "sub": "key-agent-17",
+  "actor_id": "agent:agent-17",
+  "principal_type": "agent",
   "scope": ["crawl:start"],
   "auth_source": "talos"
 }
 ```
 
-这里：
+推荐直接给 Agent 建立 Keto 权限：
 
 ```text
-sub     最终业务操作代表 Alice
-act.sub 实际调用者是 agent-17
+Organization:G#crawl_agents@Agent:agent-17
 ```
 
-这个 Internal JWT 不能仅凭 Talos Verify 直接生成。Gateway 或 Auth Context Service 必须先确认 `agent-17 → Alice` 的当前委托关系，再签发这种 Subject/Actor 结构。
+同时单独保存所有权：
+
+```text
+Agent:agent-17#owner@User:alice-id
+```
+
+所有权用于管理和审计，不表示 Agent 自动继承 Alice 的全部权限。业务鉴权直接检查 `Agent:agent-17` 对资源的 Permission，不需要每次先把 Agent 转换成 Alice。
+
+### 6.4 Agent 确实需要代表用户
+
+少数场景必须表达“agent-17 正在代表 Alice”。此时需要同时保存：
+
+```text
+Subject = user:alice-id
+Actor   = agent:agent-17
+```
+
+标准 Oathkeeper `id_token` Mutator不能把 Talos 的 `act` 自动改写为新 Token 的 `sub`。可以选择：
+
+```text
+方案一：Internal JWT 保留 sub=key_id、actor_id=agent:agent-17，
+       业务服务查询 Keto 中的委托关系
+
+方案二：由自定义 Token Exchange/Issuer 验证委托关系后，
+       签发 sub=user:alice-id、act.sub=agent:agent-17
+```
+
+第二种格式更适合严格的 On-Behalf-Of 调用，但需要自定义签发组件，不能声称是 Talos 或 Oathkeeper 的默认能力。
 
 ## 7. 一个完整请求
 
-下面执行一次 `agent-17` 代表 Alice 启动组织 G 的抓取任务：
+下面执行一次 `agent-17` 以独立机器主体启动组织 G 的抓取任务。流程分为 Token Exchange 和业务请求两个阶段。
+
+### 7.1 使用长期 Key 换取短期 Token
+
+```text
+agent-17
+→ Machine Token Exchange：提交长期 API Key
+→ Talos /apiKeys:derive：签发 15 分钟 Derived JWT
+→ agent-17：保存到内存并在有效期内复用
+```
+
+长期 Key 不进入后续业务请求，也不传递给微服务。
+
+### 7.2 使用短期 Token 调用业务接口
 
 ```mermaid
 sequenceDiagram
     participant A as agent-17
     participant G as Gateway
     participant O as Oathkeeper
-    participant T as Talos / Adapter
-    participant R as Agent Registry / Keto
     participant S as Crawl Service
     participant K as Keto
 
-    A->>G: POST /organizations/G/crawl/tasks + API Key
+    A->>G: POST /organizations/G/crawl/tasks + Talos JWT
     G->>O: Decision Request
-    O->>T: 验证 Credential
-    T-->>O: actor=agent-17, scopes=[crawl:start]
-    O->>R: 查询 agent-17 的 owner
-    R-->>O: owner=user:alice-id
-    O-->>G: Internal JWT: sub=Alice, act=agent-17
+    O->>O: 使用 Talos JWKS 本地验签
+    O->>O: 读取 sub=key-id、act=agent-17、scp
+    O-->>G: Internal JWT: sub=key-id, actor_id=agent-17
     G->>S: 原始请求 + Internal JWT
-    S->>S: 验签并检查 crawl:start scope
-    S->>K: Check Alice 对 Organization:G 的 start_crawl
+    S->>S: 验签，得到 principal_id=agent-17
+    S->>S: 检查 scope 包含 crawl:start
+    S->>K: Check Agent:agent-17 对 Organization:G 的 start_crawl
     K-->>S: allowed=true
     S-->>A: 201 Created
 ```
 
-需要注意：Oathkeeper 本身是否直接查询 Agent Registry，取决于具体设计。常见实现是让 Remote Authorizer 或独立 Auth Context Service 完成 `Actor → Subject` 解析，再由 Mutator 生成 Internal JWT。
+业务请求阶段没有调用 Talos数据库。Oathkeeper 和业务服务都通过缓存的 Talos/Oathkeeper JWKS 完成本地验签。
 
 失败边界如下：
 
 | 失败 | 结果 |
 | --- | --- |
-| API Key 无效、过期或撤销 | `401 Unauthorized` |
+| Talos JWT 签名错误或过期 | `401 Unauthorized` |
 | scope 不包含 `crawl:start` | `403 Forbidden` |
-| Agent 已不再属于 Alice | `403 Forbidden` |
-| Alice 没有组织 G 的权限 | `403 Forbidden` |
-| Talos、关系服务或 Keto 不可用 | 失败关闭，通常返回 `503 Service Unavailable` |
+| Agent 没有组织 G 的权限 | `403 Forbidden` |
+| Oathkeeper 或 Keto 不可用 | 失败关闭，通常返回 `503 Service Unavailable` |
+
+父 API Key 被撤销后，已经签发的 Derived JWT 仍然可能有效到 `exp`，因此机器 Token 应使用短 TTL。需要更快失效时，只能缩短 TTL、轮换签名密钥，或在 Gateway 维护额外拒绝列表。
 
 ## 8. 四种 Credential
 
@@ -750,7 +799,7 @@ Public API → Key 持有者证明持有后自行撤销
 | `POST /v2alpha1/apiKeys:selfRevoke` | 持有者自行撤销 |
 | `GET /v2alpha1/derivedKeys/jwks.json` | 发布派生 JWT 公钥 |
 
-Admin API 没有内置认证，不能暴露到公网。Talos Auth Adapter、Key Management Service 等调用方必须通过内网、mTLS、Service Mesh Policy 或认证代理访问。
+Admin API 没有内置认证，不能暴露到公网。Machine Token Exchange、Key Management Service 以及可选的兼容 Adapter 必须通过内网、mTLS、Service Mesh Policy 或认证代理访问。
 
 按用户查询 Key 时，可以使用签发时写入的 `actor_id`：
 
@@ -767,7 +816,7 @@ Talos OSS 使用单节点 SQLite，适合学习、原型和低流量部署；商
 生产拓扑应分开接口面：
 
 ```text
-Key Management / Auth Adapter
+Key Management / Machine Token Exchange
         │ mTLS / NetworkPolicy
         ▼
 Talos Admin API
@@ -799,7 +848,7 @@ Talos 的身份关联规则很简单：
 
 ```text
 签发时写入 actor_id
-验证时取回 actor_id、scopes 和 metadata
+直接验证 Key 时取回 actor_id、scopes 和 metadata
 派生 JWT 中使用 act 和 scp 携带这些信息
 ```
 
@@ -811,6 +860,20 @@ Agent Key    → actor_id 是 Agent，再通过 Registry/Keto 找 owner
 Service Key  → actor_id 是 Service，可能根本没有对应用户
 ```
 
+Talos 官方推荐的内部调用路径是：
+
+```text
+长期 API Key
+→ 受保护的 Token Exchange
+→ Talos Derived JWT
+→ JWKS 本地验签
+→ 内部服务
+```
+
+当前架构如果还需要统一内部 Issuer，可以让 Oathkeeper 验证 Talos JWT 后重新签发 Internal JWT。由于标准 Oathkeeper 会保留 Talos 的 `sub=key_id`，需要同时复制 `act` 为 `actor_id`；微服务再统一计算 `principal_id = actor_id ?? sub`。
+
+Verify Adapter 只用于无法执行 Token Exchange 的旧客户端和第三方 Webhook，不是高频内部调用的主路径。
+
 权限也不能只看 Talos scopes。Scopes 是凭证能力上限，Keto 才计算主体对具体资源的当前权限。完整结果始终是 Credential、Scope、委托关系、资源权限和动态策略的交集。
 
 ## 参考资料
@@ -820,6 +883,9 @@ Service Key  → actor_id 是 Service，可能根本没有对应用户
 - [Derive tokens](https://www.ory.com/docs/talos/integrate/derive-tokens)
 - [Talos credential types](https://www.ory.com/docs/talos/concepts/credential-types)
 - [Talos token format](https://www.ory.com/docs/talos/reference/token-format)
+- [Talos security hardening](https://www.ory.com/docs/talos/operate/security-hardening)
 - [Ory Talos GitHub](https://github.com/ory/talos)
+- [Oathkeeper JWT Authenticator source](https://github.com/ory/oathkeeper/blob/master/pipeline/authn/authenticator_jwt.go)
+- [Oathkeeper ID Token Mutator source](https://github.com/ory/oathkeeper/blob/master/pipeline/mutate/mutator_id_token.go)
 - [Ory Oathkeeper](./009_ory_oathkeeper.md)
 - [Ory Keto](./008_ory_keto.md)
