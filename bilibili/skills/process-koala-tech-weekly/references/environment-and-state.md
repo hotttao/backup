@@ -146,3 +146,26 @@ uv run bili-sync status --bvid <BVID>
 5. 使用最终条目数把视频标记为 `completed`。
 
 `task-items-import` 会替换本期已有的全部工具缓存。每次禁止只传最新条目，必须传当前完整累计数组。
+
+## bili-sync CLI 调用形式
+
+下列子命令在 `D:/Blog/backup` 仓库根目录运行，`--data-dir bilibili/data` 始终写在子命令之前。参数顺序与官方 help 一致：
+
+```text
+# 查看某期处理状态（--bvid 是选项，不是位置参数）
+bili-sync --data-dir bilibili/data task-status tool-summary:anything --bvid BVxxxx
+
+# 导入本期完整工具缓存（--input 相对仓库根解析，必须带 bilibili/ 前缀）
+bili-sync --data-dir bilibili/data task-items-import tool-summary:anything BVxxxx \
+  --input bilibili/data/temporary/tool-summary/BVxxxx.json
+
+# 标记完成（task_key 与 bvid 均为位置参数；output-path 用相对 bilibili/ 的 ../posts/...）
+bili-sync --data-dir bilibili/data task-update tool-summary:anything BVxxxx \
+  --status completed --output-path ../posts/tool/anything.md --item-count 6
+```
+
+常见踩坑：
+
+- `task-status` 的 BVID 必须写成 `--bvid BVxxxx`，写成位置参数会报 `unrecognized arguments`。
+- `task-items-import` 的 `--input` 路径以仓库根为基准，漏写 `bilibili/` 前缀会 `FileNotFoundError`。
+- bash 环境用 `cd D:/Blog/backup && ...`，不要写 cmd 的 `cd /d`。
