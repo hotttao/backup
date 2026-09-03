@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "理解外部凭证、Gateway、Internal JWT、业务鉴权以及异步任务中的身份传递"
 featuredImage:
 
-tags: ["auth", "ory", "kratos", "oathkeeper", "keto", "jwt"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

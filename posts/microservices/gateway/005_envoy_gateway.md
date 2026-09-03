@@ -1,11 +1,18 @@
 ---
 weight: 5
 title: "5 Envoy Gateway 架构与请求流程"
-date: 2026-08-29T08:00:00+08:00
+date: 2026-08-29T12:00:00+08:00
+lastmod: 2026-08-29T12:00:00+08:00
 draft: false
 description: "从资源所有权、配置编译和请求路径理解 Envoy Gateway"
-tags: ["gateway", "envoy-gateway"]
+featuredImage:
+tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 ## 1. Envoy Gateway 的定位

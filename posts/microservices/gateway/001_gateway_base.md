@@ -2,13 +2,17 @@
 weight: 1
 title: "1 Gateway 能力和选型"
 date: 2026-08-29T08:00:00+08:00
-lastmod: 2026-08-29T0:00:00+08:00
+lastmod: 2026-08-29T08:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "先理解 Gateway 的职责，再根据部署环境和业务需求选型"
+featuredImage:
 tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
 toc:
   auto: false
 ---

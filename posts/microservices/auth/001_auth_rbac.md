@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "通过一个完整示例理解 Keycloak 的数据模型、角色计算、Token 输出与服务鉴权"
 featuredImage:
 
-tags: ["auth", "rbac", "keycloak"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

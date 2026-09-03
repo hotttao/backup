@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "理解 Talos API Key 如何绑定 Actor，以及如何与 Kratos、Oathkeeper、Keto 组成完整认证鉴权链路"
-tags: ["auth", "ory", "talos", "api-key", "machine-identity"]
+tags: ["auth"]
 categories: ["microservice"]
 toc:
   auto: false

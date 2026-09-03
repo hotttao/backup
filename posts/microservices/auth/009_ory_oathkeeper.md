@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "理解 Ory Oathkeeper 的 Access Rule、请求流水线、Decision API、Gateway 集成与部署边界"
-tags: ["auth", "ory", "oathkeeper", "gateway"]
+tags: ["auth"]
 categories: ["microservice"]
 toc:
   auto: false

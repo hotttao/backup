@@ -1,11 +1,18 @@
 ---
 weight: 4
 title: "4 Envoy 的核心抽象、xDS 与请求流程"
-date: 2026-08-29T08:00:00+08:00
+date: 2026-08-29T11:00:00+08:00
+lastmod: 2026-08-29T11:00:00+08:00
 draft: false
 description: "从 Listener、Route、Cluster、Endpoint 和 xDS 理解 Envoy"
-tags: ["gateway", "envoy"]
+featuredImage:
+tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 ## 1. Envoy 是什么

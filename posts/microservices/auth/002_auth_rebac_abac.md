@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "通过企业文档 SaaS，理解 Ory Kratos、Ory Keto 和 OPA 如何协作完成细粒度授权"
 featuredImage:
 
-tags: ["auth", "rebac", "abac", "ory", "keto", "opa"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

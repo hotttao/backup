@@ -1,11 +1,20 @@
 ---
 weight: 2
 title: "2 Traefik 的核心抽象与请求流程"
-date: 2026-08-29T08:00:00+08:00
+date: 2026-08-29T09:00:00+08:00
+lastmod: 2026-08-29T09:00:00+08:00
 draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
 description: "从 Provider、Router 到请求转发，理解 Traefik 的工作原理"
-tags: ["gateway", "traefik"]
+featuredImage:
+tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 ## 1. Traefik 解决什么问题

@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "从浏览器请求理解 Ory Kratos 的注册、验证、登录、Session、注销、恢复和设置流程"
 featuredImage:
 
-tags: ["auth", "ory", "kratos", "workflow"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true

@@ -1,11 +1,18 @@
 ---
 weight: 7
 title: "7 Istio：从 Service Mesh 到 Gateway API"
-date: 2026-08-29T08:00:00+08:00
+date: 2026-08-29T14:00:00+08:00
+lastmod: 2026-08-29T14:00:00+08:00
 draft: false
 description: "通过业务入口示例理解 istiod、Gateway Envoy、Sidecar、Ambient 以及 Gateway API 的实现"
-tags: ["gateway", "istio"]
+featuredImage:
+tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 Istio 不只是入口网关。它首先是一套 Service Mesh，通过代理实现服务身份、mTLS、流量治理、授权和可观测性；Gateway API 是它处理南北流量的一种入口配置方式。

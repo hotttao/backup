@@ -1,11 +1,18 @@
 ---
 weight: 6
 title: "6 Cilium：从 CNI 数据面到 Gateway API"
-date: 2026-08-29T08:00:00+08:00
+date: 2026-08-29T13:00:00+08:00
+lastmod: 2026-08-29T13:00:00+08:00
 draft: false
 description: "先理解 Cilium 作为 CNI 的组件，再理解它如何用 Operator、Agent、eBPF 和 Envoy 实现 Gateway API"
-tags: ["gateway", "cilium", "ebpf"]
+featuredImage:
+tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 理解 Cilium Gateway API 的前提，是先把 Cilium 本身拆开。Cilium 首先是一套 Kubernetes 网络系统，Gateway API 只是建立在这套网络系统之上的 L7 入口能力。

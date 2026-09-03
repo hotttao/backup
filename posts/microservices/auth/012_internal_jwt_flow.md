@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "以当前 002_internal_jwt 部署为准，对照真实 URL 理解一次业务请求如何经过 Traefik、Oathkeeper、Kratos 和 xhs_service"
-tags: ["auth", "ory", "kratos", "oathkeeper", "jwt", "traefik"]
+tags: ["auth"]
 categories: ["microservice"]
 toc:
   auto: false

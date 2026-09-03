@@ -1,11 +1,18 @@
 ---
 weight: 3
 title: "3 Apache APISIX 架构与 Kubernetes Gateway API"
-date: 2026-08-29T08:00:00+08:00
+date: 2026-08-29T10:00:00+08:00
+lastmod: 2026-08-29T10:00:00+08:00
 draft: false
 description: "通过 user-service 示例理解 APISIX、Ingress Controller、Gateway API 和服务发现"
-tags: ["gateway", "apisix"]
+featuredImage:
+tags: ["gateway"]
 categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
 ---
 
 ## 1. APISIX 的定位

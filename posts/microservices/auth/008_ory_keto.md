@@ -7,7 +7,7 @@ draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "理解 Ory Keto 的运行架构、组织权限建模、API、存储和部署边界"
-tags: ["auth", "ory", "keto", "rebac"]
+tags: ["auth"]
 categories: ["microservice"]
 toc:
   auto: false

@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "理解 Ory Elements 提供的组件抽象，以及如何通过配置、CSS Variables 和组件覆盖定制认证页面"
 featuredImage:
 
-tags: ["auth", "ory", "elements", "kratos", "react"]
+tags: ["auth"]
 categories: ["microservice"]
 
 lightgallery: true
