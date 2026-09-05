@@ -1,12 +1,12 @@
 ---
 weight: 10
-title: "10 Istio 安全：身份、认证与授权"
+title: "10 Istio 安全：Sidecar 与 Ambient 的身份、认证和授权"
 date: 2026-08-29T17:00:00+08:00
-lastmod: 2026-08-29T17:00:00+08:00
+lastmod: 2026-09-05T17:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "从工作负载身份和证书开始，理解 Istio 的 mTLS、PeerAuthentication、RequestAuthentication 与 AuthorizationPolicy"
+description: "分别说明 Sidecar 与 Ambient 模式如何获得工作负载身份、建立 mTLS、验证对端身份，以及在哪里执行 JWT 认证和授权策略。"
 featuredImage:
 tags: ["gateway"]
 categories: ["microservice"]
@@ -17,60 +17,56 @@ toc:
   auto: false
 ---
 
-Istio 安全不是一个孤立功能，而是一条连续的处理链：
+Istio 安全需要依次回答三个问题：
 
 ```text
-Kubernetes ServiceAccount
-  → Istio 工作负载身份和 X.509 证书
-  → mTLS 验证服务身份
-  → JWT 验证最终用户身份
-  → AuthorizationPolicy 决定是否允许请求
+1. 身份：参与通信的是哪个工作负载？
+2. 认证：连接对端能否证明这个身份？
+3. 授权：已经确认身份以后，是否允许它访问目标？
 ```
 
-本文使用下面的调用关系逐步解释：
+Sidecar 与 Ambient 使用相同的身份基础，但负责保存证书、建立 mTLS 和执行策略的代理不同：
+
+| 模式 | 工作负载身边的代理 | 工作负载 mTLS | L4 授权 | L7/JWT 授权 |
+| --- | --- | --- | --- | --- |
+| Sidecar | 每个业务 Pod 内的 Envoy Sidecar | 源、目标 Pod 内的 Envoy | Envoy Sidecar | Envoy Sidecar |
+| Ambient | 每个节点共享一个 ztunnel，业务 Pod 内无代理 | 源、目标节点的 ztunnel 代表对应工作负载 | 目标节点 ztunnel | 目标侧 Waypoint Envoy |
+
+因此不能笼统地说“user 代理验证 order 代理”。本文使用同一个调用示例，分别讲解两种模式：
 
 ```text
-外部用户 → Ingress Gateway → user-service → order-service
+user-service → order-service
 ```
 
 <!-- more -->
 
-## 1. Istio 安全要回答什么问题
+## 1. Istio 安全要保护什么
 
-1. **通信是否保密**：网络中的第三方能否读取或篡改数据？
-2. **调用方是谁**：请求来自哪个工作负载，或者哪个最终用户？
-3. **调用方能做什么**：这个身份能否访问指定服务、方法和路径？
+| 问题 | Istio 能力 | 证明的身份 |
+| --- | --- | --- |
+| 流量是否保密、对端是否可信 | 工作负载证书、mTLS、`PeerAuthentication` | Kubernetes 工作负载身份 |
+| HTTP 请求代表哪个登录用户 | JWT、`RequestAuthentication` | 最终用户身份 |
+| 已认证的身份能否访问目标 | `AuthorizationPolicy` | 工作负载身份、最终用户身份及请求属性 |
 
-| 问题 | Istio 能力 |
-| --- | --- |
-| 流量加密、工作负载认证 | mTLS、工作负载证书、`PeerAuthentication` |
-| 最终用户认证 | JWT、`RequestAuthentication` |
-| 访问控制 | `AuthorizationPolicy` |
+这三层不能互相替代：
 
-## 2. 安全架构
+- mTLS 能加密连接并认证工作负载，但不表示该工作负载有权访问所有接口；
+- JWT 能证明登录用户，但不能证明是哪一个服务把请求转发了过来；
+- `AuthorizationPolicy` 使用已经得到的身份和请求属性作出允许或拒绝决定。
 
-```mermaid
-flowchart LR
-    K[Kubernetes API<br/>ServiceAccount 与安全策略]
-    I[Istiod<br/>CA、身份校验、配置分发]
-    A[调用方代理<br/>Gateway / Sidecar / ztunnel]
-    B[目标代理<br/>Sidecar / ztunnel / Waypoint]
-    App[目标应用]
+## 2. 两种模式共用的身份基础
 
-    K --> I
-    I -. 证书和策略 .-> A
-    I -. 证书和策略 .-> B
-    A == mTLS / HBONE ==> B
-    B --> App
-```
+### 2.1 ServiceAccount 是工作负载身份来源
 
-Istiod 负责签发工作负载证书，并把认证、授权配置下发给数据面；Envoy、ztunnel 和 Waypoint 是策略执行点，真正检查连接或请求并允许、拒绝流量。[Istio 安全架构](https://istio.io/latest/zh/docs/concepts/security/)
-
-## 3. 工作负载身份从哪里来
-
-在 Kubernetes 中，Istio 默认用 Pod 的 ServiceAccount 表示工作负载身份：
+在 Kubernetes 中，Istio 默认以 Pod 使用的 ServiceAccount 表示工作负载身份：
 
 ```yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: user-service
+  namespace: default
+---
 apiVersion: v1
 kind: Pod
 metadata:
@@ -78,139 +74,166 @@ metadata:
   namespace: default
 spec:
   serviceAccountName: user-service
+  containers:
+    - name: user
+      image: example/user:v1
 ```
 
-它对应的身份可以表达为：
+该 Pod 的 Istio 身份可以表示为：
 
 ```text
 spiffe://cluster.local/ns/default/sa/user-service
 ```
 
-`cluster.local` 是信任域，`default` 是命名空间，`user-service` 是 ServiceAccount。这个身份描述的是工作负载，不是 Kubernetes Service，也不是登录系统的最终用户。一个 Service 后面的多个 Pod 通常使用相同 ServiceAccount，因此可以共享同一种服务身份。
-
-## 4. 工作负载证书如何签发
-
-### 4.1 Sidecar 模式
-
-#### 4.1.1 `istio-agent` 在哪个 Pod 中
-
-`istio-agent` 不是一个独立 Pod，也不是另一个 Sidecar 容器。在 Sidecar 模式中，注入后的业务 Pod 通常包含：
+其中：
 
 ```text
-Pod/user-v1
-├── user 容器
-│   └── 业务进程
-└── istio-proxy 容器
-    └── pilot-agent 进程
-        ├── 启动和管理 Envoy
-        ├── 生成私钥和 CSR
-        ├── 向 Istiod 申请、轮换工作负载证书
-        └── 通过 SDS 把证书提供给 Envoy
+cluster.local → Istio 信任域
+default       → Namespace
+user-service  → ServiceAccount
 ```
 
-Istio 文档中的 `istio-agent` 通常表示 `pilot-agent` 在工作负载本地承担的代理管理和安全代理能力。`istio-proxy` 是容器名，`pilot-agent` 是容器中的进程，Envoy 是由它启动和管理的数据面进程。
+这个身份表示工作负载，不是 Kubernetes `Service/user-service`，也不是登录系统中的用户。多个 Pod 使用同一个 ServiceAccount 时，会拥有相同的 SPIFFE 身份，但各自使用独立的短期证书和私钥。
 
-可以通过下面的命令观察：
-
-```bash
-kubectl get pod user-v1 -n default \
-  -o jsonpath='{.spec.containers[*].name}'
-
-kubectl exec user-v1 -n default -c istio-proxy -- ps
-```
-
-第一个命令通常会看到业务容器和 `istio-proxy`，不会看到名为 `istio-agent` 的单独 Pod。
-
-#### 4.1.2 证书申请和身份校验过程
+### 2.2 身份、证书与策略的关系
 
 ```mermaid
-sequenceDiagram
-    participant L as user-v1 所在节点 kubelet
-    participant K as Kubernetes API
-    participant A as istio-proxy 内 pilot-agent
-    participant I as Istiod
-    participant E as Envoy Sidecar
+flowchart LR
+    SA[Kubernetes ServiceAccount]
+    ID[SPIFFE 工作负载身份]
+    CERT[X.509 短期证书]
+    MTLS[mTLS 认证连接双方]
+    AUTHZ[AuthorizationPolicy<br/>判断是否允许]
 
-    L->>K: TokenRequest：ServiceAccount、Pod 绑定、audience
-    K-->>L: 返回签名、限时的投射 Token
-    L-->>A: 把 Token 挂载到 istio-proxy 容器
-    A->>A: 生成私钥和 CSR
-    A->>I: CSR + Bearer ServiceAccount Token
-    I->>K: TokenReview，要求预期 audience
-    K->>K: 校验签名、签发者、有效期、audience<br/>以及绑定的 ServiceAccount/Pod
-    K-->>I: authenticated=true<br/>system:serviceaccount:default:user-service
-    I->>I: 从验证结果派生 SPIFFE 身份<br/>检查 CSR 请求并执行 CA 策略
-    I->>I: 用 Istio CA 签发短期证书
-    I-->>A: 返回证书链和根证书
-    A-->>E: 通过 SDS 提供证书和私钥
-    A->>I: 到期前自动轮换证书
+    SA --> ID
+    ID --> CERT
+    CERT --> MTLS
+    MTLS -->|source.principal| AUTHZ
 ```
 
-各组件的职责是：
+证书把一个经过 Istio CA 确认的身份绑定到公钥。mTLS 握手时，通信双方验证对方的证书链和身份，随后策略才能可靠使用 `source.principal`。
 
-1. kubelet 通过 Kubernetes TokenRequest 机制，为指定 Pod 投射短期 ServiceAccount Token。
-2. `istio-proxy` 容器中的 `pilot-agent` 生成私钥和 CSR，私钥通常不离开工作负载。
-3. pilot-agent 把 CSR 和 Token 发给 Istiod。它不能只发送一个自己填写的 ServiceAccount 名称。
-4. Istiod 调用 Kubernetes TokenReview API 验证 Token，并从验证结果获得 Namespace 和 ServiceAccount 身份。
-5. Istiod 根据已经验证的身份签发短期证书，证书身份类似 `spiffe://cluster.local/ns/default/sa/user-service`。
-6. Envoy 通过 SDS 动态获得证书，用它建立 mTLS。
+### 2.3 ServiceAccount 名称为什么不能直接伪造
 
-这不是 Kubernetes `certificates.k8s.io` CSR 资源的申请流程。Istio 工作负载通常直接调用 Istiod 的证书服务，Kubernetes ServiceAccount Token 用于证明身份。
-
-#### 4.1.3 ServiceAccount 能不能伪造
-
-需要区分“伪造名称”和“获得合法身份凭据”。
-
-仅在请求里写下面的字符串没有用：
+攻击者仅在 CSR 或请求参数中写入下面的字符串没有用：
 
 ```text
 serviceAccount = order-service
 ```
 
-Istiod 不会相信这个字段。申请者必须提供 Kubernetes API Server 能通过 TokenReview 验证的 Token。投射 Token 通常包含或约束：
+Istiod 不会直接信任申请者填写的身份。它需要根据 Kubernetes 签发的 ServiceAccount Token、TokenReview 结果以及工作负载信息判断申请者有资格获得哪个身份。投射 Token 通常具备签名、有效期、audience、ServiceAccount 和 Pod 绑定信息。
 
-1. Kubernetes API Server 的签名和签发者。
-2. Token 的过期时间。
-3. 用途对应的 audience，例如 Istio CA。
-4. ServiceAccount 的 Namespace、名称和 UID。
-5. Token 所绑定 Pod 的名称和 UID。
+但是，“不能伪造 Token”不等于“绝对不能冒用 ServiceAccount”。如果攻击者有权创建 Pod，并能把 `serviceAccountName` 指向一个高权限 ServiceAccount，kubelet 可能会为这个 Pod 投射一枚合法 Token。此时 TokenReview 会成功，因为身份凭据确实由 Kubernetes 签发。
 
-所以攻击者不能仅靠修改 CSR、Pod Label 或 HTTP 参数，把自己声明成另一个 ServiceAccount。
+因此必须同时限制：
 
-但是，下面两种情况仍然可以造成身份冒用：
+1. 谁能创建或修改 Pod、Deployment、Job；
+2. 哪些工作负载可以引用哪些 ServiceAccount；
+3. ServiceAccount 是否遵循最小权限；
+4. 谁能读取 Pod 中的投射 Token、私钥和代理管理接口。
 
-1. **ServiceAccount Token 被窃取**：持有者可能在 Token 过期前冒用该身份。
-2. **攻击者有权在该 Namespace 创建 Pod/Deployment**：在没有额外准入限制时，能够创建工作负载的人通常可以把 `serviceAccountName` 指向该 Namespace 中权限更高的 ServiceAccount，并让 kubelet 为这个新 Pod 投射一个合法 Token。
+## 3. Sidecar 模式如何验证工作负载
 
-第二种情况不是绕过 TokenReview，因为得到的 Token 本身就由 Kubernetes 合法签发。Istio 信任 Kubernetes 的认证结果，无法判断“这个用户本来不应该创建使用该 ServiceAccount 的 Pod”。
+Sidecar 模式的特点是：每个业务 Pod 都有自己的 Envoy。证书保存在本 Pod 的代理侧，mTLS 也由两个业务 Pod 内的 Envoy 建立。
 
-安全边界因此是：
+### 3.1 Sidecar 模式中的代理是什么
+
+注入后的 Pod 大致是：
 
 ```text
-谁能创建或修改 Pod/Deployment
-    ↓
-谁可能让 Pod 使用某个 ServiceAccount
-    ↓
-谁可能获得该 ServiceAccount 对应的 Istio 工作负载身份
+Pod/user-v1
+├── user 业务容器
+└── istio-proxy 容器
+    └── pilot-agent
+        └── Envoy Sidecar
+
+Pod/order-v1
+├── order 业务容器
+└── istio-proxy 容器
+    └── pilot-agent
+        └── Envoy Sidecar
 ```
 
-应采取以下限制：
+所以在 `user-service → order-service` 这次调用中：
 
-1. 严格限制 Namespace 中创建和修改 Pod、Deployment、Job 等工作负载的 RBAC 权限。
-2. 不把不同信任级别的应用放进同一个可由同一批用户管理的 Namespace。
-3. 为每类工作负载使用独立、最小权限的 ServiceAccount，不使用权限过大的 `default` ServiceAccount。
-4. 使用 ValidatingAdmissionPolicy、OPA Gatekeeper 或 Kyverno 等准入策略，限制哪些工作负载可以引用哪些 ServiceAccount。
-5. 使用短期、绑定 Pod、限定 audience 的投射 Token，并保护节点、容器和调试权限，降低 Token 被读取的风险。
+```text
+调用方代理 = user Pod 内的 Envoy Sidecar
+目标侧代理 = order Pod 内的 Envoy Sidecar
+```
 
-Istio 的工作负载身份建立在 Kubernetes 身份之上：Istiod 负责验证 Token 和签发网格证书，Kubernetes RBAC 与准入策略负责决定谁有资格创建使用该 ServiceAccount 的工作负载。[Istio 身份和证书流程](https://istio.io/latest/zh/docs/concepts/security/)、[Kubernetes ServiceAccount](https://kubernetes.io/zh-cn/docs/concepts/security/service-accounts/)、[TokenReview API](https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-review-v1/)
+这里的“代理”不是 Kubernetes Service，也不是单独部署的 `user-proxy` 或 `order-proxy` Pod。
 
-### 4.2 Ambient 模式
+### 3.2 Sidecar 如何获得自己的工作负载证书
 
-Ambient 模式下，业务 Pod 中没有 Sidecar。节点 ztunnel 代表工作负载建立安全隧道，但不同工作负载仍使用不同身份和证书，而不是整个节点共用一个身份。
+`istio-agent` 不是一个独立 Pod。它通常指 `istio-proxy` 容器中的 `pilot-agent` 所承担的代理管理和证书代理能力。
 
-## 5. PeerAuthentication：认证连接方
+```mermaid
+sequenceDiagram
+    participant Kubelet as user Pod 所在节点 kubelet
+    participant API as Kubernetes API
+    participant Agent as user Pod 内 pilot-agent
+    participant Istiod as Istiod / CA
+    participant Envoy as user Pod 内 Envoy
 
-`PeerAuthentication` 控制目标工作负载如何接受 mTLS 连接：
+    Kubelet->>API: TokenRequest<br/>指定 ServiceAccount、Pod 和 audience
+    API-->>Kubelet: 签名、限时、绑定 Pod 的 Token
+    Kubelet-->>Agent: 将 Token 投射进 istio-proxy 容器
+    Agent->>Agent: 生成私钥和 CSR
+    Agent->>Istiod: CSR + ServiceAccount Token
+    Istiod->>API: TokenReview
+    API-->>Istiod: 已认证的 Namespace、ServiceAccount、Pod 信息
+    Istiod->>Istiod: 派生允许申请的 SPIFFE 身份
+    Istiod-->>Agent: 返回短期工作负载证书和信任链
+    Agent-->>Envoy: 通过 SDS 提供证书和私钥
+    Agent->>Istiod: 到期前申请轮换
+```
+
+这个过程不需要创建 Kubernetes `certificates.k8s.io/v1` 的 CSR 资源。Istio 工作负载通常直接调用 Istiod 的证书服务，ServiceAccount Token 用于证明申请者身份。
+
+### 3.3 Sidecar 的 mTLS 如何验证双方
+
+假设两个 Pod 分别使用：
+
+```text
+user Pod 证书身份  = spiffe://cluster.local/ns/default/sa/user-service
+order Pod 证书身份 = spiffe://cluster.local/ns/default/sa/order-service
+```
+
+请求过程如下：
+
+```mermaid
+sequenceDiagram
+    participant U as user 应用
+    participant UE as user Pod 内 Envoy
+    participant OE as order Pod 内 Envoy
+    participant O as order 应用
+
+    U->>UE: 明文 HTTP，请求 order-service
+    UE->>OE: 发起 mTLS 握手<br/>出示 user-service 工作负载证书
+    OE->>UE: 出示 order-service 工作负载证书
+    UE->>UE: 验证 CA 信任链<br/>确认目标身份符合 order Endpoint
+    OE->>OE: 验证 CA 信任链和信任域<br/>得到 user-service 身份
+    OE->>OE: 执行 PeerAuthentication<br/>和 AuthorizationPolicy
+    UE->>OE: 发送加密后的业务请求
+    OE->>O: 解密后转发给 order 应用
+```
+
+这里有两次身份确认：
+
+1. user Envoy 验证 order Envoy，避免把订单请求发给持有其他有效证书的错误工作负载；
+2. order Envoy 验证 user Envoy，并将证书身份转换为策略可使用的 `source.principal`。
+
+### 3.4 Sidecar 中 PeerAuthentication 与 DestinationRule 的方向
+
+```text
+PeerAuthentication
+→ 目标 Pod 内的 Envoy 接受什么类型的入站连接
+
+DestinationRule.trafficPolicy.tls
+→ 调用方 Pod 内的 Envoy 连接目标服务时采用哪种 TLS 模式
+```
+
+`DestinationRule` 中的“客户端代理”特指本次调用方 Pod 内的 Envoy。例如 user 调用 order 时，它就是 user Pod 内的 Envoy。
 
 ```yaml
 apiVersion: security.istio.io/v1
@@ -221,81 +244,268 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: order-service
+      app: order
   mtls:
     mode: STRICT
 ```
 
-| 模式 | 含义 |
+| `PeerAuthentication` 模式 | Sidecar 目标侧行为 |
 | --- | --- |
 | `STRICT` | 只接受 Istio mTLS |
-| `PERMISSIVE` | 同时接受明文和 mTLS，常用于迁移期 |
-| `DISABLE` | 不在该范围要求 Istio mTLS |
+| `PERMISSIVE` | 同时接受 Istio mTLS 和明文，适合迁移期 |
+| `DISABLE` | 不要求 Istio mTLS |
 
-策略可以定义在网格、命名空间或工作负载范围，越具体的策略优先级越高。Ambient 模式不支持把已捕获的工作负载流量设为 `DISABLE`，因为 ztunnel 之间使用 HBONE 和 mTLS。
+启用 Auto mTLS 时，如果目标支持 Istio mTLS 且没有冲突配置，调用方 Envoy 会自动使用 mTLS。通常不需要为了开启网格内部 mTLS，给每个 Service 重复创建 `DestinationRule`。
 
-## 6. Auto mTLS 与 DestinationRule
+## 4. Ambient 模式如何验证工作负载
 
-这里的“代理”是 **Istio 数据面中替业务应用收发流量的组件**，不是 `user-service` 或 `order-service` 本身。两种数据面模式中的代理不同：
+Ambient 模式中业务 Pod 内没有 Envoy Sidecar。每个节点运行一个 ztunnel，它会代表本节点上的多个工作负载处理 L4 流量和 mTLS；需要 HTTP、JWT 等 L7 能力时，再经过目标侧 Waypoint Envoy。
 
-| 模式 | user 调用方一侧的代理 | order 目标一侧的代理 |
-| --- | --- | --- |
-| Sidecar | user Pod 内注入的 Envoy Sidecar | order Pod 内注入的 Envoy Sidecar |
-| Ambient | user Pod 所在节点的 ztunnel | order Pod 所在节点的 ztunnel；需要 L7 能力时，请求先经过 order 的 Waypoint Envoy |
-
-以 Sidecar 模式的 `user-service → order-service` 为例：
+### 4.1 Ambient 中的代理是什么
 
 ```text
-user 应用
-→ user Pod 内的 Envoy Sidecar（调用方代理）
-→ mTLS 网络连接
-→ order Pod 内的 Envoy Sidecar（目标代理）
-→ order 应用
+Node A
+├── user Pod（没有 Sidecar）
+└── ztunnel Pod
+    └── 代表 Node A 上的 Ambient 工作负载处理 L4 流量
+
+Node B
+├── order Pod（没有 Sidecar）
+└── ztunnel Pod
+    └── 代表 Node B 上的 Ambient 工作负载处理 L4 流量
+
+可选的 order-waypoint
+└── 独立 Deployment 中的 Envoy
+    └── 为绑定它的目标 Service 执行 L7 认证和授权
 ```
 
-“上游”是 Envoy 术语，表示当前代理准备访问的目标服务。为了避免和业务中的上下游关系混淆，下面直接称为“目标服务”。
+同一个 ztunnel 可以服务节点上的多个 Pod，但这些 Pod不会因此共用 ztunnel 自己的身份。[Istio Ambient 控制面](https://istio.io/latest/docs/ambient/architecture/control-plane/)
 
-两者控制的方向不同：
+### 4.2 一个 ztunnel 如何代表多个工作负载持有证书
+
+假设 Node A 上同时运行：
 
 ```text
-PeerAuthentication：服务端愿意接受什么连接
-DestinationRule.trafficPolicy.tls：调用方一侧的 Istio 代理连接目标服务时，采用哪种 TLS 模式
+user Pod    → ServiceAccount/user-service
+payment Pod → ServiceAccount/payment-service
 ```
 
-在 Sidecar 模式中，“调用方一侧的 Istio 代理”就是调用方 Pod 内的 Envoy Sidecar。例如 user 调用 order 时，它指 user Pod 内的 Envoy，而目标一侧是 order Pod 内的 Envoy。启用 Auto mTLS 后，如果目标是网格内工作负载且没有显式冲突配置，Istio 会让调用方代理自动使用 mTLS。`PeerAuthentication: STRICT` 则确保目标端拒绝明文。
+Node A 的 ztunnel 需要分别持有：
 
-不要仅为了启用网格内部 mTLS，就给每个服务重复编写 `DestinationRule`。只有需要覆盖自动行为、访问外部 TLS 服务或设置特殊 TLS 参数时才显式配置。[Istio TLS 配置](https://istio.io/latest/zh/docs/ops/configuration/traffic-management/tls-configuration/)
+```text
+user 身份证书
+└── spiffe://cluster.local/ns/default/sa/user-service
 
-## 7. 一次 mTLS 请求怎样完成认证
+payment 身份证书
+└── spiffe://cluster.local/ns/default/sa/payment-service
+
+ztunnel 自己的证书
+└── 只用于 ztunnel 自己向控制面证明身份
+```
+
+ztunnel 通过 xDS 获得本节点工作负载及其身份配置，并向 Istiod 获取这些工作负载需要的短期证书。它会缓存、按需获取并在到期前轮换证书。
+
+最关键的一点是：
+
+> ztunnel 代表 user Pod 建立业务 mTLS 时，使用 user-service 的工作负载证书，而不是 ztunnel 自己的证书。
+
+因此目标侧看到的来源身份仍然可以是 `user-service`，不会变成所有请求都来自 `ztunnel`。[Istio Ambient 数据面身份](https://istio.io/latest/docs/ambient/architecture/data-plane/#identity)
+
+### 4.3 Istiod 为什么允许 ztunnel 申请别人的身份
+
+ztunnel 的确是在“为另一个工作负载申请证书”，因此控制面必须限制它可以申请的范围：
 
 ```mermaid
 sequenceDiagram
-    participant U as user-service
-    participant UP as user Pod 内的 Envoy Sidecar<br/>调用方代理
-    participant OP as order Pod 内的 Envoy Sidecar<br/>目标代理
-    participant O as order-service
+    participant API as Kubernetes API / 调度状态
+    participant Istiod as Istiod / CA
+    participant Z as Node A 的 ztunnel
 
-    U->>UP: HTTP 请求
-    UP->>OP: mTLS 握手，出示 user-service 证书
-    OP->>UP: 出示 order-service 证书
-    UP->>UP: 验证目标身份
-    OP->>OP: 验证调用方身份和信任链
-    UP->>OP: 发送加密请求
-    OP->>OP: 得到 source.principal
-    OP->>O: 转发请求
+    API-->>Istiod: user Pod 实际调度在 Node A<br/>使用 SA/user-service
+    Istiod-->>Z: xDS 下发 Node A 的工作负载身份配置
+    Z->>Istiod: 用 ztunnel 自身凭据认证<br/>申请 user-service 身份证书
+    Istiod->>Istiod: 核对申请身份对应的 Pod<br/>是否真实运行在 Node A
+    Istiod-->>Z: 允许：返回 user-service 短期证书
+
+    Z->>Istiod: 尝试申请 Node B 上 admin Pod 的身份
+    Istiod->>Istiod: 发现该身份不属于 Node A
+    Istiod-->>Z: 拒绝申请
 ```
 
-目标代理可以从证书中得到：
+官方安全模型要求 CA 确认 ztunnel 有权申请目标身份；对不在该节点运行的工作负载身份应拒绝签发。这样即使某个 ztunnel 被攻破，直接可冒用的身份范围也被限制在同节点工作负载，而不是整个网格。
+
+但这不是说风险为零。ztunnel 会持有本节点工作负载的私钥材料，节点或 ztunnel 被攻破时，本节点工作负载身份都可能受到影响，所以节点安全仍然是 Ambient 的重要信任边界。[Istio 安全模型](https://istio.io/latest/docs/ops/deployment/security-model/#proxy-compromise-ztunnel)
+
+### 4.4 不经过 Waypoint 时如何验证 user 工作负载
+
+只有 ztunnel 的 L4 安全路径是：
+
+```mermaid
+sequenceDiagram
+    participant U as user Pod
+    participant SZ as Node A ztunnel
+    participant DZ as Node B ztunnel
+    participant O as order Pod
+
+    U->>SZ: 请求 order-service
+    SZ->>SZ: 根据被捕获流量和工作负载配置<br/>识别来源是 user Pod
+    SZ->>DZ: 建立 HBONE/mTLS<br/>使用 user-service 工作负载证书
+    DZ->>SZ: 出示 order-service 工作负载证书
+    SZ->>SZ: 验证目标工作负载身份
+    DZ->>DZ: 验证来源证书链和信任域<br/>得到 source.principal=user-service
+    DZ->>DZ: 执行 order 的 L4<br/>PeerAuthentication 和 AuthorizationPolicy
+    DZ->>O: 验证通过，转发明文 TCP 流
+```
+
+虽然图上看起来是“ztunnel 到 ztunnel”，mTLS 使用的逻辑身份是：
 
 ```text
-cluster.local/ns/default/sa/user-service
+来源身份 = user Pod 的 ServiceAccount 身份
+目标身份 = order Pod 的 ServiceAccount 身份
 ```
 
-这就是授权策略中 `source.principal` 的来源。Istio 的安全命名还会让客户端确认目标证书身份符合预期，避免连接到持有另一个有效证书的错误工作负载。
+而不是：
 
-## 8. RequestAuthentication：验证最终用户 JWT
+```text
+来源身份 = Node A ztunnel 的 ServiceAccount
+目标身份 = Node B ztunnel 的 ServiceAccount
+```
 
-mTLS 证明“哪个工作负载发起连接”。若还要识别登录用户或外部调用方，需要验证 JWT：
+目标 ztunnel 完成证书链和对端身份验证后，才能可靠得到：
+
+```text
+source.principal = cluster.local/ns/default/sa/user-service
+```
+
+然后它可以执行只依赖来源身份、Namespace、IP、目标端口等属性的 L4 授权策略。
+
+### 4.5 经过 Waypoint 时身份如何变化
+
+如果 `order-service` 绑定了 `order-waypoint`，请求会建立两段独立的 HBONE/mTLS：
+
+```mermaid
+sequenceDiagram
+    participant U as user Pod
+    participant SZ as user 节点 ztunnel
+    participant W as order-waypoint Envoy
+    participant DZ as order 节点 ztunnel
+    participant O as order Pod
+
+    U->>SZ: HTTP 请求 order-service
+    SZ->>W: 第 1 段 HBONE/mTLS<br/>来源身份=user-service<br/>目标身份=order-waypoint
+    W->>W: 验证 user-service 身份<br/>执行 JWT 和 L7 AuthorizationPolicy
+    W->>DZ: 第 2 段 HBONE/mTLS<br/>来源身份=order-waypoint<br/>目标身份=order-service
+    DZ->>DZ: 验证 Waypoint 身份<br/>执行目标 Pod 的 L4 策略
+    DZ->>O: 转发给 order 应用
+```
+
+这里必须区分两个观察点：
+
+```text
+order-waypoint 看到的来源身份
+└── user-service
+
+order Pod 所在节点的目标 ztunnel 看到的来源身份
+└── order-waypoint 的 ServiceAccount
+```
+
+Waypoint 不会在第二段连接中冒充原始 user 工作负载。它用自己的身份连接目标 ztunnel。因此：
+
+- 需要根据原始 `user-service` 身份做判断的策略，应附加到目标 Service，由 Waypoint 执行；
+- 目标 Pod 上由 ztunnel 执行的 L4 策略，可以只允许 `order-waypoint` 身份进入，从而防止客户端绕过 Waypoint。
+
+### 4.6 如何强制请求不能绕过 Waypoint
+
+仅给 Service 添加 `istio.io/use-waypoint` 表示路由意图。若 Waypoint 的 L7 安全策略是强制安全边界，还应在目标工作负载的 ztunnel 上增加 L4 策略，只允许 Waypoint 的身份访问。
+
+假设 Waypoint Gateway 名为 `order-waypoint`，它通常使用同名 ServiceAccount：
+
+```yaml
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: order-require-waypoint
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: order
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/default/sa/order-waypoint
+```
+
+这条策略由目标节点 ztunnel 执行。客户端直接连接 order Pod 时，来源身份是客户端自身，不是 `order-waypoint`，因此会被拒绝；正常经过 Waypoint 的第二段连接则可以通过。[Istio：强制流量经过 Waypoint](https://istio.io/latest/docs/ambient/usage/waypoint/#enforce-use-of-waypoints)
+
+### 4.7 Ambient 中 PeerAuthentication 的含义
+
+`PeerAuthentication` 仍由目标 ztunnel 执行：
+
+```yaml
+apiVersion: security.istio.io/v1
+kind: PeerAuthentication
+metadata:
+  name: order-strict
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: order
+  mtls:
+    mode: STRICT
+```
+
+Ambient 工作负载默认可能同时接受 HBONE/mTLS 和来自网格外的明文流量；设置 `STRICT` 后，目标只接受已建立 Istio mTLS 的流量。因为 ztunnel 与 HBONE 本身要求 mTLS，Ambient 中不能用 `DISABLE` 关闭已捕获工作负载的 mTLS。
+
+Ambient 的 ztunnel 会根据目标工作负载能力自动把连接升级为 HBONE/mTLS，并按目标工作负载身份进行验证。不要用“调用方 Sidecar 的 `DestinationRule.trafficPolicy.tls`”去解释 Ambient，因为 Ambient 业务 Pod 中根本没有调用方 Sidecar。
+
+### 4.8 如何确认 Ambient 确实验证了工作负载
+
+先检查工作负载是否进入 Ambient，以及协议是否为 HBONE：
+
+```bash
+istioctl ztunnel-config workloads
+```
+
+再检查 ztunnel 已获得的证书：
+
+```bash
+istioctl ztunnel-config certificates <ZTUNNEL-POD>.istio-system
+```
+
+最后检查 ztunnel 日志中的来源和目标身份：
+
+```bash
+kubectl logs -n istio-system <ZTUNNEL-POD> | grep "connection complete"
+```
+
+关注下面的字段：
+
+```text
+src.identity = spiffe://cluster.local/ns/default/sa/user-service
+dst.identity = spiffe://cluster.local/ns/default/sa/order-service
+```
+
+同时可以检查指标中的：
+
+```text
+connection_security_policy="mutual_tls"
+source_principal="spiffe://cluster.local/ns/default/sa/user-service"
+destination_principal="spiffe://cluster.local/ns/default/sa/order-service"
+```
+
+这些信息能证明 ztunnel 使用的是业务工作负载身份，而不是只建立了一个无法区分 Pod 身份的节点级隧道。[Istio：验证 Ambient mTLS](https://istio.io/latest/docs/ambient/usage/verify-mtls-enabled/)
+
+## 5. 最终用户 JWT 在哪里验证
+
+mTLS 认证的是工作负载。例如它能证明请求来自 `user-service`，但不能证明请求代表登录用户 Jason。最终用户身份通常通过 JWT 验证。
+
+### 5.1 Sidecar 模式
+
+Sidecar 模式可以把 `RequestAuthentication` 和 L7 `AuthorizationPolicy` 选择到 order 工作负载，由 order Pod 内的 Envoy 执行：
 
 ```yaml
 apiVersion: security.istio.io/v1
@@ -306,7 +516,7 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: order-service
+      app: order
   jwtRules:
     - issuer: "https://login.example.com"
       jwksUri: "https://login.example.com/.well-known/jwks.json"
@@ -314,30 +524,60 @@ spec:
         - order-api
 ```
 
-验证成功后，代理可以得到 `request.auth.principal` 和 `request.auth.claims`。
+```text
+user Envoy → order Envoy 验证 JWT → order 应用
+```
 
-需要特别注意：`RequestAuthentication` 主要验证“请求中已经携带的 JWT”。默认情况下，没有 JWT 的请求仍可能通过，无效 JWT 则会被拒绝。若要求必须登录才能访问，还要配合 `AuthorizationPolicy` 要求 `requestPrincipals` 存在。
+### 5.2 Ambient 模式
 
-## 9. AuthorizationPolicy：决定能不能访问
+ztunnel 不解析 HTTP，也不验证 JWT。Ambient 中必须让 `order-service` 经过 Waypoint，并用 `targetRefs` 把 `RequestAuthentication` 附加到目标 Service：
 
-下面只允许指定 Gateway 身份访问 `order-service`，同时要求请求已通过 JWT 认证：
+```yaml
+apiVersion: security.istio.io/v1
+kind: RequestAuthentication
+metadata:
+  name: order-jwt
+  namespace: default
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: order-service
+  jwtRules:
+    - issuer: "https://login.example.com"
+      jwksUri: "https://login.example.com/.well-known/jwks.json"
+      audiences:
+        - order-api
+```
+
+```text
+user ztunnel → order-waypoint 验证 JWT → order ztunnel → order 应用
+```
+
+`RequestAuthentication` 主要验证“请求中已经携带的 JWT”。如果没有 JWT，请求不一定会自动被拒绝。要求必须登录时，还要用 `AuthorizationPolicy` 要求 `requestPrincipals` 存在。
+
+## 6. AuthorizationPolicy 在哪里执行
+
+### 6.1 Sidecar 模式
+
+Sidecar 模式中，order Pod 内的 Envoy 同时拥有 L4 和 L7 信息，可以同时检查来源工作负载、JWT 用户、HTTP 方法和路径：
 
 ```yaml
 apiVersion: security.istio.io/v1
 kind: AuthorizationPolicy
 metadata:
-  name: allow-gateway-user
+  name: order-sidecar-policy
   namespace: default
 spec:
   selector:
     matchLabels:
-      app: order-service
+      app: order
   action: ALLOW
   rules:
     - from:
         - source:
             principals:
-              - "cluster.local/ns/default/sa/app-gateway-istio"
+              - cluster.local/ns/default/sa/user-service
             requestPrincipals:
               - "*"
       to:
@@ -346,91 +586,148 @@ spec:
             paths: ["/orders/*"]
 ```
 
-一条规则主要由三部分组成：
+执行位置是：
 
-1. `from`：谁发起请求，例如 mTLS 工作负载身份、命名空间、JWT 用户。
-2. `to`：要访问什么，例如端口、HTTP 方法和路径。
-3. `when`：满足哪些额外条件，例如 JWT Claim 或请求头。
+```text
+order Pod 内的 Envoy Sidecar
+```
 
-`source.principal` 来自 mTLS 证书；`request.auth.principal` 来自 JWT。前者回答“哪个服务在调用”，后者回答“这个服务代表哪个用户调用”。
+### 6.2 Ambient 模式
 
-### 9.1 策略求值顺序
+Ambient 必须把策略按层拆开。
+
+只依赖来源身份、Namespace、IP 或端口的 L4 策略，可以使用 `selector` 选择目标 Pod，由目标节点 ztunnel 执行：
+
+```yaml
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: order-l4
+  namespace: default
+spec:
+  selector:
+    matchLabels:
+      app: order
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/default/sa/order-waypoint
+```
+
+需要原始 user 身份、JWT、HTTP 方法或路径的策略，使用 `targetRefs` 挂到 `Service/order-service`，由 Waypoint 执行：
+
+```yaml
+apiVersion: security.istio.io/v1
+kind: AuthorizationPolicy
+metadata:
+  name: order-l7
+  namespace: default
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: order-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - cluster.local/ns/default/sa/user-service
+            requestPrincipals:
+              - "*"
+      to:
+        - operation:
+            methods: ["GET"]
+            paths: ["/orders/*"]
+```
+
+两条策略配合后的含义是：
+
+```text
+order-waypoint：
+验证原始来源是 user-service、JWT 有效、请求为 GET /orders/*
+
+order 目标节点 ztunnel：
+验证最后一段 mTLS 的来源确实是 order-waypoint，拒绝绕过路径
+```
+
+### 6.3 策略求值顺序
 
 ```text
 CUSTOM → DENY → ALLOW → 默认结果
 ```
 
-1. 匹配 `CUSTOM` 时，先交给外部授权服务。
-2. 匹配任一 `DENY` 时拒绝。
-3. 如果作用范围内存在 `ALLOW` 策略，只有匹配至少一条 `ALLOW` 的请求才允许。
-4. 如果完全没有适用的 `ALLOW` 策略，则不会因为缺少 `ALLOW` 而默认拒绝。
-5. `AUDIT` 用于标记应审计的请求，本身不改变允许或拒绝结果。
+1. 匹配 `CUSTOM` 时，先交给外部授权服务；
+2. 匹配任一 `DENY` 时拒绝；
+3. 如果作用范围内存在 `ALLOW`，只有匹配至少一条 `ALLOW` 的请求才允许；
+4. 如果没有适用的 `ALLOW`，不会仅因为缺少 `ALLOW` 而默认拒绝；
+5. `AUDIT` 只产生审计标记，本身不改变允许或拒绝结果。
 
-因此，添加第一条 `ALLOW` 策略，就为它的作用范围建立了“未匹配即拒绝”的基线。
+## 7. 两种模式的完整安全流程
 
-## 10. 四层与七层策略在哪里执行
-
-| 数据面 | 能执行的策略 | 说明 |
-| --- | --- | --- |
-| Sidecar Envoy | 四层和七层 | 代理位于每个业务 Pod 中 |
-| Gateway Envoy | 四层和七层 | 处理经过网关的流量 |
-| Ambient ztunnel | 四层 | 识别源/目标身份、端口和连接 |
-| Ambient Waypoint | 七层 | 解析 HTTP 方法、路径、Header、JWT 等 |
-
-只根据源 ServiceAccount 和目标端口限制访问，ztunnel 可以执行；若策略需要匹配 `GET /orders/*` 或 JWT Claim，Ambient 流量必须经过 Waypoint 才能执行七层策略。
-
-## 11. 把认证与授权串成一次请求
-
-```mermaid
-flowchart TD
-    R[请求到达目标代理]
-    P{连接满足<br/>PeerAuthentication 吗}
-    J{携带的 JWT<br/>验证成功吗}
-    A{AuthorizationPolicy<br/>允许吗}
-    OK[转发给业务应用]
-    NO[拒绝请求]
-
-    R --> P
-    P -- 否 --> NO
-    P -- 是 --> J
-    J -- JWT 无效 --> NO
-    J -- 有效或未携带 --> A
-    A -- 是 --> OK
-    A -- 否 --> NO
-```
-
-以“登录用户通过 Gateway 查询订单”为例：
-
-1. Gateway 验证外部用户 JWT，得到最终用户身份。
-2. Gateway 使用自己的工作负载证书与 `order-service` 建立 mTLS。
-3. order 侧代理从 mTLS 得到 Gateway 的工作负载身份。
-4. order 侧代理从 JWT 得到最终用户身份和 Claim。
-5. `AuthorizationPolicy` 同时检查服务身份、用户身份、HTTP 方法和路径。
-6. 全部满足后才把请求转发给业务进程。
-
-## 12. 容易混淆的地方
-
-1. **mTLS 不等于授权**：它证明双方身份并加密通信，但不会自动决定某个身份能否访问 `/orders/*`。
-2. **ServiceAccount 不等于 Kubernetes Service**：前者是工作负载身份来源，后者是服务发现抽象。
-3. **RequestAuthentication 不等于强制登录**：要拒绝缺少 JWT 的请求，还需授权策略。
-4. **TLS 终止不等于后续链路明文**：Gateway 可终止外部 TLS，再与网格工作负载建立另一段 Istio mTLS。
-5. **`PERMISSIVE` 适合迁移期**：它仍接受明文连接，不应被误认为严格安全状态。
-6. **七层条件必须在七层代理处执行**：Ambient 的 ztunnel 无法独自匹配 HTTP 路径或 JWT Claim。
-
-## 13. 总结
+### 7.1 Sidecar 模式
 
 ```text
-身份层：ServiceAccount → 工作负载证书
-认证层：mTLS 验证工作负载，JWT 验证最终用户
-授权层：AuthorizationPolicy 根据身份和请求属性作出决定
+user 应用
+→ user Envoy 使用 user-service 证书发起 mTLS
+→ order Envoy 验证 user-service 身份
+→ order Envoy 验证 JWT
+→ order Envoy 执行 L4/L7 AuthorizationPolicy
+→ order 应用
 ```
 
-排查安全问题也按这个顺序：先确认工作负载身份和证书，再确认认证策略，最后检查授权策略以及策略实际由哪个数据面组件执行。
+### 7.2 Ambient 模式并经过 Waypoint
 
-## 14. 参考资料
+```text
+user 应用
+→ user 节点 ztunnel 使用 user-service 证书发起第 1 段 HBONE/mTLS
+→ order-waypoint 验证 user-service 身份
+→ order-waypoint 验证 JWT 并执行 L7 AuthorizationPolicy
+→ order-waypoint 使用自身证书发起第 2 段 HBONE/mTLS
+→ order 节点 ztunnel 验证 order-waypoint 身份并执行 L4 AuthorizationPolicy
+→ order 应用
+```
+
+两种模式最终都能验证工作负载，差别不是“Ambient 没有工作负载身份”，而是身份凭据和验证动作从 Pod 内 Sidecar 移到了节点 ztunnel，并把 L7 能力拆到了目标 Waypoint。
+
+## 8. 容易混淆的地方
+
+1. **ztunnel 共享不等于身份共享**：一个 ztunnel 代表多个 Pod，但为不同 ServiceAccount 管理不同证书。
+2. **ztunnel 自身身份不等于业务身份**：无 Waypoint 的业务 HBONE 使用源、目标工作负载身份。
+3. **经过 Waypoint 后来源身份会变化**：Waypoint 看到原始调用方身份，目标 ztunnel 看到 Waypoint 身份。
+4. **mTLS 不等于授权**：mTLS 证明身份并加密连接，`AuthorizationPolicy` 才决定是否放行。
+5. **RequestAuthentication 不等于强制登录**：要拒绝没有 JWT 的请求，还要要求 `requestPrincipals`。
+6. **Ambient 的 ztunnel 不能执行 HTTP/JWT 规则**：这些七层策略必须由 Waypoint 执行。
+7. **ServiceAccount 不等于 Kubernetes Service**：前者是身份来源，后者是服务发现和 Endpoint 入口。
+
+## 9. 总结
+
+```text
+Sidecar：
+每个 Pod 的 pilot-agent 申请证书
+→ 每个 Pod 内的 Envoy 使用该证书建立 mTLS
+→ 目标 Pod 内 Envoy 验证调用方并执行 L4/L7 策略
+
+Ambient：
+每个节点的 ztunnel 为本节点工作负载管理不同证书
+→ ztunnel 代表具体工作负载建立 HBONE/mTLS
+→ 目标 ztunnel 验证 L4 身份
+→ 需要 L7 时，由目标 Waypoint 验证原始调用方、JWT 和 HTTP 规则
+```
+
+排查 Istio 安全问题时，也应按模式确认：证书由谁持有、哪一段 mTLS 使用哪个身份、策略实际由 ztunnel、Waypoint 还是 Sidecar 执行。
+
+## 10. 参考资料
 
 1. [Istio 安全概念](https://istio.io/latest/zh/docs/concepts/security/)
-2. [认证策略任务](https://istio.io/latest/zh/docs/tasks/security/authentication/authn-policy/)
-3. [PeerAuthentication API](https://istio.io/latest/zh/docs/reference/config/security/peer_authentication/)
-4. [RequestAuthentication API](https://istio.io/latest/zh/docs/reference/config/security/request_authentication/)
-5. [AuthorizationPolicy API](https://istio.io/latest/zh/docs/reference/config/security/authorization-policy/)
+2. [Istio Ambient 控制面](https://istio.io/latest/docs/ambient/architecture/control-plane/)
+3. [Istio Ambient 数据面与工作负载身份](https://istio.io/latest/docs/ambient/architecture/data-plane/)
+4. [Istio HBONE](https://istio.io/latest/docs/ambient/architecture/hbone/)
+5. [验证 Ambient mTLS](https://istio.io/latest/docs/ambient/usage/verify-mtls-enabled/)
+6. [使用 Waypoint](https://istio.io/latest/docs/ambient/usage/waypoint/)
+7. [Istio 安全模型](https://istio.io/latest/docs/ops/deployment/security-model/)
+8. [PeerAuthentication API](https://istio.io/latest/zh/docs/reference/config/security/peer_authentication/)
+9. [RequestAuthentication API](https://istio.io/latest/zh/docs/reference/config/security/request_authentication/)
+10. [AuthorizationPolicy API](https://istio.io/latest/zh/docs/reference/config/security/authorization-policy/)
