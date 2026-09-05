@@ -1,8 +1,8 @@
 ---
-weight: 10
-title: "10 Istio 可观测性：指标、访问日志与链路追踪"
-date: 2026-08-29T17:00:00+08:00
-lastmod: 2026-08-29T17:00:00+08:00
+weight: 11
+title: "11 Istio 可观测性：指标、访问日志与链路追踪"
+date: 2026-08-29T18:00:00+08:00
+lastmod: 2026-08-29T18:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"

@@ -1,8 +1,8 @@
 ---
-weight: 9
-title: "9 Istio 安全：身份、认证与授权"
-date: 2026-08-29T16:00:00+08:00
-lastmod: 2026-08-29T16:00:00+08:00
+weight: 10
+title: "10 Istio 安全：身份、认证与授权"
+date: 2026-08-29T17:00:00+08:00
+lastmod: 2026-08-29T17:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -92,17 +92,54 @@ spiffe://cluster.local/ns/default/sa/user-service
 
 ### 4.1 Sidecar 模式
 
+#### 4.1.1 `istio-agent` 在哪个 Pod 中
+
+`istio-agent` 不是一个独立 Pod，也不是另一个 Sidecar 容器。在 Sidecar 模式中，注入后的业务 Pod 通常包含：
+
+```text
+Pod/user-v1
+├── user 容器
+│   └── 业务进程
+└── istio-proxy 容器
+    └── pilot-agent 进程
+        ├── 启动和管理 Envoy
+        ├── 生成私钥和 CSR
+        ├── 向 Istiod 申请、轮换工作负载证书
+        └── 通过 SDS 把证书提供给 Envoy
+```
+
+Istio 文档中的 `istio-agent` 通常表示 `pilot-agent` 在工作负载本地承担的代理管理和安全代理能力。`istio-proxy` 是容器名，`pilot-agent` 是容器中的进程，Envoy 是由它启动和管理的数据面进程。
+
+可以通过下面的命令观察：
+
+```bash
+kubectl get pod user-v1 -n default \
+  -o jsonpath='{.spec.containers[*].name}'
+
+kubectl exec user-v1 -n default -c istio-proxy -- ps
+```
+
+第一个命令通常会看到业务容器和 `istio-proxy`，不会看到名为 `istio-agent` 的单独 Pod。
+
+#### 4.1.2 证书申请和身份校验过程
+
 ```mermaid
 sequenceDiagram
-    participant A as Pod 内 istio-agent
+    participant L as user-v1 所在节点 kubelet
     participant K as Kubernetes API
-    participant I as Istiod CA
+    participant A as istio-proxy 内 pilot-agent
+    participant I as Istiod
     participant E as Envoy Sidecar
 
+    L->>K: TokenRequest：ServiceAccount、Pod 绑定、audience
+    K-->>L: 返回签名、限时的投射 Token
+    L-->>A: 把 Token 挂载到 istio-proxy 容器
     A->>A: 生成私钥和 CSR
-    A->>K: 使用 ServiceAccount Token 证明 Pod 身份
-    A->>I: 发送 CSR 和身份凭据
-    I->>K: 校验 Token、命名空间和 ServiceAccount
+    A->>I: CSR + Bearer ServiceAccount Token
+    I->>K: TokenReview，要求预期 audience
+    K->>K: 校验签名、签发者、有效期、audience<br/>以及绑定的 ServiceAccount/Pod
+    K-->>I: authenticated=true<br/>system:serviceaccount:default:user-service
+    I->>I: 从验证结果派生 SPIFFE 身份<br/>检查 CSR 请求并执行 CA 策略
     I->>I: 用 Istio CA 签发短期证书
     I-->>A: 返回证书链和根证书
     A-->>E: 通过 SDS 提供证书和私钥
@@ -111,12 +148,61 @@ sequenceDiagram
 
 各组件的职责是：
 
-1. `istio-agent` 生成私钥，私钥通常不离开工作负载。
-2. Kubernetes 证明 Pod 使用哪个 ServiceAccount。
-3. Istiod 校验身份，并作为 CA 签发短期证书。
-4. Envoy 通过 SDS 动态获得证书，用它建立 mTLS。
+1. kubelet 通过 Kubernetes TokenRequest 机制，为指定 Pod 投射短期 ServiceAccount Token。
+2. `istio-proxy` 容器中的 `pilot-agent` 生成私钥和 CSR，私钥通常不离开工作负载。
+3. pilot-agent 把 CSR 和 Token 发给 Istiod。它不能只发送一个自己填写的 ServiceAccount 名称。
+4. Istiod 调用 Kubernetes TokenReview API 验证 Token，并从验证结果获得 Namespace 和 ServiceAccount 身份。
+5. Istiod 根据已经验证的身份签发短期证书，证书身份类似 `spiffe://cluster.local/ns/default/sa/user-service`。
+6. Envoy 通过 SDS 动态获得证书，用它建立 mTLS。
 
 这不是 Kubernetes `certificates.k8s.io` CSR 资源的申请流程。Istio 工作负载通常直接调用 Istiod 的证书服务，Kubernetes ServiceAccount Token 用于证明身份。
+
+#### 4.1.3 ServiceAccount 能不能伪造
+
+需要区分“伪造名称”和“获得合法身份凭据”。
+
+仅在请求里写下面的字符串没有用：
+
+```text
+serviceAccount = order-service
+```
+
+Istiod 不会相信这个字段。申请者必须提供 Kubernetes API Server 能通过 TokenReview 验证的 Token。投射 Token 通常包含或约束：
+
+1. Kubernetes API Server 的签名和签发者。
+2. Token 的过期时间。
+3. 用途对应的 audience，例如 Istio CA。
+4. ServiceAccount 的 Namespace、名称和 UID。
+5. Token 所绑定 Pod 的名称和 UID。
+
+所以攻击者不能仅靠修改 CSR、Pod Label 或 HTTP 参数，把自己声明成另一个 ServiceAccount。
+
+但是，下面两种情况仍然可以造成身份冒用：
+
+1. **ServiceAccount Token 被窃取**：持有者可能在 Token 过期前冒用该身份。
+2. **攻击者有权在该 Namespace 创建 Pod/Deployment**：在没有额外准入限制时，能够创建工作负载的人通常可以把 `serviceAccountName` 指向该 Namespace 中权限更高的 ServiceAccount，并让 kubelet 为这个新 Pod 投射一个合法 Token。
+
+第二种情况不是绕过 TokenReview，因为得到的 Token 本身就由 Kubernetes 合法签发。Istio 信任 Kubernetes 的认证结果，无法判断“这个用户本来不应该创建使用该 ServiceAccount 的 Pod”。
+
+安全边界因此是：
+
+```text
+谁能创建或修改 Pod/Deployment
+    ↓
+谁可能让 Pod 使用某个 ServiceAccount
+    ↓
+谁可能获得该 ServiceAccount 对应的 Istio 工作负载身份
+```
+
+应采取以下限制：
+
+1. 严格限制 Namespace 中创建和修改 Pod、Deployment、Job 等工作负载的 RBAC 权限。
+2. 不把不同信任级别的应用放进同一个可由同一批用户管理的 Namespace。
+3. 为每类工作负载使用独立、最小权限的 ServiceAccount，不使用权限过大的 `default` ServiceAccount。
+4. 使用 ValidatingAdmissionPolicy、OPA Gatekeeper 或 Kyverno 等准入策略，限制哪些工作负载可以引用哪些 ServiceAccount。
+5. 使用短期、绑定 Pod、限定 audience 的投射 Token，并保护节点、容器和调试权限，降低 Token 被读取的风险。
+
+Istio 的工作负载身份建立在 Kubernetes 身份之上：Istiod 负责验证 Token 和签发网格证书，Kubernetes RBAC 与准入策略负责决定谁有资格创建使用该 ServiceAccount 的工作负载。[Istio 身份和证书流程](https://istio.io/latest/zh/docs/concepts/security/)、[Kubernetes ServiceAccount](https://kubernetes.io/zh-cn/docs/concepts/security/service-accounts/)、[TokenReview API](https://kubernetes.io/docs/reference/kubernetes-api/authentication-resources/token-review-v1/)
 
 ### 4.2 Ambient 模式
 
@@ -150,14 +236,33 @@ spec:
 
 ## 6. Auto mTLS 与 DestinationRule
 
+这里的“代理”是 **Istio 数据面中替业务应用收发流量的组件**，不是 `user-service` 或 `order-service` 本身。两种数据面模式中的代理不同：
+
+| 模式 | user 调用方一侧的代理 | order 目标一侧的代理 |
+| --- | --- | --- |
+| Sidecar | user Pod 内注入的 Envoy Sidecar | order Pod 内注入的 Envoy Sidecar |
+| Ambient | user Pod 所在节点的 ztunnel | order Pod 所在节点的 ztunnel；需要 L7 能力时，请求先经过 order 的 Waypoint Envoy |
+
+以 Sidecar 模式的 `user-service → order-service` 为例：
+
+```text
+user 应用
+→ user Pod 内的 Envoy Sidecar（调用方代理）
+→ mTLS 网络连接
+→ order Pod 内的 Envoy Sidecar（目标代理）
+→ order 应用
+```
+
+“上游”是 Envoy 术语，表示当前代理准备访问的目标服务。为了避免和业务中的上下游关系混淆，下面直接称为“目标服务”。
+
 两者控制的方向不同：
 
 ```text
 PeerAuthentication：服务端愿意接受什么连接
-DestinationRule.trafficPolicy.tls：客户端代理用什么方式连接上游
+DestinationRule.trafficPolicy.tls：调用方一侧的 Istio 代理连接目标服务时，采用哪种 TLS 模式
 ```
 
-启用 Auto mTLS 时，如果目标是网格内工作负载且没有显式冲突配置，Istio 会让客户端代理自动使用 mTLS。`PeerAuthentication: STRICT` 则确保目标端拒绝明文。
+在 Sidecar 模式中，“调用方一侧的 Istio 代理”就是调用方 Pod 内的 Envoy Sidecar。例如 user 调用 order 时，它指 user Pod 内的 Envoy，而目标一侧是 order Pod 内的 Envoy。启用 Auto mTLS 后，如果目标是网格内工作负载且没有显式冲突配置，Istio 会让调用方代理自动使用 mTLS。`PeerAuthentication: STRICT` 则确保目标端拒绝明文。
 
 不要仅为了启用网格内部 mTLS，就给每个服务重复编写 `DestinationRule`。只有需要覆盖自动行为、访问外部 TLS 服务或设置特殊 TLS 参数时才显式配置。[Istio TLS 配置](https://istio.io/latest/zh/docs/ops/configuration/traffic-management/tls-configuration/)
 
@@ -166,8 +271,8 @@ DestinationRule.trafficPolicy.tls：客户端代理用什么方式连接上游
 ```mermaid
 sequenceDiagram
     participant U as user-service
-    participant UP as user 代理
-    participant OP as order 代理
+    participant UP as user Pod 内的 Envoy Sidecar<br/>调用方代理
+    participant OP as order Pod 内的 Envoy Sidecar<br/>目标代理
     participant O as order-service
 
     U->>UP: HTTP 请求
