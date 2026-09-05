@@ -56,11 +56,13 @@ GET api.example.com/orders/* → order-service
 ┌─────────────────────────────────────────────────────────────┐
 │ Gateway 数据面                                              │
 │                                                             │
-│ Envoy Service                                              │
-│          │                                                  │
-│ Envoy Deployment                                           │
-│ ├── Envoy Pod 1 ─┐                                         │
-│ └── Envoy Pod 2 ─┴── 同一组 Listener、Route 和 Cluster     │
+│ Envoy Deployment ──管理副本──┐                              │
+│ ├── Envoy Pod 1             │                              │
+│ │   └── Envoy Proxy 进程    ├──执行 Listener、Route、Filter │
+│ └── Envoy Pod 2             │                              │
+│     └── Envoy Proxy 进程 ───┘                              │
+│                                                             │
+│ Envoy Service ──选择并转发到──> Envoy Pod 1 / Envoy Pod 2   │
 └───────────────────────────┬─────────────────────────────────┘
                             │ 代理请求
                             ▼
@@ -72,7 +74,35 @@ GET api.example.com/orders/* → order-service
 └─────────────────────────────────────────────────────────────┘
 ```
 
-Envoy Pod 不是为某个后端服务创建的。它是 Gateway 的代理副本，一个 Envoy 数据面可以同时包含 `user-service`、`order-service` 等多个 Cluster。
+Envoy Pod 不是为某个后端服务创建的。每个 Pod 都运行一个 Envoy 容器，容器内的 **Envoy Proxy 进程**才是真正执行 Listener、Route、Filter、Cluster 和负载均衡的程序。一个 Envoy 数据面可以同时包含 `user-service`、`order-service` 等多个 Cluster。
+
+这里有三个名称非常接近，但含义完全不同：
+
+| 名称 | 类型 | 作用 | 是否处理业务请求 |
+| --- | --- | --- | --- |
+| `EnvoyProxy` | Envoy Gateway 的 Kubernetes CRD | 声明数据面的部署和基础设施配置 | 否 |
+| Envoy Proxy | Envoy Pod 内运行的 Envoy 进程 | 执行 Listener、Route、Filter 和上游负载均衡 | 是 |
+| Envoy Service | Kubernetes Service | 为 Envoy Pod 提供稳定入口，并选择一个健康 Pod | 只把流量转给 Pod，不执行 Envoy 路由规则 |
+
+因此，`EnvoyProxy` 不等于 Envoy Service，Envoy Service 也不等于 Envoy Proxy。它们之间的关系是：
+
+```text
+GatewayClass
+      ↓ parametersRef
+  EnvoyProxy -> 提供部署参数
+      ↓
+Envoy Gateway Controller
+    ├──创建──> Envoy Deployment ──管理──> Envoy Pod
+    │                                      └── Envoy Proxy 进程
+    └──创建──> Envoy Service ─────选择───────────┘
+```
+
+“数据面”也有宽窄两种用法：
+
+- 从网络职责看，数据面主要指真正处理流量的 Envoy Proxy 进程；
+- 从 Kubernetes 部署看，“数据面资源”通常泛指 Controller 为 Gateway 创建的 Deployment、Pod、Service、ServiceAccount 等整套资源。
+
+本文后续使用“Envoy Proxy”表示运行进程，使用“`EnvoyProxy`”表示 CRD，使用“Envoy Service”表示 Kubernetes Service。
 
 ### 2.1 Gateway 与 Envoy 数据面的对应关系
 
@@ -343,7 +373,13 @@ Envoy Proxy → Service ClusterIP → kube-proxy/eBPF → Pod IP
 
 ## 8. EnvoyProxy 和策略资源
 
-`EnvoyProxy` 是可选的基础设施配置，不是实际运行的 Envoy Pod。它用于定制 Controller 创建的数据面，例如 Deployment 副本、容器镜像、资源限制和 Service 类型。
+`EnvoyProxy` 是可选的基础设施配置 CRD，不是实际运行的 Envoy Pod、Envoy Proxy 进程或 Envoy Service。它描述 Controller 应该如何创建和配置数据面，例如 Deployment 副本数、容器镜像、资源限制和 Service 类型。
+
+```text
+EnvoyProxy CR = 数据面部署配置
+Envoy Proxy    = Pod 内处理流量的进程
+Envoy Service  = 将入口流量送到 Envoy Pod 的 Kubernetes Service
+```
 
 策略资源则扩展 Gateway API：
 
