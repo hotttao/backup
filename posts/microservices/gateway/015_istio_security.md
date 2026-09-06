@@ -2,7 +2,7 @@
 weight: 10
 title: "10 Istio 安全：Sidecar 与 Ambient 的身份、认证和授权"
 date: 2026-08-29T17:00:00+08:00
-lastmod: 2026-09-05T17:00:00+08:00
+lastmod: 2026-09-06T17:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -303,7 +303,7 @@ ztunnel 自己的证书
 └── 只用于 ztunnel 自己向控制面证明身份
 ```
 
-ztunnel 通过 xDS 获得本节点工作负载及其身份配置，并向 Istiod 获取这些工作负载需要的短期证书。它会缓存、按需获取并在到期前轮换证书。
+ztunnel 通过 xDS 获得工作负载及其身份配置，再从中识别哪些工作负载位于本节点，并向 Istiod 获取这些本地身份需要的短期证书。它会缓存、按需获取并在到期前轮换证书。
 
 最关键的一点是：
 
@@ -311,7 +311,178 @@ ztunnel 通过 xDS 获得本节点工作负载及其身份配置，并向 Istiod
 
 因此目标侧看到的来源身份仍然可以是 `user-service`，不会变成所有请求都来自 `ztunnel`。[Istio Ambient 数据面身份](https://istio.io/latest/docs/ambient/architecture/data-plane/#identity)
 
-### 4.3 Istiod 为什么允许 ztunnel 申请别人的身份
+### 4.3 本节点工作负载及其身份配置从哪里来
+
+先看结论：
+
+```text
+Kubernetes API 保存事实
+→ Istiod 监听这些资源并计算 Ambient 数据面模型
+→ ztunnel 通过 xDS 接收 Workload、Service 和授权配置
+→ ztunnel 根据 Workload.node 与自己的 NODE_NAME 判断哪些是本地工作负载
+→ 为本地工作负载的 ServiceAccount 身份获取证书
+```
+
+ztunnel 不直接遍历节点上的容器，也不直接监听整个 Kubernetes API。Kubernetes 资源由 Istiod 统一读取和转换，ztunnel 消费的是 Istiod 生成的、面向 L4 数据面的配置。
+
+#### 4.3.1 Kubernetes API 中已经保存了哪些事实
+
+Pod 被调度以后，Kubernetes API 中的 Pod 对象大致包含：
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: user-v1-7d9c8f
+  namespace: default
+  labels:
+    app: user
+spec:
+  # 调度器选定节点后写入。
+  nodeName: node-a
+  # Pod 使用的工作负载身份来源。
+  serviceAccountName: user-service
+status:
+  # CNI 为 Pod 分配地址后写入。
+  podIP: 10.0.1.11
+```
+
+除此以外，Istiod 还会读取：
+
+- Namespace 是否通过 `istio.io/dataplane-mode=ambient` 加入 Ambient；
+- Service 的 VIP、端口和 Selector；
+- EndpointSlice 中 Service 与 Pod Endpoint 的关系；
+- Service 或 Pod 是否通过 `istio.io/use-waypoint` 绑定 Waypoint；
+- `PeerAuthentication`、`AuthorizationPolicy` 等安全策略。
+
+这些资源共同回答：
+
+```text
+这个工作负载叫什么？
+它的 Pod IP 是什么？
+它运行在哪个 Node？
+它使用哪个 ServiceAccount？
+它是否支持 HBONE？
+它属于哪些 Service？
+它是否必须经过 Waypoint？
+哪些 L4 授权规则对它生效？
+```
+
+#### 4.3.2 Istiod 如何把 Kubernetes 资源变成 ztunnel 配置
+
+Istiod 监听 Kubernetes API 的变化，将 Pod、Service、EndpointSlice、Namespace 标签和策略合并成 ztunnel 使用的精简 xDS 资源。
+
+ztunnel 不使用 Envoy Sidecar 那套完整的 Listener、Route、Cluster 和 Endpoint 配置。可以将它主要接收的自定义配置理解成：
+
+```text
+Address
+├── Workload：描述一个 Pod 或 WorkloadEntry
+└── Service：描述一个 Service 或 ServiceEntry
+
+Authorization
+└── 描述由 ztunnel 执行的 L4 授权规则
+```
+
+一个简化后的 Workload 信息大致如下。它是帮助理解的数据结构，不是可以直接提交给 Kubernetes 的 YAML：
+
+```yaml
+workload:
+  name: user-v1-7d9c8f
+  namespace: default
+  address: 10.0.1.11
+  node: node-a
+  serviceAccount: user-service
+  identity: spiffe://cluster.local/ns/default/sa/user-service
+  protocol: HBONE
+  waypoint: null
+```
+
+其中 `identity` 可以根据 Istio 信任域、Namespace 和 ServiceAccount 得到：
+
+```text
+spiffe://<trust-domain>/ns/<namespace>/sa/<service-account>
+```
+
+Service 配置则让 ztunnel 知道 Service VIP、端口、Endpoint 以及绑定的 Waypoint。源 ztunnel 依靠这些信息把原始目标地址还原成 Service 或具体 Workload，并决定直接转发、建立 HBONE，还是先进入 Waypoint。[Istio ztunnel 架构与 xDS 资源](https://github.com/istio/istio/blob/master/architecture/ambient/ztunnel.md#configuration-protocol)
+
+#### 4.3.3 ztunnel 如何告诉 Istiod“我属于 Node A”
+
+ztunnel 以 DaemonSet 运行，每个节点通常一个 Pod。ztunnel Pod 使用 Kubernetes Downward API 把自己的调度节点写入环境变量：
+
+```yaml
+env:
+  - name: NODE_NAME
+    valueFrom:
+      fieldRef:
+        fieldPath: spec.nodeName
+```
+
+因此 Node A 上的 ztunnel 启动时知道：
+
+```text
+自己的 Pod 名称和 Namespace
+自己的 ServiceAccount
+自己的 NODE_NAME=node-a
+自己的网络和集群标识
+Istiod 的 xDS/CA 地址
+```
+
+ztunnel 使用自己的凭据连接 Istiod。Istiod 知道这个 xDS 客户端是哪一个 ztunnel，ztunnel 也知道自己的本地节点名。收到 Workload 配置后，它可以比较：
+
+```text
+Workload.node == NODE_NAME
+```
+
+匹配的 Workload 才属于本节点，也只有这些本地工作负载的 ServiceAccount 身份进入证书获取集合。
+
+#### 4.3.4 为什么 xDS 中还需要远端工作负载
+
+“识别本节点身份”不表示 ztunnel 只接收本节点 Workload。源 ztunnel 还必须知道远端目标才能转发。
+
+例如 Istiod 下发以下配置：
+
+| Workload | Node | Pod IP | ServiceAccount | 本节点 ztunnel 是否可为其取证书 |
+| --- | --- | --- | --- | --- |
+| `user-v1` | `node-a` | `10.0.1.11` | `user-service` | Node A：可以 |
+| `payment-v1` | `node-a` | `10.0.1.12` | `payment-service` | Node A：可以 |
+| `order-v1` | `node-b` | `10.0.2.21` | `order-service` | Node A：不可以 |
+
+Node A 的 ztunnel 需要知道 `order-v1` 的地址、节点、身份和 HBONE 能力，才能把 user 的请求发送到正确目标并验证目标证书；但它不能因此获得 `order-service` 的私钥和证书。
+
+```text
+xDS 可见范围
+└── 包含完成路由所需的本地和远端 Workload/Service 信息
+
+证书申请权限
+└── 只包含实际运行在本节点的工作负载身份
+```
+
+#### 4.3.5 Pod 创建、迁移和删除时如何更新
+
+以新建 user Pod 为例：
+
+```mermaid
+sequenceDiagram
+    participant S as Kubernetes Scheduler
+    participant API as Kubernetes API
+    participant I as Istiod
+    participant Z as Node A ztunnel
+
+    S->>API: 将 user Pod 调度到 node-a<br/>写入 spec.nodeName
+    API->>API: kubelet/CNI 更新 Pod IP 等状态
+    API-->>I: Pod、EndpointSlice 等资源发生变化
+    I->>I: 计算 Workload、Service、Authorization 配置
+    I-->>Z: 通过增量 xDS 下发新增或更新
+    Z->>Z: 建立 Pod IP → Workload → Identity 映射
+    Z->>Z: 发现新的本地 ServiceAccount 身份
+    Z->>I: 预取或在首次请求时获取短期证书
+```
+
+Pod 删除或被重新调度时，Istiod 会根据 Kubernetes 变化更新 xDS。ztunnel 随之移除或更新 Workload 映射，不再把已经离开本节点的 Pod 当成本地工作负载。证书是按唯一 ServiceAccount 身份管理的；同一节点的多个 Pod 使用相同 ServiceAccount 时，不需要为每个 Pod 保存一种不同身份。
+
+这一步只解决“ztunnel 应该代表谁”的发现问题。xDS 中的 Workload 身份配置不是证书本身，也不包含其他 Pod 的 ServiceAccount Token 或私钥；证书仍要经过下一节的 CA 授权和签发流程获得。[Istio Ambient 控制面](https://istio.io/latest/docs/ambient/architecture/control-plane/)、[ztunnel 配置排查](https://istio.io/latest/docs/ambient/usage/troubleshoot-ztunnel/#viewing-ztunnel-proxy-state)
+
+### 4.4 Istiod 为什么允许 ztunnel 申请别人的身份
 
 ztunnel 的确是在“为另一个工作负载申请证书”，因此控制面必须限制它可以申请的范围：
 
@@ -336,7 +507,7 @@ sequenceDiagram
 
 但这不是说风险为零。ztunnel 会持有本节点工作负载的私钥材料，节点或 ztunnel 被攻破时，本节点工作负载身份都可能受到影响，所以节点安全仍然是 Ambient 的重要信任边界。[Istio 安全模型](https://istio.io/latest/docs/ops/deployment/security-model/#proxy-compromise-ztunnel)
 
-### 4.4 不经过 Waypoint 时如何验证 user 工作负载
+### 4.5 不经过 Waypoint 时如何验证 user 工作负载
 
 只有 ztunnel 的 L4 安全路径是：
 
@@ -379,7 +550,7 @@ source.principal = cluster.local/ns/default/sa/user-service
 
 然后它可以执行只依赖来源身份、Namespace、IP、目标端口等属性的 L4 授权策略。
 
-### 4.5 经过 Waypoint 时身份如何变化
+### 4.6 经过 Waypoint 时身份如何变化
 
 如果 `order-service` 绑定了 `order-waypoint`，请求会建立两段独立的 HBONE/mTLS：
 
@@ -414,7 +585,7 @@ Waypoint 不会在第二段连接中冒充原始 user 工作负载。它用自�
 - 需要根据原始 `user-service` 身份做判断的策略，应附加到目标 Service，由 Waypoint 执行；
 - 目标 Pod 上由 ztunnel 执行的 L4 策略，可以只允许 `order-waypoint` 身份进入，从而防止客户端绕过 Waypoint。
 
-### 4.6 如何强制请求不能绕过 Waypoint
+### 4.7 如何强制请求不能绕过 Waypoint
 
 仅给 Service 添加 `istio.io/use-waypoint` 表示路由意图。若 Waypoint 的 L7 安全策略是强制安全边界，还应在目标工作负载的 ztunnel 上增加 L4 策略，只允许 Waypoint 的身份访问。
 
@@ -440,7 +611,7 @@ spec:
 
 这条策略由目标节点 ztunnel 执行。客户端直接连接 order Pod 时，来源身份是客户端自身，不是 `order-waypoint`，因此会被拒绝；正常经过 Waypoint 的第二段连接则可以通过。[Istio：强制流量经过 Waypoint](https://istio.io/latest/docs/ambient/usage/waypoint/#enforce-use-of-waypoints)
 
-### 4.7 Ambient 中 PeerAuthentication 的含义
+### 4.8 Ambient 中 PeerAuthentication 的含义
 
 `PeerAuthentication` 仍由目标 ztunnel 执行：
 
@@ -462,7 +633,7 @@ Ambient 工作负载默认可能同时接受 HBONE/mTLS 和来自网格外的明
 
 Ambient 的 ztunnel 会根据目标工作负载能力自动把连接升级为 HBONE/mTLS，并按目标工作负载身份进行验证。不要用“调用方 Sidecar 的 `DestinationRule.trafficPolicy.tls`”去解释 Ambient，因为 Ambient 业务 Pod 中根本没有调用方 Sidecar。
 
-### 4.8 如何确认 Ambient 确实验证了工作负载
+### 4.9 如何确认 Ambient 确实验证了工作负载
 
 先检查工作负载是否进入 Ambient，以及协议是否为 HBONE：
 
