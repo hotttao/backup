@@ -65,6 +65,26 @@ flowchart LR
     M1 -. Stream / Consumer Placement .-> N
 ```
 
+下面以 Publisher 向 Subject **orders.created** 发布 order-42 为例。
+
+### 生产消息的过程
+
+1. Publisher 连接任一 NATS Server，并向 orders.created 发布消息。
+2. NATS 路由层找到订阅该 Subject 的 JetStream Stream，消息最终到达 Stream Leader。
+3. Stream Leader 通过自己的 Raft 组复制消息。
+4. 达到提交条件后，JetStream 向 Publisher 返回发布确认（PubAck）。
+
+Meta Raft 负责 Stream 和 Consumer 的放置等集群元数据，不保存这条业务消息。
+
+### 消费消息的过程
+
+1. **inventory** Durable Consumer 从自己的 Sequence 继续读取。
+2. Consumer Leader 把消息交给 Pull 或 Push Consumer，并记录 Pending Ack。
+3. 应用完成库存事务后发送 ACK。
+4. JetStream 更新该 Durable Consumer 的消费状态；未 ACK 的消息可以再次投递。
+
+Stream 数据状态和 Consumer 消费状态是不同的 Raft 状态，具体复制与故障行为在后文解释。
+
 JetStream 不是“整个集群一个 Raft 组”。集群元数据、每个 Stream 和持久 Consumer 分别维护状态；客户端连接到任一 NATS Server，消息最终路由到对应 Stream Leader。增加副本提高容错，但不会提高单个 Stream 的写吞吐。
 
 ## 2. 如何“分区”并保证顺序

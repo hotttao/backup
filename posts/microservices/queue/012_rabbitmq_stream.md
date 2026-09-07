@@ -38,39 +38,6 @@ Stream 更适合：
 
 ## 2. 完整生产架构
 
-这张架构图直接按照一条消息的处理顺序组织组件，不再先堆控制面术语。
-
-假设订单系统把 **order-42 created** 发布到三分区 Super Stream **orders**，库存服务的消费组名是 **inventory-service**。完整过程只有七步：
-
-```mermaid
-flowchart LR
-    P["1. Producer\n消息 + Partition Key"]
-    D["2. 发现拓扑\nBootstrap Node + Metadata Store"]
-    R["3. 选择分区\nSuper Stream + Bindings"]
-    W["4. 写入并返回 Confirm\nPartition Leader + Replicas"]
-    C["5. 读取分区\nComposite Consumer + SAC"]
-    B["6. 执行业务\nActive Consumer + 业务数据库"]
-    O["7. 保存进度\nPartition Stored Offset"]
-    SC["Stream Coordinator\n创建、故障和成员变更时协调"]
-
-    P --> D --> R --> W --> C --> B --> O
-    SC -.-> W
-```
-
-| 步骤 | 涉及的组件 | 这一阶段解决的问题 |
-|---|---|---|
-| 1. 发布 | Producer | 提供消息、业务分区 Key 和发布序号 |
-| 2. 发现 | Bootstrap Node、Metadata Store | 告诉客户端有哪些分区，以及 Leader/Replica 在哪里 |
-| 3. 路由 | Super Stream、Exchange、Bindings、Stream Client | 根据业务 Key 选择一条普通 Stream |
-| 4. 写入 | Partition Leader、Replicas | 追加消息、复制到多数副本并返回 Confirm |
-| 5. 读取 | Composite Consumer、Single Active Consumer | 订阅所有分区，并确定每个分区由哪个实例读取 |
-| 6. 处理 | Active Consumer、业务数据库 | 真正完成库存扣减等业务 |
-| 7. 推进 | Stored Offset | 记录该消费组在这个分区处理到哪里 |
-
-### 2.1 完整生产架构图
-
-流程图回答“消息怎么走”，下面这张架构图回答“这些组件部署在哪里、彼此是什么关系”：
-
 ```mermaid
 flowchart TB
     subgraph Clients[客户端]
@@ -102,182 +69,53 @@ flowchart TB
     SS --> PS
     SC -.-> PS
     SAC -.-> CC
-    P -->|"发现后写目标分区"| PS
+    P -->|"写目标分区"| PS
     PS -->|"投递分区消息"| CC
     CC -->|"保存消费进度"| OS
 ```
 
-图中没有为三个分区分别展开六条复制线，而是把 Leader/Replicas 写进 Partition Streams 节点。这样仍然保留了生产架构的五层：客户端、接入、控制面、逻辑拓扑和数据面。
+图中实线表示正常的消息生产、投递和进度保存，虚线表示拓扑发现或协调关系。下面只用一条订单消息说明两条主流程。
 
-后面的术语沿着前面的七步流程解释，并与这张架构图中的组件一一对应。
+### 2.1 生产消息的过程
 
-### 2.2 第一步：Producer 发布消息
+假设 Producer 把订单事件 **order-42 created** 发布到三分区 Super Stream **orders**：
 
-Producer 准备一条消息：
-
-```text
-Super Stream: orders
-Partition Key: order-42
-Event: order.created
-Producer Name: order-service
-Publishing ID: 105
-```
-
-各字段的作用是：
-
-- **Super Stream Name** 指定逻辑事件流；
-- **Partition Key** 决定消息进入哪一个分区，同一订单要稳定使用同一个 Key；
-- **Producer Name + Publishing ID** 标识该 Producer 的发布序列，用于识别重试产生的重复发布；
-- 消息正文保存真正的订单事件。
-
-Producer 此时只知道逻辑名称 **orders**，不应该把某个 RabbitMQ 节点地址永久当成固定 Leader。
-
-### 2.3 第二步：连接入口并发现拓扑
-
-Producer 或 Consumer 先连接 Load Balancer 后面的任一 RabbitMQ 节点。这个节点称为 **Bootstrap Node**，作用是让客户端进入集群并取得拓扑：
+1. **发现拓扑**：Producer 先通过 Load Balancer 连接任一 Bootstrap Node，得到 orders 有哪些 Partition，以及各自的 Leader 地址。
+2. **选择分区**：Stream 客户端根据 Partition Key **order-42** 选择 **orders-1**。Super Stream 的 Exchange 和 Bindings 在这里描述分区关系。
+3. **写入消息**：Producer 随后连接 orders-1 的 Leader。Leader 为消息确定位置，并复制到该分区的 Replicas。
+4. **返回成功**：达到 Stream 的复制条件后，Leader 向 Producer 返回 Publish Confirm。
 
 ```text
-orders 有三个分区：
-orders-0 -> Leader Node 1
-orders-1 -> Leader Node 2
-orders-2 -> Leader Node 3
+Producer
+  -> Bootstrap Node 发现拓扑
+  -> order-42 路由到 orders-1
+  -> orders-1 Leader
+  -> Replicas
+  -> Publish Confirm
 ```
 
-这里涉及两个概念：
+Publish Confirm 只表示 RabbitMQ 已接管消息，不表示下游库存业务已经完成。具体复制和 Confirm 条件在后文说明。
 
-- **Metadata Store** 保存 Super Stream、Exchange、Bindings 和普通 Stream 的定义；
-- **Bootstrap Node** 把客户端需要的分区以及 Leader/Replica 地址返回给客户端。
+### 2.2 消费消息的过程
 
-Bootstrap Node 只是入口，不一定保存目标分区，也不一定是目标 Leader。拓扑发现通常发生在客户端初始化、连接恢复或拓扑变化时，不是每条消息都重新查询一次。
+假设库存服务使用 Consumer Name **inventory-service** 消费 orders：
 
-### 2.4 第三步：选择一个 Partition
-
-**Super Stream 不是新的消息文件**，而是多条普通 Stream 的逻辑组合：
+1. **建立订阅**：Composite Consumer 发现 orders 的三个 Partition，并在内部为每个 Partition 创建一个 Consumer。
+2. **选择活动实例**：多个库存服务实例开启 Single Active Consumer（SAC）后，RabbitMQ 为每个 Partition 只激活一个同名 Consumer。假设当前实例负责 orders-1。
+3. **继续读取**：该 Consumer 从 orders-1 最近保存的 Stored Offset 之后继续读取，收到 order-42。
+4. **完成业务**：Consumer 提交库存事务，然后保存 orders-1 的新 Offset。
 
 ```text
-orders
-├── orders-0
-├── orders-1
-└── orders-2
+Composite Consumer
+  -> orders-1 的活动 Consumer
+  -> 从 Stored Offset 后读取 order-42
+  -> 库存事务提交
+  -> 保存 orders-1 的新 Offset
 ```
 
-RabbitMQ 用一个 Direct Exchange 和若干 Bindings 描述这组关系。对于专用 Stream 客户端，它们主要是**拓扑与路由规则**，并不保存消息。
+Stored Offset 记录的是这个 Consumer 在这个 Partition 上的进度。业务已经提交但 Offset 尚未保存时发生故障，消息可能被再次处理，因此应用仍需幂等。
 
-客户端对 **order-42** 计算路由，假设结果是 **orders-1**：
-
-```text
-hash(order-42) -> orders-1
-```
-
-客户端随后连接 **orders-1 的 Leader**。同一 Key 能否保持顺序，首先取决于它是否始终落到同一个 Partition；改变分区数或 Hash 规则可能破坏这个条件。
-
-### 2.5 第四步：Leader 追加、复制并返回 Confirm
-
-**orders-1 本身是一条普通 Stream**，它有一个 Leader 和多个 Replicas：
-
-```text
-orders-1
-├── Leader:  Node 2
-├── Replica: Node 1
-└── Replica: Node 3
-```
-
-写入过程是：
-
-1. Leader 接收 order-42；
-2. Leader 把消息追加到自己的顺序日志；
-3. Leader 把相同日志复制给 Replicas；
-4. 达到确认条件后，Leader 向 Producer 返回 Publish Confirm。
-
-所以：
-
-- **Leader** 是这条 Partition Stream 的唯一主写入者，负责确定消息位置；
-- **Replica** 保存同一日志副本，用于节点故障后的恢复和切主；
-- **Publish Confirm** 表示 RabbitMQ 已按 Stream 的复制规则接管这次发布，不代表 Consumer 已处理业务。
-
-每个分区有自己的 Leader。orders-1 的 Leader 在 Node 2，不影响 orders-0 在 Node 1 同时写入。
-
-### 2.6 第五步：确定哪个 Consumer 读取
-
-库存服务使用一个 **Composite Consumer** 消费 orders。它是客户端库创建的组合对象，内部为每个分区建立一个普通 Consumer：
-
-```text
-Composite Consumer: inventory-service
-├── Consumer for orders-0
-├── Consumer for orders-1
-└── Consumer for orders-2
-```
-
-如果只运行一个库存服务实例，这三个内部 Consumer 可以并行读取三个分区。
-
-如果运行多个库存服务实例，需要决定它们是“各自读取完整历史”，还是“共同分担一次处理”：
-
-- 不开启 **Single Active Consumer**：每个实例都可以读取所有分区，同一事件会被各实例分别处理；
-- 使用相同 Consumer Name 并开启 **Single Active Consumer（SAC）**：RabbitMQ 对每个分区只激活一个实例，其余实例待命。
-
-SAC 不是单独部署的服务。它是一条服务端规则：
-
-```text
-(orders-1, inventory-service) -> 同一时刻一个 Active Consumer
-```
-
-orders-0 和 orders-2 可以由其他实例同时消费，所以 SAC 保证的是**消费组内每个分区单活**，不是整个 Super Stream 只有一个 Consumer。
-
-### 2.7 第六、七步：处理业务并保存 Offset
-
-orders-1 的活动 Consumer 从上次进度后继续读取。假设最近保存的是 Offset 98：
-
-```text
-读取 Offset 99
-    -> 扣减库存
-    -> 库存事务提交
-    -> 保存 orders-1 的 Offset 99
-```
-
-**Stored Offset** 表示某个命名 Consumer 在某条普通 Stream 上处理到哪里。使用 RabbitMQ 服务端 Offset Tracking 时，它作为非消息记录保存在对应 Stream 内。
-
-Super Stream 因此没有一个全局 Offset，而是一组分区进度：
-
-```text
-inventory-service
-├── orders-0 -> Offset 120
-├── orders-1 -> Offset 99
-└── orders-2 -> Offset 135
-```
-
-正确顺序通常是先提交业务，再保存 Offset。如果业务已经提交、Offset 尚未保存时 Consumer 崩溃，接管者会再次读到这条消息。因此 Stored Offset 提供恢复位置，不提供 exactly-once；业务仍需幂等。
-
-### 2.8 Stream Coordinator 什么时候出现
-
-**Stream Coordinator 不在每条消息的正常发布和消费路径上。**
-
-它是 RabbitMQ 内部的协调组件，主要在这些时刻工作：
-
-- 创建或删除一条 Stream；
-- 在节点上启动 Leader 和 Replica；
-- Leader 节点故障，需要协调成员恢复；
-- 增加、删除或重启 Replica；
-- 协调 Single Active Consumer 的活动实例变化。
-
-可以把职责简化为：
-
-| 组件 | 类比 | 负责什么 |
-|---|---|---|
-| Metadata Store | 配置账本 | 记录有哪些 Stream、Exchange 和 Bindings |
-| Stream Coordinator | 管理员 | 协调成员在哪运行、故障后如何恢复 |
-| Stream Leader | 日志写入者 | 接收并追加每一条消息 |
-| Replica | 日志副本 | 保存复制数据并参与故障恢复 |
-| Composite Consumer | 客户端订阅集合 | 为每个分区创建一个 Consumer |
-| Single Active Consumer | 值班规则 | 每个分区只让一个同组 Consumer 工作 |
-| Stored Offset | 消费书签 | 记录每个分区处理到哪里 |
-
-正常消息主链路是：
-
-```text
-Producer -> Partition Leader -> Replicas -> Active Consumer -> 业务系统 -> Stored Offset
-```
-
-Metadata Store 和 Stream Coordinator 负责让这条链路建立并在故障后恢复，但不会逐条处理业务消息。
+Stream Coordinator 主要在创建 Stream、成员变化和故障恢复时参与协调，不经过每一条消息。后续章节再分别展开 Stream、复制、SAC、Offset 和故障恢复。
 
 ## 3. 核心抽象与语义
 

@@ -37,49 +37,7 @@ Pulsar 同时提供消息队列和事件流能力，典型优势是：
 
 它不是“没有状态的简单 Broker”。Broker 不保存消息本体，但仍持有 Topic 会话、缓存、分发器和临时所有权；BookKeeper、元数据存储、AutoRecovery 中任何一层设计错误，都会影响整体可靠性。
 
-## 2. 从一条消息看完整生产架构
-
-先看订单事件 `order-42 created` 从生产到消费完成的过程：
-
-```mermaid
-flowchart LR
-    P["1. Producer Lookup"] --> B["2. Owner Broker 接收"]
-    B --> K["3. BookKeeper Client 写多个 Bookie"]
-    K --> C["4. Broker 返回成功"]
-    C --> D["5. Subscription 投递"]
-    D --> A["6. 业务完成后 ACK"]
-    A --> O["7. Cursor 推进"]
-```
-
-| 步骤 | 涉及组件 | 作用 |
-|---|---|---|
-| 1. 找到入口 | Producer、DNS/LB、可选 Proxy、Broker Lookup | 找到目标 Topic Partition 当前的 Owner Broker |
-| 2. 接收消息 | Owner Broker、Topic Partition | Owner 是该分区此刻的服务入口和唯一写入协调者，但不保存最终消息副本 |
-| 3. 持久化 | Broker 内的 BookKeeper Client、Managed Ledger、Bookies | Client 把消息封装成 Entry，按 Ledger Metadata 选择多个 Bookie 并统计 Ack Quorum |
-| 4. 返回成功 | Bookie Journal、Ack Quorum、Broker | 足够 Bookie 完成持久化确认后，Broker 才向 Producer 返回成功 |
-| 5. 投递消息 | Dispatcher、Subscription、Consumer | 每份 Subscription 拥有独立消费视图，Dispatcher 按订阅类型选择 Consumer |
-| 6. 执行业务 | Consumer、业务数据库 | 真正完成库存扣减等业务副作用 |
-| 7. 保存进度 | ACK、Managed Cursor | Broker 持久化该 Subscription 的确认位置，形成积压和恢复边界 |
-
-假设 `orders-partition-1` 当前属于 Broker 2：
-
-```text
-Producer
-  → Lookup 得到 Broker 2
-  → Broker 2 的 BookKeeper Client
-  → Bookie 1、2、3 写入 Entry
-  → 达到 Ack Quorum
-  → Producer 收到成功
-  → inventory-subscription 的 Consumer 读取
-  → 库存事务提交
-  → ACK 推进 Managed Cursor
-```
-
-Broker ACK 只证明消息达到 BookKeeper 的确认条件，不表示库存业务完成。Consumer 的 ACK 才推进该 Subscription 的 Cursor；业务提交后、ACK 前崩溃会导致重复投递，因此仍需幂等。
-
-Load Manager、Metadata Store 和 AutoRecovery 通常不逐条处理消息：Load Manager 决定 Namespace Bundle 由哪个 Broker 服务；Metadata Store 保存所有权和 Ledger 等元数据；AutoRecovery 在 Bookie 故障后修复欠副本 Fragment。
-
-下面再展开完整组件图：
+## 2. 完整生产架构
 
 ```mermaid
 flowchart TB
@@ -153,6 +111,26 @@ flowchart TB
     ML -->|封闭 Segment 异步下沉| TS
     B3 -->|异步跨集群复制| RC
 ```
+
+图中先展示完整部署关系。下面以 **order-42 created** 为例，只说明一次生产和消费分别经过哪些组件。
+
+### 生产消息的过程
+
+1. Producer 通过 DNS、Load Balancer 或 Proxy Lookup，找到目标 Topic Partition 的 Owner Broker。
+2. Owner Broker 接收消息，并由进程内的 BookKeeper Client 把消息作为 Entry 写入多个 Bookie。
+3. 足够 Bookie 返回持久化确认后，Broker 向 Producer 返回成功。
+4. 消息正文保存在 Bookie 中；Broker 负责协调写入，但不是最终消息副本。
+
+Metadata Store 保存所有权和 Ledger 等元数据，AutoRecovery 负责故障后的欠副本修复，它们不逐条转发消息。
+
+### 消费消息的过程
+
+1. **inventory-subscription** 的 Consumer 连接该 Topic Partition 的 Owner Broker。
+2. Broker 的 Dispatcher 从缓存或 BookKeeper 读取 order-42，并按 Subscription 类型投递。
+3. Consumer 完成库存事务后发送 ACK。
+4. Broker 推进并持久化该 Subscription 的 Managed Cursor。
+
+Producer 成功与 Subscription 消费成功相互独立；BookKeeper Quorum、Cursor 和故障恢复在后文解释。
 
 图中实线主要表示数据流，虚线表示控制或元数据流。首先要区分两个名字：
 

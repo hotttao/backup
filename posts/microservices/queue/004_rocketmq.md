@@ -34,46 +34,7 @@ RocketMQ 更接近“面向业务事件的分布式消息系统”，典型场�
 
 它既不是复杂 AMQP 路由器，也不是以超长历史回放和流计算生态为第一目标的事件日志。选型的核心问题不是“RocketMQ 有没有这个功能”，而是它提供的抽象是否正好对应业务边界。
 
-## 2. 从一条消息看完整生产架构
-
-先看订单事件 `order-42 created` 从生产到消费完成的过程：
-
-```mermaid
-flowchart LR
-    P["1. Producer 发布"] --> R["2. 找到 Broker 和 MessageQueue"]
-    R --> W["3. Master 保存并复制"]
-    W --> C["4. Consumer 获取消息"]
-    C --> B["5. 业务处理"]
-    B --> A["6. ACK 或进入重试"]
-```
-
-| 步骤 | 涉及组件 | 作用 |
-|---|---|---|
-| 1. 发布 | Producer、可选 Proxy | Producer 提供 Topic、消息内容和 MessageGroup；Proxy 承担协议接入和流量治理 |
-| 2. 找路由 | NameServer、MessageQueue | NameServer 告诉客户端 Topic 位于哪些 Broker，MessageGroup/路由策略决定写入哪个逻辑队列 |
-| 3. 保存与确认 | Broker Master、CommitLog、Slave | Master 顺序追加消息，并按刷盘与复制配置决定何时向 Producer 返回成功 |
-| 4. 定位与投递 | Consumer Group、ConsumeQueue、Broker | 同组实例分担消息，ConsumeQueue 帮 Broker 找到 CommitLog 中的正文位置 |
-| 5. 执行业务 | Consumer、业务数据库 | 真正完成库存扣减、通知发送等副作用 |
-| 6. 确认结果 | Consumer ACK、消费进度、Retry/DLQ | 成功则推进组进度；失败或超时则重试，超过限制后进入死信队列 |
-
-以顺序消息为例，`order-42` 作为 MessageGroup，使同一订单事件稳定进入同一顺序通道：
-
-```text
-Producer
-  → 查询 Topic 路由
-  → order-42 对应的 MessageQueue
-  → Master CommitLog
-  → Slave 复制
-  → Producer 收到发送成功
-  → inventory-group 的一个 Consumer 处理
-  → 成功 ACK，或失败进入重试
-```
-
-发送成功只表示 Broker 按当前刷盘、复制配置接管了消息，不表示库存业务已经完成。Consumer 收到消息也不是完成点，只有业务成功后返回 ACK，Broker 才能推进该消费组的进度。
-
-Controller 不处理每一条消息。它在 Master 故障或成员状态变化时维护 Master、Epoch 和 SyncStateSet 等选主状态；NameServer 负责让客户端找到 Broker，但不判断消息是否已经提交。
-
-下面再展开完整组件图：
+## 2. 完整生产架构
 
 ```mermaid
 flowchart TB
@@ -132,6 +93,26 @@ flowchart TB
     C1 -.Master / Epoch / SyncStateSet.-> A
     C1 -.Master / Epoch / SyncStateSet.-> B
 ```
+
+图中先展示完整部署关系。下面以顺序消息 **order-42 created** 为例，只说明一次生产和消费分别经过哪些组件。
+
+### 生产消息的过程
+
+1. Producer 通过 Proxy 接入，并从 NameServer 获得 **order-events** Topic 的 Broker 路由。
+2. MessageGroup **order-42** 使同一订单稳定进入同一 MessageQueue。
+3. Broker Master 把消息追加到 CommitLog，并按配置刷盘、复制给 Slave。
+4. 达到当前刷盘和复制条件后，Broker 向 Producer 返回发送成功。
+
+NameServer 只负责找路由，Controller 只在选主等控制过程参与，它们都不保存这条业务消息。
+
+### 消费消息的过程
+
+1. **inventory-group** 的一个 Consumer 从目标 MessageQueue 获取消息。
+2. Broker 通过 ConsumeQueue 找到 CommitLog 中的消息正文并投递。
+3. Consumer 完成库存事务后返回 ACK。
+4. 成功则推进消费进度；失败或超时则进入重试，超过限制后进入死信队列。
+
+发送成功与消费成功是两个时间点；具体刷盘、复制和 ACK 语义在后文解释。
 
 各组件只解决自己的问题：
 

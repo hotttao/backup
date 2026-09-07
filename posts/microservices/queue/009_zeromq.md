@@ -53,6 +53,26 @@ flowchart LR
     S[持久化 / 副本 / 位点\nZeroMQ 不提供] -. 需要应用或外部系统实现 .-> PB
 ```
 
+下面以进程 A 向进程 B 发送 order-42 为例。ZeroMQ 没有独立 Broker，所以“生产”和“消费”都发生在应用进程内。
+
+### 生产消息的过程
+
+1. 进程 A 的业务线程把消息交给 ZeroMQ Socket。
+2. Socket 把消息放入对应连接的内存队列；HWM 限制队列最多积压多少。
+3. I/O Thread 通过 TCP、IPC 或 inproc 把消息发送给进程 B。
+4. send 调用成功通常只代表 ZeroMQ 接受了消息，不代表进程 B 已完成业务，更不代表消息已经持久化。
+
+服务发现、端点选择以及断线后的处理策略都由应用负责。
+
+### 消费消息的过程
+
+1. 进程 B 的 I/O Thread 收到数据并放入本地内存队列。
+2. ZeroMQ Socket 把消息交给业务线程。
+3. 业务线程处理 order-42。
+4. 如果需要业务 ACK、重试、去重、持久化或消费位点，应用必须自己设计协议，或使用外部系统。
+
+因此 ZeroMQ 提供的是高效通信，不提供传统消息队列的持久消费完成语义。
+
 图中的核心事实是：没有独立 ZeroMQ Broker、元数据集群、持久存储或副本组。Socket、I/O 线程和消息缓冲都在应用进程里；Proxy 也只是开发者用 ZeroMQ 编写的普通进程。
 
 因此它减少了基础设施层级，也把服务发现、消息协议、故障检测、持久化和恢复责任交给了应用。
@@ -99,4 +119,3 @@ ZeroMQ 的核心优势是少一层 Broker 和极强的拓扑自由；核心局�
 - [ZeroMQ Guide：Reliable Request-Reply Patterns](https://zguide.zeromq.org/docs/chapter4/)
 - [ZeroMQ Guide：Advanced Pub-Sub Patterns](https://zguide.zeromq.org/docs/chapter5/)
 - [ZeroMQ RFC 18：Majordomo Protocol](https://rfc.zeromq.org/spec/18/)
-

@@ -24,11 +24,6 @@ Redis Stream 是 Redis Key 对应的追加日志，不是独立的分布式消�
 
 ## 1. 完整架构
 
-有两种常见形态：
-
-- 不分片：一个 Master、至少一个 Replica、3 个 Sentinel；适合容量和吞吐能由单主承担的场景；
-- 分片：Redis Cluster 至少 3 个 Master，每主至少一个 Replica，形成常见的 6 节点基线。
-
 ```mermaid
 flowchart LR
     P[Producer] -->|XADD / Slot 路由| M1
@@ -54,6 +49,28 @@ flowchart LR
     R2 -. 候选接管 .-> V
     R3 -. 候选接管 .-> V
 ```
+
+Redis Streams 常见部署有两种：单 Master 配合 Replica 和 Sentinel，或由 Redis Cluster 将不同 Stream Key 分布到不同 Slots。图中展示的是分片形态。
+
+下面以向 Stream Key **orders** 写入 order-42 为例。
+
+### 生产消息的过程
+
+1. Producer 对 orders Key 计算 Cluster Slot，找到负责该 Slot 的 Primary 1。
+2. Producer 执行 XADD，Primary 把新 Entry 追加到 orders Stream。
+3. 本机持久性由 AOF/RDB 配置决定，Primary 再异步复制给 Replica。
+4. Primary 执行成功后向 Producer 返回消息 ID。
+
+这个成功默认不是多数副本提交；主从切换时是否保留该消息取决于复制进度。
+
+### 消费消息的过程
+
+1. **inventory-group** 使用 XREADGROUP 读取新 Entry。
+2. Redis 把该消息记录到这个 Consumer Group 的 PEL，表示已经交付但尚未确认。
+3. Consumer 完成库存事务后执行 XACK。
+4. XACK 从 PEL 中移除待确认状态，但不会立即删除 Stream 中的 Entry。
+
+PEL、消息保留和主从复制是三类不同状态，后文分别解释。
 
 AOF/RDB 决定本机重启后还剩什么，Replica 决定主节点故障后由谁接管，Cluster Bus 决定谁有权接管。三者职责不同，而且都不会把异步复制变成每条写入的多数派共识。
 

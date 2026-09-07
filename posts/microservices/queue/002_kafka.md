@@ -90,6 +90,26 @@ flowchart LR
     Q1 -.-> B3
 ```
 
+图中先展示完整部署关系。下面以订单事件 **order-42 created** 为例，只说明一次生产和消费分别经过哪些组件。
+
+### 生产消息的过程
+
+1. Producer 从 Broker 获取 **orders** Topic 的 Partition 和 Leader 元数据。
+2. Producer 根据 Key **order-42** 选择 Partition P0，并把消息发给 P0 Leader。
+3. Leader 追加消息，ISR（同步副本集合）中的 Followers 拉取同一日志。
+4. 满足 Producer 的 **acks** 和 Topic 的最小 ISR 条件后，Leader 返回成功。
+
+Producer 收到 ACK，只表示 Kafka 已接管消息，不表示库存业务已经完成。
+
+### 消费消息的过程
+
+1. **inventory-group** 加入 Consumer Group，Group Coordinator 把 P0 分配给其中一个 Consumer。
+2. Consumer 从自己的 Offset 开始向 P0 Leader Fetch，读取 order-42。
+3. Consumer 完成库存事务。
+4. Consumer 把下一次读取位置提交到 **__consumer_offsets**。
+
+业务提交后、Offset 提交前故障会导致重复消费；详细的 ISR、HW 和故障边界在后文解释。
+
 这张图包含四类不同状态：
 
 1. **集群元数据**：Broker、Topic、Partition、副本分配、Leader 和 ISR，由 KRaft Controller Quorum 维护；

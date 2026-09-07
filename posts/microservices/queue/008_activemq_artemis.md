@@ -51,6 +51,26 @@ flowchart LR
     SS[Shared Store\nReplication 的替代 HA 方案] -. Primary 与 Backup 共用 .-> H
 ```
 
+下面以订单事件从 Address **orders** 路由到 Queue **inventory.q** 为例。
+
+### 生产消息的过程
+
+1. Producer 通过 AMQP 或 JMS 连接一个 Active Broker。
+2. Broker 根据 Address 和 Routing Type 把消息路由到 inventory.q。
+3. Broker 把消息写入 Journal；消息过多时可能进入 Paging，大消息使用独立存储。
+4. 使用 Replication HA 时，Primary 按配置同步给 Backup 后向 Producer 确认。
+
+Cluster Connection 负责 Broker 之间的路由与负载分布；Backup 负责某个 Primary 故障后的接管，两者不是同一件事。
+
+### 消费消息的过程
+
+1. inventory.q 把消息投递给一个 Consumer。
+2. Consumer 完成库存事务后发送 ACK。
+3. Broker 记录确认并结束这条 Queue 消息的待处理状态。
+4. Consumer 故障或未 ACK 时，消息可以重新投递；超过策略限制后可以进入死信地址。
+
+Producer 确认和 Consumer ACK 是两次独立的责任转移，后文再解释持久化与 HA 边界。
+
 生产部署通常由多个 Primary-Backup 对组成集群。Cluster Connection 负责横向路由，Backup 负责单个 Broker 的状态接管，Quorum Coordination 负责防止脑裂；部署了 Cluster 并不等于消息已经拥有 HA 副本。
 
 ## 2. 分区与顺序

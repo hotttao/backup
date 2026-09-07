@@ -85,6 +85,26 @@ flowchart TB
     Cluster -.拓扑元数据.-> MD
 ```
 
+下面以订单事件 **order.created** 路由到 Quorum Queue **inventory.q** 为例。
+
+### 生产消息的过程
+
+1. Publisher 通过 Connection 中的 Channel，把消息、Exchange 和 Routing Key 发给任一 RabbitMQ 节点。
+2. Exchange 根据 Binding 把 order.created 路由到 inventory.q。
+3. inventory.q 的 Leader 把消息复制到 Raft Followers。
+4. 达到 Quorum Queue 的提交条件后，RabbitMQ 向 Publisher 返回 Confirm。
+
+Exchange 负责决定消息去哪，不保存消息；真正保存待处理消息的是目标 Queue。
+
+### 消费消息的过程
+
+1. RabbitMQ 按 Prefetch 把 inventory.q 中的消息投递给一个 Consumer，并把它标记为 Unacked。
+2. Consumer 完成库存事务。
+3. Consumer 发送手动 ACK，RabbitMQ 结束这条消息的待处理状态。
+4. Consumer 断开或 NACK/Requeue 时，消息可以重新投递；拒绝、过期或超过限制时可以进入死信 Queue。
+
+Publisher Confirm 和 Consumer ACK 是两个独立时间点，复制、重试和顺序边界在后文解释。
+
 客户端可以连接任一 RabbitMQ 节点，但消息最终要到目标 Queue 所在节点或 Leader。集群有三个节点，不代表每条 Queue 都有三个消息副本：
 
 - Classic Queue 的消息通常只在承载节点；
