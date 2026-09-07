@@ -134,70 +134,93 @@ flowchart TB
 
 它只是一个便于理解的布局。Leader 位置由 Leader Locator 和实际集群状态决定，副本成员也应通过管理 API/CLI 验证，不能仅凭“创建时连接了哪台节点”猜测。
 
-### 1.2 Queue 与 Stream 分别使用什么组件复制
+### 1.2 RabbitMQ 的数据分类与一致性机制
 
-RabbitMQ 的 Quorum Queue 和 Stream 都依赖 Leader、Replica 和多数派，但不能因此认为它们使用完全相同的存储组件。
+先不要从 Raft、Osiris 等实现名词开始。部署 RabbitMQ 后，集群需要保存的持久数据可以先分成三类：
 
-| 对象 | 负责业务状态的组件 | 负责复制或协调的组件 | 一致性协议 | 副本网络 |
-|---|---|---|---|---|
-| Quorum Queue | `rabbit_fifo` Queue 状态机 | `Ra` 库 | Raft | RabbitMQ 节点间 Erlang Distribution，通常为 `25672` |
-| Stream 消息日志 | `Osiris` 追加日志 | Osiris Leader 与 Replica | Leader 驱动的多数派追加日志复制 | Stream Replication TCP，默认端口范围 `6000–6500` |
-| Stream 控制状态 | Stream Coordinator | `Ra` 库 | Raft | RabbitMQ 节点间通信 |
+- **集群与拓扑元数据**
+  - 解决的问题：集群里有哪些资源，这些资源如何连接。
+  - 保存的数据：Virtual Host、用户与权限、Exchange、Queue、Stream、Binding、Policy、Runtime Parameter。
+  - 使用的组件：Metadata Store。新建 RabbitMQ 4.2 集群默认使用 Khepri，升级集群也可能仍使用 Mnesia。
+  - 一致性机制：Khepri 使用 RabbitMQ `Ra` 库实现 Raft；Mnesia 使用自身的分布式复制机制，不是 Raft。
 
-客户端端口与副本协议也必须分开：
+- **Quorum Queue 数据与投递状态**
+  - 解决的问题：任务消息当前处于 Ready、已分配还是已经 Ack 等状态。
+  - 保存的数据：消息、Consumer、Credit、Ready/已分配状态、Ack/Reject 和投递次数。
+  - 使用的组件：`rabbit_fifo` 状态机与 `Ra`。
+  - 一致性机制：每条 Quorum Queue 是一个 Raft Group，通过 Raft 复制并由多数派提交。
+
+- **Stream 数据与消费协调状态**
+  - 解决的问题：日志里有哪些事件，以及当前由哪个 Consumer 实例读取。
+  - 保存的数据：消息日志、Offset Tracking Record、Stream 成员布局、Leader 生命周期和 SAC 活动成员。
+  - 使用的组件：数据面使用 `Osiris`，控制面使用 Stream Coordinator 与 `Ra`。
+  - 一致性机制：Osiris 使用 Leader 驱动的多数派日志复制；Coordinator 的控制状态使用 Raft。
+
+这三类数据的边界是：Metadata Store 保存“资源定义”，Queue 或 Stream 保存“资源里的业务数据”。例如，Metadata Store 知道 `fulfill.q` 是一条 Quorum Queue，但不会保存 `order-1001` 的消息正文。
+
+#### 1.2.1 集群与拓扑元数据：Metadata Store
+
+创建下面这些资源后：
 
 ```text
-AMQP 客户端      → 5672/5671 → RabbitMQ 接入节点
-Stream 客户端    → 5552/5551 → RabbitMQ Stream Plugin
-Queue Raft 副本  → 25672     → RabbitMQ 节点间 Erlang Distribution
-Stream 数据副本  → 6000-6500 → Osiris Stream Replication
+Virtual Host: /commerce
+Exchange:     order.events（topic）
+Queue:        fulfill.q（quorum）
+Binding:      order.events -- order.paid --> fulfill.q
+Stream:       order-events-0
 ```
 
-#### Quorum Queue：rabbit_fifo + Ra + Raft
+Metadata Store 保存的是这些资源的定义和关系，还包括用户、权限、Policy、Runtime Parameter 等集群配置。任一 RabbitMQ 节点收到声明或查询请求时，都需要依据这份元数据理解集群拓扑。
 
-`rabbit_fifo` 是 Queue 语义的状态机，理解“入队、Consumer 注册、分配消息、Ack、Reject、重新入队”等命令。`Ra` 是 RabbitMQ 团队实现的 Multi-Raft 库，负责 Leader 选举、日志复制、Commit Index、成员变更、Snapshot 和恢复。
+新建 RabbitMQ 4.2 集群默认使用 **Khepri**。Khepri 基于 RabbitMQ 的 `Ra` 库，以 **Raft** 复制元数据：Leader 排序变更，多数副本确认后提交。旧集群可能仍使用 **Mnesia**；Mnesia 有自己的分布式复制与网络分区处理方式，但不提供与 Khepri 相同的 Raft 提交模型。一个集群同一时刻只使用其中一种 Metadata Store 后端。
 
-以 `fulfill.q` 为例，它本身就是一个独立 Raft Group：
+#### 1.2.2 任务数据：Quorum Queue
+
+`fulfill.q` 自己组成一个 Raft Group，成员位于 `rmq-1/2/3`：
 
 ```text
-fulfill.q 的 rabbit_fifo 命令
-    enqueue order-1001
-    subscribe worker-2 credit=20
-    checkout order-1001 to worker-2
-    acknowledge order-1001
+rabbit_fifo 状态机理解 Queue 命令
+    入队 order-1001
+    注册 worker-2，Credit=20
+    把 order-1001 分配给 worker-2
+    确认 order-1001
               ↓
-Ra Leader on rmq-1
-              ↓ Raft 日志复制
-Ra Followers on rmq-2 / rmq-3
+Ra Leader：rmq-1
+              ↓ Raft 复制
+Ra Followers：rmq-2、rmq-3
 ```
 
-多数派提交的不只有消息正文，还包括 Consumer、Credit、消息分配和 Ack 等 Queue 状态。这就是 Leader 切换后新 Leader 能判断哪些消息 Ready、哪些仍是 Unacked 的原因。
+`rabbit_fifo` 定义 Queue 的业务状态，`Ra` 负责 Leader 选举、日志复制和多数派提交。复制的不只是消息正文，还包括恢复任务投递所需的 Consumer、Credit、消息分配与 Ack 状态。因此 Leader 切换后，新 Leader 能区分 Ready 与尚未确认的消息。
 
-对三成员 Quorum Queue，一项状态变化需要得到多数成员认可才能成为已提交历史。Publisher Confirm 还要求消息在多数成员上写入并刷到磁盘。它不是“主节点先返回、Follower 后台慢慢追”的普通异步主从复制。
+三副本 Quorum Queue 的 Publisher Confirm 以多数成员写入并刷盘为边界，不是 Leader 收到后立即返回、Follower 再异步追赶。
 
-#### Stream：Osiris 数据日志 + Stream Coordinator
+#### 1.2.3 事件日志：Stream
 
-Stream 的消息数据面由 `Osiris` 实现。Osiris 面向不可变追加日志：一个 Stream 有一个 Writer Leader 和多个 Replica，Leader 负责追加，Replica 复制相同的日志 Chunk。消息复制到多数 Stream Replica 后，RabbitMQ 才向 Producer 发送 Publish Confirm。
+Stream 内部再分成数据面和控制面：
+
+- `Osiris` 保存消息日志和 Consumer 主动保存的 Offset Tracking Record。一个分区有一个 Writer Leader 和多个 Replica，数据复制到多数成员后才能确认发布。
+- Stream Coordinator 保存 Stream 成员布局、Leader 生命周期和 SAC 协调状态。Coordinator 基于 `Ra`，用 Raft 复制这类控制状态。
 
 ```text
 Producer
-    ↓ Stream Protocol 5552
-order-events-1 Osiris Leader on rmq-3
-    ├── Stream Replication 6000-6500 → Replica on rmq-4
-    └── Stream Replication 6000-6500 → Replica on rmq-5
-                         ↓
-                 多数派复制后 Confirm
+    ↓
+order-events-1 Osiris Leader：rmq-3
+    ├── 日志复制 → Replica：rmq-4
+    └── 日志复制 → Replica：rmq-5
+                 ↓
+           多数派后 Confirm
 ```
 
-Stream Coordinator 是控制面组件，负责创建/删除 Stream、成员布局、Leader 生命周期、Replica 操作以及 SAC 消费组协调。它自身建立在 `Ra` 上，使用 Raft 复制控制状态。
+Stream 默认依赖操作系统刷新 Page Cache，不为每次 Confirm 单独执行 `fsync`；Quorum Queue 的 Confirm 则要求多数副本写入并刷盘。因此两者都有多数派确认，但断电时的持久性边界并不完全相同。
 
-因此更准确的表达是：
+最后再把客户端连接和副本复制网络对齐：
 
-- **Queue 数据和投递状态**由 `rabbit_fifo` 状态机通过 `Ra/Raft` 复制；
-- **Stream 消息正文和 Offset Tracking Record**由 `Osiris` 日志复制；
-- **Stream 成员与 SAC 协调状态**由 Stream Coordinator 通过 `Ra/Raft` 管理。
-
-Stream 的确认强度还与 Quorum Queue 有一个重要区别：Stream 会先把数据写入磁盘文件，但默认依赖操作系统刷新 Page Cache，不为每次确认显式执行 `fsync`；Quorum Queue 的 Publisher Confirm 则以多数副本写入并刷盘为边界。二者都叫“多数派 Confirm”，不能推导出完全相同的断电持久性。
+| 通信目的 | 默认端口或范围 | 说明 |
+|---|---:|---|
+| AMQP 客户端访问 Queue | `5672/5671` | Producer、Consumer 与接入节点之间的协议 |
+| Stream 客户端访问 Stream | `5552/5551` | Stream Producer、Consumer 与 Stream Plugin 之间的协议 |
+| Quorum Queue 与 Khepri 的 Raft 节点通信 | 通常 `25672` | RabbitMQ 节点间 Erlang Distribution，不是客户端 AMQP |
+| Osiris Stream 副本复制 | `6000–6500` | Stream 数据副本之间的专用 TCP 通道 |
 
 ## 2. 集群启动后，各组件分别保存什么
 
@@ -338,6 +361,39 @@ sequenceDiagram
 
 ### 3.4 Consumer 消费消息的完整过程
 
+消费过程涉及的数据先分成三层：连接节点负责 AMQP 会话，Quorum Queue 负责可恢复的投递状态，Metadata Store 负责 Queue 的持久定义。先把每个数据的用途对齐，再看流程。
+
+- **Connection 状态**：用于标识客户端网络会话，包括 Socket、认证用户、Virtual Host 和心跳。它保存在 Consumer 所连接节点的 Connection Process 中，不复制，连接断开后失效。
+
+- **Channel 状态**：用于在一条 Connection 中隔离协议会话，并限定 Ack 的作用域，包括 Channel 编号、Channel Process 和下一个 Delivery Tag。它保存在接入节点的 Channel Process 中，不复制，Channel 关闭后失效。
+
+- **Consumer 订阅信息**：用于说明谁以什么方式消费哪条 Queue，包括 Queue、Consumer Tag、Ack 模式、优先级和是否 Exclusive。完整协议信息保存在 Channel Process；Queue 调度需要的部分进入 `rabbit_fifo` 状态机并通过 Raft 复制。
+
+- **流量控制信息**：用于限制同一 Consumer 同时持有的未确认消息数，包括 Prefetch 上限和可用 Credit。Channel 的 Limiter 保存协议层限制，Quorum Queue 复制调度所需的 Credit 状态。
+
+- **Queue 投递状态**：用于让故障后的新 Leader 知道消息交给了谁、是否完成，包括内部消息 ID、Ready/已分配状态、Consumer、投递次数和 Ack/Reject。它保存在 `fulfill.q` 的 `rabbit_fifo` 状态机中，并由该 Queue 的 Raft Group 复制。
+
+- **AMQP Ack 映射**：用于把客户端发送的 Delivery Tag 翻译成 Queue 内部消息，包括 Consumer Tag、Queue、内部消息 ID 和投递时间。它只保存在接入节点的 Channel Process 中，不复制。
+
+- **Queue 资源定义**：用于让所有节点知道这条 Queue 的名称、Virtual Host、类型和参数。它保存在 Metadata Store；使用 Khepri 时通过 Raft 复制。
+
+其中最容易混淆的是最后两种“消息标识”：Queue 使用内部消息 ID 维护复制状态；Delivery Tag 只是某个 Channel 发给客户端的递增编号。Delivery Tag 不是全局消息 ID。
+
+本节使用下面一组具体值。后续出现一个字段时，都可以回到这张表确认它的用途：
+
+| 示例值 | 含义 | 此时保存在哪里 |
+|---|---|---|
+| `Worker 2` | 履约服务的一个实例 | 客户端自身 |
+| `rmq-5` | Worker 2 建立 TCP Connection 的接入节点 | Connection 位于 `rmq-5` |
+| `Channel 1` | Worker 2 在这条 Connection 中创建的 AMQP Channel | `rmq-5` 的 Channel Process |
+| `worker-2` | 客户端声明的 Consumer Tag，用来标识当前订阅 | Channel Process；调度所需部分进入 Queue 状态 |
+| `fulfill.q` | 被消费的 Quorum Queue | 定义在 Metadata Store；消息与投递状态在 Queue Raft Group |
+| `Prefetch=20` | 最多允许该 Consumer 持有 20 条未确认消息 | Channel Limiter 与 Queue Consumer/Credit 状态 |
+| `M1001` | Queue 内部用于跟踪 `order-1001` 的消息标识 | Quorum Queue 的复制状态 |
+| `Delivery Tag=1` | Channel 投递后生成、供本 Channel Ack 使用的编号 | `rmq-5` 的 Channel Process |
+
+#### 3.4.1 以 Worker 2 走一遍完整流程
+
 假设三个 Worker 分别连接 `rmq-3`、`rmq-4`、`rmq-5`，都消费 `fulfill.q`，手动 Ack，Prefetch=20。
 
 先回答最容易混淆的问题：**Worker 2 始终连接 `rmq-5`，不会在消费过程中改为直连 `rmq-1`。** `rmq-1` 是 Queue Leader，负责决定消息交给谁；`rmq-5` 持有 Worker 2 的 TCP Connection 和 Channel，负责把 AMQP Delivery 真正写给 Worker。
@@ -394,7 +450,7 @@ sequenceDiagram
 9. **解析 Ack**：Worker 在同一 Channel 上发送 `basic.ack(1)`。`rmq-5` 的 Channel Process 用 Tag `1` 找到 `fulfill.q` 和内部消息 ID，再向 Quorum Queue 提交 Ack 命令。
 10. **结束消息状态**：Ack 成为 Quorum Queue 已提交的状态变化后，消息不再属于 Unacked，Consumer Credit 得以恢复，Queue 可以继续投递。
 
-### 3.4.1 Consumer 与 Prefetch 信息保存在哪里
+#### 3.4.2 为什么同一份订阅信息会出现在两个位置
 
 它们不是只保存在一个组件中，而是被拆成“接入节点的协议状态”和“Quorum Queue 的复制状态”两部分：
 
@@ -421,7 +477,7 @@ Quorum Queue 的 Service Queue 可以理解成一张复制的候选消费者表�
 
 这里的 `ch-pid-B` 是 RabbitMQ 内部对 Channel Process 的标识，不是客户端可持久保存的业务 ID。Consumer 取消、Channel 关闭或节点故障时，对应 Consumer 会从 Queue 运行状态中移除，其尚未确认的消息重新变为可投递状态。
 
-### 3.4.2 Unacked 与 Delivery Tag 分别保存在哪里
+#### 3.4.3 Unacked 与 Delivery Tag 分别保存在哪里
 
 “Unacked”也不是一个单独文件或一张全局表，而是两个层次的状态：
 
@@ -451,7 +507,7 @@ Delivery Tag **不是消息 ID**：
 
 当 Worker 发送 `basic.ack(delivery_tag=1)` 时，Channel Process 先把协议层 Tag 翻译成 Queue 能理解的内部消息 ID，再把 Ack 交给 Queue。若 Worker 在另一个 Channel 上 Ack `1`，那个 Channel 没有对应 Pending Ack 记录，RabbitMQ 会报 `unknown delivery tag` 并关闭 Channel。
 
-### 3.4.3 如果 Worker 连接的是副本节点
+#### 3.4.4 如果 Worker 连接的是副本节点
 
 假设 Worker 2 改为连接 `rmq-2`，而 `rmq-2` 是 `fulfill.q` 的 Follower。Quorum Queue 可以进行本地投递：
 
@@ -462,7 +518,7 @@ Delivery Tag **不是消息 ID**：
 
 这项优化避免消息必须从 Leader 再绕到 Consumer 的接入节点，但没有让 Follower 独立决定 Queue 顺序。若 Consumer 所在节点不是 Queue 成员，就回到本例的路径：由 Leader 把消息转给远端 Channel。
 
-### 3.4.4 故障时这些状态如何配合
+#### 3.4.5 故障时这些状态如何配合
 
 - **Worker 或 Channel 断开**：本地 Pending Ack 映射消失；Queue 收到 Consumer Down 后，把该 Consumer 持有的消息重新投递。
 - **`rmq-5` 故障**：Worker 的 TCP Connection 和 Channel 一起消失，客户端需要重连；Queue 的复制状态仍在 `rmq-1/2/3`，未 Ack 消息不会被当成已完成。
@@ -566,6 +622,44 @@ sequenceDiagram
 
 ### 4.4 Consumer 消费事件的完整过程
 
+Stream 消费没有 Queue 的 Ready → Unacked → Ack 删除模型。它涉及的数据先分成三层：当前连接如何投递、应用处理到了哪里、多个实例中谁有权消费。
+
+- **Connection 状态**：用于维持客户端与 RabbitMQ 节点的网络会话，包括 Socket、认证、Virtual Host 和客户端属性。它只存在于连接节点的 Stream Connection Process 内存中，不复制。
+
+- **Subscription 状态**：用于描述当前连接正在读取哪个分区、已经发送到哪里以及还能推送多少数据，包括 Subscription ID、Stream、Delivery Offset、Credit、过滤条件和 Consumer Name。它只存在于连接节点的 Stream Subscription 内存中，不复制。
+
+- **应用处理位置**：用于区分消息是刚收到、正在处理还是业务已经完成。它通常由 Consumer 进程在内存中维护，Broker 不知道应用事务是否已经完成。
+
+- **Stored Offset**：用于为重连和故障接管提供持久恢复书签，包括 Consumer Name、Stream 分区和应用主动保存的 Offset。它作为 Offset Tracking Record 写入对应 Stream 的 Osiris 日志，并随 Stream 数据复制。
+
+- **SAC 协调状态**：用于决定同名 Consumer 实例中当前由谁接收某个分区，包括 Consumer Name、成员 Subscription 及 Active/Inactive 关系。它保存在 Stream Coordinator 中，并通过 `Ra/Raft` 复制。
+
+- **Stream 资源定义**：用于让节点知道 Stream 与 Super Stream 的拓扑，包括名称、分区和 Binding 等。资源定义保存在 Metadata Store，成员与 Leader 的运行控制状态由 Stream Coordinator 管理。
+
+这几类数据回答的是不同问题：
+
+```text
+Subscription / Credit / Delivery Offset → 当前连接怎样发送
+应用处理位置                            → 当前进程实际上处理到哪里
+Stored Offset                           → 崩溃后从哪里恢复
+SAC 状态                                → 多个实例中现在由谁接收
+```
+
+本节使用下面的具体值：
+
+| 示例值 | 含义 |
+|---|---|
+| `order-events` | 由三个分区组成的 Super Stream |
+| `order-events-0/1/2` | 三条真正保存消息的 Stream |
+| `warehouse-a`、`warehouse-b` | 仓储服务的两个 Consumer 实例 |
+| `warehouse-v1` | 两个实例共用的 Consumer Name，也是 Stored Offset 与 SAC 分组的身份 |
+| `Subscription ID=3` | 某条 Connection 内对一个分区订阅的临时编号 |
+| `Delivery Offset=8451` | Broker 当前准备投递的日志位置 |
+| `Stored Offset=8450` | 应用最后主动保存、可用于恢复的处理位置 |
+| `Credit=100` | 当前 Subscription 还允许 Broker 推送的数据额度 |
+
+#### 4.4.1 以仓储服务走一遍完整流程
+
 仓储服务部署两个实例 `warehouse-a`、`warehouse-b`，都使用 Consumer Name `warehouse-v1` 并启用 SAC；分析服务使用另一个名字 `analytics-v1`。两套名字代表两份独立处理进度。
 
 ```mermaid
@@ -600,9 +694,9 @@ sequenceDiagram
 
 分析服务 `analytics-v1` 使用另一 Consumer Name，会独立读取相同的三条分区日志。仓储保存 Offset 不会推进分析服务的位置；消息最终何时删除由 Stream 保留策略决定，而不是由某个 Consumer Ack 决定。
 
-### 4.4.1 Stream Consumer 的状态保存在哪里
+#### 4.4.2 各类状态具体保存在哪里
 
-Stream Consumer 的“状态”不是一个值，而是三种生命周期完全不同的数据：
+继续向下看实现时，可以把上表归并成三条主线：当前投递、故障恢复位置和 SAC 成员协调。
 
 ```text
 当前连接怎么投递       → Stream Connection / Subscription 的内存状态
@@ -618,7 +712,7 @@ SAC 哪个实例处于活动状态 → Stream Coordinator 的复制状态
 | Stored Offset | 目标 Stream 的 Osiris 日志 | `{consumer_name, stream, offset}` 对应的 Tracking Record | 作为非消息记录随 Stream 数据复制 | 重连后可以查询并从该位置继续 |
 | SAC Group | Stream Coordinator | Stream、Consumer Name、成员 Subscription、活动/待命关系 | Coordinator 使用 Ra/Raft 复制协调状态 | 活动实例消失后选择待命实例 |
 
-#### 临时 Subscription 状态
+##### 临时 Subscription 状态
 
 假设 `warehouse-a` 连接 `rmq-2` 上的 `order-events-0` Replica，建立 Subscription ID `3`：
 
@@ -635,7 +729,7 @@ state: active
 
 这份数据服务于当前网络投递，保存在 `rmq-2` 的 Stream Connection/Subscription 运行时进程中。Subscription ID 只需在当前 Connection 内区分订阅；连接断开后，它不会作为持久消费进度留下来。
 
-#### Stored Offset
+##### Stored Offset
 
 应用处理完 Offset `8450` 后，可以调用 Stream 客户端的 Offset Tracking API。Broker 把 Consumer Name 和 Offset 编码成 Tracking Record，追加到 `order-events-0` 本身：
 
@@ -658,7 +752,7 @@ Stored Offset 只有在应用主动存储时才前进。应用可能每处理 10
 
 Stored Offset 也不会阻止 Retention 删除旧 Segment。如果 Consumer 停太久，已保存位置早于 Stream 当前最早 Offset，恢复时只能从仍然存在的最早数据开始。
 
-#### SAC Group 状态
+##### SAC Group 状态
 
 `warehouse-a` 与 `warehouse-b` 在同一分区上使用相同 Consumer Name `warehouse-v1`，Stream Coordinator 把它们视为同一个 SAC Group：
 
@@ -682,7 +776,7 @@ members:
 - 只有 Stored Offset、没有 SAC：多个实例都可能从相同位置并行读取并重复处理；
 - 二者都有：一个实例活动，故障后另一个实例从已保存位置接手，但最后一次存储后的消息仍可能重复。
 
-#### Stream 没有 Queue 式 Unacked 集合
+##### Stream 没有 Queue 式 Unacked 集合
 
 Queue 把消息从 Ready 变成 Unacked，Ack 后将其移除；Stream 不采用这种破坏性消费模型。Stream 中的消息始终按 Retention 保存，Credit 只是限制 Broker 当前可以推送多少数据，Stored Offset 只是恢复书签。
 
@@ -710,232 +804,39 @@ OrderCreated → OrderPaid → OrderShipped
 - Consumer 使用线程池并发处理后的业务完成顺序；
 - 失败重试与外部数据库提交天然精确一次。
 
-## 5. 从示例反推核心抽象
+## 5. 从两个示例归纳语义边界
 
-示例帮助我们看清消息经过了谁，但选型最终依赖的是这些组件向应用暴露了什么抽象。RabbitMQ 的核心抽象可以分成四层：
+前面的两个示例已经在实际流程中说明了 Connection、Channel、Exchange、Binding、Queue、Stream、Stored Offset 和 SAC。这里不再逐个重复定义，只归纳选型时最容易混淆的边界。
 
-```text
-连接层：Connection → Channel
-路由层：Virtual Host → Exchange → Binding
-消息层：Queue / Stream / Super Stream
-消费层：Consumer → Ack 或 Stored Offset → SAC
-```
+### 5.1 Queue 与 Stream 解决的问题不同
 
-| 抽象 | 第一性原理 | 在示例中的作用 | 不保证什么 |
-|---|---|---|---|
-| Node | RabbitMQ 运行实例 | 接受连接、承载元数据和数据副本 | 连接到它不代表目标数据 Leader 就在本机 |
-| Virtual Host | 资源与权限命名空间 | 隔离 `/commerce` 的 Exchange、Queue、Stream | 不是 CPU、磁盘的物理隔离 |
-| Connection | 客户端到某节点的 TCP 长连接 | 承载认证、心跳与 Channel | TCP 写成功不等于消息提交 |
-| Channel | Connection 内的逻辑会话 | 发布、Confirm、Consume、Ack | 不是跨数据库事务 |
-| Exchange | 命名路由表 | 解释任务消息的 Routing Key | 不保存消息正文 |
-| Binding | Source 到 Destination 的规则 | 把 `order.created` 路由到 `fulfill.q` | 不保存消费进度 |
-| Queue | 一份待办集合 | 三个 Worker 竞争处理一条任务 | 多 Consumer 不代表广播 |
-| Quorum Queue | 有复制能力的 Queue | 节点故障时保留任务队列 | 不会自动横向分区 |
-| Stream | 可保留的追加日志 | 保存一个分区的订单历史 | 消费后不会自动删除 |
-| Super Stream | 多个 Stream 的逻辑集合 | 三分区扩展事件吞吐 | 不提供跨分区全局顺序 |
-| Consumer Name + SAC | Stream 的分区消费协调身份 | 同组每分区选一个活动实例 | 不让整个 Super Stream 只剩一个消费者 |
-| Publisher Confirm | Broker 对发布结果的确认 | 告诉 Producer RabbitMQ 已按目标类型接管消息 | 不代表 Consumer 已完成业务 |
-| Consumer Ack / Stored Offset | Queue 完成确认 / Stream 恢复位置 | 分别推进任务状态和读取位置 | 不自动与业务数据库形成原子事务 |
+- **Queue 是一份待完成的任务集合**：消息交给一个竞争 Consumer，业务完成并 Ack 后，这次任务通常结束。
+- **Stream 是一段可重复读取的历史日志**：不同 Consumer 可以从各自 Offset 读取同一批事件，保存 Offset 不会删除消息。
+- **Quorum Queue 解决 Queue 的副本容错**，但不会把一条 Queue 自动拆成多个吞吐分区。
+- **Super Stream 通过多个分区 Stream 扩展吞吐**，代价是只保证分区内顺序，不提供跨分区全局顺序。
 
-### 5.1 Connection：客户端连接的是节点，不是 Queue
-
-Connection 是客户端与某个 RabbitMQ 节点之间的 TCP 长连接，主要承载：
-
-- 用户认证与 Virtual Host 选择；
-- 心跳和连接故障检测；
-- 一个或多个 Channel；
-- 客户端与接入节点之间的网络流量。
-
-Producer 连接 `rmq-4`，不表示 `fulfill.q` 存在 `rmq-4`。`rmq-4` 可以根据集群拓扑把请求转给 `rmq-1` 上的 Queue Leader。Connection 断开也不表示持久 Queue 被删除；只有 Exclusive Queue 等资源会与连接生命周期绑定。
-
-Connection 提供的是**到集群某个入口的会话**，不是“消息已经安全”的证明。
-
-### 5.2 Channel：一条 TCP 连接内的逻辑会话
-
-创建大量 TCP Connection 成本较高，所以 RabbitMQ 在 Connection 内复用多个 Channel。发布、消费、事务、Confirm 和 Delivery Tag 都通过 Channel 工作。
-
-Channel 提供：
-
-- 低成本的逻辑并发；
-- Publisher Confirm 序号范围；
-- Consumer Delivery Tag 和 Ack 范围；
-- AMQP 操作的协议上下文。
-
-它不是业务数据库的事务边界。即使 AMQP Channel 使用事务模式，也无法自动把 MySQL 更新和 RabbitMQ 发布合成一个原子事务。
-
-### 5.3 Virtual Host：拓扑和权限的命名空间
-
-Virtual Host 把 Exchange、Queue、Binding、用户权限和 Policy 放进一个逻辑命名空间。`/commerce/orders.x` 与另一个 Virtual Host 中的 `orders.x` 是两个不同资源。
-
-Virtual Host 主要解决：
-
-- 不同系统出现同名 Queue 时的名称隔离；
-- configure、write、read 权限隔离；
-- Policy 和 Operator Policy 的作用范围；
-- 运维管理时的资源归属。
-
-它不提供物理资源隔离。两个 Virtual Host 仍可能共享同一节点的 CPU、内存、磁盘和网络，因此强多租户还需要节点、集群或基础设施层面的隔离。
-
-### 5.4 Exchange：一张有名字的路由表
-
-Exchange 的价值是让 Producer 不必知道所有下游 Queue。Producer 只表达：
+### 5.2 三种确认表达不同的责任边界
 
 ```text
-把这条消息发布到 orders.x，分类是 order.created
+Publisher Confirm → RabbitMQ 已按目标 Queue 或 Stream 的规则接管发布
+Consumer Ack      → Queue Consumer 已完成这次任务投递
+Stored Offset     → Stream Consumer 保存了一个可用于恢复的读取位置
 ```
 
-Exchange 再根据自己的类型和 Binding 算出目标集合：
+三者不能互相替代：
 
-```text
-orders.x + order.created → {fulfill.q, audit.q, metrics.q}
-```
+- Producer 收到 Publisher Confirm 时，Consumer 可能还没有收到消息；
+- Queue Consumer Ack 不会反馈给最初的 Producer；
+- Stored Offset 是恢复书签，不是消息删除确认；
+- Confirm、Ack 和 Stored Offset 都不能自动与应用数据库组成原子事务。
 
-Exchange 提供的是**一次发布到零个、一个或多个目标的路由语义**。它不保存消息正文，不维护 Consumer，也不会保存未匹配消息等待将来出现 Binding。
+因此，端到端可靠性仍需要 Producer 重试与去重、Broker 存储保证、Consumer 至少一次处理以及业务幂等共同完成。
 
-四种基础 Exchange 的差别只是“如何解释路由条件”：
+### 5.3 选型时真正需要做的判断
 
-| Exchange 类型 | 匹配方式 | 示例 | 适用场景 |
-|---|---|---|---|
-| Direct | Binding Key 与 Routing Key 完全相等 | `order.created` | 精确任务分类 |
-| Topic | 按 `.` 分段，支持 `*` 和 `#` | `order.*`、`order.#` | 领域事件分类 |
-| Fanout | 忽略 Routing Key，匹配所有 Binding | 所有绑定 Queue 都收到 | 简单广播 |
-| Headers | 按消息 Header 的键值组合匹配 | `region=cn`、`tier=vip` | 多字段组合路由 |
+如果业务问题是“这项任务必须由一个 Worker 完成”，优先从 Queue 模型思考；如果业务问题是“这段事件历史需要由多套系统独立读取或回放”，优先从 Stream 模型思考。
 
-`*` 只匹配一个单词，`#` 匹配零到多个单词。例如 `order.*.cn` 能匹配 `order.created.cn`，但不能匹配 `order.created.vip.cn`。
-
-### 5.5 Binding：Exchange 到目标的路由规则
-
-Binding 不是一根网络连接，而是一条保存在 Metadata Store 中的拓扑记录。它至少描述：
-
-```text
-Source Exchange
-    + Destination Name
-    + Destination Type
-    + Binding Key
-    + Arguments
-```
-
-目标可以是 Queue、Stream，也可以是另一个 Exchange。一次发布匹配多条 Binding 时，消息进入多条目标 Queue；之后每条 Queue 独立保存、投递和确认。
-
-Routing Key 与 Binding Key 的区别是：
-
-| 名称 | 谁提供 | 生命周期 |
-|---|---|---|
-| Routing Key | Producer 每次发布时提供 | 属于本次发布请求 |
-| Binding Key | 初始化拓扑时声明 | 作为 Binding 元数据长期存在 |
-
-### 5.6 Queue：一份需要被完成的待办集合
-
-Queue 保存消息以及消息当前处于 Ready 还是 Unacked 等投递状态。同一 Queue 上多个 Consumer 的语义是竞争：一条消息的一次投递只选择其中一个 Consumer。
-
-Queue 抽象提供：
-
-- 消息积压；
-- 竞争消费；
-- 手动 Ack、Nack 和重新入队；
-- Prefetch 和消费者背压；
-- TTL、死信、优先级等任务生命周期控制。
-
-Queue 不提供广播。库存和审计都需要处理同一事件时，应创建两条 Queue 并分别 Binding，而不是把两个服务都连到一条 Queue。
-
-### 5.7 Quorum Queue：复制实现与 Queue 语义的组合
-
-Quorum Queue 对应用仍然表现为一条 Queue：Producer 不直接选择副本，Consumer 也不从每个副本各读一份。Leader 统一处理入队、投递和确认状态，Follower 用于复制和故障接管。
-
-它增加的是**节点故障下的 Queue 可恢复性**，没有改变这些基本语义：
-
-- 同一 Queue 仍是一个逻辑消息集合；
-- 同一消息仍由一个竞争 Consumer 处理；
-- 一条 Quorum Queue 不会自动拆成多个吞吐分区；
-- 多数派不可用时，应停止承诺新的可靠写入。
-
-Raft 日志、提交点和 Leader 故障场景属于实现层，放在 [Queue 实现篇](005_rabbitmq_queue_implementation.md)。
-
-### 5.8 Consumer：Queue 上的任务处理者
-
-Consumer 是 Channel 上的运行时订阅。它保存 Consumer Tag、订阅参数、Ack 模式和 Prefetch 等状态。它不是像 Kafka Consumer Group 那样的持久业务对象。
-
-Consumer 从 Queue 收到消息，只说明 RabbitMQ 把处理机会暂时交给了它。只有业务操作完成并发送 Ack，责任才从 RabbitMQ 转移给 Consumer。
-
-因此 Queue 消费的正确时间线通常是：
-
-```text
-Deliver → 执行业务事务 → 事务提交 → Ack
-```
-
-如果业务提交后、Ack 前进程崩溃，消息会重新投递，所以必须使用业务消息 ID、唯一键或状态机实现幂等。
-
-### 5.9 Stream：可以反复读取的追加日志
-
-Stream 与 Queue 都能作为 RabbitMQ 中被声明和绑定的对象，但它们的消息生命周期完全不同：
-
-| 对比项 | Queue | Stream |
-|---|---|---|
-| 核心目标 | 尽快完成待办任务 | 保存一段可读取历史 |
-| 消费后 | Ack 后消息通常离开 Queue | 消息仍保留到触发保留策略 |
-| 消费状态 | Ready / Unacked / Ack | 每个消费者自己的 Offset |
-| 多消费者 | 同一 Queue 上竞争 | 可以独立读取同一份日志 |
-| 重读历史 | 不是主要模型 | 可以从 Offset 或时间位置重读 |
-
-Stream 提供的是**非破坏性消费**：一个消费者读过消息，不会替另一个消费者推进位置，也不会直接删除消息。
-
-### 5.10 Super Stream：由多个 Stream 组成的分区抽象
-
-Super Stream 不是一种新的消息文件，而是以下三种已有抽象的组合：
-
-```text
-一个 Direct Exchange
-    + 多个普通 Stream
-    + Exchange 到各 Stream 的 Binding
-```
-
-客户端将业务 Key 稳定映射到其中一个分区 Stream，由此同时获得：
-
-- 多分区并行生产和消费；
-- 不同分区 Leader 分散到多个节点；
-- 同一 Key 稳定进入同一分区时的分区内顺序。
-
-代价是不存在跨分区全局顺序、全局 Offset 或跨分区原子提交。增加分区还可能改变 Key 映射，需要提前设计迁移策略。
-
-### 5.11 Stored Offset：读取位置，不是删除确认
-
-Stream Consumer 可以选择从开头、末尾、绝对 Offset、时间戳或已保存位置开始读取。Stored Offset 表达：
-
-```text
-Consumer warehouse-v1 已处理到 order-events-1 的位置 8450
-```
-
-它不表示位置 8450 之前的消息可以立即物理删除，也不替其他 Consumer 保存进度。每个 Super Stream 分区都有自己的 Offset，没有一个覆盖三个分区的全局位置。
-
-### 5.12 SAC：消费活动实例的协调语义
-
-SAC 是 Single Active Consumer。多个 Stream Consumer 使用相同名字并启用 SAC 时，RabbitMQ 对**每个 Stream 分区**只激活一个实例，其他实例待命。
-
-它提供两个语义：
-
-1. 同一分区同一时刻由一个实例接收消息，容易维持串行处理；
-2. 活动实例故障后，同名的待命实例可以接管。
-
-在三分区 Super Stream 中，SAC 不是让整个服务只剩一个活动进程。RabbitMQ 可以把三个分区分别交给不同实例，从而同时获得分区内串行和分区间并行。
-
-### 5.13 两次确认：Publisher Confirm 与 Consumer Ack
-
-这是 RabbitMQ 最重要的两个责任边界：
-
-```text
-Publisher ── Publisher Confirm ──> RabbitMQ 已接管发布责任
-RabbitMQ  ── Consumer Ack      ──> Consumer 已完成处理责任
-```
-
-Publisher Confirm 回答“Broker 是否按目标 Queue/Stream 的规则接受了消息”，Consumer Ack 回答“Consumer 是否完成了这次 Queue 投递”。二者互不替代：
-
-- Producer 收到 Confirm 时，Consumer 可能尚未收到消息；
-- Consumer Ack 不会反馈给最初的 Producer；
-- 两个确认都无法自动与应用数据库组成原子事务；
-- Confirm 或 Ack 响应丢失时，客户端都可能遇到结果未知和重复处理。
-
-因此端到端可靠性最终是：Publisher 重试与去重、Broker 的存储保证、Consumer 至少一次处理、业务幂等共同组成，而不是由某一个 Ack 单独提供。
-
+不要因为二者都部署在 RabbitMQ 集群中，就认为它们具有相同的路由、消费、保留和扩展语义。
 ## 6. 两个示例的连接路径对照
 
 | 场景 | 第一次连接谁 | 内部查询或请求谁 | 最终生产写给谁 | 最终消费从谁读 |
@@ -985,9 +886,9 @@ Stream：Producer → 初始节点查询拓扑 → 客户端选分区 → Partit
 - [RabbitMQ：Stream Single Active Consumer](https://www.rabbitmq.com/blog/2022/07/05/rabbitmq-3-11-feature-preview-single-active-consumer-for-streams)
 - [RabbitMQ Server：Channel Process 源码](https://github.com/rabbitmq/rabbitmq-server/blob/main/deps/rabbit/src/rabbit_channel.erl)
 
-## 9. 架构全景图
+## 附录：Queue 路由与副本关系概念图
 
-下面保留修改前的架构图，作为 Queue 链路的全景总结。图中的 Node 1～3 表示 `fulfill.q` 所在的三成员副本组；在本文的五节点部署中，Node 4、Node 5 仍属于 RabbitMQ Cluster，可以接受客户端连接，并承载其他 Queue 或 Stream 的 Leader 与副本。
+下面保留 Queue 链路的概念图。它只展示 Exchange 路由和 Queue 副本关系，不代表本文五节点部署的完整生产架构。图中的 Node 1～3 表示 `fulfill.q` 所在的三成员副本组；Node 4、Node 5 仍属于 RabbitMQ Cluster，可以接受客户端连接，并承载其他 Queue 或 Stream 的 Leader 与副本。
 
 ```mermaid
 flowchart TB
