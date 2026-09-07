@@ -2,335 +2,267 @@
 weight: 7
 title: "RocketMQ（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T11:00:00+08:00
-lastmod: 2026-09-07T16:00:00+08:00
+lastmod: 2026-09-07T23:30:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "从核心抽象出发，理解 RocketMQ 5 的分区、顺序、复制确认、消费重试、事务消息与故障恢复"
-featuredImage:
-
+description: "通过五节点部署、订单任务和订单事件两个示例，理解 RocketMQ 的架构、连接路径和消息语义"
 tags: ["message-queue", "rocketmq"]
 categories: ["microservice"]
-
 lightgallery: true
-
 toc:
   auto: false
 ---
 
-RocketMQ 的核心不是“一个支持很多高级功能的队列”，而是围绕业务事件提供 **MessageQueue 分片、MessageGroup 顺序、消费重试、事务消息和延时消息**。选型时最容易忽略的是：这些能力不共享同一个可靠性边界；消息何时返回成功，取决于刷盘、主从复制和同步副本集合的具体配置。
+RocketMQ 把消息按 Topic 分类，再把 Topic 切成 MessageQueue。MessageQueue 是存储、顺序和消费并行度的基本单位；ConsumerGroup 表示一套独立的订阅和消费进度。
+
+本文从五节点部署和两个订单示例说明 Producer、Consumer、NameServer、Controller 与 Broker 如何协作。CommitLog、ConsumeQueue、主从复制、确认时点和故障恢复放在[实现篇](008_rocketmq_implementation.md)。
 
 <!-- more -->
 
-## 1. RocketMQ 解决什么问题
+## 1. 五节点生产部署
 
-RocketMQ 更接近“面向业务事件的分布式消息系统”，典型场景包括：
+| 节点 | IP | 部署角色 |
+|---|---|---|
+| `rmq-1` | `10.0.0.11` | Broker A + NameServer + Controller |
+| `rmq-2` | `10.0.0.12` | Broker B + NameServer + Controller |
+| `rmq-3` | `10.0.0.13` | Broker C + NameServer + Controller |
+| `rmq-4` | `10.0.0.14` | Broker D |
+| `rmq-5` | `10.0.0.15` | Broker E |
 
-- 订单创建后异步驱动库存、积分和通知；
-- 同一订单或账户内的事件必须按顺序处理；
-- 本地数据库事务成功后，消息最终必须可见；
-- 消息在指定时间之后再投递；
-- 消费失败后自动重试，超过上限进入死信队列。
+这是便于说明的合并部署：三个 NameServer 提供路由发现，三个 Controller 组成仲裁组，五个 Broker 承载消息。对资源隔离要求较高时，可把 NameServer 和 Controller 独立部署。
 
-它既不是复杂 AMQP 路由器，也不是以超长历史回放和流计算生态为第一目标的事件日志。选型的核心问题不是“RocketMQ 有没有这个功能”，而是它提供的抽象是否正好对应业务边界。
+客户端配置多个 NameServer 地址。NameServer 不是消息代理；Producer 和 Consumer获得路由后直接连接 Broker。
 
-## 2. 完整生产架构
+### 1.1 完整生产架构
 
 ```mermaid
 flowchart TB
-    subgraph Client[客户端层]
-        P[Producer]
-        CG[Consumer Group\nPush / Simple / Pull Consumer]
+    subgraph APP["应用"]
+        P["Producer"]
+        C["Consumers"]
+        A["管理端"]
     end
 
-    subgraph Access[接入层]
-        PX[Proxy 集群\n协议接入、路由、流量治理]
+    subgraph NS["NameServer 集群"]
+        NS1["NameServer rmq-1"]
+        NS2["NameServer rmq-2"]
+        NS3["NameServer rmq-3"]
     end
 
-    subgraph Route[路由发现]
-        NS1[NameServer 1\n完整路由副本]
-        NS2[NameServer 2\n完整路由副本]
-        NS3[NameServer 3\n完整路由副本]
+    subgraph CT["Controller 仲裁组"]
+        C1["Controller rmq-1"]
+        C2["Controller rmq-2"]
+        C3["Controller rmq-3"]
+        CM["Broker 主备角色\nSyncStateSet 与选主元数据"]
+        C1 --- CM
+        C2 --- CM
+        C3 --- CM
     end
 
-    subgraph Data[数据面：多个 Broker Group]
-        subgraph G1[Broker Group A]
-            A[Master A\nCommitLog / ConsumeQueue / IndexFile]
-            AS[Slave A\nCommitLog / ConsumeQueue / IndexFile]
-            A -->|消息复制| AS
-        end
-        subgraph G2[Broker Group B]
-            B[Master B\nCommitLog / ConsumeQueue / IndexFile]
-            BS[Slave B\nCommitLog / ConsumeQueue / IndexFile]
-            B -->|消息复制| BS
-        end
-        Q[Topic\nMessageQueue 0..N]
-        CS[消费状态\n位点 / 重试 / 死信]
-        Q --- A
-        Q --- B
-        CS --- A
-        CS --- B
+    subgraph BR["五个 Broker"]
+        B1["Broker A rmq-1"]
+        B2["Broker B rmq-2"]
+        B3["Broker C rmq-3"]
+        B4["Broker D rmq-4"]
+        B5["Broker E rmq-5"]
+        T["Topic / MessageQueue"]
+        O["Consumer Offset 与订阅配置"]
+        B1 --- T
+        B2 --- T
+        B3 --- T
+        B4 --- T
+        B5 --- T
+        B3 --- O
     end
 
-    subgraph Control[控制面：Controller Quorum]
-        C1[Active Controller]
-        C2[Controller]
-        C3[Controller]
-        C1 <-->|DLedger / Raft| C2
-        C1 <-->|DLedger / Raft| C3
-    end
-
-    P --> PX
-    CG --> PX
-    PX -->|Send / Receive / Ack| A
-    PX -->|Send / Receive / Ack| B
-    PX -.查询 Topic 路由.-> NS1
-    PX -.查询 Topic 路由.-> NS2
-    A -.注册路由.-> NS1
-    A -.注册路由.-> NS2
-    B -.注册路由.-> NS2
-    B -.注册路由.-> NS3
-    C1 -.Master / Epoch / SyncStateSet.-> A
-    C1 -.Master / Epoch / SyncStateSet.-> B
+    A --> NS
+    P --> NS
+    C --> NS
+    NS -. "返回 Broker 路由" .-> BR
+    CT -. "管理 Broker HA 角色" .-> BR
+    P -. "直连目标 Master" .-> T
+    C -. "直连分配到的 Broker" .-> T
 ```
 
-图中先展示完整部署关系。下面以顺序消息 **order-42 created** 为例，只说明一次生产和消费分别经过哪些组件。
+各组件职责如下：
 
-### 生产消息的过程
+- **NameServer** 接收 Broker 注册并向客户端返回 Topic 路由，不保存消息正文，也不处于每条消息的转发路径。
+- **Controller** 管理 Broker 副本组的主备角色、选主和同步副本集合，不负责 Topic 路由。
+- **Broker** 接收、存储和投递消息，并维护 Topic、MessageQueue、ConsumerGroup 配置及消费位点。
+- **客户端 SDK** 根据 NameServer 路由选择 Broker，并负责负载均衡、重试和消费协作。
 
-1. Producer 通过 Proxy 接入，并从 NameServer 获得 **order-events** Topic 的 Broker 路由。
-2. MessageGroup **order-42** 使同一订单稳定进入同一 MessageQueue。
-3. Broker Master 把消息追加到 CommitLog，并按配置刷盘、复制给 Slave。
-4. 达到当前刷盘和复制条件后，Broker 向 Producer 返回发送成功。
+### 1.2 RocketMQ 保存的四类数据
 
-NameServer 只负责找路由，Controller 只在选主等控制过程参与，它们都不保存这条业务消息。
+- **Topic 路由数据**
+  - 解决的问题：一个 Topic 有哪些 MessageQueue，它们位于哪些 Broker。
+  - 保存组件：Broker 持有 Topic 配置并向 NameServer 注册；NameServer 在内存中维护路由视图。
+  - 一致性特点：NameServer 之间不复制一份强一致路由日志，客户端会从多个 NameServer 刷新路由。
 
-### 消费消息的过程
+- **Broker 高可用控制数据**
+  - 解决的问题：一个 Broker 副本组当前谁可作为 Master，哪些副本处于同步集合。
+  - 保存组件：Controller 仲裁组。
+  - 一致性机制：Controller 元数据通过 DLedger 仲裁复制，形成一致的选主历史。
 
-1. **inventory-group** 的一个 Consumer 从目标 MessageQueue 获取消息。
-2. Broker 通过 ConsumeQueue 找到 CommitLog 中的消息正文并投递。
-3. Consumer 完成库存事务后返回 ACK。
-4. 成功则推进消费进度；失败或超时则进入重试，超过限制后进入死信队列。
+- **业务消息与索引**
+  - 解决的问题：Broker 收到了哪些消息，以及某个 Topic 的某条 MessageQueue 应读取哪些位置。
+  - 保存组件：Master/Slave Broker。消息先进入 CommitLog，ConsumeQueue 和 Index 提供逻辑查询入口。
+  - 一致性机制：消息在 Broker 副本间复制；具体写入确认取决于刷盘、复制模式和 Controller 配置。
 
-发送成功与消费成功是两个时间点；具体刷盘、复制和 ACK 语义在后文解释。
+- **消费配置与进度**
+  - 解决的问题：ConsumerGroup 订阅什么、每条 MessageQueue 已处理到哪里。
+  - 保存组件：Broker 保存 SubscriptionGroup 配置和集群消费模式下的 Consumer Offset；客户端还保存当前连接、分配和正在处理的消息。
+  - 一致性特点：已提交 Offset 用于恢复，应用已完成但尚未提交的进度只存在于 Consumer 侧。
 
-各组件只解决自己的问题：
+## 2. 示例一：订单履约任务
 
-| 组件 | 核心职责 | 不负责什么 |
-|---|---|---|
-| Proxy | 承接 RocketMQ 5 客户端访问，可与 Broker 同进程或独立部署 | 不保存最终消息历史 |
-| NameServer | 保存 Topic 到 Broker 的路由，使客户端找到数据 | 不复制业务消息，也不决定哪条消息已提交 |
-| Broker | 接收、保存、复制和投递消息，维护消费相关状态 | 单个 Broker 不能独自解决自动选主 |
-| Controller | 通过多数派维护 Master、Epoch、SyncStateSet 等选主元数据 | Raft 日志不包含业务消息 |
-| MessageQueue | Topic 内的逻辑分片，是存储顺序和并行消费的基本边界 | 不等于一个 Broker 进程 |
-
-NameServer 节点彼此独立，每个节点接受 Broker 注册并保存完整路由；Controller 则需要多数派维护一致的选主状态。这是两种完全不同的高可用机制。
-
-## 3. 核心抽象与它们提供的语义
-
-### 3.1 Topic：消息类型和治理边界
-
-Topic 是消息的逻辑分类，例如 `order-events`。RocketMQ 5 的 Topic 会指定一种消息类型：普通、顺序、延时或事务消息。这个约束意味着消息类型应当在建模阶段确定，不应把所有不同语义的消息塞进同一个 Topic。
-
-Topic 还承载权限、保留、队列数量等治理配置，但它本身不是顺序边界。
-
-### 3.2 MessageQueue：分片、顺序和并行度边界
-
-一个 Topic 由多个 MessageQueue 组成。MessageQueue 类似分片：
-
-- 每条消息最终只追加到其中一个 MessageQueue；
-- 同一个 MessageQueue 内有明确的存储顺序；
-- 多个 MessageQueue 可以分布在不同 Broker Group 上并行读写；
-- 队列数量限制了可并行处理的上限之一。
-
-因此，**副本用于容错，MessageQueue 用于横向扩展**。增加 Slave 不会提高分片并行度，增加 MessageQueue 也不会自动提高单条消息的副本安全性。
-
-RocketMQ 5 将逻辑队列名与物理 Broker 解耦。应用应使用 Topic、MessageGroup 等业务抽象，不要依赖或拼装具体物理队列名。
-
-### 3.3 MessageGroup：业务顺序边界
-
-顺序消息用 MessageGroup 表示哪些消息必须有序。例如以 `order_id` 为 MessageGroup，同一订单的创建、支付、发货事件会进入同一顺序通道。
-
-它提供的是“同组有序”，不是整个 Topic 全局有序。全局有序等价于把所有流量压到一个顺序通道，会牺牲吞吐和故障隔离。
-
-### 3.4 ConsumerGroup：一份独立消费进度
-
-ConsumerGroup 表示一类业务订阅者：
-
-- 不同消费组各自消费 Topic 的完整消息；
-- 同组实例共同分担消息；
-- 每组有独立位点、重试和死信状态；
-- 同组实例应保持订阅表达式和消费语义一致。
-
-例如库存组和通知组可以各自看到全部订单事件；库存组内部的多个实例只共同处理其中一份。
-
-### 3.5 ACK：推进消费进度，不是删除消息文件
-
-ACK 表示某个消费组已经成功处理消息，Broker 可以推进该组的消费进度。它不等于立即从 CommitLog 中物理删除该消息；消息文件仍按保留和磁盘清理策略删除。
-
-由此得到两个语义：
-
-- 消费成功与物理保留是两件事；
-- 能否回放取决于历史是否仍在，而不只是是否 ACK 过。
-
-## 9. 如何分区并保证顺序
-
-### 9.1 普通消息的分区
-
-普通消息可以由客户端在多个 MessageQueue 间负载均衡，也可以按业务 Key 选择稳定队列。更多 MessageQueue 提高并行度，但会增加路由、调度和运维成本。
-
-简单的 `hash(key) % queue_count` 在队列数变化后会大规模重新映射。严格顺序业务应优先使用 MessageGroup，并在扩缩容时控制旧流量排空和新路由启用的边界。
-
-### 9.2 FIFO 消息的完整顺序条件
-
-Broker 只能保证它实际观察到的顺序。完整业务顺序必须同时满足：
-
-1. 同一业务实体始终使用同一个 MessageGroup，如 `order_id`；
-2. 同一 MessageGroup 的发送调用本身有确定先后，通常由单一生产者或串行发送建立；
-3. 消费端对同组消息执行 `receive → process → ack`，不把同组任务异步并行化；
-4. 前一条失败时不让后一条越过，或明确接受跳过后的乱序；
-5. 业务事件携带版本号，防御多生产者和外部系统造成的因果倒序。
-
-```mermaid
-flowchart LR
-    O1[订单 A：创建] -->|MessageGroup=A| QA[顺序通道 A]
-    O2[订单 A：支付] -->|MessageGroup=A| QA
-    O3[订单 A：发货] -->|MessageGroup=A| QA
-    B1[订单 B：创建] -->|MessageGroup=B| QB[顺序通道 B]
-    QA --> CA[同组串行消费]
-    QB --> CB[可与 A 并行消费]
-```
-
-顺序的代价是阻塞：一条毒消息若必须保持严格顺序，会阻塞同组后续消息。团队必须在“等待修复”和“进入死信后继续”之间明确选择；不能同时承诺无限重试、绝不乱序和持续可用。
-
-## 10. 消费、位点与至少一次
-
-RocketMQ 5 常见消费方式：
-
-| 类型 | 核心方式 | 主要注意点 |
-|---|---|---|
-| PushConsumer | SDK 控制拉取并调用监听器 | 监听器应在业务真正完成后同步返回结果，不要先异步转交再假装成功 |
-| SimpleConsumer | 应用显式 Receive、处理和 Ack | `InvisibleDuration` 太短会并发重复，太长会拖慢故障重投 |
-| PullConsumer | 应用按队列和位点主动拉取 | 控制力强，但位点、负载均衡和并发治理责任更多 |
-
-PushConsumer 和 SimpleConsumer 默认更偏向服务端按消息负载均衡；PullConsumer 更适合需要按队列掌控位点的框架或高级场景。
-
-可靠消费的基本时间线是：
+需求是把订单履约任务交给三个 Worker 中的一个，失败后能够重试。
 
 ```text
-收到消息 → 执行业务事务 → 业务事务提交 → ACK
+Topic:          OrderTask
+MessageQueue:   4
+ConsumerGroup:  fulfill-workers
+Message Key:    order-1001
 ```
 
-若业务提交后、ACK 前进程崩溃，消息会再次投递，因此默认思维应是“至少一次 + 业务幂等”。若先 ACK 再执行业务，进程崩溃则可能永久丢失业务处理机会。
+本例假设 `OrderTask` 的四条 MessageQueue 分布在 Broker A、B、C、D，订单 `order-1001` 被选择到 Broker B 上的 Queue 1。
 
-常见幂等方式：
+### 2.1 初始化后各组件保存什么
 
-- 事件 ID 唯一键；
-- Inbox/消费记录表与业务修改放入同一本地事务；
-- 用订单状态机拒绝非法重复迁移；
-- 调用下游时继续传递同一个幂等键。
+管理端创建 Topic 和 ConsumerGroup 配置后：
 
-## 11. 重试与死信
+- Broker 保存 `OrderTask` 的 Topic 配置、MessageQueue 数量和读写权限。
+- NameServer 根据 Broker 注册形成 `OrderTask → Broker A/B/C/D` 的路由视图。
+- Broker 为对应 MessageQueue 准备逻辑消费索引。
+- `fulfill-workers` 尚未产生的消费位点不会凭空存在；Consumer 开始消费并提交后，Broker 才保存每条 MessageQueue 的 Offset。
+- Controller 只管理 Broker HA 角色，不保存订单消息的 Topic 路由。
 
-重试和死信以 ConsumerGroup 为边界。同一条业务消息可以在库存组成功、在通知组重试，二者互不代表。
+Topic 表示消息类别；MessageQueue 是 Topic 内的逻辑分片。它决定一条消息写到哪个 Broker、同组消费者如何分摊，以及顺序保证落在哪个范围。
 
-重试策略需要回答：
-
-- 哪些异常可重试，哪些是永久业务错误；
-- 退避间隔和最大次数是多少；
-- 进入死信后由谁告警、修复和重新驱动；
-- 顺序消息进入死信后，是否允许后续消息继续；
-- 重放是否仍使用原业务事件 ID。
-
-无限重试不是更可靠，它可能把下游故障放大成重试风暴，并长期阻塞顺序通道。
-
-## 12. 事务消息的边界
-
-事务消息解决的是“本地事务已经提交，但普通发送失败”这一类原子性缺口：
+### 2.2 Producer 生产消息的完整过程
 
 ```mermaid
 sequenceDiagram
     participant P as Producer
-    participant B as Broker
-    participant DB as Business DB
+    participant NS as NameServer rmq-1
+    participant B as Broker B Master
+    participant S as Broker B Slave
 
-    P->>B: 发送半消息
-    B-->>P: 半消息已保存但消费者不可见
-    P->>DB: 执行本地事务
-    alt 本地事务成功
-        P->>B: Commit
-        B->>B: 消息变为可见
-    else 本地事务失败
-        P->>B: Rollback
-        B->>B: 删除或终止半消息
-    else 二阶段结果丢失
-        B->>P: 回查本地事务状态
-        P-->>B: 根据持久化事实返回 Commit / Rollback / Unknown
-    end
+    P->>NS: 查询 OrderTask 路由
+    NS-->>P: 返回 MessageQueue 与 Broker 地址
+    P->>P: 选择 Broker B / Queue 1
+    P->>B: Send order-1001
+    B->>B: 写入 CommitLog
+    B->>S: 按配置复制
+    Note over B,S: 达到当前确认条件
+    B-->>P: SendResult
 ```
 
-回查必须依据数据库中的持久化事实，不能依赖 Producer 进程内存。事务消息只保证本地事务与消息可见性的最终一致，不保证 Consumer 的数据库修改与消息消费形成跨系统 ACID，也不能免除消费幂等。
+1. Producer 启动时从任一 NameServer 查询 `OrderTask` 路由并在本地缓存。
+2. Producer 按轮询、业务 Key 或自定义选择器选择 Broker B 的 Queue 1。
+3. Producer 直接连接 Broker B 的当前 Master；NameServer 不转发消息。
+4. Broker 把消息写入统一 CommitLog，并建立该 MessageQueue 的逻辑索引。
+5. 达到刷盘和副本确认条件后，Broker 返回 SendResult。
 
-若团队更熟悉数据库模式，也可以使用 Transactional Outbox：业务数据和 Outbox 记录在同一本地事务提交，再由后台任务可靠发布。
+SendResult 只表示 Broker 按当前配置接管了消息，不表示 Consumer 已完成履约。请求超时仍可能是结果未知，Producer 需要业务 Key、重试和去重策略。
 
-## 13. 延时消息与过滤
+### 2.3 Consumer 有哪些状态
 
-### 13.1 延时消息
+- **Group 与订阅**：`fulfill-workers`、订阅 Topic、Tag/SQL Filter 和消费模式。
+- **成员与分配**：当前有哪些 Worker，以及四条 MessageQueue 分给谁，主要由客户端负载均衡和 Broker 连接共同形成。
+- **正在处理状态**：某个 Worker 当前持有的消息、处理线程和超时状态，主要在 Consumer 进程内。
+- **已提交 Offset**：`ConsumerGroup + Topic + MessageQueue` 的恢复位置，集群消费模式下保存在 Broker。
+- **重试状态**：消费失败后，消息进入该 Group 对应的重试流程；超过限制后可进入死信队列。
 
-延时消息表示“到某个时间之后才有资格投递”，适合订单超时检查、延迟通知等场景。它不是精确定时器：Broker 重启、负载、积压和同一时刻的大量消息都可能使实际投递晚于目标时间。
+### 2.4 Consumer 消费消息的完整过程
 
-因此延时消费者必须重新检查业务状态。例如“30 分钟未支付则关单”的消息到达时，仍要查询订单是否已支付，而不能无条件关单。
+假设 Worker 2 负责 Broker B 的 Queue 1：
 
-### 13.2 消息过滤
+```mermaid
+sequenceDiagram
+    participant W as worker-2
+    participant NS as NameServer
+    participant B as Broker B
+    participant DB as Order Database
+    participant O as Broker Offset Store
 
-RocketMQ 可以用 Tag 或基于属性的 SQL 表达式过滤。过滤用于减少无关消息传输，不应承载过度复杂且频繁变化的业务规则。同一 ConsumerGroup 的订阅和过滤表达式必须一致，否则同组实例对“应消费哪些消息”的理解不同。
+    W->>NS: 查询 OrderTask 路由
+    NS-->>W: 返回 Broker 列表
+    W->>B: 拉取 Queue 1
+    B-->>W: 返回 order-1001
+    W->>DB: 执行幂等履约事务
+    DB-->>W: 事务提交成功
+    W->>B: 消费成功并推进 Offset
+    B->>O: 保存 fulfill-workers / Queue 1 进度
+```
 
-## 18. 适用边界
+1. 三个 Worker 使用同一 ConsumerGroup 并订阅 `OrderTask`。
+2. SDK 根据当前成员和 MessageQueue 列表做负载均衡；同一 Group 内一条 MessageQueue 同时交给一个 Worker。
+3. Worker 2 直接从 Broker B 拉取 Queue 1，不通过 NameServer 获取消息正文。
+4. Worker 完成数据库事务后返回成功，SDK 推进并提交消费 Offset。
+5. 失败时按 Group 的重试策略再次投递；超过次数后进入死信队列。
+6. 若业务成功但消费结果或 Offset 未保存，消息可能重复，因此下游仍需幂等。
 
-RocketMQ 适合：
+## 3. 示例二：订单事件流
 
-- 订单、支付、库存等以业务 Key 为顺序边界的事件；
-- 需要事务消息、延时消息、消费重试和死信的业务系统；
-- 团队愿意明确管理 MessageQueue、Broker Group、Controller 和幂等语义；
-- 需要较高吞吐，但不以复杂 AMQP 路由或无限历史流处理为中心。
+创建 Topic `OrderEvent`，以订单 ID 作为 MessageGroup 或队列选择依据，使同一订单的事件进入同一顺序通道：
 
-需要谨慎评估：
+```text
+OrderCreated → OrderPaid → OrderShipped
+```
 
-- 大量动态短生命周期队列和复杂路由规则；
-- 把超长历史、多次任意回放和流处理生态作为第一目标；
-- 无法承担 Controller、Broker 复制和客户端版本治理的团队；
-- 要求同步跨地域且同时追求极低延迟和持续可写的系统。
+库存、风控、分析分别使用不同 ConsumerGroup：
 
-## 19. 最小选型检查表
+```text
+inventory → 独立 Offset
+risk      → 独立 Offset
+analytics → 独立 Offset
+```
 
-1. Topic 中承载普通、顺序、延时还是事务消息？
-2. 业务顺序边界是订单、账户还是全局？MessageGroup 如何生成？
-3. MessageQueue 数量如何覆盖峰值并行度？热点 Key 怎么处理？
-4. `SEND_OK` 要求本地刷盘、几个副本确认？
-5. SyncStateSet 缩小时最低允许几个副本，副本不足要停写还是降级？
-6. 是否禁止从同步集合外选主？旧 Master 恢复如何截断和追赶？
-7. Producer 超时如何使用稳定事件 ID 重试？Consumer 如何幂等？
-8. 顺序消息失败时，是阻塞、死信还是跳过？
-9. 最大积压量、最老消息年龄和磁盘清理边界是多少？
-10. 单机、可用区、地域故障下的 RPO/RTO 分别是多少？
-11. 谁负责死信修复、消息重放、Schema 演进和故障演练？
-12. 监控能否区分路由、控制面、数据复制和消费端故障？
+Producer 仍先查询 NameServer，再把消息直发目标 Master Broker。三个 Group 各自从所有 MessageQueue 消费一份完整事件；库存的进度不会推进风控或分析的进度。
 
-## 20. 参考资料
+RocketMQ 的 FIFO 语义落在同一 MessageGroup/MessageQueue 的顺序通道上，不是整个 Topic 的全局顺序。Consumer 内部若并行处理同组消息，也可能破坏业务完成顺序。
+
+## 4. 从两个示例归纳语义边界
+
+- Topic 是分类和订阅入口，MessageQueue 才是路由、顺序和并行消费的基本单位。
+- ConsumerGroup 表示一份独立处理进度：组内分摊 MessageQueue，组间各处理一份。
+- NameServer 负责发现，不保存消息，也不代理每次生产和消费。
+- Controller 负责 Broker 高可用角色，不替代 NameServer 的 Topic 路由。
+- SendResult、消息投递、业务事务成功和 Offset 提交是不同责任边界。
+- 顺序消息、延时消息、重试、死信和事务消息是 RocketMQ 的业务优势，但都不能消除下游幂等要求。
+
+RocketMQ 适合交易、订单、营销等强调顺序、延时、事务消息、过滤、重试和死信语义的系统。若核心是长期事件保留、大规模回放和通用流处理生态，Kafka/Pulsar 通常更自然。
+
+## 5. 客户端连接路径总结
+
+```text
+生产：
+Producer → NameServer 查询 Topic 路由
+         → 目标 MessageQueue 所在 Master Broker
+
+消费：
+Consumer → NameServer 查询路由
+         → 分配到的 MessageQueue 所在 Broker
+         → Broker 保存 Consumer Offset
+
+控制面：
+Controller → 管理 Broker 副本组的主备角色
+```
+
+## 6. 下一篇解决的实现问题
+
+以下内容见[RocketMQ 实现篇](008_rocketmq_implementation.md)：
+
+- Topic、MessageQueue 如何映射到 CommitLog 和 ConsumeQueue；
+- 刷盘和主从复制配置如何决定 SendResult；
+- Controller、Broker Epoch 和 SyncStateSet 如何协作；
+- Master 故障前后未确认消息如何处理；
+- 旧 Master 恢复后如何避免形成两条历史。
+
+## 7. 参考资料
 
 - [RocketMQ Domain Model](https://rocketmq.apache.org/docs/domainModel/01main/)
-- [RocketMQ Topic](https://rocketmq.apache.org/docs/domainModel/02topic/)
-- [RocketMQ MessageQueue](https://rocketmq.apache.org/docs/domainModel/04messagequeue/)
-- [RocketMQ Message](https://rocketmq.apache.org/docs/domainModel/05message/)
-- [RocketMQ ConsumerGroup](https://rocketmq.apache.org/docs/domainModel/08consumergroup/)
-- [RocketMQ Master-Slave Automatic Failover](https://rocketmq.apache.org/docs/deploymentOperations/03autofailover/)
-- [RocketMQ Controller Deployment and Design](https://github.com/apache/rocketmq/blob/develop/docs/en/controller/deploy.md)
-- [RocketMQ FIFO Message](https://rocketmq.apache.org/docs/featureBehavior/03fifomessage/)
-- [RocketMQ Transaction Message](https://rocketmq.apache.org/docs/featureBehavior/04transactionmessage/)
-- [RocketMQ Consumer Type](https://rocketmq.apache.org/docs/featureBehavior/06consumertype/)
-- [RocketMQ Consumer Load Balancing](https://rocketmq.apache.org/docs/featureBehavior/08consumerloadbalance/)
-- [RocketMQ Consumer Progress](https://rocketmq.apache.org/docs/featureBehavior/09consumerprogress/)
-- [RocketMQ Consumer Retry Policy](https://rocketmq.apache.org/docs/featureBehavior/10consumerretrypolicy/)
-- [RocketMQ Message Storage and Cleanup](https://rocketmq.apache.org/docs/featureBehavior/11messagestorepolicy/)
-- [RocketMQ Metrics](https://rocketmq.apache.org/docs/observability/01metrics/)
-- [RocketMQ Security](https://rocketmq.apache.org/docs/security/01security/)
+- [RocketMQ Message Queue](https://rocketmq.apache.org/docs/domainModel/03messagequeue/)
+- [RocketMQ Consumer](https://rocketmq.apache.org/docs/domainModel/08consumer/)
+- [RocketMQ Controller Mode](https://rocketmq.apache.org/docs/deploymentOperations/03autofailover/)
