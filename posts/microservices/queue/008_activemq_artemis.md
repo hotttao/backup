@@ -2,7 +2,7 @@
 weight: 8
 title: "ActiveMQ Artemis：集群路由、消息分组与 Live-Backup"
 date: 2026-09-06T15:00:00+08:00
-lastmod: 2026-09-06T15:00:00+08:00
+lastmod: 2026-09-07T15:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -22,20 +22,36 @@ ActiveMQ Artemis 是面向 JMS 与多协议企业集成的消息 Broker。它需
 
 <!-- more -->
 
-## 1. 生产架构
+## 1. 完整架构
 
 ```mermaid
 flowchart LR
-    C[AMQP/JMS/MQTT/STOMP Client] --> L1[Live Broker A]
-    C --> L2[Live Broker B]
-    L1 <-->|Cluster Connection\n消息负载均衡| L2
-    L1 --> B1[Backup A]
-    L2 --> B2[Backup B]
-    Q[3+ Quorum Voters / 其他 Broker] -. 防脑裂投票 .-> L1
-    Q -.-> L2
+    P[AMQP / JMS / MQTT / STOMP Client] -->|发现拓扑 / Failover URL| L1
+    C[Consumer] --> L2
+
+    subgraph D[数据面：Active Brokers]
+        L1[Primary Broker A\nAddress / Routing / Queue]
+        L2[Primary Broker B\nAddress / Routing / Queue]
+        L1 <-->|Cluster Connection\n负载均衡与转发| L2
+        L1 --- J1[Journal / Paging / Large Messages]
+        L2 --- J2[Journal / Paging / Large Messages]
+    end
+
+    subgraph H[HA：每个 Primary 的 Backup]
+        B1[Backup A]
+        B2[Backup B]
+        L1 -->|Replication| B1
+        L2 -->|Replication| B2
+    end
+
+    Q[Quorum Coordination\n防止双端同时激活] -. 激活权 .-> L1
+    Q -. 激活权 .-> B1
+    Q -. 激活权 .-> L2
+    Q -. 激活权 .-> B2
+    SS[Shared Store\nReplication 的替代 HA 方案] -. Primary 与 Backup 共用 .-> H
 ```
 
-生产部署通常由多个 Live-Backup 对组成集群。每个 Live 承担一部分地址和队列流量，Backup 平时不对该 HA 组提供业务服务。客户端应获取拓扑并启用自动重连/Session Reattach。
+生产部署通常由多个 Primary-Backup 对组成集群。Cluster Connection 负责横向路由，Backup 负责单个 Broker 的状态接管，Quorum Coordination 负责防止脑裂；部署了 Cluster 并不等于消息已经拥有 HA 副本。
 
 ## 2. 分区与顺序
 

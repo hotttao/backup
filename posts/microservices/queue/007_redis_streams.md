@@ -2,7 +2,7 @@
 weight: 7
 title: "Redis Streams：Hash Slot、消费顺序与异步复制"
 date: 2026-09-06T14:00:00+08:00
-lastmod: 2026-09-06T14:00:00+08:00
+lastmod: 2026-09-07T14:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -22,7 +22,7 @@ Redis Stream 是 Redis Key 对应的追加日志，不是独立的分布式消�
 
 <!-- more -->
 
-## 1. 生产架构
+## 1. 完整架构
 
 有两种常见形态：
 
@@ -31,15 +31,31 @@ Redis Stream 是 Redis Key 对应的追加日志，不是独立的分布式消�
 
 ```mermaid
 flowchart LR
-    C[Client] --> M1[Master 1\nSlots 0..5460]
-    C --> M2[Master 2\nSlots 5461..10922]
-    C --> M3[Master 3\nSlots 10923..16383]
-    M1 --> R1[Replica 1]
-    M2 --> R2[Replica 2]
-    M3 --> R3[Replica 3]
+    P[Producer] -->|XADD / Slot 路由| M1
+    C[Consumer Group] -->|XREADGROUP / XACK| M1
+
+    subgraph D[数据面：Redis Cluster 分片]
+        M1[Primary 1\nStream Key / PEL\nAOF + RDB] -->|异步复制| R1[Replica 1]
+        M2[Primary 2\n其他 Slots\nAOF + RDB] -->|异步复制| R2[Replica 2]
+        M3[Primary 3\n其他 Slots\nAOF + RDB] -->|异步复制| R3[Replica 3]
+    end
+
+    subgraph B[控制面：Cluster Bus]
+        G[Gossip 故障检测]
+        V[多数派授权 Failover]
+        E[Config Epoch / Slot 所有权]
+        G --> V --> E
+    end
+
+    M1 <-.-> B
+    M2 <-.-> B
+    M3 <-.-> B
+    R1 -. 候选接管 .-> V
+    R2 -. 候选接管 .-> V
+    R3 -. 候选接管 .-> V
 ```
 
-AOF/RDB 决定进程重启后的本地恢复能力，Replica 决定节点故障后的副本接管；两者不能互相替代。
+AOF/RDB 决定本机重启后还剩什么，Replica 决定主节点故障后由谁接管，Cluster Bus 决定谁有权接管。三者职责不同，而且都不会把异步复制变成每条写入的多数派共识。
 
 ## 2. 如何分区并保证顺序
 

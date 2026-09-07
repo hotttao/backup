@@ -2,7 +2,7 @@
 weight: 6
 title: "NATS JetStream：Subject 拆流、Raft 复制与节点恢复"
 date: 2026-09-06T13:00:00+08:00
-lastmod: 2026-09-06T13:00:00+08:00
+lastmod: 2026-09-07T13:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -22,19 +22,50 @@ Core NATS 是在线、至多一次的消息总线；JetStream 在它之上增加
 
 <!-- more -->
 
-## 1. 生产架构
+## 1. 完整架构
 
 ```mermaid
 flowchart LR
-    PC[Publisher / Subscriber] --> N1[NATS 1\nStream Leader]
-    PC --> N2[NATS 2\nFollower]
-    PC --> N3[NATS 3\nFollower]
-    N1 <-->|Routes| N2
-    N2 <-->|Routes| N3
-    N1 <-->|Raft| N3
+    P[Publisher] --> N1
+    C[Pull / Push Consumer] --> N2
+
+    subgraph N[NATS Cluster：连接与路由层]
+        N1[NATS Server 1]
+        N2[NATS Server 2]
+        N3[NATS Server 3]
+        N1 <-->|Routes| N2
+        N2 <-->|Routes| N3
+        N1 <-->|Routes| N3
+    end
+
+    subgraph M[控制面：JetStream Meta Raft]
+        M1[Meta Leader]
+        M2[Meta Follower]
+        M3[Meta Follower]
+        M1 <-->|Raft| M2
+        M1 <-->|Raft| M3
+    end
+
+    subgraph S[数据面：每个 Stream 的 Raft 组]
+        SL[Stream Leader\nFile / Memory Store]
+        SF1[Stream Follower]
+        SF2[Stream Follower]
+        SL -->|Raft| SF1
+        SL -->|Raft| SF2
+    end
+
+    subgraph U[消费状态]
+        CL[Durable Consumer Leader]
+        CF[Consumer State Followers\nSequence / Pending Ack]
+        CL -->|Raft| CF
+    end
+
+    N1 --> SL
+    SL --> CL --> C
+    M1 -. Stream / Consumer Placement .-> N
 ```
 
-重要业务至少使用 3 个 JetStream 节点，并让 Stream 使用 File Storage、`R=3`。节点通过 Routes 形成集群；集群元数据、每个 Stream 和持久 Consumer 都有相应的 Raft 状态。跨地域可以组成 Supercluster，但高延迟会直接影响多数派写入，单个 Raft 组通常应放在同一低延迟故障域内。
+JetStream 不是“整个集群一个 Raft 组”。集群元数据、每个 Stream 和持久 Consumer 分别维护状态；客户端连接到任一 NATS Server，消息最终路由到对应 Stream Leader。增加副本提高容错，但不会提高单个 Stream 的写吞吐。
 
 ## 2. 如何“分区”并保证顺序
 
