@@ -1,6 +1,6 @@
 ---
-weight: 3
-title: "RabbitMQ Stream：追加日志、复制与 Super Stream"
+weight: 6
+title: "RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复"
 date: 2026-09-07T19:10:00+08:00
 lastmod: 2026-09-07T19:10:00+08:00
 draft: false
@@ -22,7 +22,7 @@ RabbitMQ Stream 不是“可以保存更多消息的 Queue”，而是一套 **�
 
 <!-- more -->
 
-任务路由、逐条 ACK、TTL、优先级和 Quorum Queue 请参见 [RabbitMQ Queue：路由型任务队列与 Quorum Queue](003_rabbitmq.md)。本文只讨论 Stream 模型，避免把两种确认和消费语义混在一起。
+任务路由、逐条 ACK、TTL、优先级和 Quorum Queue 请参见 [RabbitMQ（二）：Queue 存储、多副本一致性与故障恢复](005_rabbitmq_queue_implementation.md)。本文只讨论 Stream 模型，避免把两种确认和消费语义混在一起。
 
 ## 1. Stream 解决什么问题
 
