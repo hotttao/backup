@@ -1,6 +1,6 @@
 ---
-weight: 13
-title: "Kafka（三）：容量、运维与跨地域灾备"
+weight: 14
+title: "Kafka（四）：容量、运维与跨地域灾备"
 date: 2026-09-08T12:00:00+08:00
 lastmod: 2026-09-08T12:00:00+08:00
 draft: false
@@ -18,7 +18,7 @@ toc:
   auto: false
 ---
 
-[第一篇](011_kafka.md)已经说明 Kafka 的组件、生产和消费路径，[第二篇](012_kafka_implementation.md)已经说明日志、副本提交、Consumer Group Rebalance、Partition Replica Reassignment、故障恢复和事务实现。本文沿着生产运行的生命周期回答四类问题：数据保留多久、容量如何规划、集群如何安全运行，以及整个地域失效后怎样恢复。
+[第一篇](011_kafka.md)已经说明 Kafka 的组件、生产和消费路径，[第二篇](012_kafka_implementation.md)已经说明日志、副本提交、Consumer Group Rebalance、Partition Replica Reassignment、故障恢复和事务实现，[第三篇](013_kafka_task_queue.md)单独说明 Share Group 任务队列模型。本文沿着生产运行的生命周期回答四类问题：数据保留多久、容量如何规划、集群如何安全运行，以及整个地域失效后怎样恢复。
 
 <!-- more -->
 

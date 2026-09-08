@@ -158,7 +158,7 @@ flowchart TB
 
 因此，Consumer 实际连接的对象不止一个：**向 Coordinator 发送组协调和 Offset 请求，向各业务 Partition Leader 发送 Fetch 请求**。
 
-### 1.3 Kafka 保存的三类数据
+### 1.3 普通生产消费涉及的三类数据
 
 - **集群元数据**
   - 解决的问题：有哪些 Broker、Topic 和 Partition，每个副本在哪，谁是 Leader。
@@ -179,6 +179,106 @@ flowchart TB
   - 一致性机制：`__consumer_offsets` 本身也是有副本的 Kafka Topic。
 
 Connection、Fetch Session 和尚未提交的应用处理位置属于运行时数据，不写入 KRaft 元数据日志。
+
+### 1.4 Kafka 中还有哪些 Coordinator
+
+先从部署角度区分两类角色：
+
+- **KRaft Controller 仲裁组**是独立的控制面一致性组件。三个 Controller 通过 Raft 维护一份集群元数据历史，并选出一个 Active Controller；
+- **Group、Transaction 和 Share Coordinator**不是三套额外部署的服务。它们是 Broker 进程内的逻辑组件，由内部 Topic 的 Partition Leader 分片承担职责。
+
+可以把对应关系先概括成：
+
+```text
+集群级元数据
+└─ KRaft Controller 仲裁组
+   └─ KRaft Metadata Log
+
+按 group.id 分片的组协调
+└─ __consumer_offsets 某个 Partition 的 Leader Broker
+   └─ Group Coordinator
+
+按 transactional.id 分片的事务协调
+└─ __transaction_state 某个 Partition 的 Leader Broker
+   └─ Transaction Coordinator
+
+按 group + topicId + partition 分片的共享消费状态
+└─ __share_group_state 某个 Partition 的 Leader Broker
+   └─ Share Coordinator
+```
+
+这里最重要的区别是：KRaft 仲裁组通过 Raft 决定唯一的集群元数据历史；其他 Coordinator 的状态写入有副本的 Kafka 内部 Topic，依靠对应 Partition 的 Leader/Follower 复制获得持久性。它们自身不再组成一套 KRaft 仲裁组。
+
+#### Group Coordinator：协调一组消费者
+
+Group Coordinator 以 `group.id` 为分片键。Kafka 把 `group.id` 映射到 `__consumer_offsets` 的某个 Partition，该 Partition 的 Leader Broker 就承担这个 Group 的协调职责。
+
+它主要负责：
+
+- 维护成员加入、退出和心跳；
+- 计算或推动 Topic Partition 在成员之间的分配；
+- 管理 Group Epoch、Member Epoch 等组状态；
+- 接收和查询 Consumer Offset；
+- 把需要恢复的 Group 元数据和 Offset 写入 `__consumer_offsets`，并在内存中缓存当前运行状态。
+
+Classic Consumer Group、新的 Consumer Group 协议和 Streams Group 都由 Group Coordinator 子系统协调。Share Group 的成员列表与 Partition 分配也归 Group Coordinator；它的逐条消息获取状态则由后面的 Share Coordinator 管理。
+
+本例中：
+
+```text
+group.id = fulfill-workers
+        ↓ 映射
+__consumer_offsets P7
+        ↓ 当前 Leader 位于 kafka-2
+kafka-2 承担 fulfill-workers 的 Group Coordinator
+```
+
+因此 `worker-2` 向 `kafka-2` 发送 Join、Heartbeat 和 Offset Commit，但读取 `order-tasks P1` 时仍然直连 P1 Leader `kafka-4`。Coordinator 管“谁消费、从哪里恢复”，不转发正常的业务消息。
+
+#### Transaction Coordinator：协调一个 Kafka 事务
+
+Transaction Coordinator 以 `transactional.id` 为分片键。该 ID 映射到 `__transaction_state` 的某个 Partition，其 Leader Broker 承担这一个 transactional ID 的协调职责。
+
+它主要负责：
+
+- 管理 Producer ID、Producer Epoch 和旧 Producer 隔离；
+- 保存事务当前处于进行、准备提交、提交或中止等状态；
+- 记录本次事务涉及哪些 Topic Partition；
+- 事务结束时推动各业务 Partition 写入 Commit 或 Abort Marker；
+- 在 Coordinator 故障转移后，从 `__transaction_state` 恢复未完成事务。
+
+例如假设：
+
+```text
+transactional.id = fulfill-txn-1
+        ↓ 映射
+__transaction_state P3
+        ↓ 当前 Leader 位于 kafka-5
+kafka-5 承担 fulfill-txn-1 的 Transaction Coordinator
+```
+
+Transactional Producer 向 `kafka-5` 发起事务控制请求，但真正的订单事件仍直接写到各业务 Partition Leader。Transaction Coordinator 管事务状态和最终决议，不代理所有事务数据。
+
+#### Share Coordinator：保存 Share Group 的任务投递状态
+
+Share Group 是 Kafka 面向任务队列的消费模型：多个 Share Consumer 可以共同处理同一个 Partition，并分别确认每条任务。普通 Consumer Group 的规则没有改变，同一 Partition 同一时刻仍只分配给组内一个 Consumer。
+
+Share Group 中，Group Coordinator 仍负责成员和 Partition 分配；Share Coordinator 则负责持久化哪些 Record 已获取、已确认或需要重试，状态写入 `__share_group_state`。业务消息仍由 Topic Partition Leader 投递，Share Coordinator 不转发消息。
+
+普通 Consumer Group 不使用 Share Coordinator。Share Group 的完整生产、获取、确认和故障恢复过程见[Kafka 任务队列篇](013_kafka_task_queue.md)。
+
+#### Coordinator 故障后为什么可以转移
+
+普通客户端或 Broker 内部调用方可以先向任意 Broker 发送 `FindCoordinator`。Kafka 当前区分 `GROUP`、`TRANSACTION` 和 `SHARE` 三种查找类型，返回当前承担该键的 Broker 地址。
+
+如果某个 Coordinator Broker 故障：
+
+1. Controller 为对应内部 Topic Partition 选择新 Leader；
+2. 新 Leader Broker 加载这个 Partition 中的协调状态；
+3. 加载期间客户端可能收到 Coordinator 正在加载或不可用的错误；
+4. 客户端重新执行 `FindCoordinator`，连接新的 Broker 后重试请求。
+
+所以 Coordinator 的可用性最终依赖两件事：内部 Topic 是否拥有健康副本，以及它的 Partition 能否选出 Leader。一个 Broker 也可以同时承担许多 Group、Transaction 和 Share Coordinator，但只负责映射到自己所领导内部 Partition 的那些键。
 
 ## 2. 示例一：订单履约任务
 
@@ -341,7 +441,7 @@ Consumer → Group Coordinator 加入和分配
 
 Controller 不在每条消息的数据路径中，Bootstrap Broker 也不是固定代理。
 
-## 6. 后续两篇解决的问题
+## 6. 后续文章解决的问题
 
 以下内容见[Kafka 实现篇](012_kafka_implementation.md)：
 
@@ -352,7 +452,9 @@ Controller 不在每条消息的数据路径中，Bootstrap Broker 也不是固�
 - 旧 Leader 恢复后如何截断分叉日志；
 - Kafka 事务如何让多 Partition 写入和 Consumer Offset 原子提交。
 
-安全、多租户、监控、升级与跨地域灾备见[Kafka 运维与灾备篇](013_kafka_operations.md)。
+Share Group 的逐条任务获取、确认、重投和故障恢复见[Kafka 任务队列篇](013_kafka_task_queue.md)。
+
+安全、多租户、监控、升级与跨地域灾备见[Kafka 运维与灾备篇](014_kafka_operations.md)。
 
 ## 7. 参考资料
 
@@ -361,6 +463,11 @@ Controller 不在每条消息的数据路径中，Bootstrap Broker 也不是固�
 - [Kafka Producer Configs](https://kafka.apache.org/documentation/#producerconfigs)
 - [Kafka Consumer Configs](https://kafka.apache.org/documentation/#consumerconfigs)
 - [Kafka KRaft](https://kafka.apache.org/documentation/#kraft)
+- [Kafka Protocol：FindCoordinator 与协调请求](https://kafka.apache.org/43/design/protocol/)
+- [Kafka Distribution：Group Coordinator 与 Offset 存储](https://kafka.apache.org/43/implementation/distribution/)
+- [Kafka Transaction Protocol](https://kafka.apache.org/43/operations/transaction-protocol/)
+- [KIP-932：Share Group、Group Coordinator 与 Share Coordinator](https://cwiki.apache.org/confluence/display/KAFKA/KIP-932%3A+Queues+for+Kafka)
+- [Kafka Broker 协调类型映射实现](https://github.com/apache/kafka/blob/trunk/core/src/main/scala/kafka/server/KafkaApis.scala)
 
 ## 附录：Kafka 完整架构图
 

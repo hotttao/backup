@@ -36,6 +36,14 @@ toc:
 
 如果只需要进程内异步，内存 Channel 往往足够；如果只为解决“数据库提交后可靠发事件”，还要同时设计 Transactional Outbox，而不是期待消息组件替数据库事务兜底。
 
+### 1.1 消息系统的核心实现
+1. 控制面采用什么组件和协议达成数据一致性
+2. queue 支不支持分区、分区 router 在何处实现、顺序性如何保证、分区重分配如何实现
+3. queue 支不支持多副本、多副本如何达成数据一致性、故障恢复流程
+3. 消费者，支不支持消费者组、消费者协调过程、如何支持消费者 rebanace
+4. 消费者协调数据保存在哪、消费进度数据保存在哪
+
+
 ## 2. 三种基本模型
 
 | 模型 | 核心状态放在哪里 | 主要能力 | 根本局限 |
@@ -304,7 +312,8 @@ AMQP 是一种消息协议。这里说的**复杂 AMQP 路由**，核心是 Brok
 - [ZeroMQ（二）：传输边界、可靠性与故障处理](010_zeromq_implementation.md)
 - [Kafka（一）：架构、流程、核心抽象与语义](011_kafka.md)
 - [Kafka（二）：存储、多副本一致性、事务与故障恢复](012_kafka_implementation.md)
-- [Kafka（三）：安全、运维与跨地域灾备](013_kafka_operations.md)
+- [Kafka（三）：Share Group 任务队列模型](013_kafka_task_queue.md)
+- [Kafka（四）：安全、运维与跨地域灾备](014_kafka_operations.md)
 - [RabbitMQ（一）：通用架构、路由与消息语义](021_rabbitmq.md)
 - [RabbitMQ（二）：Queue 存储、多副本一致性与故障恢复](022_rabbitmq_queue_implementation.md)
 - [RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复](023_rabbitmq_stream_implementation.md)

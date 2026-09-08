@@ -222,6 +222,26 @@ Stream 默认依赖操作系统刷新 Page Cache，不为每次 Confirm 单独�
 | Quorum Queue 与 Khepri 的 Raft 节点通信 | 通常 `25672` | RabbitMQ 节点间 Erlang Distribution，不是客户端 AMQP |
 | Osiris Stream 副本复制 | `6000–6500` | Stream 数据副本之间的专用 TCP 通道 |
 
+### 1.3 RabbitMQ 中有哪些协调与主导角色
+
+RabbitMQ 没有一个统一的 Coordinator 家族。不同范围的状态由不同组件或资源 Leader 负责：
+
+- **Metadata Store Leader**：协调 Exchange、Queue、Stream、Binding、用户和 Policy 等集群资源定义。使用 Khepri 时，它是 Khepri Raft Group 的 Leader，不参与每条消息路由；
+- **Quorum Queue Leader**：每条 Quorum Queue 都有自己的 Raft Leader。它对入队、Consumer 注册、投递、Ack 和重新入队排序，并把命令复制给该 Queue 的 Followers；
+- **Stream Coordinator**：管理 Stream 副本成员、Writer 生命周期和 SAC 活动消费者等控制状态。它不保存 Stream 消息正文，正文由 Osiris 日志副本保存；
+- **Stream Writer**：每个 Stream 分区的唯一写入主导者，负责追加消息、推动副本复制并返回发布确认。它属于数据面，不是全局协调服务。
+
+对应到本文示例：
+
+```text
+集群资源定义                 → Metadata Store Leader
+fulfill.q 的入队与任务投递    → fulfill.q Quorum Queue Leader
+order-events-1 的成员与 SAC   → Stream Coordinator
+order-events-1 的日志追加     → order-events-1 Stream Writer
+```
+
+Exchange 也不是一个需要选举的消息协调者。入口节点读取 Exchange 与 Binding 定义并完成路由，再把消息转交给目标 Queue Leader。RabbitMQ 也没有 Kafka 式的全局 Consumer Group Coordinator：Queue 的消费者分配由该 Queue Leader 管理，Stream 的 SAC 活动实例由 Stream Coordinator 管理。
+
 ## 2. 集群启动后，各组件分别保存什么
 
 在创建业务资源以前，五个节点已经组成 RabbitMQ Cluster。此时主要存在三类状态：
@@ -450,73 +470,36 @@ sequenceDiagram
 9. **解析 Ack**：Worker 在同一 Channel 上发送 `basic.ack(1)`。`rmq-5` 的 Channel Process 用 Tag `1` 找到 `fulfill.q` 和内部消息 ID，再向 Quorum Queue 提交 Ack 命令。
 10. **结束消息状态**：Ack 成为 Quorum Queue 已提交的状态变化后，消息不再属于 Unacked，Consumer Credit 得以恢复，Queue 可以继续投递。
 
-#### 3.4.2 为什么同一份订阅信息会出现在两个位置
+#### 3.4.2 订阅状态保存在哪里
 
-它们不是只保存在一个组件中，而是被拆成“接入节点的协议状态”和“Quorum Queue 的复制状态”两部分：
+订阅状态只分成两部分：
 
-| 位置 | 保存内容 | 是否持久拓扑元数据 | 节点故障后的作用 |
-|---|---|---|---|
-| `rmq-5` Connection Process | TCP Socket、认证用户、Virtual Host、心跳、打开的 Channel | 否 | `rmq-5` 故障后连接消失，客户端必须重连 |
-| `rmq-5` Channel Process | Channel 编号、Consumer Tag 映射、Queue 名、Ack 模式、Prefetch/Limiter、下一个 Delivery Tag、待 Ack 映射 | 否 | Channel 关闭时这些协议状态消失 |
-| `fulfill.q` Raft 状态机 | Consumer 标识、Channel Process 所在节点、Ack 模式、Credit/Prefetch、Consumer 参数和优先级，以及 Consumer 的消息分配状态 | 否，它是复制的 Queue 运行状态 | Leader 切换后，新 Leader 仍知道存活 Consumer 和消息分配情况 |
-| RabbitMQ Metadata Store | `fulfill.q` 的名字、类型、参数、所在 Virtual Host 等资源定义 | 是 | 让所有节点仍能解析这条 Queue；不保存每次 Delivery Tag |
+- **接入节点 `rmq-5`**：Connection Process 保存 TCP 连接；Channel Process 保存 Consumer Tag、Ack 模式、Prefetch、Delivery Tag 和待确认映射。这些都是内存状态，连接断开后消失。
+- **`fulfill.q` Quorum Queue**：复制 Worker 的订阅位置、可用 Credit，以及消息当前分配给谁。Leader 切换后，新 Leader 可以继续维护 Queue 的投递状态。
 
-因此原文“把 Consumer、Channel 和 Prefetch 信息注册到 Queue”不够准确。更准确的说法是：
+Metadata Store 只保存 `fulfill.q` 的名称、类型、参数和 Virtual Host 等资源定义，不保存这次 Consumer 订阅和 Delivery Tag。
 
-- 完整 Channel 状态留在 `rmq-5` 的 Channel Process；
-- Quorum Queue 复制的是完成确定性投递所需的 Consumer 身份、位置、Ack/Credit 等状态；
-- Metadata Store 只保存 Queue 定义，不保存这次临时订阅。
+#### 3.4.3 Unacked 与 Delivery Tag 保存在哪里
 
-Quorum Queue 的 Service Queue 可以理解成一张复制的候选消费者表，例如：
-
-| Consumer | Channel Process | 所在节点 | Ack 模式 | 可用 Credit |
-|---|---|---|---|---:|
-| `worker-1` | `ch-pid-A` | `rmq-3` | manual | 20 |
-| `worker-2` | `ch-pid-B` | `rmq-5` | manual | 20 |
-| `worker-3` | `ch-pid-C` | `rmq-4` | manual | 20 |
-
-这里的 `ch-pid-B` 是 RabbitMQ 内部对 Channel Process 的标识，不是客户端可持久保存的业务 ID。Consumer 取消、Channel 关闭或节点故障时，对应 Consumer 会从 Queue 运行状态中移除，其尚未确认的消息重新变为可投递状态。
-
-#### 3.4.3 Unacked 与 Delivery Tag 分别保存在哪里
-
-“Unacked”也不是一个单独文件或一张全局表，而是两个层次的状态：
+继续使用 `order-1001`：
 
 ```text
-Quorum Queue 复制状态：
-    内部消息 M1001 已分配给 consumer worker-2，尚未确认
-
-rmq-5 Channel 本地状态：
-    Delivery Tag 1 → {consumer worker-2, queue fulfill.q, msg_id M1001}
+fulfill.q 的复制状态：M1001 已分配给 worker-2，尚未 Ack
+rmq-5 的 Channel 状态：Delivery Tag 1 -> M1001
 ```
 
-两部分各自解决不同问题：
+Unacked 是 Queue 对消息处理状态的记录；Delivery Tag 是当前 Channel 为这次投递生成的局部编号。Worker 发出 `basic.ack(1)` 后，`rmq-5` 的 Channel Process 用这条映射找到 M1001，再把 Ack 交给 `fulfill.q`。
 
-| 状态 | 保存组件 | 保存的含义 | 是否复制 |
-|---|---|---|---|
-| Queue Unacked / Checked-out 状态 | `fulfill.q` 的 Raft 状态机 | 哪条内部消息交给了哪个 Consumer、是否已经 Ack、投递次数等 | 是，随 Queue 状态复制到成员 |
-| Pending Ack 映射 | `rmq-5` 的 Channel Process | Delivery Tag、Consumer Tag、Queue 名、内部消息 ID、投递时间 | 否，只属于这个 Channel |
-| `next_tag` | `rmq-5` 的 Channel Process | 下一次投递使用的 Channel 内递增序号 | 否 |
+Delivery Tag 只在当前 Channel 内有效，所以必须在收到消息的同一 Channel 上 Ack。换一个 Channel 可以再次从 Tag `1` 开始；在错误的 Channel 上 Ack 会得到 `unknown delivery tag`。
 
-Delivery Tag **不是消息 ID**：
+#### 3.4.4 Consumer 没有连接 Queue Leader 怎么办
 
-- 它从 Channel 的 `next_tag` 递增产生；
-- 只在当前 Channel 内唯一；
-- Consumer 必须在收到消息的同一 Channel 上 Ack；
-- 换一个 Channel 后可以再次出现 Delivery Tag `1`；
-- Queue 副本使用自己的内部消息标识维护消息状态，不依赖 Delivery Tag 作为全局 ID。
+AMQP 0-9-1 Consumer 不需要主动寻找 Queue Leader：
 
-当 Worker 发送 `basic.ack(delivery_tag=1)` 时，Channel Process 先把协议层 Tag 翻译成 Queue 能理解的内部消息 ID，再把 Ack 交给 Queue。若 Worker 在另一个 Channel 上 Ack `1`，那个 Channel 没有对应 Pending Ack 记录，RabbitMQ 会报 `unknown delivery tag` 并关闭 Channel。
+- 如果接入节点是 `fulfill.q` 的成员，例如 Follower `rmq-2`，它可以根据已复制的 Queue 状态把消息交给本地 Channel；
+- 如果接入节点不是 Queue 成员，例如本例的 `rmq-5`，Queue Leader `rmq-1` 会把消息转给 `rmq-5` 的 Channel Process。
 
-#### 3.4.4 如果 Worker 连接的是副本节点
-
-假设 Worker 2 改为连接 `rmq-2`，而 `rmq-2` 是 `fulfill.q` 的 Follower。Quorum Queue 可以进行本地投递：
-
-1. Subscribe、Enqueue、Ack 等命令仍先经 Leader 排序并写入 Raft 日志；
-2. 三个副本按相同顺序应用命令，因此都知道消息应该交给哪个 Consumer；
-3. `rmq-2` 发现目标 Channel 就在本机，于是由本地副本把消息交给本地 Channel；
-4. Worker 仍然只看到自己与 `rmq-2` 的那条 Connection。
-
-这项优化避免消息必须从 Leader 再绕到 Consumer 的接入节点，但没有让 Follower 独立决定 Queue 顺序。若 Consumer 所在节点不是 Queue 成员，就回到本例的路径：由 Leader 把消息转给远端 Channel。
+无论走哪条路径，Subscribe、消息分配和 Ack 等状态变化仍由 Queue Leader 排序并通过 Raft 提交。Follower 可以缩短投递路径，但不能绕开 Leader 独立决定消息归谁。
 
 #### 3.4.5 故障时这些状态如何配合
 
@@ -568,20 +551,119 @@ flowchart LR
 
 ### 4.2 初始化后，各组件保存什么
 
-| 对象 | 保存的核心数据 | 保存在哪里 |
-|---|---|---|
-| Super Stream 的 Exchange | 名称 `order-events`、类型 `direct`、durable | RabbitMQ Metadata Store |
-| 三条 Binding | `0 → order-events-0`、`1 → order-events-1`、`2 → order-events-2` | RabbitMQ Metadata Store |
-| 分区 Stream 定义 | 名称、`x-queue-type=stream`、保留参数 | RabbitMQ Metadata Store |
-| 分区副本布局 | 每个分区的 Leader、Replica 节点和可访问地址 | Stream 拓扑/集群状态，可由客户端查询 |
-| Stream 消息 | 顺序追加的消息、发布 ID 等 | 对应分区的 Leader 与副本磁盘 |
-| Stored Offset | Consumer 主动存储的读取位置 | 作为非消息数据持久化在对应 Stream 中 |
-| SAC 活动关系 | 某个 Consumer Name 在该分区上的活动实例 | 由 RabbitMQ 协调的运行状态 |
+先看最核心的关系：
 
-需要特别区分两种“元数据”：
+```text
+Super Stream order-events
+    = Direct Exchange order-events
+    + Stream Queue order-events-0
+    + Stream Queue order-events-1
+    + Stream Queue order-events-2
+    + Exchange 到三条 Stream Queue 的 Binding
+```
 
-- RabbitMQ Metadata Store 中的拓扑定义说明“有哪些 Exchange、Binding 和 Stream”；
-- Stream Protocol 的 Metadata 查询结果说明“当前每个 Stream 的 Leader/Replica 在哪台节点、应该连接哪个地址”。
+这里的 Stream 在 RabbitMQ 资源模型中仍是一种 Queue，只是它的类型是 `stream`，底层使用追加日志而不是任务 Queue 的删除式消费模型。
+
+#### 4.2.1 Exchange 保存什么
+
+创建完成后，Metadata Store 中会有一个 Exchange 定义：
+
+```yaml
+vhost: /commerce
+name: order-events
+type: direct
+durable: true
+```
+
+Exchange 不保存消息正文，也不是一份 Stream 日志。它表示一个路由入口：收到 Routing Key 后，查找匹配的 Binding。
+
+#### 4.2.2 三条 Stream Queue 保存什么
+
+Metadata Store 中还会有三条 Queue 资源定义：
+
+```yaml
+- name: order-events-0
+  durable: true
+  arguments:
+    x-queue-type: stream
+    x-max-age: 7D
+
+- name: order-events-1
+  durable: true
+  arguments:
+    x-queue-type: stream
+    x-max-age: 7D
+
+- name: order-events-2
+  durable: true
+  arguments:
+    x-queue-type: stream
+    x-max-age: 7D
+```
+
+这三条 Stream Queue 才是实际保存消息日志的三个分区。每条 Stream 都有自己的 Leader、Replica、Offset 和磁盘文件，三者之间没有共享的一条总日志。
+
+例如本文后续假设：
+
+```text
+order-events-1
+Leader   = rmq-3
+Replicas = rmq-4、rmq-5
+```
+
+资源名称、类型和保留参数保存在 Metadata Store；当前 Leader、Replica 和客户端连接地址属于 Stream 的运行拓扑。消息到来后，正文最终写入 `rmq-3/rmq-4/rmq-5` 上的 `order-events-1` 日志。
+
+#### 4.2.3 Binding 到底绑定什么
+
+Binding 的 Source 是 Exchange，Destination 是一条 Stream Queue，Binding Key 是匹配条件：
+
+```yaml
+- source: order-events
+  destination_type: queue
+  destination: order-events-0
+  routing_key: "0"
+
+- source: order-events
+  destination_type: queue
+  destination: order-events-1
+  routing_key: "1"
+
+- source: order-events
+  destination_type: queue
+  destination: order-events-2
+  routing_key: "2"
+```
+
+所以准确关系是：
+
+```text
+Direct Exchange order-events
+    -- Binding Key 0 --> Stream Queue order-events-0
+    -- Binding Key 1 --> Stream Queue order-events-1
+    -- Binding Key 2 --> Stream Queue order-events-2
+```
+
+假设 `order-1001` 经过分区函数得到 Routing Key `1`：
+
+```text
+Routing Key 1
+→ 匹配 Binding Key 1
+→ 目标是 Stream Queue order-events-1
+→ 最终写入 rmq-3 上的 order-events-1 Leader
+```
+
+使用 AMQP 0-9-1 发布时，RabbitMQ 在服务端根据 Exchange 和 Binding 完成这条路由。使用原生 Stream 客户端发布 Super Stream 时，客户端查询这些分区关系，在本地算出 `order-events-1`，然后直接连接它的 Leader；Exchange 和 Binding 此时主要承担 Super Stream 的拓扑描述。
+
+#### 4.2.4 刚初始化完成时还没有什么
+
+创建命令刚完成时：
+
+- Metadata Store 已经有 Exchange、三条 Stream Queue 和三条 Binding 的定义；
+- 三条 Stream 已经建立 Leader 和 Replica，但日志中还没有业务消息；
+- 尚未注册 Consumer，所以没有 Subscription 和 SAC 活动实例；
+- Consumer 尚未调用 Store Offset，所以也没有 Stored Offset。
+
+后续 Producer、Consumer 和 SAC 产生的运行状态，不属于这次初始化创建的静态拓扑。
 
 ### 4.3 Producer 生产事件的完整过程
 
@@ -872,6 +954,7 @@ Stream：Producer → 初始节点查询拓扑 → 客户端选分区 → Partit
 ## 8. 参考资料
 
 - [RabbitMQ Metadata Store](https://www.rabbitmq.com/docs/4.1/metadata-store)
+- [RabbitMQ Clustering and Queue Leaders](https://www.rabbitmq.com/docs/clustering)
 - [RabbitMQ Exchanges and Bindings](https://www.rabbitmq.com/docs/exchanges)
 - [RabbitMQ Reliability Guide](https://www.rabbitmq.com/docs/reliability)
 - [Consumer Acknowledgements and Publisher Confirms](https://www.rabbitmq.com/docs/4.1/confirms)

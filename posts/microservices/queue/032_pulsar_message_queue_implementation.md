@@ -6,7 +6,7 @@ lastmod: 2026-09-08T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "沿 Managed Ledger 与 BookKeeper Quorum，理解 Pulsar 消息队列的确认时点、LAC、Bookie 切换与故障恢复"
+description: "沿 Managed Ledger 与 BookKeeper Quorum，理解 Pulsar 的确认时点、故障恢复、扩缩容、去重与事务实现"
 featuredImage:
 
 tags: ["message-queue", "pulsar"]
@@ -18,11 +18,11 @@ toc:
   auto: false
 ---
 
-[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC 和 Ensemble 变化解释消息存储与故障恢复。任务投递、Ack 和 Cursor 见[任务队列实现篇](033_pulsar_task_queue_implementation.md)。
+[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC 和 Ensemble 变化解释消息存储、故障恢复、扩缩容、Producer 去重与事务。Shared/Key_Shared 的任务调度、普通 Ack 和 Cursor 见[任务队列实现篇](033_pulsar_task_queue_implementation.md)。
 
 <!-- more -->
 
-## 1. 存储模型：Managed Ledger、Ledger、Entry 和 Cursor
+## 1. 存储模型：Managed Ledger、Ledger 和 Entry
 
 ```mermaid
 flowchart LR
@@ -30,16 +30,13 @@ flowchart LR
     B --> E[BookKeeper Entry]
     E --> L1[当前 Ledger]
     L1 -->|rollover| L2[下一个 Ledger]
-    L1 --> C1[Subscription A Cursor]
-    L1 --> C2[Subscription B Cursor]
     L1 -->|封闭后| O[可选对象存储]
 ```
 
-这里有三个容易混淆的关系：
+这里有两个核心关系：
 
 1. 消息属于 Topic/Partition，但物理副本属于 Ledger Entry；
 2. Ledger 的副本集合可以在故障后更换，因此一个 Topic 的不同历史段可分布在不同 Bookie；
-3. Cursor 也是持久状态，Broker 切换后新 Owner 会从存储恢复，而不是从客户端猜测消费进度。
 
 物理存储关系是：
 
@@ -59,6 +56,24 @@ Ledger Entry
 Ledger 不是 Bookie 上的一个文件，Fragment 也不是独立文件。一个 Entry Log 文件可以混合保存多个 Ledger 的 Entry；Fragment 只是 Ledger 元数据中“这一段 Entry 使用哪组 Bookie”的逻辑范围。
 
 Broker 缓存用于降低读延迟，但不构成持久化保证。真正的确认边界在 BookKeeper Journal 和 Ack Quorum。
+
+### 1.1 控制面与数据面分别保存什么
+
+理解故障恢复前，先把状态按职责分开：
+
+- **Metadata Store**：保存 Tenant、Namespace、Partitioned Topic 的分区数、Namespace Bundle 范围，以及动态的 Bundle Owner 等控制状态；
+- **Managed Ledger 元数据**：保存一个 Topic Partition 由哪些 Ledger 按顺序组成，以及当前 Ledger 的状态；
+- **BookKeeper Ledger 元数据**：保存 Ledger ID、`E/Qw/Qa`、每个 Fragment 的 Ensemble 和 Ledger 是否已经关闭；
+- **Bookie 数据面**：Journal、Entry Log 和索引保存真正的 Ledger Entry；
+- **Owner Broker 内存**：保存当前 Producer、Pending Write、Writer LAC、缓存和 Dispatcher 等运行状态，Broker 切换后可以从前四类持久状态重建。
+
+```text
+Metadata Store        决定：谁拥有 Topic、Ledger 应该去哪些 Bookie
+BookKeeper            保存：Topic 的消息正文和可恢复日志
+Owner Broker          执行：排序、批处理、Quorum 写入和客户端响应
+```
+
+因此，Metadata Store 达成共识不等于业务消息已经持久化；Bookie 上存在某个 Entry，也不等于该 Entry 已达到 Ack Quorum。控制面解决“谁有权操作”，数据面解决“哪些数据可以承诺”。
 
 ## 2. BookKeeper 多副本的三个参数
 
@@ -317,6 +332,33 @@ DEFERRED_SYNC 成功
 
 本文讨论 Pulsar 持久 Topic 的成功语义时，默认指普通 Durable Add。除非应用明确选择了放松持久性的底层模式，并接受最近一段已响应数据在掉电时丢失，否则不能把 `DEFERRED_SYNC` 的成功称为“持久化成功”。这里所谓重新定义 RPO，就是明确承认：故障时允许丢掉多少条或多长时间内已经返回的消息。
 
+### 3.7 Producer 重试如何避免重复写入
+
+Broker 已经写成功但响应丢失时，Producer 必须重试。Pulsar 的 Broker 端去重依赖两项身份：
+
+```text
+Producer Name：标识同一个逻辑 Producer
+Sequence ID：  标识该 Producer 在当前 Topic Partition 上的消息顺序
+```
+
+启用去重后，Owner Broker 为每个 Producer Name 维护已经持久化的最高 Sequence ID。重试请求的 Sequence ID 已经处理过时，Broker 直接确认已有结果，不再向 Managed Ledger 追加第二份消息。这个状态通过内部去重 Cursor 和周期性快照恢复，不只是新 Owner Broker 的临时内存。
+
+它只能解决 Producer 到同一 Topic Partition 的重复发布：
+
+- Producer Name 必须稳定，换一个名称会被视为新的 Producer；
+- Partitioned Topic 的去重状态按 Partition 独立维护；
+- Producer 长时间不活动后，去重状态可能按配置清理；
+- Consumer 的数据库写入或 HTTP 调用仍需使用稳定业务 `event_id` 幂等。
+
+### 3.8 批处理和背压改变性能，不改变确认边界
+
+Producer 可以把发往同一 Partition 的多条消息组成一个 Batch，再由 Broker 写成较少的 BookKeeper Entry。批处理能够减少网络与 Journal 开销，但会带来两个结果：
+
+- 第一条消息要等待 Batch 满、达到延迟上限或显式刷新，低流量时延迟可能增加；
+- Message ID 除了 Ledger ID、Entry ID，还需要 Batch Index 才能定位 Batch 内的具体消息。
+
+无论一个 Entry 中有一条还是一批消息，成功边界仍是该 Entry 达到 `Qa`。Broker/BookKeeper 变慢时，异步发送会堆积在客户端 Pending Queue 中；应用必须设置队列上限和失败策略，不能把无限内存堆积当作可靠重试。
+
 ## 4. Pulsar 是否采用主从复制或半同步
 
 对持久 Topic 的消息数据来说，答案是：**不是 Broker 主从复制**。
@@ -434,6 +476,43 @@ AutoRecovery 分为两个逻辑角色：
 
 AutoRecovery 修复的是“已存在但副本数不足”的历史数据。它不能恢复所有副本都已经丢失的数据，也不能替代正常写入路径上的 Ack Quorum。
 
+#### 7.2.1 一个封闭 Fragment 如何迁移到 Bookie 4
+
+假设 Ledger 12 已经封闭，其中一个 Fragment 的 Ensemble 是 `[B1, B2, B3]`，随后 B2 永久损坏。修复过程不是给 Topic 创建新 Partition，也不会改变 Entry ID：
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Auditor
+    participant M as Metadata Store
+    participant R as Replication Worker
+    participant B1 as Bookie 1
+    participant B4 as Bookie 4
+
+    A->>M: 检查到 Ledger 12 的 B2 副本失联
+    A->>M: 标记 Ledger 12 欠副本
+    R->>M: 获取 Ledger 12 修复任务和 Fragment 元数据
+    M-->>R: Ensemble=[B1,B2,B3]，B2 待替换
+    R->>B1: 读取该 Fragment 中 B2 应保存的 Entry
+    B1-->>R: 返回可恢复 Entry
+    R->>B4: 写入这些 Entry 的新副本
+    B4-->>R: 持久化完成
+    R->>M: CAS 更新 Ensemble，将 B2 替换为 B4
+    M-->>R: 元数据更新成功
+    R->>M: 清除欠副本标记
+```
+
+整个过程遵循：
+
+```text
+先标记欠副本
+→ 从仍存活的副本读取历史 Entry
+→ 把缺失副本复制到新 Bookie
+→ 数据完整后再修改 Ensemble 元数据
+```
+
+正在写入的 Ledger 由当前 Writer 通过 Ensemble Change 处理，已经封闭的历史 Ledger 主要由 AutoRecovery 修复。两者都会形成或修改 Fragment 的 Bookie 映射，但发起者和时机不同。
+
 ### 7.3 下线 Bookie
 
 不能因为 Bookie 上没有“完整 Topic”就直接关机。一个 Bookie 通常包含大量 Topic 的部分 Ledger Fragment。安全下线流程应先禁止新分配，再执行 decommission/re-replication，确认欠副本清零后才移除节点。
@@ -453,21 +532,246 @@ Topic Compaction 则是另一种能力：按 Key 保留最新值的紧凑视图�
 
 ## 9. 扩缩容和热点
 
-Pulsar 的存算分离使两类扩容相对独立：
+扩容前先判断瓶颈属于哪一层：
 
-- 增加 Broker：Load Manager 转移 Namespace Bundle 所有权，不复制历史消息；
-- 增加 Bookie：新 Ledger/Fragment 可以使用新节点，扩大容量和 I/O；旧数据不会瞬间自动均匀迁移；
-- 增加 Topic Partition：提高该 Topic 并行度，但可能改变 Key 路由；
-- 拆分 Namespace Bundle：增加 Topic 所有权调度粒度，不等于拆分某个热点 Topic 的日志。
+```text
+Broker 不够：             增加协议处理和 Topic Owner 容量
+Bookie 不够：             增加存储容量与磁盘 I/O
+Topic Partition 不够：    增加单个业务 Topic 的并行日志数
+Namespace Bundle 太粗：   增加 Broker 间可调度的所有权单元
+```
 
-存算分离消除了“Broker 扩容必须搬整个分区历史”的耦合，但没有消除热点：
+这四种操作不能互相替代。
 
-- 单个非分区 Topic 仍由一个 Broker Owner 服务；
-- 单分区或单 Key 仍受串行路径限制；
-- 所有 Broker 共享 BookKeeper 时，存储热点可能影响多个租户；
-- 元数据操作和百万 Topic 会给 Metadata Store、Bundle 调度和客户端连接带来压力。
+### 9.1 增加 Broker：迁移所有权，不迁移历史消息
 
-## 10. 跨地域复制
+假设新增 `broker-6`。它注册到集群后可以承接新 Bundle，但不会像 Kafka 新 Follower 那样复制 Topic 历史，因为历史仍在共享的 BookKeeper 中。
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as Administrator / Load Manager
+    participant B2 as broker-2 旧 Owner
+    participant M as Metadata Store
+    participant B6 as broker-6 新 Owner
+    participant E as Lookup Broker / Proxy
+    participant C as Producer / Consumer
+    participant BK as BookKeeper
+
+    B6->>M: 注册 Broker 服务地址和负载状态
+    A->>B2: Unload 或 Transfer 目标 Bundle
+    B2->>M: 释放或转移 Bundle Ownership
+    B2-->>C: 关闭该 Bundle 的 Topic 连接
+    B6->>M: 获取 Bundle Ownership
+    M-->>B6: 所有权成功
+    B6->>BK: 打开 Managed Ledger，恢复 Topic 状态
+    BK-->>B6: 返回 Ledger 元数据和尾部
+    C->>E: 重新 Lookup Topic
+    E->>M: 查询当前 Bundle Owner
+    M-->>E: 返回 broker-6
+    E-->>C: 返回 broker-6 地址
+    C->>B6: 重建 Producer / Consumer
+```
+
+新增 Broker 后，Load Manager 可以通过自动负载卸载或人工 Unload/Transfer 让旧 Owner 释放 Bundle。切换期间客户端会短暂重连，但不需要把 Ledger Entry 从旧 Broker 搬到新 Broker。
+
+### 9.2 增加 Bookie：先获得新容量，不代表旧数据已经均衡
+
+新增 `bookie-6` 注册为 Writable Bookie 后：
+
+- 新建 Ledger、Ensemble Change 和 AutoRecovery 可以选择它；
+- 已有 Ledger 的 Ensemble 元数据不会因为节点刚加入就全部改写；
+- 旧 Entry 也不会立即从其他 Bookie 自动平均搬到它；
+- 如果目标是下线旧 Bookie，需要执行 Decommission，等待相关 Fragment 完成再复制后再移除。
+
+因此“Bookie 数量增加”与“历史数据已经均衡”是两个状态。容量规划还要观察各 Bookie 的磁盘利用率、写入速率和欠副本 Ledger。
+
+### 9.3 Topic 从两个 Partition 增加到四个
+
+假设 `persistent://shop/order/events` 当前只有：
+
+```text
+order/events-partition-0
+order/events-partition-1
+```
+
+管理员把总 Partition 数改成 4：
+
+```bash
+pulsar-admin topics update-partitioned-topic \
+  persistent://shop/order/events \
+  --partitions 4
+```
+
+这里的 `4` 是修改后的总数，不是“再增加 4 个”。完整过程是：
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant A as pulsar-admin
+    participant B as 请求入口 Broker
+    participant M as Metadata Store
+    participant C as Producer / Consumer Client
+    participant O as 新 Partition Owner
+    participant BK as BookKeeper
+
+    A->>B: 请求把 Partition 总数从 2 改为 4
+    B->>M: 校验并更新 Partitioned Topic 元数据
+    M-->>B: 分区数 4 已持久化
+    B-->>A: 更新成功
+    C->>B: 周期性刷新 Partition Metadata
+    B-->>C: 返回 P0、P1、P2、P3
+    C->>B: Lookup 新的 P2 / P3
+    B->>M: 查询或分配所在 Bundle 的 Owner
+    M-->>B: 返回新 Owner
+    B-->>C: 返回新 Owner 地址
+    C->>O: 首次生产或订阅 P2 / P3
+    O->>BK: 打开或创建各自的 Managed Ledger
+```
+
+P0、P1 的 Ledger 和历史消息不会被拆到 P2、P3；新增分区是两条新的独立日志。Producer 和 Consumer 发现新分区后才开始使用它们。
+
+如果路由是：
+
+```text
+partition = hash(key) % partitionCount
+```
+
+分区数从 2 变成 4 后，同一个 `order_id` 可能改投新分区，扩容前后的消息就失去单分区顺序。需要连续顺序的业务应预留分区、使用稳定路由表，或者创建新 Topic 做受控迁移。Pulsar 只支持增加 Partition，不能直接减少。
+
+### 9.4 拆分 Bundle 与增加 Topic Partition 的区别
+
+- **拆分 Bundle**：同一批 Topic 被分成更细的 Broker 所有权范围，方便分散协议处理负载；Topic 的 Ledger、Partition 和消息路由都不变；
+- **增加 Topic Partition**：给一个业务 Topic 新增独立日志，提高 Producer/Consumer 并行上限，但会影响 Key 路由和顺序。
+
+存算分离消除了“Broker 扩容必须搬整个分区历史”的耦合，但没有消除热点：单个非分区 Topic 仍由一个 Owner 服务，单个 Key 仍只落到一个 Partition，共享 BookKeeper 的存储热点还可能影响多个 Broker。
+
+## 10. Pulsar 事务如何实现
+
+Producer 去重只解决同一个 Producer 重试时不重复追加。Pulsar 事务进一步解决：**向一个或多个 Topic 写消息，并确认一个或多个 Subscription 中的输入消息，要么一起生效，要么一起撤销。**
+
+继续使用订单示例：
+
+1. `worker-2` 从 `fulfill-tasks` 的 `fulfill-workers` Subscription 收到 `FulfillOrder(order-1001)`；
+2. Worker 完成计算，准备向 `order/events` 写入 `OrderFulfilled(order-1001)`；
+3. Worker 还要 Ack 输入消息，避免下次再次领取任务。
+
+我们希望下面两项属于同一个事务：
+
+```text
+输出：向 order/events 写入 OrderFulfilled
+输入：在 fulfill-workers 中 Ack FulfillOrder
+```
+
+读取输入消息发生在事务之前。事务覆盖的是“写出结果”和“确认输入”，不是把读取动作倒过来执行。
+
+### 10.1 事务涉及哪些状态
+
+先分清四类状态：
+
+- **Transaction Coordinator（TC）**：Broker 内的协调角色，为事务分配 TxnID、处理超时并决定 Commit 或 Abort；
+- **Transaction Log**：由 Pulsar Topic 支撑，持久保存 TxnID、事务状态，以及涉及的 Topic Partition 和 Subscription；
+- **Transaction Buffer**：属于目标 Topic，跟踪已写入但事务尚未结束的消息，控制它们何时对 Consumer 可见；
+- **Pending Ack State/Log**：属于源 Topic 的某个 Subscription，在事务结束前保存“准备 Ack、但尚未真正推进 Cursor”的消息位置。
+
+业务消息仍写进目标 Topic 的 Managed Ledger。Transaction Log 不保存第二份业务正文；它只保存协调事务所需的状态。Pending Ack Log 也不是完整复制源 Topic，而是保存事务性 Ack 状态。
+
+### 10.2 一次消费—处理—生产事务
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant W as worker-2
+    participant S as fulfill-tasks Owner
+    participant TC as Transaction Coordinator
+    participant TL as Transaction Log
+    participant D as order-events Owner
+    participant BK as BookKeeper
+
+    W->>S: Receive FulfillOrder(order-1001)
+    S-->>W: 返回消息和 Message ID
+    Note over W,S: 此时尚未 Ack，输入仍可恢复
+
+    W->>TC: NewTransaction(timeout)
+    TC->>TL: 写入 TxnID，状态 OPEN
+    TL-->>TC: 已持久化
+    TC-->>W: 返回 TxnID
+
+    W->>TC: 把 order-events Partition 加入事务
+    TC->>TL: 记录目标 Partition
+    TL-->>TC: 参与者已持久化
+    W->>D: Send OrderFulfilled(TxnID)
+    D->>BK: 事务消息写入目标 Managed Ledger
+    BK-->>D: 达到 Ack Quorum
+    D-->>W: 写入完成，但暂不可见
+
+    W->>TC: 把 fulfill-workers Subscription 加入事务
+    TC->>TL: 记录源 Topic 和 Subscription
+    TL-->>TC: 参与者已持久化
+    W->>S: Ack(Message ID, TxnID)
+    S->>BK: 写入 Pending Ack Log
+    BK-->>S: Pending Ack 已持久化
+    S-->>W: 事务性 Ack 已登记
+
+    W->>TC: Commit(TxnID)
+    TC->>TL: 状态改为 COMMITTING
+    TL-->>TC: 提交决定已持久化
+    par 完成目标消息
+        TC->>D: Commit 该 Transaction Buffer
+        D->>BK: 写入 Commit Marker
+        BK-->>D: Marker 已持久化
+        D-->>TC: 目标消息已提交
+    and 完成源 Ack
+        TC->>S: Commit Pending Ack
+        S->>BK: 写入 Ack Commit Marker 并推进 Cursor
+        BK-->>S: Ack 结果已持久化
+        S-->>TC: 源 Ack 已提交
+    end
+    TC->>TL: 状态改为 COMMITTED
+    TL-->>TC: 最终状态已持久化
+    TC-->>W: Commit 成功
+```
+
+可以把流程压缩成六步：
+
+1. Worker 先收到输入消息，此时 Subscription Cursor 尚未推进；
+2. TC 创建 TxnID，并把 `OPEN` 写入 Transaction Log；
+3. 每加入一个目标 Partition 或源 Subscription，TC 都先把参与者写进 Transaction Log；
+4. 目标消息已经按普通 BookKeeper Quorum 持久化，但 Transaction Buffer 暂不允许 Consumer 读取；
+5. 输入 Ack 先进入 Pending Ack Log，暂不成为最终 Cursor 进度；
+6. TC 持久化提交决定，通知所有参与者写入 Commit Marker，全部完成后记录 `COMMITTED` 并返回成功。
+
+如果事务 Abort，目标事务消息不会对 Consumer 可见，Pending Ack 也不会推进 Cursor；`FulfillOrder` 会再次被投递。
+
+### 10.3 后面的消息能否跳过未结束事务
+
+不能为了提高吞吐，直接越过前面的未结束事务破坏 Topic 顺序。每个 Topic 的 Transaction Buffer 维护一个 `maxReadPosition`：只有这个位置之前的事务都已经结束，Broker 才能安全向普通 Consumer 投递到这里。
+
+```text
+Position 100：普通消息，已确定
+Position 101：事务 A，尚未结束
+Position 102：事务 B，已经 Commit
+
+maxReadPosition 停在 101 之前
+```
+
+事务 B 虽然已经 Commit，但它位于尚未结束的事务 A 后面，因此 Consumer 不能先看到 102、以后再看到 101。事务 A Commit 或 Abort 后，`maxReadPosition` 才能前进；Abort 的消息会被过滤，Commit 的消息按日志顺序变为可见。
+
+这个边界按 Topic Partition 独立维护。某个 Partition 被长事务阻塞，不代表整个 Pulsar 集群停止消费，但长事务会直接扩大相关 Partition 的可见性延迟。
+
+### 10.4 故障发生时如何收敛
+
+- **Worker 在 Commit 前故障**：事务超时后由 TC Abort，输出消息不可见，输入 Ack 撤销；
+- **提交决定已持久化，但成功响应丢失**：客户端看到结果未知，TC 仍按 Transaction Log 继续完成各参与者的 Commit；
+- **TC 所在 Broker 故障**：新的 TC 从 Transaction Log 恢复状态，继续未完成的 Commit 或 Abort；
+- **Topic Owner 故障**：新 Owner 从 Managed Ledger、Transaction Buffer 快照和 Pending Ack Log 恢复，再处理 TC 的重试请求；
+- **某个参与者暂时不可用**：事务会保持中间状态，TC 重试完成，不能把部分参与者改成 Commit、另一些改成 Abort。
+
+### 10.5 Exactly Once 的边界
+
+事务保证范围只覆盖 Pulsar Topic 与 Subscription。MySQL、Redis、HTTP、支付和仓库设备调用不属于 Pulsar 事务；一旦处理流程越过 Pulsar 边界，仍需 Outbox、Inbox、业务幂等键或状态机。
+
+## 11. 跨地域复制
 
 Pulsar 的异步 Geo-replication 在消息本地持久化后，由 Broker 复制到远端集群。远端中断时本地仍可写，代价是存在复制积压和非零 RPO。
 
@@ -482,25 +786,18 @@ Pulsar 也可以通过 BookKeeper region-aware placement 把 Ack Quorum 跨地�
 
 Active-active 还需要处理多地域同时写入的业务冲突、重复和顺序。跨集群复制能搬运消息，不能自动建立跨地域全局业务顺序。
 
-## 11. 运维时真正要观察什么
+## 12. 运维时真正要观察什么
 
 至少需要覆盖四层指标：
 
-### 11.1 Producer 与 Broker
+### 12.1 Producer 与 Broker
 
 - 发布成功率、超时、重试、吞吐和 P99 延迟；
 - Topic/Partition/Bundle 的 Owner 变更和重连次数；
 - Broker CPU、堆外内存、Direct Memory、缓存命中和连接数；
 - 单 Topic/Partition 热点，而不只是集群平均值。
 
-### 11.2 Subscription
-
-- 每个 Subscription 的 backlog 数量和字节；
-- 最老未确认消息年龄；
-- ACK、Negative ACK、Redelivery 和死信增长；
-- Consumer 可用数、处理延迟和未确认消息数量。
-
-### 11.3 BookKeeper
+### 12.2 BookKeeper
 
 - Journal 写入和 fsync 延迟；
 - Ledger/Entry 读写错误；
@@ -508,39 +805,56 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 - 欠副本 Ledger 数、AutoRecovery 队列和修复速度；
 - Ensemble 是否满足机架/地域放置策略。
 
-### 11.4 元数据与冷存储
+### 12.3 元数据与冷存储
 
 - Metadata Store quorum、会话延迟和连接异常；
 - Ledger 元数据 CAS、Topic 加载和 Bundle 分配失败；
 - Offload 成功率、冷读延迟、对象存储错误和费用；
 - Geo-replication backlog、复制速率和最老待复制消息。
 
+### 12.4 事务
+
+- Transaction Coordinator 是否可用，OPEN/COMMITTING/ABORTING 事务数量；
+- 慢事务、超时事务和 Transaction Log 写入延迟；
+- 各 Topic Transaction Buffer 的 `maxReadPosition` 是否长时间不前进；
+- Pending Ack 恢复状态，以及 Commit/Abort Marker 写入失败次数。
+
 Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入仍会失败；Bookie 都存活也不代表可用：Metadata Store 失去多数派后，所有权和 Ledger 元数据变更会受阻。
 
-## 12. 实现结论
+## 13. 实现结论
 
 - Topic Partition 的长期日志是 Managed Ledger；Ledger、Fragment 和 Bookie 物理文件是不同层次。
 - Owner Broker 是单 Writer，Bookie 是对等存储节点，因此不是传统主从半同步。
 - `E/Qw/Qa` 分别决定放置范围、单 Entry 写入范围和成功确认数量。
 - Writer 的 LAC、Entry 携带的 priorLAC 与可选 Explicit LAC 解决不同层次的确认信息传播。
 - 未达到 Qa 的 Entry 不能成为恢复后的有效承诺；达到 Qa 但响应丢失仍会导致 Producer 重试和重复。
+- Broker 去重依赖稳定 Producer Name 和 Sequence ID，只覆盖 Producer 到 Topic Partition 的重复发布。
 - Bookie 切换可以在同一 Ledger 内形成新 Fragment；Ledger 滚动与 Bookie 切换不是同一事件。
+- 增加 Broker 迁移的是 Bundle 所有权；增加 Bookie 扩展的是存储；增加 Partition 创建的是新日志。
+- Pulsar 事务通过 Transaction Log、Transaction Buffer 和 Pending Ack Log，原子协调 Topic 写入与 Subscription Ack。
 - Broker、Bookie 和 Metadata Store 分别有独立故障面，运维必须同时观察。
 
-## 13. 参考资料
+## 14. 参考资料
 
 - [Apache Pulsar 4.2 Architecture Overview](https://pulsar.apache.org/docs/4.2.x/concepts-architecture-overview/)
 - [Apache Pulsar 4.2 Messaging Concepts](https://pulsar.apache.org/docs/4.2.x/concepts-messaging/)
 - [Pulsar Broker Load Balancing](https://pulsar.apache.org/docs/4.2.x/concepts-broker-load-balancing-overview/)
+- [Pulsar Load Balance Administration](https://pulsar.apache.org/docs/4.2.x/administration-load-balance/)
+- [Pulsar Topic Administration](https://pulsar.apache.org/docs/4.2.x/admin-api-topics/)
 - [Pulsar Metadata Store Administration](https://pulsar.apache.org/docs/4.2.x/administration-metadata-store/)
 - [Pulsar BookKeeper Persistence Policies](https://pulsar.apache.org/docs/4.2.x/administration-zk-bk/)
 - [Apache BookKeeper Protocol](https://bookkeeper.apache.org/docs/development/protocol/)
+- [Apache BookKeeper AutoRecovery](https://bookkeeper.apache.org/docs/admin/autorecovery/)
+- [Apache BookKeeper Decommission](https://bookkeeper.apache.org/docs/next/admin/decomission/)
 - [BookKeeper Ledger API：LAC 与 Durable Add](https://bookkeeper.apache.org/docs/latest/api/ledger-api/)
 - [BookKeeper Client Configuration：Explicit LAC](https://bookkeeper.apache.org/docs/latest/api/javadoc/org/apache/bookkeeper/conf/ClientConfiguration.html)
+- [Pulsar Message Deduplication](https://pulsar.apache.org/docs/next/cookbooks-deduplication/)
 - [Pulsar Retention and Expiry](https://pulsar.apache.org/docs/4.2.x/cookbooks-retention-expiry/)
 - [Pulsar Tiered Storage](https://pulsar.apache.org/docs/4.2.x/tiered-storage-overview/)
 - [Pulsar Topic Compaction](https://pulsar.apache.org/docs/4.2.x/concepts-topic-compaction/)
 - [Pulsar Transactions](https://pulsar.apache.org/docs/4.2.x/txn-why/)
+- [Pulsar Transaction Components](https://pulsar.apache.org/docs/4.2.x/txn-what/)
+- [Pulsar Transaction Workflow](https://pulsar.apache.org/docs/4.2.x/txn-how/)
 - [Pulsar Schema Overview](https://pulsar.apache.org/docs/4.2.x/schema-overview/)
 - [Pulsar Geo-replication](https://pulsar.apache.org/docs/4.2.x/concepts-replication/)
 - [Pulsar Release Notes and Supported Versions](https://pulsar.apache.org/download/)

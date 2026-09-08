@@ -161,26 +161,28 @@ sequenceDiagram
     B->>B: B.HW 仍为 100
 
     C->>A: 下一次 Fetch(offset=101)
-    A->>A: 记录 C 的复制位置=101<br/>全部 ISR 已复制到 101
+    A-->>C: 本次 FetchResponse 仍可能携带读取时的 HW=100
+    A->>A: 记录 C 的复制位置=101<br/>全部 ISR 的 LEO 都已到 101
     A->>A: A.HW 从 100 推进到 101，M Commit
-    A-->>C: FetchResponse(HW=101)
-    C->>C: C.HW=min(101, C.LEO 101)=101
     A-->>P: ProduceResponse 成功，返回 Offset=100
 
     R->>A: Fetch
     A-->>R: 只返回 Offset < HW 的数据，M 现在可见
 
-    Note over A,B: B 尚未从响应中学到新 HW，本地 HW 仍可能是 100
+    Note over A,C: A.HW=101<br/>B.HW 和 C.HW 此时仍可能都是 100
     B->>A: 再下一次 Fetch(offset=101)
     A-->>B: FetchResponse(HW=101)
     B->>B: B.HW=min(101, B.LEO 101)=101
+    C->>A: 再下一次 Fetch(offset=101)
+    A-->>C: FetchResponse(HW=101)
+    C->>C: C.HW=min(101, C.LEO 101)=101
 ```
 
 完整过程实际包含三种信息流：
 
 1. **消息向 Follower 传播**：Follower 用 `Fetch(offset=100)` 拉到 M，追加后把自己的 LEO 推进到 101；
 2. **复制进度向 Leader 传播**：Follower 下一次发送 `Fetch(offset=101)`，这个请求同时告诉 Leader：“我的日志已经写到 101”；
-3. **提交边界向 Follower 传播**：Leader 汇总 ISR 的复制位置并把自己的 HW 推进到 101，再通过当前或后续 `FetchResponse(HW=101)` 把提交边界传回 Follower。
+3. **提交边界向 Follower 传播**：Leader 汇总 ISR 的复制位置并把自己的 HW 推进到 101，再通过后续 `FetchResponse(HW=101)` 把提交边界传回 Follower。用于上报 LEO 的那次 FetchResponse 可能已经按旧 HW 构造，因此 Follower 的本地 HW 可以晚一轮更新。
 
 因此，每个副本上都有一个本地 HW，但职责不同：
 
@@ -248,7 +250,9 @@ B Follower     101        100    含 M
 C Follower     100        100    不含 M
 ```
 
-M 位于 HW 之后，所以还没有对 Consumer 可见，Producer 也没有得到 `acks=all` 成功。A 故障后会出现两个安全分支：
+假设 A 故障前 ISR 为 `{A, B, C}`，B、C 在选举时都仍具备安全候选资格。ISR 不表示每个副本在每一瞬间都拥有完全相同的最新尾部，C 可以暂时缺少尚未提交的 M。
+
+M 位于 HW 之后，所以还没有对 Consumer 可见，Producer 也没有得到 `acks=all` 成功。A 故障后，根据实际选中的候选，会进入下面两个安全分支之一：
 
 ```mermaid
 flowchart TD
@@ -266,27 +270,93 @@ flowchart TD
 
 Producer 无法从超时判断走了哪条分支，只能重试。启用幂等 Producer 后，相同 Producer ID、Epoch 和序列号的重试可以避免在同一 Partition 形成重复 Record；业务跨进程恢复和 Consumer 副作用仍应使用事件 ID 幂等。
 
-#### 3.2.4 M 已 Commit，但成功响应丢失
+**这里的结果不确定，不等于 Controller 随机抽签。** 正常选举会根据副本顺序、ISR / ELR 资格和节点可用性选出 Leader，并不先比较所有候选的 Log End，再选择尾部最长的副本。对于固定的副本顺序和候选状态，结果受实现规则约束；变化的是故障与状态更新时序，以及当时哪些副本有资格参与。源码中 `PartitionChangeBuilder.electAnyLeader` 对符合 `isValidNewLeader` 条件的副本使用 `findFirst`，参见 [Kafka 选主实现](https://github.com/apache/kafka/blob/trunk/metadata/src/main/java/org/apache/kafka/controller/PartitionChangeBuilder.java)。
 
-状态已经变成：
+例如，副本顺序为 `[A, B, C]`，A 已不可用而 B、C 都符合资格，通常会选 B；换成 `[A, C, B]`，则可以先选 C。不能在同一组完全固定的条件下，把两种结果描述成等概率随机事件。如果 ISR 只有 A、B，正常选举也不能任意改选不具备资格的 C。
+
+这与 RabbitMQ Stream 的差别在于：后者收集到多数成员的停止及尾部报告后，在**本轮候选中**比较 Epoch 和 Chunk ID，选择最新成员；Kafka 不用这种尾部比较决定正常 Leader。但 RabbitMQ 也不保证恢复所有未提交写入。例如五副本 A～E 中只有 A、B 有 M，A 故障后，如果 C、D、E 先完成尾部报告，就可以组成不含 B 的候选多数派并选主，M 仍会被丢弃。具体过程见 [RabbitMQ Stream 五副本恢复](023_rabbitmq_stream_implementation.md#34-五副本中只有两份新数据能否恢复)。
+
+所以应分别理解两件事：**未提交尾部可能保留或裁剪；已提交但 ACK 丢失则是客户端不知道提交结果。** 不能把“没有收到 ACK”直接当作“尚未提交”，也不能把安全选举理解为尽量抢救每个副本上最新的未提交数据。
+
+#### 3.2.4 M 已 Commit、成功响应丢失，但 B、C 的本地 HW 仍为 100
+
 
 ```text
-              Log End     Leader 已知的 HW
-A Leader       101        101
-B Follower     101        100 或 101
-C Follower     101        100 或 101
+Leader = A
+ISR = {A, B, C}
+min.insync.replicas = 2
+Producer acks = all
+初始 HW = 100
 ```
 
-A 已确认 B、C 都复制了 M，并把自己的 HW 推进到 101，但 ProduceResponse 在网络中丢失。即使 B、C 本地记录的 HW 还停在 100，它们的日志都已经含有 M。
+Producer 发布 `M@100`。因为 `acks=all` 等待当前全部 ISR，所以 A 能返回成功之前，A、B、C 的 LEO 都必须到 101。但是，B、C 的本地 HW 是从 Leader 的 FetchResponse 学到的，它可以比 LEO 慢一轮。因此 A 已经 Commit M 并生成成功响应时，完全可能出现：
 
-此时 A 故障：
+```text
+              LEO    本地 HW    是否含有 M
+A 旧 Leader   101      101          是
+B Follower    101      100          是
+C Follower    101      100          是
+```
 
-1. 任一正常的 ISR 安全候选都包含 M；
-2. 新 Leader 用新 Leader Epoch 接管，不会仅因本地 HW 传播稍慢就删除 M；
-3. 它根据副本 Fetch 进度恢复并推进 HW，M 继续属于有效历史；
-4. Producer 仍只看到超时，重试可能重复。
+如果 C 已经多完成一次 Fetch，它也可能是 `C.HW=101`。这不改变恢复结论，因为新 Leader 不会读取另一个 Follower 的本地 HW 来决定提交位置。
 
-因此 Kafka 能保证的是：在 `acks=all`、满足 `min.insync.replicas`、使用安全 Leader Election，且仍有合格数据副本存活的条件下，已经成功确认的 Record 不会因一次正常 Leader 切换丢失。它不能让 Producer 在响应丢失时知道服务端结果，也不能替业务实现端到端恰好一次。
+完整过程如下：
+
+```mermaid
+sequenceDiagram
+    participant P as Producer
+    participant A as A：旧 Leader
+    participant B as B：Follower→新 Leader
+    participant C as C：Follower
+    participant K as Controller
+    participant R as Consumer
+
+    Note over A,C: Epoch=7，ISR={A,B,C}，初始 HW=100
+    P->>A: Produce M，acks=all
+    A->>A: 追加 M@100，A.LEO=101
+    B->>A: Fetch(offset=100)
+    A-->>B: M@100 + HW=100
+    B->>B: B.LEO=101，B.HW=100
+    C->>A: Fetch(offset=100)
+    A-->>C: M@100 + HW=100
+    C->>C: C.LEO=101，C.HW=100
+
+    B->>A: 下一次 Fetch(offset=101)
+    A->>A: 记录 B.LEO=101
+    C->>A: 下一次 Fetch(offset=101)
+    A-->>C: 本次响应仍可能携带旧 HW=100
+    A->>A: 记录 C.LEO=101<br/>A.HW=101，M Commit
+    A--xP: ProduceResponse 成功响应丢失
+
+    Note over A: A 故障
+    K->>B: 指定 B 为 Leader，Epoch=8，ISR={B,C}
+    B->>B: 保留 M，本地 HW=100<br/>把缓存的 C 复制位置重置为未知
+    C->>B: 按 Epoch 对齐后 Fetch(offset=101)
+    B->>B: 记录 C.LEO=101<br/>min(B.LEO,C.LEO)=101
+    B->>B: ISR 数量 2 满足 min ISR<br/>B.HW 推进到 101
+    B-->>C: 后续 FetchResponse(HW=101)
+    C->>C: C.HW 推进到 101
+    R->>B: Fetch
+    B-->>R: M@100 重新可见
+```
+
+恢复过程的核心不是“找哪个节点的 HW 最大”，而是下面四步：
+
+1. **B 不按旧 HW 裁剪 M**：HW 是本地已知的可见边界，不是“HW 之后必须删除”的裁剪线。B 来自旧 ISR，日志中的 M 会被保留；真正的分叉由 Leader Epoch 对齐处理；
+2. **新任期先保持谨慎**：B 刚成为 Leader 时本地 `HW=100`，并把自己缓存的远端副本进度重置为未知。它不能根据旧内存状态假定 C 已经追平，因此暂不向 Consumer 暴露 M；
+3. **C 用 Fetch 上报 LEO**：C 与 B 的 Epoch 历史一致，无需删除 M。它向 B 发送 `Fetch(offset=101)`，等价于报告自己的 LEO 已经到 101；
+4. **B 重新计算 HW**：当前 ISR 是 `{B,C}`，数量 2 满足 `min.insync.replicas=2`，二者 LEO 都是 101，因此 B 把 HW 从 100 推进到 101。M 再次对 Consumer 可见，后续 FetchResponse 也会把 HW=101 传播给 C。
+
+这里尤其要区分两种信息：
+
+```text
+C.HW = 100 或 101：C 自己认为 Consumer 可以安全读到哪里
+C.LEO = 101：      C 确实已经拥有 M，新 Leader 用它重新计算 HW
+```
+
+所以，即使故障前 B、C 的本地 HW 都是 100，也不会导致已提交的 M 被删除。`acks=all` 成功所保证的是旧 ISR 的 A、B、C 都已经拥有 M；A 故障后，剩余 ISR `{B,C}` 通过各自的 LEO 重新建立 HW=101。
+
+如果成功响应在网络中丢失，Producer 仍只能把结果视为未知并重试。应使用幂等 Producer 避免同一 Partition 重复追加，并让 Consumer 的业务副作用具备幂等性。
 
 #### 3.2.5 Unclean Election 为什么会破坏结论
 
@@ -558,7 +628,7 @@ Kafka 不默认自动选择新节点，是因为 Controller 无法仅凭失联�
 - **原 Leader 故障**：Controller 从当前安全候选中选出新 Leader，新的 Leader 继续向 Adding Replica 提供 Fetch；Reassignment 与 Leader Election 分别收敛。
 - **Controller 故障**：新的 Active Controller 从 KRaft Metadata Log 恢复 Adding、Removing、ISR 和 Target 状态，继续未完成迁移。
 
-Reassignment 保证的是元数据和副本集合最终收敛，不保证迁移没有性能影响。它会同时消耗源 Broker 磁盘读、目标 Broker 磁盘写和 Broker 间网络，生产执行仍应分批、限速并监控 ISR、欠复制副本和请求延迟；这些运维约束见[Kafka 运维与灾备篇](013_kafka_operations.md)。
+Reassignment 保证的是元数据和副本集合最终收敛，不保证迁移没有性能影响。它会同时消耗源 Broker 磁盘读、目标 Broker 磁盘写和 Broker 间网络，生产执行仍应分批、限速并监控 ISR、欠复制副本和请求延迟；这些运维约束见[Kafka 运维与灾备篇](014_kafka_operations.md)。
 
 ## 7. Topic 如何增加 Partition
 
@@ -883,7 +953,7 @@ LSO 是 **Partition 级别**，不是 Topic 或 Consumer Group 的全局边界�
 - 增加 Topic Partition 只创建新的空日志，不会重新分布旧数据；它会改变默认 Key 路由，并触发相关 Consumer Group Rebalance。
 - Kafka 事务用 `__transaction_state`、Producer Epoch 和各 Partition 的 COMMIT/ABORT Marker，实现 Kafka 日志范围内的原子可见性。
 
-保留策略、容量、分区副本迁移、安全、监控、升级和跨地域灾备见[Kafka 运维与灾备篇](013_kafka_operations.md)。
+保留策略、容量、分区副本迁移、安全、监控、升级和跨地域灾备见[Kafka 运维与灾备篇](014_kafka_operations.md)。
 
 ## 10. 参考资料
 
@@ -902,3 +972,5 @@ LSO 是 **Partition 级别**，不是 Topic 或 Consumer Group 的全局边界�
 - [KafkaProducer Transaction API](https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/producer/KafkaProducer.html)
 - [KIP-98：Exactly Once 与事务协议](https://cwiki.apache.org/confluence/spaces/KAFKA/pages/66854913/KIP-98%2B-%2BExactly%2BOnce%2BDelivery%2Band%2BTransactional%2BMessaging)
 - [Kafka Message Format](https://kafka.apache.org/43/implementation/message-format/)
+- [Kafka Partition：Leader 初始化与 HW 推进实现](https://github.com/apache/kafka/blob/trunk/core/src/main/scala/kafka/cluster/Partition.scala)
+- [Kafka Replica：新 Leader 重置远端副本进度](https://github.com/apache/kafka/blob/trunk/server/src/main/java/org/apache/kafka/server/replica/Replica.java)

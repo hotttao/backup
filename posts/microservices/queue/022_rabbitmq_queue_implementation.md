@@ -155,22 +155,103 @@ A、B 同时不可用，只剩 C。C 可能落后，也无法证明另外两个�
 
 ## 5. Consumer 投递和 Ack 如何进入一致状态
 
-第一篇说明了 Channel 本地 Delivery Tag 与 Queue 内部消息状态的区别。实现层继续追踪 `M1001`：
+要理解三个 Worker 同时消费 `fulfill.q` 时的故障恢复，先把整个机制分成两部分：
+
+- **消息调度**：Queue 从当前可接收消息的 Consumer 中，为每条消息选择一个 Consumer；
+- **故障恢复**：Consumer 消失后，Queue 移除它，并把它尚未 Ack 的消息重新变为可投递。
+
+这不是 Kafka 式 Consumer Group Rebalance。RabbitMQ Queue 没有 Partition 分配方案，也不会在 `worker-1/2/3` 中选出一个长期负责整条 Queue 的 Leader。普通竞争消费下，三个 Worker 都是活动 Consumer，Queue 对每条消息分别选择接收者。
+
+只有显式启用 **Single Active Consumer** 时，Queue 才会让三个订阅者中只有一个接收消息。假设当前活动者是 `worker-2`，它掉线后 Queue 会激活另一个已注册 Consumer；这属于单活动 Consumer 切换，不是普通任务队列的默认行为。
+
+### 5.1 三个 Worker 如何竞争同一条 Queue
+
+继续使用第一篇的五节点部署，并增加三个 Worker：
+
+```text
+worker-1 → rmq-2 的 Connection / Channel
+worker-2 → rmq-5 的 Connection / Channel
+worker-3 → rmq-3 的 Connection / Channel
+
+fulfill.q Leader：rmq-1
+fulfill.q Followers：rmq-2、rmq-3
+```
+
+三个 Worker 分别发送 `basic.consume fulfill.q`，并设置手动 Ack 和 `Prefetch=20`。订阅请求由各自的接入节点交给 `fulfill.q`；Queue 的调度状态可以概括为：
+
+```text
+Consumer     投递出口    可用 Credit    状态
+worker-1     rmq-2       20             可投递
+worker-2     rmq-5       20             可投递
+worker-3     rmq-3       20             可投递
+```
+
+`Prefetch=20` 表示一个 Consumer 最多同时持有 20 条尚未 Ack 的消息；可用 `Credit` 是 Queue 当前还能投给它的数量。每投递一条消息，Credit 减一；对应消息 Ack 后，Credit 恢复。
+
+假设三个 Consumer 优先级相同、Credit 都大于零，也没有被网络流控阻塞，Queue 会在它们之间轮询投递：
+
+```mermaid
+sequenceDiagram
+    participant L as fulfill.q Leader rmq-1
+    participant N2 as rmq-2 Channel
+    participant W1 as worker-1
+    participant N5 as rmq-5 Channel
+    participant W2 as worker-2
+    participant N3 as rmq-3 Channel
+    participant W3 as worker-3
+
+    L->>N2: 分配 order-1001 给 worker-1
+    N2->>W1: basic.deliver order-1001
+    L->>N5: 分配 order-1002 给 worker-2
+    N5->>W2: basic.deliver order-1002
+    L->>N3: 分配 order-1003 给 worker-3
+    N3->>W3: basic.deliver order-1003
+```
+
+因此，“选择了 `worker-2`”只表示某一条消息被分配给它，不表示它当选了 Queue 的主 Consumer。如果 `worker-2` 已用完 20 个 Credit，Queue 会暂时跳过它，把新消息交给仍有 Credit 的 `worker-1/3`。
+
+#### 5.1.1 并行消费还能保证顺序吗
+
+任务 Queue 通常假设不同任务彼此独立，不要求它们严格按照入队顺序完成。因此，三个 Worker 可以并行处理：
+
+```text
+order-1001 → worker-1
+order-1002 → worker-2
+order-1003 → worker-3
+```
+
+这里需要区分两种顺序：
+
+- **取出与投递顺序**：Queue 按自己的消息顺序取出任务，并依次分配给可用 Consumer；
+- **业务完成顺序**：三个 Worker 的处理时间不同，可能按照 `order-1002 → order-1003 → order-1001` 的顺序完成。
+
+故障重投还会进一步改变完成顺序。例如 `worker-2` 处理 `order-1002` 时掉线，`order-1003` 可能已经完成，而 `order-1002` 随后才重新投递给其他 Worker。
+
+因此，多 Worker 竞争消费适合图片处理、邮件发送以及不同订单的履约任务等相互独立、允许并行执行的工作。Consumer 仍需支持幂等，因为故障边界下消息可能重复投递。
+
+如果业务要求严格顺序，需要先明确顺序的范围：
+
+- **整条 Queue 严格串行**：启用 Single Active Consumer，并使用 `Prefetch=1`，上一条消息 Ack 后再处理下一条；代价是整条 Queue 的并行度下降；
+- **同一订单有序、不同订单并行**：按 `order_id` 做稳定分片，同一个 `order_id` 始终进入同一条 Queue；每条分片 Queue 再使用单活动 Consumer。这样只能保证同一订单内有序，不提供跨订单的全局顺序。
+
+所以，Queue 不是完全没有顺序；真正需要注意的是：**多个 Consumer、不同处理耗时和失败重投，会使业务完成顺序不再等于消息入队顺序。**
+
+实现层继续追踪已经交给 `worker-2` 的 `M1002`：
 
 ```text
 Queue Raft 状态：
-M1001 → checked-out to worker-2, delivery-count=1
+M1002 → checked-out to worker-2, delivery-count=1
 
 rmq-5 Channel 本地：
-Delivery Tag 1 → fulfill.q / M1001
+Delivery Tag 1 → fulfill.q / M1002
 ```
 
 投递需要两类状态配合：
 
-- Queue 把 Checkout/Consumer/Credit 状态通过 Raft 复制，因此新 Leader 能知道 M1001 尚未完成；
+- Queue 把 Checkout/Consumer/Credit 状态通过 Raft 复制，因此新 Leader 能知道 M1002 尚未完成；
 - Channel 的 Delivery Tag 映射不复制，因为它只属于当前 AMQP Channel。
 
-### 5.1 Ack 的完整路径
+### 5.2 Ack 的完整路径
 
 ```mermaid
 sequenceDiagram
@@ -181,28 +262,76 @@ sequenceDiagram
     participant C as Follower C
 
     W->>CH: basic.ack delivery-tag=1
-    CH->>CH: Tag 1 映射为 M1001
-    CH->>A: settle M1001
+    CH->>CH: Tag 1 映射为 M1002
+    CH->>A: settle M1002
     A->>B: 复制 settle
     A->>C: 复制 settle
     Note over A,C: settle 成为已提交状态
     A->>A: 移除 checked-out 并恢复 Credit
 ```
 
-Ack 是 Queue 状态变化，也需要按 Raft 顺序提交。Ack 响应或连接丢失时，Consumer不能判断最终结果；消息可能已完成，也可能重新投递。
+Ack 是 Queue 状态变化，也需要按 Raft 顺序提交。Ack 响应或连接丢失时，Consumer 不能判断最终结果；消息可能已完成，也可能重新投递。
 
-### 5.2 Consumer 或接入节点故障
+### 5.3 worker-2 掉线如何被检测
 
-- Channel 关闭后本地 Delivery Tag 映射消失；
-- Queue 收到或检测到 Consumer Down，把其 Checked-out 消息重新变为可投递；
-- 接入节点不是 Queue 成员时，其故障不会删除 Queue Raft 数据；
-- 新 Channel 会重新从 Delivery Tag 1 开始，旧 Tag 不能跨 Channel Ack。
+RabbitMQ 不靠业务层定期发起“重新选举”，而是先判断承载 Consumer 的 Channel 是否仍然存活：
 
-业务事务已经成功但 Ack 未提交时，重新投递是正确的至少一次语义。Consumer 必须在业务事务提交后 Ack，并能安全重复执行。
+- **正常退出**：`worker-2` 主动取消订阅或关闭 Channel/Connection，`rmq-5` 立即移除本地 Channel，并通知 Queue 该 Consumer 已退出；
+- **进程崩溃或连接明确断开**：操作系统报告 TCP 连接关闭，`rmq-5` 随即清理 Channel；
+- **断网但连接没有立即关闭**：AMQP Heartbeat 在协商的超时时间内收不到对端流量后，`rmq-5` 判定连接失效并关闭 Channel；
+- **整个 `rmq-5` 故障**：RabbitMQ 节点间的进程和节点监控发现承载 Channel 的节点消失，`fulfill.q` 同样会得知 `worker-2` 已离开。
 
-### 5.3 Queue Leader 故障
+`worker-2` 只是处理缓慢但连接仍存活时，不应被立即判死。它的 Credit 用尽后，Queue 先停止给它发送新消息；还可以配置 Consumer Timeout。超时后 RabbitMQ 会关闭对应 Channel，并重新排队该 Channel 上尚未确认的投递。
 
-新 Leader从 Raft 状态恢复：
+### 5.4 worker-2 掉线后如何重新分配
+
+假设故障发生前：
+
+```text
+order-1001 → worker-1，处理中
+order-1002 → worker-2，业务可能处理中，尚未 Ack
+order-1003 → worker-3，处理中
+```
+
+`worker-2` 掉线后的恢复过程是：
+
+```mermaid
+sequenceDiagram
+    participant W2 as worker-2
+    participant N5 as rmq-5 Connection 和 Channel
+    participant L as fulfill.q Leader rmq-1
+    participant N2 as rmq-2 Channel
+    participant W1 as worker-1
+    participant N3 as rmq-3 Channel
+    participant W3 as worker-3
+
+    W2-->>N5: 最后一次正常流量
+    N5->>N5: TCP 断开或 Heartbeat 超时
+    N5->>L: worker-2 的 Consumer 已退出
+    L->>L: 移除 worker-2
+    L->>L: order-1002 从 Checked-out 返回可投递
+    alt worker-1 有 Credit
+        L->>N2: 把 order-1002 分配给 worker-1
+        N2->>W1: redelivered=true，新 Delivery Tag
+    else worker-3 有 Credit
+        L->>N3: 把 order-1002 分配给 worker-3
+        N3->>W3: redelivered=true，新 Delivery Tag
+    end
+```
+
+这里发生的是局部恢复：
+
+1. 只移除失效的 `worker-2`，`worker-1/3` 不需要停止消费或重新加入组；
+2. `worker-2` 持有的全部 Unacked 消息自动重新入队；
+3. Queue 按当前 Consumer 的 Credit 重新投递这些消息，新消息也可以继续分发；
+4. 新接收者得到自己的 Delivery Tag，不能沿用 `worker-2` 在旧 Channel 上的 Tag；
+5. 消息带有 Redelivered 标记，但它不能证明业务此前一定执行成功或失败。
+
+如果 `worker-2` 已完成数据库事务，却在 Ack 提交前掉线，`order-1002` 仍会再次投递。因此恢复边界是**至少一次**，业务处理必须幂等。
+
+### 5.5 Queue Leader 故障
+
+新 Leader 从 Raft 状态恢复：
 
 - Ready 消息；
 - Consumer 与 Credit；
@@ -284,6 +413,8 @@ Quorum Queue Raft 更适合低延迟局域网。跨地域同步部署会把地�
 - 新 Leader 通过 Raft 的多数派相交和日志新旧约束继承已提交历史。
 - 未提交尾部被截断；已提交但响应丢失会造成客户端重试和业务重复。
 - Queue Raft 状态会恢复 Unacked，Channel Delivery Tag 不复制。
+- 普通竞争消费没有 Consumer 选举或全组 Rebalance；Queue 逐条选择仍有 Credit 的 Consumer。
+- Consumer 掉线后，只回收它持有的 Unacked 消息，其他 Consumer 不需要暂停或重新加入。
 - 增加副本提高容错，不提高单 Queue 的分片吞吐。
 
 ## 11. 参考资料
@@ -292,6 +423,9 @@ Quorum Queue Raft 更适合低延迟局域网。跨地域同步部署会把地�
 - [RabbitMQ Raft](https://www.rabbitmq.com/docs/raft)
 - [RabbitMQ Ra Library](https://github.com/rabbitmq/ra)
 - [Consumer Acknowledgements and Publisher Confirms](https://www.rabbitmq.com/docs/confirms)
+- [RabbitMQ Consumers](https://www.rabbitmq.com/docs/consumers)
+- [RabbitMQ Consumer Prefetch](https://www.rabbitmq.com/docs/consumer-prefetch)
+- [RabbitMQ Heartbeats](https://www.rabbitmq.com/docs/heartbeats)
 - [RabbitMQ Quorum Queue Local Delivery](https://www.rabbitmq.com/blog/2020/06/23/quorum-queues-local-delivery)
 - [RabbitMQ Reliability Guide](https://www.rabbitmq.com/docs/reliability)
 - [RabbitMQ Monitoring](https://www.rabbitmq.com/docs/monitoring)

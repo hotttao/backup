@@ -120,6 +120,28 @@ flowchart TB
   - 保存组件：Owner Broker 维护当前 Consumer/Dispatcher 运行状态；持久 Subscription 的 Cursor 由 Managed Ledger 子系统持久化，Broker 切换后可以恢复。
   - 语义特点：不同 Subscription 拥有独立 Cursor，一个 Subscription Ack 不推进另一个 Subscription。
 
+### 1.3 Pulsar 中有哪些协调与主导角色
+
+Pulsar 同样没有一个统一的 Coordinator 家族。协调职责分布在 Metadata Store、Broker 和 BookKeeper 中：
+
+- **Metadata Store 仲裁组**：保存 Broker 存活、Namespace Bundle 所有权、负载信息和 Ledger 元数据等控制面状态。本例的 ZooKeeper 三节点通过 ZAB 对这些更新排序；
+- **Load Manager 与 Namespace Service**：它们是 Broker 内部模块，决定一个 Namespace Bundle 应由哪个 Broker 接管，并通过 Metadata Store 取得所有权。它们协调 Topic 去哪里服务，不转发每条业务消息；
+- **Owner Broker 与 Dispatcher**：一个 Topic Partition 同一时刻只有一个 Owner Broker。它接收生产、读写 BookKeeper，并由每个 Subscription 的 Dispatcher 按 Exclusive、Failover、Shared 或 Key_Shared 规则投递消息；
+- **Transaction Coordinator**：启用 Pulsar 事务时，由 Broker 内的该角色管理事务 ID、状态、超时和参与 Topic，事务元数据写入事务日志。普通非事务消息不经过它；
+- **BookKeeper Auditor 与 Replication Worker**：它们属于存储修复路径。Auditor 发现丢失 Bookie 和欠复制 Ledger Fragment，Replication Worker 把缺失副本补到健康 Bookie，不参与正常生产确认。
+
+对应到本文示例：
+
+```text
+集群元数据与 Topic 所有权依据          → Metadata Store
+order/tasks 应由哪个 Broker 服务       → Load Manager / Namespace Service
+生产、Shared 投递与 Subscription 协调  → Owner Broker / Dispatcher
+可选的跨 Topic 事务                    → Transaction Coordinator
+Bookie 故障后的副本修复                → Auditor / Replication Worker
+```
+
+Pulsar 没有 Kafka 式的全局 Consumer Group Coordinator。Subscription 属于 Topic，Consumer 的选择和 Ack 处理集中在当前 Owner Broker 的 Dispatcher；可恢复的消费位置则通过 Cursor 持久化到 Managed Ledger。
+
 ## 2. 示例一：订单履约任务
 
 创建：
@@ -280,4 +302,7 @@ Shared/Key_Shared 的任务分配、Ack、Cursor 和重复投递见[Pulsar 任�
 - [Pulsar Architecture](https://pulsar.apache.org/docs/next/concepts-architecture-overview/)
 - [Pulsar Messaging](https://pulsar.apache.org/docs/next/concepts-messaging/)
 - [Pulsar Metadata Store](https://pulsar.apache.org/docs/next/administration-metadata-store/)
+- [Pulsar Broker Load Balancing](https://pulsar.apache.org/docs/next/concepts-broker-load-balancing-concepts/)
+- [Pulsar Transactions](https://pulsar.apache.org/docs/next/txn-how/)
 - [BookKeeper Overview](https://bookkeeper.apache.org/docs/overview/overview/)
+- [BookKeeper AutoRecovery](https://bookkeeper.apache.org/docs/admin/autorecovery/)
