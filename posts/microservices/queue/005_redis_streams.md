@@ -1,5 +1,5 @@
 ---
-weight: 13
+weight: 5
 title: "Redis Streams（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T14:00:00+08:00
 lastmod: 2026-09-07T23:30:00+08:00
@@ -16,7 +16,7 @@ toc:
 
 Redis Streams 是 Redis 数据类型，不是独立消息 Broker。它把消息追加到一个按 ID 排序的 Stream Key，并用 Consumer Group、Consumer 和 PEL 保存任务分工与待确认状态。
 
-本文用一个五节点 Redis Sentinel 部署和两个订单示例说明客户端最终连接谁、Group 保存哪些状态，以及 XACK 为什么不等于删除消息。异步复制、WAIT、主从切换和旧主恢复见[实现篇](014_redis_streams_implementation.md)。
+本文用一个五节点 Redis Sentinel 部署和两个订单示例说明客户端最终连接谁、Group 保存哪些状态，以及 XACK 为什么不等于删除消息。异步复制、WAIT、主从切换和旧主恢复见[实现篇](006_redis_streams_implementation.md)。
 
 <!-- more -->
 
@@ -238,7 +238,7 @@ Sentinel 与 Replica 都不是正常写命令终点。Redis Cluster 模式下，
 
 ## 6. 下一篇解决的实现问题
 
-以下内容见[Redis Streams 实现篇](014_redis_streams_implementation.md)：
+以下内容见[Redis Streams 实现篇](006_redis_streams_implementation.md)：
 
 - RDB、AOF 和异步复制分别保证什么；
 - `WAIT` 能缩小什么窗口，不能保证什么；

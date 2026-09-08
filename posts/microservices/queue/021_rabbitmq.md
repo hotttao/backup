@@ -1,5 +1,5 @@
 ---
-weight: 4
+weight: 21
 title: "RabbitMQ（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T10:00:00+08:00
 lastmod: 2026-09-07T23:00:00+08:00
@@ -23,7 +23,7 @@ RabbitMQ 同时提供两类消息模型：
 - **Queue**：一条消息最终交给一名 Consumer 完成，适合任务队列；
 - **Stream**：消息按顺序追加并保留，多个消费者可以从各自位置反复读取，适合事件流。
 
-二者共享 RabbitMQ 集群、用户、Virtual Host 和拓扑元数据，但生产、消费和存储语义并不相同。本文先用一套五节点环境和两个订单示例说明客户端到底连接谁、消息经过哪些组件，以及每个组件解决什么问题。复制提交和故障恢复分别放在 [Quorum Queue 实现篇](005_rabbitmq_queue_implementation.md) 与 [Stream 实现篇](006_rabbitmq_stream_implementation.md)。
+二者共享 RabbitMQ 集群、用户、Virtual Host 和拓扑元数据，但生产、消费和存储语义并不相同。本文先用一套五节点环境和两个订单示例说明客户端到底连接谁、消息经过哪些组件，以及每个组件解决什么问题。复制提交和故障恢复分别放在 [Quorum Queue 实现篇](022_rabbitmq_queue_implementation.md) 与 [Stream 实现篇](023_rabbitmq_stream_implementation.md)。
 
 <!-- more -->
 
@@ -866,8 +866,8 @@ Stream：Producer → 初始节点查询拓扑 → 客户端选分区 → Partit
 
 下一步实现问题包括：Quorum Queue 何时向 Producer Confirm、Leader 故障后未提交消息如何处理、Stream 如何形成多数派、分区 Leader 如何切换。这些分别见：
 
-- [RabbitMQ（二）：Queue 存储、复制、提交与故障恢复](005_rabbitmq_queue_implementation.md)
-- [RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复](006_rabbitmq_stream_implementation.md)
+- [RabbitMQ（二）：Queue 存储、复制、提交与故障恢复](022_rabbitmq_queue_implementation.md)
+- [RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复](023_rabbitmq_stream_implementation.md)
 
 ## 8. 参考资料
 

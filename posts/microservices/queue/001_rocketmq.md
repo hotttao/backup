@@ -1,5 +1,5 @@
 ---
-weight: 7
+weight: 1
 title: "RocketMQ（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T11:00:00+08:00
 lastmod: 2026-09-07T23:30:00+08:00
@@ -16,7 +16,7 @@ toc:
 
 RocketMQ 把消息按 Topic 分类，再把 Topic 切成 MessageQueue。MessageQueue 是存储、顺序和消费并行度的基本单位；ConsumerGroup 表示一套独立的订阅和消费进度。
 
-本文从五节点部署和两个订单示例说明 Producer、Consumer、NameServer、Controller 与 Broker 如何协作。CommitLog、ConsumeQueue、主从复制、确认时点和故障恢复放在[实现篇](008_rocketmq_implementation.md)。
+本文从五节点部署和两个订单示例说明 Producer、Consumer、NameServer、Controller 与 Broker 如何协作。CommitLog、ConsumeQueue、主从复制、确认时点和故障恢复放在[实现篇](002_rocketmq_implementation.md)。
 
 <!-- more -->
 
@@ -252,7 +252,7 @@ Controller → 管理 Broker 副本组的主备角色
 
 ## 6. 下一篇解决的实现问题
 
-以下内容见[RocketMQ 实现篇](008_rocketmq_implementation.md)：
+以下内容见[RocketMQ 实现篇](002_rocketmq_implementation.md)：
 
 - Topic、MessageQueue 如何映射到 CommitLog 和 ConsumeQueue；
 - 刷盘和主从复制配置如何决定 SendResult；

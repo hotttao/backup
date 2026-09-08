@@ -1,5 +1,5 @@
 ---
-weight: 17
+weight: 9
 title: "ZeroMQ（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T16:00:00+08:00
 lastmod: 2026-09-07T23:30:00+08:00
@@ -235,7 +235,7 @@ Publisher Socket → 当前在线且匹配的 Subscriber Socket
 
 ## 6. 下一篇解决的实现问题
 
-以下内容见[ZeroMQ 实现篇](018_zeromq_implementation.md)：
+以下内容见[ZeroMQ 实现篇](010_zeromq_implementation.md)：
 
 - `send()` 成功究竟证明什么；
 - 本地队列、TCP 缓冲区和对端队列形成哪些失败窗口；

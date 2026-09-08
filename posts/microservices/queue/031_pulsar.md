@@ -1,5 +1,5 @@
 ---
-weight: 9
+weight: 31
 title: "Pulsar（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T12:00:00+08:00
 lastmod: 2026-09-07T23:30:00+08:00
@@ -16,7 +16,7 @@ toc:
 
 Pulsar 把接入计算和消息存储分开：Broker 负责协议、Topic Partition 所有权和投递，BookKeeper 负责持久化日志。Broker 故障后转移的是 Topic Partition 的所有权，历史消息不需要跟着 Broker 搬迁。
 
-本文通过五节点部署和两个订单示例说明客户端最终连接谁、Owner Broker 做什么、Bookie 保存什么，以及 Subscription 如何形成不同消费语义。Ledger、Fragment、LAC、连续写入和 Bookie 故障恢复见[实现篇](010_pulsar_implementation.md)。
+本文通过五节点部署和两个订单示例说明客户端最终连接谁、Owner Broker 做什么、Bookie 保存什么，以及 Subscription 如何形成不同消费语义。Ledger、Fragment、LAC、连续写入和 Bookie 故障恢复见[实现篇](032_pulsar_implementation.md)。
 
 <!-- more -->
 
@@ -265,7 +265,7 @@ Producer / Consumer
 
 ## 6. 下一篇解决的实现问题
 
-以下内容见[Pulsar 实现篇](010_pulsar_implementation.md)：
+以下内容见[Pulsar 实现篇](032_pulsar_implementation.md)：
 
 - Topic、Managed Ledger、Ledger、Fragment、Entry Log 的映射；
 - Ensemble、Write Quorum、Ack Quorum 如何决定成功；

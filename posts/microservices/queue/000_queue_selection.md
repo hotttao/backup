@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 0
 title: "消息队列选型"
 date: 2025-09-06T08:00:00+08:00
 lastmod: 2025-09-08T08:00:00+08:00
@@ -292,23 +292,24 @@ AMQP 是一种消息协议。这里说的**复杂 AMQP 路由**，核心是 Brok
 
 ## 8. 系列文章
 
-- [Kafka（一）：架构、流程、核心抽象与语义](002_kafka.md)
-- [Kafka（二）：存储、多副本一致性与故障恢复](003_kafka_implementation.md)
-- [RabbitMQ（一）：通用架构、路由与消息语义](004_rabbitmq.md)
-- [RabbitMQ（二）：Queue 存储、多副本一致性与故障恢复](005_rabbitmq_queue_implementation.md)
-- [RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复](006_rabbitmq_stream_implementation.md)
-- [RocketMQ（一）：架构、流程、核心抽象与语义](007_rocketmq.md)
-- [RocketMQ（二）：存储、多副本一致性与故障恢复](008_rocketmq_implementation.md)
-- [Apache Pulsar（一）：架构、流程、核心抽象与语义](009_pulsar.md)
-- [Apache Pulsar（二）：存储、多副本一致性与故障恢复](010_pulsar_implementation.md)
-- [NATS JetStream（一）：架构、流程、核心抽象与语义](011_nats_jetstream.md)
-- [NATS JetStream（二）：存储、多副本一致性与故障恢复](012_nats_jetstream_implementation.md)
-- [Redis Streams（一）：架构、流程、核心抽象与语义](013_redis_streams.md)
-- [Redis Streams（二）：存储、主从复制与故障恢复](014_redis_streams_implementation.md)
-- [ActiveMQ Artemis（一）：架构、流程、核心抽象与语义](015_activemq_artemis.md)
-- [ActiveMQ Artemis（二）：存储、高可用与故障恢复](016_activemq_artemis_implementation.md)
-- [ZeroMQ（一）：架构、流程、核心抽象与语义](017_zeromq.md)
-- [ZeroMQ（二）：传输边界、可靠性与故障处理](018_zeromq_implementation.md)
+- [RocketMQ（一）：架构、流程、核心抽象与语义](001_rocketmq.md)
+- [RocketMQ（二）：存储、多副本一致性与故障恢复](002_rocketmq_implementation.md)
+- [NATS JetStream（一）：架构、流程、核心抽象与语义](003_nats_jetstream.md)
+- [NATS JetStream（二）：存储、多副本一致性与故障恢复](004_nats_jetstream_implementation.md)
+- [Redis Streams（一）：架构、流程、核心抽象与语义](005_redis_streams.md)
+- [Redis Streams（二）：存储、主从复制与故障恢复](006_redis_streams_implementation.md)
+- [ActiveMQ Artemis（一）：架构、流程、核心抽象与语义](007_activemq_artemis.md)
+- [ActiveMQ Artemis（二）：存储、高可用与故障恢复](008_activemq_artemis_implementation.md)
+- [ZeroMQ（一）：架构、流程、核心抽象与语义](009_zeromq.md)
+- [ZeroMQ（二）：传输边界、可靠性与故障处理](010_zeromq_implementation.md)
+- [Kafka（一）：架构、流程、核心抽象与语义](011_kafka.md)
+- [Kafka（二）：存储、多副本一致性、事务与故障恢复](012_kafka_implementation.md)
+- [Kafka（三）：安全、运维与跨地域灾备](013_kafka_operations.md)
+- [RabbitMQ（一）：通用架构、路由与消息语义](021_rabbitmq.md)
+- [RabbitMQ（二）：Queue 存储、多副本一致性与故障恢复](022_rabbitmq_queue_implementation.md)
+- [RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复](023_rabbitmq_stream_implementation.md)
+- [Apache Pulsar（一）：架构、流程、核心抽象与语义](031_pulsar.md)
+- [Apache Pulsar（二）：存储、多副本一致性与故障恢复](032_pulsar_implementation.md)
 
 ## 9. 参考资料
 

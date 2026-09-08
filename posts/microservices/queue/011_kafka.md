@@ -1,5 +1,5 @@
 ---
-weight: 1
+weight: 11
 title: "Kafka（一）：架构、流程、核心抽象与语义"
 date: 2025-09-06T09:00:00+08:00
 lastmod: 2025-09-07T9:00:00+08:00
@@ -21,7 +21,7 @@ Kafka 的第一性原理是：把事件追加到可复制、可保留的分区�
 2. Producer 和 Consumer 最终连接谁；
 3. Topic、Partition、Consumer Group 和 Offset 在流程中分别解决什么问题。
 
-ISR、HW、完整提交过程和 Leader 故障恢复放在[实现篇](003_kafka_implementation.md)。
+ISR、HW、完整提交过程和 Leader 故障恢复放在[实现篇](012_kafka_implementation.md)。
 
 <!-- more -->
 
@@ -45,62 +45,120 @@ ISR、HW、完整提交过程和 Leader 故障恢复放在[实现篇](003_kafka_
 
 Bootstrap Broker 只是发现入口。客户端获取元数据后直接连接目标 Partition Leader，不由 Bootstrap Broker 代理全部流量。
 
-### 1.1 完整生产架构
+### 1.1 生产消息架构
+
+下面按组件组织架构：Controller 组件有三个节点，Broker 组件有五个节点，业务 Partition 组件包含一个 Leader 和两个 Follower。节点标签中的主机名说明它实际部署在哪里。
 
 ```mermaid
 flowchart TB
-    subgraph APP["应用"]
-        TP["任务 Producer"]
-        TW["任务 Workers"]
-        EP["事件 Producer"]
-        EC["事件 Consumers"]
+    P["Producer"]
+    BOOT["Bootstrap Broker\nkafka-1 · 10.0.0.11"]
+
+    subgraph CTRL["KRaft Controller 组件"]
+        C1["Controller kafka-1"]
+        C2["Controller kafka-2"]
+        C3["Controller kafka-3"]
+        META["KRaft Metadata Log"]
     end
 
-    BOOT["Bootstrap Brokers\n10.0.0.11-13:9092"]
-
-    subgraph CLUSTER["Kafka 五节点集群"]
-        subgraph CTRL["KRaft Controller 仲裁组"]
-            C1["Controller kafka-1"]
-            C2["Controller kafka-2"]
-            C3["Controller kafka-3"]
-        end
+    subgraph BROKERS["Broker 组件"]
         B1["Broker kafka-1"]
         B2["Broker kafka-2"]
         B3["Broker kafka-3"]
         B4["Broker kafka-4"]
         B5["Broker kafka-5"]
-        META["集群元数据日志\nTopic Partition 副本 Leader"]
-        TASK["order-tasks\n3 个 Partition"]
-        EVENT["order-events\n3 个 Partition"]
-        OFF["__consumer_offsets\nGroup 的已提交 Offset"]
-        C1 --- META
-        C2 --- META
-        C3 --- META
-        B1 --- TASK
-        B2 --- TASK
-        B3 --- EVENT
-        B4 --- EVENT
-        B5 --- OFF
     end
 
-    TP --> BOOT
-    TW --> BOOT
-    EP --> BOOT
-    EC --> BOOT
-    BOOT -. "返回元数据" .-> META
-    TP -. "发现后直连 Leader" .-> TASK
-    TW -. "拉取 Partition" .-> TASK
-    EP -. "发现后直连 Leader" .-> EVENT
-    EC -. "拉取 Partition" .-> EVENT
+    subgraph PARTITION["order-tasks P1 副本组"]
+        L1["Leader\non kafka-4"]
+        F1["Follower\non kafka-1"]
+        F5["Follower\non kafka-5"]
+    end
+
+    C1 --- META
+    C2 --- META
+    C3 --- META
+    META -.->|"发布元数据\n同类连线只画一条"| B4
+
+    P -->|"查询元数据"| BOOT
+    BOOT --- B1
+    P -->|"Produce P1"| B4
+    B4 --> L1
+    L1 -->|"复制日志"| F1
 ```
 
-- **Controller** 管理集群元数据、Partition Leader 和副本分配，不转发每条业务消息。
-- **Broker** 保存 Partition 副本，并处理 Produce、Fetch、Group 和 Offset 请求。
-- **客户端**先连接 Bootstrap Broker 做发现，之后按请求类型连接对应 Broker。
+图中先回答“Kafka 有哪些组件、每个组件有几个节点”，再用 `on kafka-x` 表示共置关系。P1 Leader 还会复制给 `kafka-5` 上的 Follower；由于与 Leader 到 `kafka-1` 的关系相同，只保留一条代表线。
+
+这条路径中有三个角色：
+
+- **Controller** 决定 Topic、Partition、副本和 Leader 等集群元数据，不转发每条业务消息。
+- **Bootstrap Broker** 是发现入口。它告诉 Producer 目标 Partition 的 Leader 在哪里，不代理后续写入。
+- **Partition Leader** 接收 Produce 请求并分配 Offset；Follower 复制 Leader 的日志。
 
 一个 Topic 可以有多个 Partition，每个 Partition 又可以有多个副本。五个 Broker 不表示每条消息固定写五份。
 
-### 1.2 Kafka 保存的三类数据
+### 1.2 消费消息架构
+
+消费图同样按组件组织：Consumer Group、Broker、Group Coordinator、业务 Partition Leader 和 `__consumer_offsets` 副本组各自独立。Consumer 先找 Coordinator 完成组协调，再直连业务 Partition Leader 拉取消息。
+
+```mermaid
+flowchart TB
+    subgraph GROUP["fulfill-workers Consumer Group"]
+        W1["worker-1\n消费 P0"]
+        W2["worker-2\n消费 P1"]
+        W3["worker-3\n消费 P2"]
+    end
+
+    ENTRY["Bootstrap Broker\nkafka-1"]
+
+    subgraph BROKERS["Broker 组件"]
+        B1["Broker kafka-1"]
+        B2["Broker kafka-2"]
+        B3["Broker kafka-3"]
+        B4["Broker kafka-4"]
+        B5["Broker kafka-5"]
+    end
+
+    subgraph COORDINATION["Group Coordinator 组件"]
+        GC["fulfill-workers Coordinator\non kafka-2"]
+    end
+
+    subgraph TASK["order-tasks Partition Leader"]
+        P0["P0 Leader\non kafka-2"]
+        P1["P1 Leader\non kafka-4"]
+        P2["P2 Leader\non kafka-5"]
+    end
+
+    subgraph OFFSETS["__consumer_offsets P7 副本组"]
+        OL["Leader\non kafka-2"]
+        O1["Follower\non kafka-1"]
+        O3["Follower\non kafka-3"]
+    end
+
+    W2 -->|"FindCoordinator"| ENTRY
+    ENTRY --- B1
+    W2 -->|"加入、心跳、提交 Offset"| B2
+    B2 -->|"组协调请求"| GC
+    GC -->|"保存 Group 元数据和 Offset"| OL
+    W2 -->|"Fetch P1"| B4
+    B4 --> P1
+    OL -->|"复制"| O1
+```
+
+连接只用 `worker-2` 的路径作为代表：另外两个 Worker 会以相同方式连接 Coordinator，并分别连接 P0、P2 Leader；offsets P7 还会复制到 `kafka-3`。这些节点仍然完整画出，只省略重复连线。
+
+这里的 **Group Coordinator** 不是独立部署的新服务，而是某个 Broker 针对一组 Consumer Group 承担的逻辑角色：
+
+1. Consumer 可以询问任意 Broker，找到自己 Group 的 Coordinator。
+2. Coordinator 接收成员加入、退出和心跳，维护组状态，并推动 Partition 分配。
+3. Consumer 得到分配后，绕过 Coordinator，直接连接对应的 Partition Leader Fetch 数据。
+4. Consumer 完成业务后把 Offset 提交给 Coordinator；Coordinator 将其写入 `__consumer_offsets`。
+
+`group.id` 会映射到 `__consumer_offsets` 的某个 Partition，该 Partition 的 Leader 所在 Broker 承担这个 Group 的 Coordinator。例如，后面的订单示例假设 `fulfill-workers` 映射到 P7，而 P7 Leader 位于 `kafka-2`。这只是当前分配，不表示 `kafka-2` 永远是所有 Group 的 Coordinator。
+
+因此，Consumer 实际连接的对象不止一个：**向 Coordinator 发送组协调和 Offset 请求，向各业务 Partition Leader 发送 Fetch 请求**。
+
+### 1.3 Kafka 保存的三类数据
 
 - **集群元数据**
   - 解决的问题：有哪些 Broker、Topic 和 Partition，每个副本在哪，谁是 Leader。
@@ -283,19 +341,62 @@ Consumer → Group Coordinator 加入和分配
 
 Controller 不在每条消息的数据路径中，Bootstrap Broker 也不是固定代理。
 
-## 6. 下一篇解决的实现问题
+## 6. 后续两篇解决的问题
 
-以下内容见[Kafka 实现篇](003_kafka_implementation.md)：
+以下内容见[Kafka 实现篇](012_kafka_implementation.md)：
 
 - Partition 日志和索引如何组织；
 - Follower 如何推进 LEO，Leader 如何计算 HW；
 - ISR、`acks` 和 `min.insync.replicas` 如何决定提交；
 - Leader 切换时如何区分已提交与未提交消息；
-- 旧 Leader 恢复后如何截断分叉日志。
+- 旧 Leader 恢复后如何截断分叉日志；
+- Kafka 事务如何让多 Partition 写入和 Consumer Offset 原子提交。
+
+安全、多租户、监控、升级与跨地域灾备见[Kafka 运维与灾备篇](013_kafka_operations.md)。
 
 ## 7. 参考资料
 
 - [Kafka Design](https://kafka.apache.org/documentation/#design)
+- [Kafka Consumer Offset Tracking](https://kafka.apache.org/42/implementation/distribution/)
 - [Kafka Producer Configs](https://kafka.apache.org/documentation/#producerconfigs)
 - [Kafka Consumer Configs](https://kafka.apache.org/documentation/#consumerconfigs)
 - [Kafka KRaft](https://kafka.apache.org/documentation/#kraft)
+
+## 附录：Kafka 完整架构图
+
+```mermaid
+flowchart LR
+    P[Producer] -->|获取 Topic 元数据| B1
+    P -->|按 Key 写入 P0| B1[Broker 1\nP0 Leader\nGroup / Transaction Coordinator]
+
+    subgraph D[数据面：Broker 与 Partition Log]
+        B1 -->|复制 P0 Log| B2[Broker 2\nP0 Follower]
+        B1 -->|复制 P0 Log| B3[Broker 3\nP0 Follower]
+        B1 --- L1[本地 Log Segment / Index]
+        B2 --- L2[本地副本]
+        B3 --- L3[本地副本]
+        L1 -. 冷数据可卸载 .-> RS[Remote Storage\n可选分层存储]
+    end
+
+    CG[Consumer Group] -->|Join / Heartbeat / Offset Commit| B1
+    CG -->|Fetch P0| B1
+    B1 --- O[__consumer_offsets\n消费位点与组状态]
+
+    SG[Share Group] -->|按记录获取与确认| B1
+    B1 --- SS[__share_group_state\n记录锁与投递状态]
+
+    TP[Transactional Producer] -->|Begin / Commit / Abort| B1
+    B1 --- TS[__transaction_state\n事务状态]
+
+    subgraph Q[控制面：KRaft Metadata Quorum]
+        Q1[Active Controller]
+        Q2[Standby Controller]
+        Q3[Standby Controller]
+        Q1 <-->|Raft Metadata Log| Q2
+        Q1 <-->|Raft Metadata Log| Q3
+    end
+
+    Q1 -. Broker 注册 / Topic / Partition / Leader / ISR .-> B1
+    Q1 -.-> B2
+    Q1 -.-> B3
+```

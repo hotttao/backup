@@ -1,5 +1,5 @@
 ---
-weight: 11
+weight: 3
 title: "NATS JetStream（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T13:00:00+08:00
 lastmod: 2026-09-07T23:30:00+08:00
@@ -16,7 +16,7 @@ toc:
 
 Core NATS 是在线消息总线；JetStream 在其上增加持久化、确认、重投和回放。选型前必须先回答：业务只需要把消息实时转给当前在线的订阅者，还是在无人消费时也必须保存消息？本文讨论后者。
 
-本文通过五节点和两个订单示例说明 Subject、Stream、Consumer、Retention Policy 如何组合。Raft 日志、Leader 切换和临界故障窗口见[实现篇](012_nats_jetstream_implementation.md)。
+本文通过五节点和两个订单示例说明 Subject、Stream、Consumer、Retention Policy 如何组合。Raft 日志、Leader 切换和临界故障窗口见[实现篇](004_nats_jetstream_implementation.md)。
 
 <!-- more -->
 
@@ -249,7 +249,7 @@ Worker → 任一 NATS 节点
 
 ## 6. 下一篇解决的实现问题
 
-以下内容见[NATS JetStream 实现篇](012_nats_jetstream_implementation.md)：
+以下内容见[NATS JetStream 实现篇](004_nats_jetstream_implementation.md)：
 
 - 元数据、Stream 和 Consumer 为什么是不同 Raft Group；
 - PubAck 的多数派提交边界；

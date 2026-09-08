@@ -1,12 +1,12 @@
 ---
-weight: 10
+weight: 32
 title: "Apache Pulsar（二）：存储、多副本一致性与故障恢复"
 date: 2026-09-06T12:00:00+08:00
-lastmod: 2026-09-07T18:00:00+08:00
+lastmod: 2026-09-08T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "从核心抽象出发，理解 Pulsar 的分区、订阅、BookKeeper 多副本、确认时点、故障恢复与长积压能力"
+description: "沿 Managed Ledger、BookKeeper Quorum 与 Managed Cursor，理解 Pulsar 的确认时点、LAC、Bookie 切换与故障恢复"
 featuredImage:
 
 tags: ["message-queue", "pulsar"]
@@ -18,9 +18,11 @@ toc:
   auto: false
 ---
 
+[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC、Ensemble 变化和 Cursor 恢复解释提交与故障。
 
+<!-- more -->
 
-## 4. 存储模型：Ledger、Entry 和 Cursor
+## 1. 存储模型：Managed Ledger、Ledger、Entry 和 Cursor
 
 ```mermaid
 flowchart LR
@@ -39,9 +41,26 @@ flowchart LR
 2. Ledger 的副本集合可以在故障后更换，因此一个 Topic 的不同历史段可分布在不同 Bookie；
 3. Cursor 也是持久状态，Broker 切换后新 Owner 会从存储恢复，而不是从客户端猜测消费进度。
 
+物理存储关系是：
+
+```text
+Managed Ledger 元数据
+    → 记录 Topic 由哪些 Ledger 首尾组成
+
+Ledger 元数据
+    → Ledger ID、Ensemble、Fragment 边界、Quorum 参数
+    → 保存于 Metadata Store
+
+Ledger Entry
+    → Bookie 先写 Journal，再进入 Entry Log
+    → Index 把 ledgerId + entryId 映射到 Entry Log 位置
+```
+
+Ledger 不是 Bookie 上的一个文件，Fragment 也不是独立文件。一个 Entry Log 文件可以混合保存多个 Ledger 的 Entry；Fragment 只是 Ledger 元数据中“这一段 Entry 使用哪组 Bookie”的逻辑范围。
+
 Broker 缓存用于降低读延迟，但不构成持久化保证。真正的确认边界在 BookKeeper Journal 和 Ack Quorum。
 
-## 5. BookKeeper 多副本的三个参数
+## 2. BookKeeper 多副本的三个参数
 
 每个 Ledger 由三个参数定义副本写入范围：
 
@@ -61,7 +80,7 @@ E >= Qw >= Qa
 
 `Qa=2` 可以安全承受一个已确认副本丢失；若要抵抗机架或可用区故障，还必须使用 rack-aware 或 region-aware 放置策略。三个副本若都在同一故障域，仍然只能抵抗单机故障。
 
-## 6. 消息何时可以返回成功
+## 3. 消息何时可以返回成功
 
 以下都假设当前 Ledger 的参数是：
 
@@ -73,11 +92,11 @@ E = 3，Qw = 3，Qa = 2
 
 每条 Entry 会发给三个 Bookie，但得到任意两个持久化 ACK 就满足 `Qa=2`。不同 Entry 不要求由完全相同的两个 Bookie 确认。
 
-### 6.1 两次连续写入：第二次 Bookie 2 掉线
+### 3.1 两次连续写入：第二次 Bookie 2 掉线
 
 假设 Producer 连续发送 `M0`、`M1`，Broker 分别把它们写成 `Entry 0`、`Entry 1`。
 
-#### 6.1.1 Entry 0 由 Bookie 1、2 确认
+#### 3.1.1 Entry 0 由 Bookie 1、2 确认
 
 ```mermaid
 sequenceDiagram
@@ -108,7 +127,7 @@ sequenceDiagram
 
 第一次返回成功时，已经确定至少 Bookie 1、2 持久保存了 Entry 0。Bookie 3 可以稍后追上；`Qa=2` 不要求为了这次响应等待全部三个 Bookie。
 
-#### 6.1.2 Entry 1 写入时 Bookie 2 掉线
+#### 3.1.2 Entry 1 写入时 Bookie 2 掉线
 
 为便于观察连续历史，假设 Bookie 3 的迟到写入已经完成 Entry 0。Entry 0 成功后，Writer 的 LAC 是 0，因此 Entry 1 会把 `priorLAC=0` 一起写给 Bookie：
 
@@ -148,7 +167,7 @@ Bookie 2 掉线后是否立刻换成 Bookie 4，还受客户端的 Ensemble Chan
 
 这解释了 `Qw=3、Qa=2` 的取舍：目标是最终有三个写入副本，但 Producer 的成功条件是两个持久副本；第三份副本可以通过迟到写入、Ensemble Change 或后续修复补齐。
 
-### 6.2 第二次写入必须等待第一次吗
+### 3.2 第二次写入必须等待第一次吗
 
 要区分“能否开始写”和“能否返回成功”：
 
@@ -195,11 +214,11 @@ Entry 1：已经向 Producer 返回成功
 
 BookKeeper 对外承诺的是一段没有空洞的连续日志，而不是若干彼此独立的成功 Entry。
 
-### 6.3 LastAddConfirmed 到底保存在哪里
+### 3.3 LastAddConfirmed 到底保存在哪里
 
 LastAddConfirmed（LAC）表示 Writer 已经按顺序完成 Ack Quorum 的最后一个 Entry ID。它分为三种形态，不能混成“所有 Bookie 上的同一个变量”。
 
-#### 6.3.1 Writer 内存中的权威 LAC
+#### 3.3.1 Writer 内存中的权威 LAC
 
 Ledger 正常写入时，当前 LedgerHandle/Owner Broker 在内存中维护权威的 `Writer.LAC`：
 
@@ -210,7 +229,7 @@ Entry 1 连续达到 Qa → Writer.LAC = 1
 
 它决定当前 Writer 已经成功确认到哪里。LAC 不会在每次写入后都更新到 Metadata Store；Metadata Store 中的 Ledger `lastEntryId` 通常是在 Ledger 被 CLOSED 后才成为最终结尾。
 
-#### 6.3.2 普通 Entry 中携带的 priorLAC
+#### 3.3.2 普通 Entry 中携带的 priorLAC
 
 每次写 Entry 时，协议会把“发送这一条时已经确认到哪里”放进 Entry 头部。Bookie 把整个 Entry 写入 Journal，因此这个 priorLAC 会随 Entry 一起持久保存：
 
@@ -222,13 +241,13 @@ Entry 2 携带 priorLAC=1
 
 注意，Entry 1 达到 Qa 后 Writer 才能把 LAC 推进到 1，所以 Entry 1 通常只能携带此前的 LAC=0；要让 Bookie 从普通写入中知道 LAC=1，需要后续 Entry 2 把它带过去。
 
-#### 6.3.3 可选的 Explicit LAC
+#### 3.3.3 可选的 Explicit LAC
 
 如果一段时间没有下一条 Entry，Writer 可以按配置发送 Explicit LAC，把最新 LAC 单独传播给 Bookie。现代 Bookie 存储格式可以把 Explicit LAC 写入 Journal，并保存在 Ledger 的 FileInfo 中。
 
 Explicit LAC 解决的是“最后一条已确认 Entry 后面没有新 Entry，Bookie 如何尽快知道最新 LAC”。它不会改变 Entry 是否曾达到 Ack Quorum，也不是三个 Bookie 之间的共识投票。
 
-### 6.4 三个 Bookie 如何对齐 LAC
+### 3.4 三个 Bookie 如何对齐 LAC
 
 答案是：**正常写入期间不要求三个 Bookie 的本地 LAC 时刻完全一致。** 它们不会互相同步 LAC，也不会共同选举一个 LAC。
 
@@ -250,7 +269,7 @@ Explicit LAC 解决的是“最后一条已确认 Entry 后面没有新 Entry，
 1. 平时通过后续 Entry 或 Explicit LAC 让各 Bookie 逐步学到更新位置；
 2. 故障时通过 Quorum 查询、fencing、向后扫描和 CAS Close 确定唯一最终结尾。
 
-### 6.5 未确认 Entry 如何处理
+### 3.5 未确认 Entry 如何处理
 
 假设 Writer 已经确认到 Entry 1，即 `Writer.LAC=1`，随后 Entry 2 只写入 Bookie 3，尚未达到 `Qa=2`，Broker 就故障：
 
@@ -271,7 +290,7 @@ Entry 2 位于已确认连续前缀之后，普通读者不能把它直接当成
 
 因此，Producer 没收到 Entry 2 的成功响应时，结果仍然未知：它可能在 Recovery 中被保留，也可能被舍弃。Producer 要用相同业务事件 ID 重试，Consumer 仍需幂等。
 
-### 6.6 Journal 持久化与 DEFERRED_SYNC
+### 3.6 Journal 持久化与 DEFERRED_SYNC
 
 正常耐久写入的过程可以简化为：
 
@@ -298,7 +317,7 @@ DEFERRED_SYNC 成功
 
 本文讨论 Pulsar 持久 Topic 的成功语义时，默认指普通 Durable Add。除非应用明确选择了放松持久性的底层模式，并接受最近一段已响应数据在掉电时丢失，否则不能把 `DEFERRED_SYNC` 的成功称为“持久化成功”。这里所谓重新定义 RPO，就是明确承认：故障时允许丢掉多少条或多长时间内已经返回的消息。
 
-## 7. Pulsar 是否采用主从复制或半同步
+## 4. Pulsar 是否采用主从复制或半同步
 
 对持久 Topic 的消息数据来说，答案是：**不是 Broker 主从复制**。
 
@@ -310,9 +329,9 @@ DEFERRED_SYNC 成功
 
 如果一定要与半同步主从类比，`Qa < Qw` 看起来像“等待部分副本后返回”，但 BookKeeper 更准确的术语是 Ack Quorum。使用正确术语能避免误以为某个 Slave 会带着本地日志直接接管 Topic。
 
-## 8. Broker 故障的临界场景
+## 5. Broker 故障的临界场景
 
-### 8.1 M 未达到 Qa，Broker 就故障
+### 5.1 M 未达到 Qa，Broker 就故障
 
 ```mermaid
 sequenceDiagram
@@ -348,7 +367,7 @@ sequenceDiagram
 
 因此 M 虽未达到 Qa，也可能在 Recovery 中被保留；也可能因无法读取而被舍弃。Producer 没收到成功时不能推断 M 一定不存在，应使用同一业务事件 ID 重试并接受可能重复。
 
-### 8.2 M 已达到 Qa，但响应丢失
+### 5.2 M 已达到 Qa，但响应丢失
 
 ```mermaid
 sequenceDiagram
@@ -373,13 +392,13 @@ sequenceDiagram
 - 消息携带稳定业务 `event_id`；
 - Consumer 仍按业务 ID 幂等，因为消费重投也会制造重复。
 
-### 8.3 Producer 已收到成功，Broker 随后故障
+### 5.3 Producer 已收到成功，Broker 随后故障
 
 只要仍有足够的已确认 Bookie 副本可读，新 Broker 的 Recovery 就能保留 M。Broker 本身无需拥有 M 的本地完整副本。
 
 但保证范围由 `Qa` 和故障域放置共同决定。如果 `Qa=2` 的两个确认副本所在整机架同时损坏，Producer 收到成功也不能创造不存在的第三份持久数据。
 
-## 9. 旧 Broker 恢复后如何避免双写
+## 6. 旧 Broker 恢复后如何避免双写
 
 Pulsar 用两个层次保持单一历史：
 
@@ -390,9 +409,9 @@ Pulsar 用两个层次保持单一历史：
 
 新 Owner 会封闭旧 Ledger、创建新 Ledger。旧 Broker 恢复后重新参与 Broker 集群，可以接管别的 Bundle，但不能把旧 Ledger 的孤立尾部自行重新发布。
 
-## 10. Bookie 故障和副本修复
+## 7. Bookie 故障和副本修复
 
-### 10.1 正在写入时的 Ensemble 变化
+### 7.1 正在写入时的 Ensemble 变化
 
 一个 Ledger 可以包含多个 Fragment，每个 Fragment 有自己的 Ensemble。Bookie 故障后，BookKeeper 客户端可以选择新 Bookie 替换它，并从新的 Entry 起形成新 Fragment：
 
@@ -406,7 +425,7 @@ Ledger 12
 
 若当前健康 Bookie 数量或放置条件无法满足 `E/Qw/Qa`，写入会阻塞或失败。继续有响应和继续满足承诺的副本安全，是两个不同指标。
 
-### 10.2 AutoRecovery
+### 7.2 AutoRecovery
 
 AutoRecovery 分为两个逻辑角色：
 
@@ -415,11 +434,59 @@ AutoRecovery 分为两个逻辑角色：
 
 AutoRecovery 修复的是“已存在但副本数不足”的历史数据。它不能恢复所有副本都已经丢失的数据，也不能替代正常写入路径上的 Ack Quorum。
 
-### 10.3 下线 Bookie
+### 7.3 下线 Bookie
 
 不能因为 Bookie 上没有“完整 Topic”就直接关机。一个 Bookie 通常包含大量 Topic 的部分 Ledger Fragment。安全下线流程应先禁止新分配，再执行 decommission/re-replication，确认欠副本清零后才移除节点。
 
-## 14. Tiered Storage 与长历史
+## 8. Subscription Cursor、Ack 与故障恢复
+
+第一篇的 `fulfill-workers` 并不是 Owner Broker 内存中的一个简单 Offset。Managed Cursor 至少需要表达：
+
+- Mark-delete Position：此前连续确认完成的位置；
+- Individual Deleted Ranges：Mark-delete 之后已经单独 Ack 的洞；
+- Subscription Properties 和持久标识；
+- 当前 Dispatcher、Consumer、Permit 和 Unacked 运行状态。
+
+持久 Cursor 由 Managed Ledger 子系统管理。Cursor 名称和元数据通过 Metadata Store 发现，频繁变化的 Cursor 状态可以写入 BookKeeper 的 Cursor Ledger；在失败或特定配置路径下也可能回写 Metadata Store。关键结论是：Owner Broker 故障后，Cursor 能从持久存储恢复，不依赖客户端上报一个猜测位置。
+
+### 8.1 连续 Ack 与乱序 Ack
+
+假设 Entry 0～10 已投递：
+
+```text
+0..7 已连续 Ack
+8 尚未 Ack
+9、10 已 Ack
+
+Mark-delete = 7
+Individual Ack Holes = {9, 10}
+```
+
+因为 8 仍未完成，Mark-delete 不能直接推进到 10。Shared/Key_Shared 允许多个 Consumer 并行处理，Cursor 必须同时保存连续前缀与后面的 Ack 洞。
+
+乱序未确认范围过多会增加 Cursor 元数据、恢复和重投成本。不能只监控 Backlog 总数，还要观察 Unacked、Redelivery 和 Ack Hole。
+
+### 8.2 Owner Broker 在 Ack 前故障
+
+1. Consumer 已收到消息，业务可能正在处理；
+2. Ack 尚未成为持久 Cursor 状态，Owner Broker 故障；
+3. 新 Broker 获得 Topic 所有权；
+4. 新 Owner 加载 Managed Ledger 与 Cursor；
+5. 未被持久确认的消息重新投递。
+
+如果业务数据库已经提交，这次重投会产生重复。因此 Subscription 恢复提供的是至少一次，而不是跨数据库精确一次。
+
+### 8.3 Ack 已持久化，但响应丢失
+
+消息可能已经从 Cursor 的未确认范围中移除，但 Consumer 没收到 Ack 结果。客户端不能靠超时判断服务端最终状态。若消息再次出现，业务幂等处理；若没有再次出现，也不能由 Consumer 主动跳过一个更大的未知区间。
+
+### 8.4 不同 Subscription 互不推进
+
+`warehouse`、`risk`、`analytics` 各有自己的 Managed Cursor。最慢 Subscription 决定其 Backlog 保留压力；一个 Subscription Ack 不会修改另一个 Cursor。
+
+Retention 与 Backlog Quota 仍可能删除或限制积压。Cursor 表示消费位置，不等于永远钉住所有历史数据。
+
+## 9. Tiered Storage 与长历史
 
 封闭 Ledger 已经不可变，可以异步复制到 S3、GCS、OSS 或文件系统等低成本存储。完成下沉并经过安全等待后，本地 BookKeeper 副本可以删除，Consumer 读取旧历史时由 Broker 透明访问冷存储。
 
@@ -432,7 +499,7 @@ AutoRecovery 修复的是“已存在但副本数不足”的历史数据。它�
 
 Topic Compaction 则是另一种能力：按 Key 保留最新值的紧凑视图，适合重建最新状态，不等于保存完整审计历史。Retention、TTL、Compaction 和 Tiered Storage 不能互相替代。
 
-## 19. 扩缩容和热点
+## 10. 扩缩容和热点
 
 Pulsar 的存算分离使两类扩容相对独立：
 
@@ -448,7 +515,7 @@ Pulsar 的存算分离使两类扩容相对独立：
 - 所有 Broker 共享 BookKeeper 时，存储热点可能影响多个租户；
 - 元数据操作和百万 Topic 会给 Metadata Store、Bundle 调度和客户端连接带来压力。
 
-## 20. 跨地域复制
+## 11. 跨地域复制
 
 Pulsar 的异步 Geo-replication 在消息本地持久化后，由 Broker 复制到远端集群。远端中断时本地仍可写，代价是存在复制积压和非零 RPO。
 
@@ -463,25 +530,25 @@ Pulsar 也可以通过 BookKeeper region-aware placement 把 Ack Quorum 跨地�
 
 Active-active 还需要处理多地域同时写入的业务冲突、重复和顺序。跨集群复制能搬运消息，不能自动建立跨地域全局业务顺序。
 
-## 21. 运维时真正要观察什么
+## 12. 运维时真正要观察什么
 
 至少需要覆盖四层指标：
 
-### 21.1 Producer 与 Broker
+### 12.1 Producer 与 Broker
 
 - 发布成功率、超时、重试、吞吐和 P99 延迟；
 - Topic/Partition/Bundle 的 Owner 变更和重连次数；
 - Broker CPU、堆外内存、Direct Memory、缓存命中和连接数；
 - 单 Topic/Partition 热点，而不只是集群平均值。
 
-### 21.2 Subscription
+### 12.2 Subscription
 
 - 每个 Subscription 的 backlog 数量和字节；
 - 最老未确认消息年龄；
 - ACK、Negative ACK、Redelivery 和死信增长；
 - Consumer 可用数、处理延迟和未确认消息数量。
 
-### 21.3 BookKeeper
+### 12.3 BookKeeper
 
 - Journal 写入和 fsync 延迟；
 - Ledger/Entry 读写错误；
@@ -489,7 +556,7 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 - 欠副本 Ledger 数、AutoRecovery 队列和修复速度；
 - Ensemble 是否满足机架/地域放置策略。
 
-### 21.4 元数据与冷存储
+### 12.4 元数据与冷存储
 
 - Metadata Store quorum、会话延迟和连接异常；
 - Ledger 元数据 CAS、Topic 加载和 Bundle 分配失败；
@@ -498,7 +565,18 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 
 Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入仍会失败；Bookie 都存活也不代表可用：Metadata Store 失去多数派后，所有权和 Ledger 元数据变更会受阻。
 
-## 25. 参考资料
+## 13. 实现结论
+
+- Topic Partition 的长期日志是 Managed Ledger；Ledger、Fragment 和 Bookie 物理文件是不同层次。
+- Owner Broker 是单 Writer，Bookie 是对等存储节点，因此不是传统主从半同步。
+- `E/Qw/Qa` 分别决定放置范围、单 Entry 写入范围和成功确认数量。
+- Writer 的 LAC、Entry 携带的 priorLAC 与可选 Explicit LAC 解决不同层次的确认信息传播。
+- 未达到 Qa 的 Entry 不能成为恢复后的有效承诺；达到 Qa 但响应丢失仍会导致 Producer 重试和重复。
+- Bookie 切换可以在同一 Ledger 内形成新 Fragment；Ledger 滚动与 Bookie 切换不是同一事件。
+- Managed Cursor 会持久化 Mark-delete 与 Ack 洞，但不能把外部业务事务变成精确一次。
+- Broker、Bookie 和 Metadata Store 分别有独立故障面，运维必须同时观察。
+
+## 14. 参考资料
 
 - [Apache Pulsar 4.2 Architecture Overview](https://pulsar.apache.org/docs/4.2.x/concepts-architecture-overview/)
 - [Apache Pulsar 4.2 Messaging Concepts](https://pulsar.apache.org/docs/4.2.x/concepts-messaging/)

@@ -1,5 +1,5 @@
 ---
-weight: 15
+weight: 7
 title: "ActiveMQ Artemis（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T15:00:00+08:00
 lastmod: 2026-09-07T23:30:00+08:00
@@ -16,7 +16,7 @@ toc:
 
 Artemis 的核心不是先选择“Topic 或 Queue”，而是 Producer 把消息发送到 Address，再由 Routing Type 把消息放进一个或多个绑定 Queue。真正保存积压、分配 Consumer 和处理 Ack 的实体是 Queue。
 
-本文用五节点部署和两个订单示例说明 Address、Queue、Anycast、Multicast、Broker Cluster 与 HA Pair 的关系。Journal、Paging、复制确认和故障恢复见[实现篇](016_activemq_artemis_implementation.md)。
+本文用五节点部署和两个订单示例说明 Address、Queue、Anycast、Multicast、Broker Cluster 与 HA Pair 的关系。Journal、Paging、复制确认和故障恢复见[实现篇](008_activemq_artemis_implementation.md)。
 
 <!-- more -->
 
@@ -268,7 +268,7 @@ Backup 不参与正常消费。Active 故障后，客户端 Failover 到接管�
 
 ## 6. 下一篇解决的实现问题
 
-以下内容见[Artemis 实现篇](016_activemq_artemis_implementation.md)：
+以下内容见[Artemis 实现篇](008_activemq_artemis_implementation.md)：
 
 - Journal、Paging 和 Large Message 如何保存数据；
 - Shared Store 与 Replication HA 的差异；
