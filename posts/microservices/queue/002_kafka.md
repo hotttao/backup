@@ -1,13 +1,13 @@
 ---
-weight: 2
+weight: 1
 title: "Kafka（一）：架构、流程、核心抽象与语义"
-date: 2026-09-06T09:00:00+08:00
-lastmod: 2026-09-07T23:30:00+08:00
+date: 2025-09-06T09:00:00+08:00
+lastmod: 2025-09-07T9:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
 description: "通过五节点部署、订单任务和订单事件两个示例，理解 Kafka 的架构、连接路径和消息语义"
-tags: ["message-queue", "kafka"]
+tags: ["queue"]
 categories: ["microservice"]
 lightgallery: true
 toc:
@@ -16,7 +16,12 @@ toc:
 
 Kafka 的第一性原理是：把事件追加到可复制、可保留的分区日志，Consumer 保存自己的读取位置。消息不会因为某个 Consumer 读过就立即删除，因此多个业务可以独立消费，也可以从历史位置重新处理。
 
-本文回答三个问题：五台服务器如何部署 Kafka；Producer 和 Consumer 最终连接谁；Topic、Partition、Consumer Group 和 Offset 在流程中分别解决什么问题。ISR、HW、完整提交过程和 Leader 故障恢复放在[实现篇](003_kafka_implementation.md)。
+本文回答三个问题：
+1. 五台服务器如何部署 Kafka；
+2. Producer 和 Consumer 最终连接谁；
+3. Topic、Partition、Consumer Group 和 Offset 在流程中分别解决什么问题。
+
+ISR、HW、完整提交过程和 Leader 故障恢复放在[实现篇](003_kafka_implementation.md)。
 
 <!-- more -->
 

@@ -9,7 +9,7 @@ authorLink: "https://hotttao.github.io/"
 description: "从第一性原理建立消息队列选型框架：投递、顺序、积压、扩展、故障与运维"
 featuredImage:
 
-tags: ["message-queue"]
+tags: ["queue"]
 categories: ["microservice"]
 
 lightgallery: true
