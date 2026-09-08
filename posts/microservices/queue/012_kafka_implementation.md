@@ -1,12 +1,12 @@
 ---
 weight: 12
-title: "Kafka（二）：存储、多副本一致性、事务与故障恢复"
+title: "Kafka（二）：存储、一致性、重分配与事务"
 date: 2026-09-06T09:00:00+08:00
 lastmod: 2026-09-08T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "沿 Partition 日志、Follower Fetch 与事务状态机，理解 Kafka 的提交、事务原子性和故障恢复"
+description: "沿 Partition 日志、Follower Fetch、消费权转移、副本迁移、分区扩容与事务状态机，理解 Kafka 的提交、恢复和事务原子性"
 featuredImage:
 
 tags: ["message-queue", "kafka"]
@@ -18,7 +18,7 @@ toc:
   auto: false
 ---
 
-[第一篇](011_kafka.md)已经说明 Topic、Partition、Consumer Group、Offset 和客户端连接路径。本文从 `order-tasks` 的 P1 Leader 收到 `order-1001` 的位置继续，沿着磁盘日志、Follower Fetch、HW、Leader Epoch 和 Consumer Offset 解释提交与恢复。
+[第一篇](011_kafka.md)已经说明 Topic、Partition、Consumer Group、Offset 和客户端连接路径。本文从 `order-tasks` 的 P1 Leader 收到 `order-1001` 的位置继续，依次解释磁盘日志、多副本提交、Consumer Offset、Consumer Group Rebalance、Partition Replica Reassignment、Topic 分区扩容和 Kafka 事务。
 
 <!-- more -->
 
@@ -329,18 +329,377 @@ Offset 43 仍然只表示恢复时从 43 开始。Kafka 不会检查 Offset 42 �
 
 Kafka 事务可以把“消费 Offset + 生产到其他 Kafka Topic”纳入同一 Kafka 事务，并让 `read_committed` Consumer 避开未完成事务。但它不能自动把 MySQL、HTTP 或其他外部副作用纳入同一原子边界。
 
-## 5. Kafka 事务如何实现
+## 5. Consumer Group Rebalance 如何完成消费权转移
 
-幂等 Producer 解决的是“同一个 Partition 内重试不重复”。事务进一步解决：**写入多个 Kafka Partition，并推进一个 Consumer Group 的 Offset，要么一起对消费者可见，要么一起不可见。**
+### 5.1 Rebalance 解决什么问题
 
-继续使用订单任务示例：`worker-2` 读取 `order-tasks` P1 的 Offset 42，生成 `OrderFulfilled` 事件，并准备把消费位置推进到 43。我们希望下面两项成为一个 Kafka 事务：
+Rebalance 重新分配的是 **消费权**，不移动 Topic 的消息，也不改变 Partition 的 Leader 或副本位置。
+
+继续使用 `fulfill-workers`：
 
 ```text
-写入：order-events P0 -> OrderFulfilled(order-1001)
-推进：fulfill-workers / order-tasks P1 -> Offset 43
+Rebalance 前：worker-1 -> P0，worker-2 -> P1，worker-3 -> P2
+worker-2 故障
+Rebalance 后：worker-1 -> P0、P1，worker-3 -> P2
 ```
 
-### 5.1 事务涉及哪些状态
+Coordinator 需要让整个 Group 对三个事实达成一致：
+
+- 哪些 Consumer 仍是有效成员；
+- 每个 Consumer 订阅了什么，以及每个 Partition 最终归谁；
+- 当前分配属于哪个版本，旧 Consumer 不能再使用过期分配提交 Offset。
+
+Consumer 的当前 Fetch Position 和处理中消息仍在客户端内存；可恢复的已提交 Offset 才保存在 `__consumer_offsets`。因此，Rebalance 能恢复消费分工，却不能恢复旧 Consumer 尚未提交的处理现场。
+
+### 5.2 什么会触发 Rebalance
+
+常见触发原因包括：Consumer 加入或主动离开、心跳超时、长时间没有调用 `poll()`、订阅集合变化、Topic 增加 Partition，以及 Coordinator 故障后的 Group 状态恢复。
+
+“进程还活着”不等于“还能继续占有 Partition”：
+
+- 心跳在 Session Timeout 内消失，Coordinator 会认为成员已经故障；
+- 即使心跳线程仍然工作，业务线程超过 `max.poll.interval.ms` 没有继续 `poll()`，Kafka 也会收回其消费权，避免活锁长期占住 Partition。
+
+### 5.3 Classic Rebalance 的完整流程
+
+Kafka 4.3 的客户端默认仍使用 Classic 协议。它的核心特点只有一个：**Group Coordinator 负责召集成员，但具体怎么分配 Partition，由其中一个 Consumer 计算。**
+
+继续使用三个 Worker 的示例。原来 `worker-1` 消费 P0，`worker-2` 消费 P1，`worker-3` 消费 P2。假设 `worker-2` 故障，本轮由 Coordinator 临时让 `worker-1` 计算新分配。
+
+```mermaid
+sequenceDiagram
+    participant worker1
+    participant worker2
+    participant worker3
+    participant kafka2_GroupCoordinator
+    participant kafka4_P1_Leader
+    worker2->>kafka2_GroupCoordinator: 最后一次心跳
+    kafka2_GroupCoordinator->>kafka2_GroupCoordinator: worker2 超时
+    worker1->>kafka2_GroupCoordinator: JoinGroup 上报订阅 order-tasks
+    worker3->>kafka2_GroupCoordinator: JoinGroup 上报订阅 order-tasks
+    kafka2_GroupCoordinator-->>worker1: 返回现存成员和订阅，请 worker1 计算
+    worker1->>worker1: 计算 worker1 消费 P0、P1，worker3 消费 P2
+    worker1->>kafka2_GroupCoordinator: SyncGroup 提交上述分配
+    worker3->>kafka2_GroupCoordinator: SyncGroup 等待分配
+    kafka2_GroupCoordinator-->>worker1: 你负责 P0、P1
+    kafka2_GroupCoordinator-->>worker3: 你负责 P2
+    worker1->>kafka2_GroupCoordinator: 查询 fulfill-workers 的 P1 位点
+    kafka2_GroupCoordinator->>kafka2_GroupCoordinator: 从 __consumer_offsets P7 读取 Offset 43
+    kafka2_GroupCoordinator-->>worker1: P1 从 Offset 43 开始
+    worker1->>kafka4_P1_Leader: Fetch Offset 43
+```
+
+过程可以归纳为：Coordinator 发现成员变化，让存活 Consumer 重新登记；`worker-1` 计算整个 Group 的分配方案并交回 Coordinator；Coordinator 把结果分别发给 `worker-1` 和 `worker-3`。`worker-1` 接管 P1 后，再从 Coordinator 取得已提交 Offset 43，最后直接连接 `order-tasks` P1 Leader 继续 Fetch。
+
+Classic 协议的局限是：成员变化时，存活 Consumer 也要重新参加这一轮协调。Group 较大或频繁变化时，这段等待会放大消费停顿。
+
+### 5.4 Consumer Rebalance Protocol 的分区转移流程
+
+Kafka 4.0 起可以使用新版协议；Kafka 4.3 客户端需要显式配置 `group.protocol=consumer`。它与 Classic 的核心差异是：**不再让某个 Consumer 计算整个 Group 的分配，而是由 Group Coordinator 直接计算。**
+
+仍以 `worker-2` 故障、P1 转交给 `worker-1` 为例：
+
+```mermaid
+sequenceDiagram
+    participant worker1
+    participant worker2
+    participant worker3
+    participant kafka2_GroupCoordinator
+    participant kafka4_P1_Leader
+    worker2->>kafka2_GroupCoordinator: 最后一次心跳
+    kafka2_GroupCoordinator->>kafka2_GroupCoordinator: worker2 超时
+    kafka2_GroupCoordinator->>kafka2_GroupCoordinator: 计算把 P1 交给 worker1
+    worker1->>kafka2_GroupCoordinator: 下一次心跳，上报当前消费 P0
+    kafka2_GroupCoordinator-->>worker1: 保留 P0，并增加 P1
+    worker1->>kafka2_GroupCoordinator: 心跳确认已经接管 P1
+    worker3->>worker3: 继续消费 P2，不重新分配
+    worker1->>kafka2_GroupCoordinator: 查询 fulfill-workers 的 P1 位点
+    kafka2_GroupCoordinator->>kafka2_GroupCoordinator: 从 __consumer_offsets P7 读取 Offset 43
+    kafka2_GroupCoordinator-->>worker1: P1 从 Offset 43 开始
+    worker1->>kafka4_P1_Leader: Fetch Offset 43
+```
+
+新协议只改变必要的部分：`worker-1` 保留 P0 并接管 P1，`worker-3` 继续消费 P2。与 Classic 相比，它省去了“所有存活 Consumer 重新登记，再由某个 Consumer 计算全组分配”的过程。
+
+它减少的是不必要的全组停顿，并不会消除 `worker-2` 故障检测时间、P1 转移期间的短暂停顿或重复处理。
+
+### 5.5 临界窗口：旧 Consumer 和新 Consumer 会不会同时处理 P1
+
+假设 `worker-2` 已经处理 P1 的 Offset 43～45，但已提交 Offset 仍是 43，然后网络隔离：
+
+1. Coordinator 超时移除 `worker-2`，生成新的分配版本，并把 P1 分给 `worker-1`；
+2. `worker-1` 从已提交 Offset 43 开始，所以 43～45 可能再次处理；
+3. 旧 `worker-2` 即使恢复，它携带的成员版本和分配已经过期，不能再成功提交 P1 的 Offset；
+4. 但旧 Worker 在被隔离期间已经执行的数据库、HTTP 等外部副作用，Kafka 无法撤销。
+
+因此，Rebalance 的一致性边界是：**最终只承认当前成员版本下的 Partition 所有者和 Offset 提交**。它不承诺业务副作用只发生一次，Consumer 仍需要幂等处理；收到 Rebalance 回调后，还应停止被撤销 Partition 的新任务，并在允许的时间内完成或放弃在途任务。
+
+## 6. Partition Replica Reassignment 如何迁移副本
+
+Consumer Group Rebalance 重新分配的是 Consumer 对 Partition 的消费权；Partition Replica Reassignment 重新分配的是 Partition 在 Broker 上的物理副本。前者不搬消息，由 Group Coordinator 协调；后者需要复制日志，由 KRaft Controller 协调。
+
+### 6.1 Controller 需要维护哪些迁移状态
+
+一次副本迁移不能直接把旧副本地址替换成新地址，否则新节点还没有数据，集群就会立即失去一个有效副本。Controller 必须区分：
+
+- **Current Replicas**：迁移开始前的副本集合；
+- **Target Replicas**：管理员期望的最终副本集合；
+- **Adding Replicas**：正在增加、但尚未完成追赶的副本；
+- **Removing Replicas**：等新副本追平后才能移除的旧副本；
+- **ISR**：当前已经同步、可以参与安全提交和选主的副本；
+- **Leader**：迁移期间继续为该 Partition 排序和处理写入的 Broker。
+
+这些状态属于控制面元数据，由 KRaft Controller 写入 Metadata Log 并发布给 Broker。真正的业务 Record 仍然保存在各 Broker 的 Partition Log 中。
+
+### 6.2 新增 Broker 后如何迁移已有 Partition
+
+假设原集群有 `broker-1`～`broker-5`，现在新增 `broker-6`。新 Broker 加入后没有已有 Topic 的数据，Kafka 不会自动把历史 Partition 均匀搬给它。
+
+`order-tasks` P1 原来的状态是：
+
+```text
+Leader   = broker-1
+Replicas = [broker-1, broker-2, broker-3]
+ISR      = [broker-1, broker-2, broker-3]
+```
+
+管理员希望把 `broker-2` 上的 P1 副本迁移到新节点：
+
+```text
+Target Replicas = [broker-1, broker-3, broker-6]
+```
+
+迁移不是一次元数据替换，而是“扩大副本集合、追平新副本、缩小副本集合”的过程：
+
+```mermaid
+sequenceDiagram
+    participant A as Administrator
+    participant C as KRaft Controller
+    participant L as broker-1 P1 Leader
+    participant N as broker-6 New Follower
+    participant O as broker-2 Old Follower
+
+    A->>C: 提交 P1 目标副本 [1,3,6]
+    C->>C: 记录 Adding=[6] 和 Removing=[2]
+    C-->>L: 发布迁移中的副本元数据
+    C-->>N: 分配 P1，开始作为 Follower
+
+    N->>L: Fetch P1 历史日志
+    L-->>N: 返回历史 Record Batch
+    N->>L: 持续 Fetch 历史和新增 Record
+    L-->>N: 返回增量 Record Batch
+    N->>L: Fetch 上报已经追到最新位置
+
+    L->>C: 申请把 broker-6 加入 ISR
+    C->>C: 写入新 ISR=[1,2,3,6]
+    C-->>L: ISR 更新完成
+
+    C->>C: 最终 Replicas=[1,3,6]
+    C->>C: 从 ISR 移除 broker-2 并清空迁移状态
+    C-->>O: broker-2 不再承载 P1 副本
+    C-->>A: Reassignment 完成
+```
+
+核心顺序是：
+
+```text
+先增加新 Follower
+→ 新 Follower 从当前 Leader 拉取完整历史和增量
+→ 追平后进入 ISR
+→ 再移除旧副本
+```
+
+迁移期间 Producer 和 Consumer 仍连接 P1 Leader。新副本没有追平前只是追赶者，不能因为写入了部分日志就代替旧副本承担容错责任。迁移也不等于 Leader Election：只要计划没有要求更换 Leader 且原 Leader 健康，`broker-1` 可以在整个过程中继续担任 Leader。
+
+### 6.3 下线 Broker 时如何迁空数据
+
+假设现在要删除 `broker-2`。不能先停止节点再研究数据放到哪里，而应先把它承载的每个 Partition 迁移到其他 Broker：
+
+1. 标记 `broker-2` 不再承接新的副本安排；
+2. 找出 `broker-2` 上的全部 Partition，以及它在其中是 Leader 还是 Follower；
+3. 为每个 Partition 提交不包含 `broker-2` 的 Target Replicas；
+4. Controller 按 6.2 的流程增加新副本，等待新副本追平并进入 ISR，再移除 `broker-2`；
+5. 确认 `broker-2` 已经不是任何 Partition 的 Leader 或 Replica；
+6. 最后停止并注销这个 Broker。
+
+如果先关闭 `broker-2`，Partition 可能暂时仍可用，但那只是剩余 ISR 在承担故障：副本数和故障余量已经下降。此时再坏一个 Broker，`acks=all` 写入可能因不满足 `min.insync.replicas` 而被拒绝。
+
+### 6.4 Broker 掉线后 Kafka 会不会自动补副本
+
+Kafka 会自动处理“当前副本恢复”，但默认不会自行决定“换一台 Broker 创建新副本”。仍以 P1 为例：
+
+```text
+掉线前：Replicas=[1,2,3]，ISR=[1,2,3]
+broker-2 掉线后：Replicas=[1,2,3]，ISR=[1,3]
+```
+
+注意 Replicas 没有变。Controller 会把掉线副本移出 ISR；如果掉线的是 Leader，还会从安全候选中自动选出新 Leader。但是 Kafka 不会因为 `broker-2` 暂时失联，就自动把 `broker-4` 加入 Replicas。
+
+接下来分成两种情况：
+
+- **`broker-2` 恢复**：它从当前 Leader 拉取缺失日志，追平后自动重新进入 ISR，不需要 Reassignment；
+- **`broker-2` 永久损坏或准备下线**：管理员需要提交例如 `[1,2,3] -> [1,3,4]` 的 Reassignment 计划，Kafka 再自动执行新副本追赶和旧副本移除。
+
+因此需要区分四种动作：
+
+```text
+Leader 故障后从安全副本切换 Leader        自动
+原 Broker 恢复后追平并重新进入 ISR        自动
+永久故障后选择哪台新 Broker 补足副本       默认不自动
+按照已提交的 Reassignment 计划复制数据      自动
+```
+
+Kafka 不默认自动选择新节点，是因为 Controller 无法仅凭失联判断节点是暂时抖动还是永久损坏。如果每次短暂离线都立即迁移大量日志，故障期间的磁盘和网络压力反而可能拖垮剩余 Broker。Kafka Operator、Cruise Control 或商业发行版可以在外围生成并提交计划，但那不是原生 Controller 默认执行的副本自愈。
+
+### 6.5 迁移失败如何收敛
+
+- **新副本追赶很慢**：它不会提前成为有效 ISR，旧副本不能被安全移除；迁移保持进行中。
+- **新副本故障**：Controller 保留旧副本和迁移状态，管理员需要恢复节点、修改目标集合或回滚计划。
+- **原 Leader 故障**：Controller 从当前安全候选中选出新 Leader，新的 Leader 继续向 Adding Replica 提供 Fetch；Reassignment 与 Leader Election 分别收敛。
+- **Controller 故障**：新的 Active Controller 从 KRaft Metadata Log 恢复 Adding、Removing、ISR 和 Target 状态，继续未完成迁移。
+
+Reassignment 保证的是元数据和副本集合最终收敛，不保证迁移没有性能影响。它会同时消耗源 Broker 磁盘读、目标 Broker 磁盘写和 Broker 间网络，生产执行仍应分批、限速并监控 ISR、欠复制副本和请求延迟；这些运维约束见[Kafka 运维与灾备篇](013_kafka_operations.md)。
+
+## 7. Topic 如何增加 Partition
+
+增加 Partition 是扩大 Topic 的逻辑分片数量，不是把已有 Partition 的历史数据重新切分。它和上一章的区别是：
+
+```text
+Replica Reassignment：P1 仍然是 P1，只改变它存在哪些 Broker
+增加 Partition：保留原来的 P0、P1、P2，另外创建新的 P3、P4
+```
+
+### 7.1 从 3 个 Partition 增加到 5 个
+
+假设 `order-tasks` 当前有三个 Partition，复制因子为 3：
+
+```text
+P0 Replicas = [broker-1, broker-2, broker-3]
+P1 Replicas = [broker-2, broker-3, broker-4]
+P2 Replicas = [broker-3, broker-4, broker-5]
+```
+
+管理员把 Partition 总数从 3 增加到 5。可以显式指定两个新 Partition 的副本，也可以让 Controller 分配。例如：
+
+```bash
+bin/kafka-topics.sh --bootstrap-server kafka.example:9092 \
+  --alter --topic order-tasks --partitions 5
+```
+
+这里的 `5` 表示修改后的 Partition 总数，不是“再增加 5 个”。使用 Admin API 时，对应的是 `Admin.createPartitions()` 和 `NewPartitions.increaseTo(5)`。
+
+```text
+P3 Replicas = [broker-4, broker-5, broker-1]
+P4 Replicas = [broker-5, broker-1, broker-2]
+```
+
+只需要为新增的 P3、P4 建立空日志；P0、P1、P2 的副本和历史 Record 都不会改变，也不会被重新散列到新 Partition。
+
+### 7.2 增加 Partition 的完整流程
+
+这里使用上一节的具体分配：P3 的 Leader 是 `broker-4`，Follower 包括 `broker-5`；P4 的初始化过程相同，不再重复画线。
+
+命令使用的是 `--bootstrap-server`，所以 `kafka-topics.sh` 内部的 AdminClient 先连接 `broker-1`。`broker-1` 只是本次请求入口，不一定是 Active Controller；它会把 CreatePartitions 请求转发给 Active Controller。
+
+```mermaid
+sequenceDiagram
+    participant kafka_topics_AdminClient
+    participant broker1
+    participant ActiveController
+    participant MetadataLog
+    participant broker4_P3_Leader
+    participant broker5_P3_Follower
+    participant Producer
+    participant GroupCoordinator
+    participant worker1
+    kafka_topics_AdminClient->>broker1: CreatePartitions 请求，总数改为 5
+    broker1->>ActiveController: 转发 CreatePartitions 请求
+    ActiveController->>ActiveController: 校验旧数量 3 和目标数量 5
+    ActiveController->>ActiveController: 为 P3 和 P4 选择副本及 Leader
+    ActiveController->>MetadataLog: 写入 P3 和 P4 元数据
+    MetadataLog-->>ActiveController: 元数据已经由 Controller Quorum 提交
+    ActiveController->>broker4_P3_Leader: 发布 P3 副本和 Leader 分配
+    ActiveController->>broker5_P3_Follower: 发布 P3 Follower 分配
+    broker4_P3_Leader->>broker4_P3_Leader: 创建 P3 空日志并承担 Leader
+    broker5_P3_Follower->>broker5_P3_Follower: 创建 P3 空日志并承担 Follower
+    ActiveController-->>broker1: CreatePartitions 成功
+    broker1-->>kafka_topics_AdminClient: 返回成功
+    Producer->>broker1: Metadata 请求
+    broker1-->>Producer: 返回 P0 到 P4 的 Leader 地址
+    Producer->>broker4_P3_Leader: Produce 到 P3
+    worker1->>GroupCoordinator: 重新加入 fulfill-workers
+    GroupCoordinator-->>worker1: 分配新的 P3 或 P4
+    worker1->>broker4_P3_Leader: 从 P3 起始位置 Fetch
+```
+
+整个过程可以归纳为：
+
+```text
+AdminClient 向 Bootstrap Broker 提交新的总 Partition 数
+→ Broker 把请求转发给 Active Controller
+→ Controller 只为新增 Partition 分配副本
+→ KRaft Metadata Log 提交新元数据
+→ Broker 创建新的空 Partition Log
+→ 成功响应沿 Active Controller、Broker 返回 AdminClient
+→ Producer 主动请求新 Metadata 后开始使用新 Partition
+→ Consumer Group Rebalance 后接管新 Partition
+```
+
+返回成功表示新 Partition 的元数据已经由 Controller Quorum 提交，不表示所有 Producer 和 Consumer 已经刷新到新元数据，更不表示旧数据已经重新分布，因为 Kafka 根本不会执行旧数据重分布。
+
+### 7.3 增加 Partition 的核心限制
+
+第一，Kafka 支持增加 Partition，但不支持直接减少 Partition。减少数量会让已有 Offset、Key 路由和副本日志失去明确归属；通常需要创建新 Topic，再迁移数据和客户端。
+
+第二，如果 Producer 使用类似下面的取模路由：
+
+```text
+partition = hash(key) % partitionCount
+```
+
+Partition 数从 3 变成 5 后，同一个 Key 的计算结果可能改变。例如 `order-1001` 的旧消息在 P1，新消息却可能进入 P4。Kafka 只保证单 Partition 内有序，因此扩容可能破坏这个 Key 跨扩容时点的连续顺序。需要强顺序的业务应使用稳定的显式路由、预留足够 Partition，或者通过新 Topic 完成受控迁移。
+
+第三，新增 Partition 没有该 Consumer Group 的已提交 Offset。Consumer 第一次获得 P3、P4 时，需要按照 Offset Reset 策略确定起点。使用 `latest` 时，如果 Producer 已经写入新 Partition，而 Consumer 尚未发现它们并完成 Rebalance，Consumer 可能从当时的日志末尾开始，从而跳过这段窗口内的消息。
+
+第四，增加 Partition 只能提高可用的并行上限，不会自动解决单个热点 Key。一个 Key 仍然只能落入一个 Partition；如果它本身打满单 Partition，需要改变业务分片键，而不只是增加 Partition 数。
+
+最后，不应手动修改 `__consumer_offsets`、`__transaction_state` 等内部 Topic 的 Partition 数。Coordinator 的映射依赖这些内部 Topic 的既定分区方式，普通业务扩容规则不能直接套用。
+
+## 8. Kafka 事务如何实现
+
+幂等 Producer 解决的是“同一个 Partition 内重试不重复”。事务进一步解决：**写入多个 Kafka Partition，并提交一个 Consumer Group 的 Offset，要么一起生效，要么一起不生效。**
+
+这里必须先区分“读取”和“提交消费结果”。继续使用订单任务示例：
+
+1. `order-tasks` P1 中原本已经保存了 Offset 42：`FulfillOrder(order-1001)`。
+2. `worker-2` 作为 Consumer，先从 P1 Leader 读取这条消息。
+3. 读取不会删除消息，也不会改变 `fulfill-workers` 已提交的 Offset。
+4. `worker-2` 根据输入生成新的 `OrderFulfilled(order-1001)` 事件。
+
+接下来才进入 Kafka 事务。事务中包含的不是“读取 Offset 42”，而是下面两次写入：
+
+```text
+输出写入：向 order-events P0 写入 OrderFulfilled(order-1001)
+位点写入：把 fulfill-workers 在 order-tasks P1 的已提交位置改成 43
+```
+
+第二项也叫“推进 Offset”，但它本质上仍是一次写入：向 `__consumer_offsets` 写入新的恢复位置。
+
+事务成功时，新事件对 `read_committed` Consumer 可见，并且 `fulfill-workers` 下次从 43 开始。事务 Abort 时，新事件不可见，已提交位置仍是 42；重新分配或重启后，Consumer 会再次读取 Offset 42。
+
+因此，这个模式的顺序是：
+
+```text
+先读取输入消息
+→ 开始事务
+→ 写出处理结果
+→ 把输入 Offset 加入同一事务
+→ 提交事务
+```
+
+这个示例只演示 Kafka 到 Kafka 的 Consume—Transform—Produce。如果 `worker-2` 还修改 MySQL 或调用履约 HTTP 服务，这些外部操作不在 Kafka 事务中，仍然需要幂等或 Outbox。
+
+### 8.1 事务涉及哪些状态
 
 先把数据分成四类，再看协议流程：
 
@@ -353,7 +712,7 @@ Kafka 事务可以把“消费 Offset + 生产到其他 Kafka Topic”纳入同�
 
 Transaction Coordinator 与 Group Coordinator 是两个职责。前者决定整个事务 Commit 还是 Abort，后者校验并保存 `fulfill-workers` 的 Offset；它们可能由不同 Broker 承担。
 
-### 5.2 初始化如何隔离旧 Producer
+### 8.2 初始化如何隔离旧 Producer
 
 `worker-2` 使用稳定且唯一的：
 
@@ -372,11 +731,12 @@ transactional.id=fulfill-worker-2
 
 Kafka 4.0 之后启用新版事务协议并使用相应客户端时，还会在每个事务推进 Producer Epoch，进一步阻止上一事务的迟到请求混入下一事务。这个增强没有改变下面的核心状态机。
 
-### 5.3 一次消费—转换—生产事务
+### 8.3 一次消费—转换—生产事务
 
 ```mermaid
 sequenceDiagram
-    participant W as worker-2 Transactional Producer
+    participant W as worker-2 Consumer + Transactional Producer
+    participant IL as order-tasks P1 Leader
     participant TC as Transaction Coordinator
     participant TS as __transaction_state
     participant EL as order-events P0 Leader
@@ -387,13 +747,28 @@ sequenceDiagram
     TC->>TS: 保存 Producer ID / Epoch
     TC-->>W: 返回 Producer ID / Epoch
 
+    W->>IL: Fetch（已提交 Offset 是 42）
+    IL-->>W: FulfillOrder(order-1001), Offset 42
+    Note over W,IL: Fetch 不删除消息，也不提交 Offset
+
     W->>W: beginTransaction()
-    W->>EL: Produce OrderFulfilled（事务 Record）
-    Note over TC,EL: Coordinator 记录 P0 是事务参与者
+    W->>W: 根据输入生成 OrderFulfilled
+    W->>EL: 事务 Produce 请求（目标 P0）
+    EL->>TC: 验证事务并隐式加入 P0
+    TC->>TS: ONGOING，参与者加入 order-events P0
+    TS-->>TC: 事务状态已复制
+    TC-->>EL: P0 已登记
+    EL->>EL: 追加事务 Record
+    EL-->>W: Produce 成功
 
     W->>TC: AddOffsetsToTxn(fulfill-workers)
+    TC->>TS: 参与者加入 __consumer_offsets P7
+    TS-->>TC: 事务状态已复制
+    TC-->>W: offsets P7 已登记
     W->>GC: TxnOffsetCommit(offset 43)
     GC->>OL: 写入待提交的 Offset Record
+    OL-->>GC: Offset Record 已提交
+    GC-->>W: TxnOffsetCommit 成功
 
     W->>TC: commitTransaction / EndTxn(COMMIT)
     TC->>TS: PREPARE_COMMIT
@@ -403,18 +778,20 @@ sequenceDiagram
     TC->>TS: COMPLETE_COMMIT
 ```
 
-核心过程分为四步：
+完整过程分为六步：
 
-1. `beginTransaction()` 在客户端建立事务边界；真正向 Partition 写入后，Coordinator 才需要跟踪事务参与者。
-2. 业务 Record 直接写入目标 Partition Leader，并按该 Partition 的普通副本规则提交。
-3. `sendOffsetsToTransaction()` 把 Offset 43 作为事务的一部分交给 Group Coordinator，而不是调用普通 Consumer Offset Commit。
-4. `commitTransaction()` 让 Transaction Coordinator 持久化不可逆的提交决定。Coordinator 随后向所有参与 Partition 写入 COMMIT Marker，全部完成后再记录 `COMPLETE_COMMIT`。
+1. `initTransactions()` 在 Worker 启动时初始化事务身份，不需要每处理一条消息都调用。
+2. Consumer 从 `order-tasks` P1 读取 Offset 42。此时 Group 的持久 Offset 仍是 42。
+3. `beginTransaction()` 在客户端建立事务边界；Worker 根据输入计算输出事件。
+4. 输出 Record 到达 `order-events` P0 Leader。P0 第一次参与该事务时，Leader 先请求 Transaction Coordinator 验证事务；Coordinator 把 P0 加入参与者集合并写入 `__transaction_state`，P0 Leader 得到成功后才追加事务 Record。Record 按 P0 的普通副本规则提交，但暂时不对 `read_committed` Consumer 可见。
+5. `sendOffsetsToTransaction()` 先让 Transaction Coordinator 把 `__consumer_offsets` P7 加入参与者集合，再让 Group Coordinator 把 Offset 43 作为待提交的事务 Record 写入 P7。这不是普通 Offset Commit。
+6. `commitTransaction()` 让 Transaction Coordinator 持久化不可逆的提交决定。Coordinator 随后向所有参与 Partition 写入 COMMIT Marker，全部完成后再记录 `COMPLETE_COMMIT`。
 
 这里要区分“提交决定已经成功”和“所有 Partition 已经完成可见性更新”。Coordinator 可以在 `PREPARE_COMMIT` 被可靠记录后确认 EndTxn；Marker 的扇出与最终 `COMPLETE_COMMIT` 仍可能在后台继续。即使 Coordinator 此时故障，新 Coordinator 也必须沿已持久化的提交决定继续补齐 Marker，不能改成 Abort。
 
-Kafka 4.x 的新版协议会把部分“将业务 Partition 加入事务”的动作移到服务端完成，但第一性原理不变：Coordinator 必须知道事务涉及哪些 Partition，才能把最终 Marker 写到每一段日志。
+图中画的是 Kafka 4.x 新事务协议：业务 Partition 第一次收到事务 Produce 时，由 Partition Leader 在服务端发起验证和隐式登记。旧协议则由 Producer 客户端先发送 `AddPartitionsToTxn`。发起者不同，但第一性原理不变：Coordinator 必须持久记录事务涉及哪些 Partition，才能把最终 Marker 写到每一段日志。
 
-### 5.4 COMMIT Marker 为什么必要
+### 8.4 COMMIT Marker 为什么必要
 
 事务业务 Record 与普通 Record 一样先写进 Partition Log。Kafka 不会等提交时再把多份数据一起搬入日志，也不会在 Abort 时立即删除它们。
 
@@ -433,22 +810,43 @@ Marker 是该 Partition 对事务结论的本地证明：
 
 因此 HW 和事务可见位置不是同一个概念。HW 表示 Record 已按副本规则提交；一个事务 Record 即使已经低于 HW，只要事务仍未结束，`read_committed` Consumer 就不能把它当作已提交事务返回。
 
-### 5.5 LSO 为什么可能落后于 HW
+### 8.5 LSO 为什么可能落后于 HW
 
-`read_committed` Consumer 受 **Last Stable Offset，LSO** 限制。只要前面还有未完成事务，Consumer 就不能越过它返回后面的事务结果，否则会破坏日志顺序。
+`read_committed` Consumer 受 **Last Stable Offset，LSO** 限制。LSO 不是某个事务自己的状态，而是 **每个 Partition 只有一个统一的可见性边界**：它通常指向该 Partition 最早一个未结束事务的起始位置；如果没有未结束事务，则可以推进到 HW。
+
+假设同一个 Partition 中先后写入事务 A 和事务 B：
 
 ```text
-Offset 100：事务 T1 的 Record，尚未结束
-Offset 101：普通 Record，已经到达 HW
+Offset 100：之前已经确定的 Record
+Offset 101：事务 A 的 Record，A 尚未结束
+Offset 102：事务 B 的 Record，B 已经 Commit
+Offset 103：事务 B 的 COMMIT Marker
 
-HW  已超过 101
-LSO 仍停在 T1 开始的位置
-read_committed 暂时不能返回 100、101
+HW  = 104
+LSO = 101，因为 A 是最早的未结束事务
 ```
 
-这意味着长事务不仅占用 Coordinator 状态，还可能阻塞同一 Partition 上 `read_committed` Consumer 的可见进度。事务范围应小而有界，不能把长时间人工操作包在 Kafka 事务中。
+事务 B 并没有一个独立的“LSO 102”。虽然 B 已经 Commit，但 Offset 102 位于当前 LSO 之后。`read_committed` Consumer 只能读取 Offset 小于 LSO 的数据，所以此时不能跳过 101，提前看到 102。
 
-### 5.6 故障发生时如何收敛
+```text
+已确定区域          最早未结束事务          后续已提交事务
+Offset 0～100       Offset 101             Offset 102～103
+Consumer 可读取     LSO，形成阻塞点         暂时也不可读取
+```
+
+Kafka 必须保持 Partition 内的日志顺序。如果允许先返回 102，随后事务 A 又 Commit，Consumer 看到的顺序就会变成 102、101。
+
+事务 A 最终结束后，LSO 才能越过这一段：
+
+- A Commit：A、B 的 Record 按日志顺序对 `read_committed` Consumer 可见；
+- A Abort：A 的 Record 被过滤，Consumer 越过它后看到已经 Commit 的 B；
+- A 长时间不结束：即使 B 和后面的普通 Record 已经到达 HW，也会继续被阻塞。
+
+LSO 是 **Partition 级别**，不是 Topic 或 Consumer Group 的全局边界。P0 被事务 A 阻塞，不妨碍 Consumer 继续读取 P1 上已经确定的 Record。因此长事务影响的是它涉及的各个 Partition，而不是整个 Kafka 集群。
+
+这意味着长事务不仅占用 Coordinator 状态，还可能阻塞相关 Partition 上 `read_committed` Consumer 的可见进度。事务范围应小而有界，不能把长时间人工操作包在 Kafka 事务中。
+
+### 8.6 故障发生时如何收敛
 
 - **Producer 在 EndTxn 前故障**：事务超时后，Coordinator 将其 Abort，并向参与 Partition 补写 ABORT Marker。
 - **`commitTransaction()` 超时**：客户端看到的是结果未知，不能仅凭超时改为 Abort。客户端可以重试同一个 Commit；如果不再重试，只能关闭 Producer，由 Coordinator 根据持久状态完成收敛。
@@ -456,7 +854,7 @@ read_committed 暂时不能返回 100、101
 - **参与 Partition Leader 故障**：新 Leader 接管相同 Partition 历史，Coordinator 重试写入 Marker。
 - **旧 Producer 恢复**：新的 Epoch 已经隔离旧实例，旧实例不能继续完成或污染新事务。
 
-### 5.7 Exactly Once 的边界
+### 8.7 Exactly Once 的边界
 
 这个机制可以原子覆盖：
 
@@ -472,69 +870,7 @@ read_committed 暂时不能返回 100、101
 
 所以 Kafka 的 Exactly Once 更准确地说是 **Kafka 日志边界内的原子可见性与去重**。一旦流程跨出 Kafka，仍需要 Outbox、Inbox、幂等键或业务状态机。
 
-## 6. 保留、回放、压缩和分层存储
-
-### 6.1 Delete Retention
-
-日志按时间或容量删除旧 Segment。消费速度不会决定数据是否删除：Consumer 如果落后超过保留期，其尚未读取的数据仍会被清理。
-
-因此 Retention 实际上是一条业务 SLA：系统承诺消费者和故障恢复必须在这段时间内追上。
-
-容量可粗略估算为：
-
-```text
-总存储 ≈ 每秒写入字节 × 保留秒数 × 副本数 × 安全余量
-```
-
-压缩率、Segment 清理延迟、索引和副本迁移还会增加实际空间。
-
-### 6.2 Log Compaction
-
-Compaction 按 Key 清理旧值，让日志最终保留每个 Key 较新的状态。例如 `customer_id=42` 多次更新地址，压缩后可以用较新的记录重建客户状态。
-
-它不是立即执行的普通去重：
-
-- 相同 Key 的旧记录可能暂时仍存在；
-- Key 为空的消息无法按业务 Key 压缩；
-- 删除通常通过墓碑记录表达；
-- 它适合保存最新状态，不适合要求完整审计历史的 Topic。
-
-### 6.3 Tiered Storage
-
-分层存储把较旧的封闭 Segment 放到对象存储等远端介质，本地磁盘主要保留热数据。它可以降低长保留成本，但历史回放会受到远端存储延迟和实现能力限制。
-
-Kafka 只定义分层存储接口和元数据机制，部署时还要选择并验证具体远端存储实现。当前能力对某些 Topic 策略也存在限制，不能把“支持分层存储”直接等同于低成本无限保留。
-
-## 7. 积压、背压与容量
-
-Kafka 擅长积压，是因为消息本来就在日志中，不需要为每个 Consumer 复制一份正文。但积压仍会消耗磁盘，并增加恢复读取、缓存污染和跨层存储访问。
-
-### 7.1 Consumer Lag
-
-Lag 是日志末尾与 Consumer Group 已提交 Offset 的差值，表示还有多少 Record 未被该 Group 确认推进。但只看条数不够：消息大小不同、处理耗时不同，同样的 Lag 可能对应完全不同的恢复时间。
-
-更实用的指标是：
-
-- 最老未处理事件的时间；
-- Lag 增长速度；
-- 当前消费速度与生产速度；
-- 按当前净消化速度预计多久清空。
-
-### 7.2 Partition 是容量单位
-
-单 Partition 由一个 Leader 排序写入，热点 Key 仍可能打满单 Partition。Partition 太少限制吞吐，太多则增加文件、内存、选主、Rebalance、迁移和恢复成本。
-
-新增 Broker 后，已有 Partition 不会自动均匀搬过去，需要执行 Reassignment。迁移同时消耗源磁盘读、目标磁盘写和网络带宽，必须限速并监控线上延迟。
-
-副本用于容错，Partition 用于分片。把复制因子从 3 增加到 5 不会让单 Partition 写得更快，反而会增加复制成本。
-
-### 7.3 Producer 和 Broker 的过载行为
-
-Broker 变慢时，Producer 的本地缓冲会逐渐填满，最终阻塞或超时。Broker 还可以通过客户端配额限制生产和消费速率，避免单个租户占满网络或磁盘。
-
-容量设计需要同时验证正常峰值、单 Broker 故障、一个可用区故障、消费者停止和副本重建期间的吞吐。只在全员健康时跑 Benchmark，不能证明生产容量安全。
-
-## 8. 实现结论
+## 9. 实现结论
 
 - Kafka 的业务数据单位是 Partition Log；KRaft 元数据、业务 Record 和 Consumer Offset 分属不同日志。
 - `acks=all` 等待当前全部 ISR，`min.insync.replicas` 是允许继续写入的最低门槛，不是等待副本数的简称。
@@ -542,12 +878,14 @@ Broker 变慢时，Producer 的本地缓冲会逐渐填满，最终阻塞或超�
 - 新 Leader 依靠 ISR/ELR、Leader Epoch 和安全历史接管，不逐条查找 `committed=true`。
 - 未提交 Record 可能保留也可能被截断；已提交但响应丢失会让 Producer 重试，因此需要幂等 Producer 和业务幂等。
 - Consumer Offset 是恢复书签，不是业务事务证明；外部副作用仍按至少一次设计。
+- Consumer Group Rebalance 只转移 Partition 的消费权；新的分配版本隔离旧 Consumer，已提交 Offset 决定新所有者从哪里恢复。
+- Partition Replica Reassignment 先让新副本追平并进入 ISR，再移除旧副本；它与 Leader Election 是两个可以分别发生的过程。
+- 增加 Topic Partition 只创建新的空日志，不会重新分布旧数据；它会改变默认 Key 路由，并触发相关 Consumer Group Rebalance。
 - Kafka 事务用 `__transaction_state`、Producer Epoch 和各 Partition 的 COMMIT/ABORT Marker，实现 Kafka 日志范围内的原子可见性。
-- 副本数提高容错，Partition 数决定并行度和吞吐扩展边界。
 
-安全、多租户、监控、升级和跨地域灾备见[Kafka 运维与灾备篇](013_kafka_operations.md)。
+保留策略、容量、分区副本迁移、安全、监控、升级和跨地域灾备见[Kafka 运维与灾备篇](013_kafka_operations.md)。
 
-## 9. 参考资料
+## 10. 参考资料
 
 - [Apache Kafka 4.3 Documentation](https://kafka.apache.org/43/)
 - [Kafka Design](https://kafka.apache.org/43/design/design/)
@@ -555,12 +893,12 @@ Broker 变慢时，Producer 的本地缓冲会逐渐填满，最终阻塞或超�
 - [Kafka APIs](https://kafka.apache.org/43/apis/)
 - [Kafka Producer Configs](https://kafka.apache.org/43/configuration/producer-configs/)
 - [Kafka Consumer and Share Consumer Configs](https://kafka.apache.org/43/configuration/consumer-configs/)
-- [Kafka Topic Configs](https://kafka.apache.org/43/configuration/topic-configs/)
 - [Kafka Eligible Leader Replicas](https://kafka.apache.org/43/operations/eligible-leader-replicas/)
 - [KIP-101：Use Leader Epoch for Replica Log Truncation](https://cwiki.apache.org/confluence/pages/viewpage.action?pageId=177052956)
 - [Kafka Consumer Rebalance Protocol](https://kafka.apache.org/43/operations/consumer-rebalance-protocol/)
+- [Kafka Basic Operations：Partition Reassignment](https://kafka.apache.org/43/operations/basic-kafka-operations/)
+- [Kafka Admin API：NewPartitions](https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/admin/NewPartitions.html)
 - [Kafka Transaction Protocol](https://kafka.apache.org/43/operations/transaction-protocol/)
 - [KafkaProducer Transaction API](https://kafka.apache.org/43/javadoc/org/apache/kafka/clients/producer/KafkaProducer.html)
 - [KIP-98：Exactly Once 与事务协议](https://cwiki.apache.org/confluence/spaces/KAFKA/pages/66854913/KIP-98%2B-%2BExactly%2BOnce%2BDelivery%2Band%2BTransactional%2BMessaging)
 - [Kafka Message Format](https://kafka.apache.org/43/implementation/message-format/)
-- [Kafka Tiered Storage](https://kafka.apache.org/43/operations/tiered-storage/)
