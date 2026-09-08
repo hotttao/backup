@@ -309,7 +309,8 @@ AMQP 是一种消息协议。这里说的**复杂 AMQP 路由**，核心是 Brok
 - [RabbitMQ（二）：Queue 存储、多副本一致性与故障恢复](022_rabbitmq_queue_implementation.md)
 - [RabbitMQ（三）：Stream 分区、复制、Offset 与故障恢复](023_rabbitmq_stream_implementation.md)
 - [Apache Pulsar（一）：架构、流程、核心抽象与语义](031_pulsar.md)
-- [Apache Pulsar（二）：存储、多副本一致性与故障恢复](032_pulsar_implementation.md)
+- [Apache Pulsar（二）：消息队列的存储、一致性与故障恢复](032_pulsar_message_queue_implementation.md)
+- [Apache Pulsar（三）：任务队列、Ack 与故障恢复](033_pulsar_task_queue_implementation.md)
 
 ## 9. 参考资料
 

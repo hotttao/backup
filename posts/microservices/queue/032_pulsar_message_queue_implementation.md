@@ -1,12 +1,12 @@
 ---
 weight: 32
-title: "Apache Pulsar（二）：存储、多副本一致性与故障恢复"
+title: "Apache Pulsar（二）：消息队列的存储、一致性与故障恢复"
 date: 2026-09-06T12:00:00+08:00
 lastmod: 2026-09-08T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "沿 Managed Ledger、BookKeeper Quorum 与 Managed Cursor，理解 Pulsar 的确认时点、LAC、Bookie 切换与故障恢复"
+description: "沿 Managed Ledger 与 BookKeeper Quorum，理解 Pulsar 消息队列的确认时点、LAC、Bookie 切换与故障恢复"
 featuredImage:
 
 tags: ["message-queue", "pulsar"]
@@ -18,7 +18,7 @@ toc:
   auto: false
 ---
 
-[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC、Ensemble 变化和 Cursor 恢复解释提交与故障。
+[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC 和 Ensemble 变化解释消息存储与故障恢复。任务投递、Ack 和 Cursor 见[任务队列实现篇](033_pulsar_task_queue_implementation.md)。
 
 <!-- more -->
 
@@ -305,7 +305,7 @@ Bookie 可以把多条 Journal 写入合并刷盘，不等于每条消息单独�
 
 BookKeeper 底层还提供特殊的 `DEFERRED_SYNC` 写标志。使用它时，Bookie 可以在数据只进入操作系统缓冲区、尚未刷到持久介质时返回；这种写入不会像普通耐久 Add 那样推进 LAC。若此时整机掉电，已经返回的数据仍可能消失。
 
-原文那句话实际想表达的是：
+两种写入的成功边界不同：
 
 ```text
 普通 Durable Add 成功
@@ -438,55 +438,7 @@ AutoRecovery 修复的是“已存在但副本数不足”的历史数据。它�
 
 不能因为 Bookie 上没有“完整 Topic”就直接关机。一个 Bookie 通常包含大量 Topic 的部分 Ledger Fragment。安全下线流程应先禁止新分配，再执行 decommission/re-replication，确认欠副本清零后才移除节点。
 
-## 8. Subscription Cursor、Ack 与故障恢复
-
-第一篇的 `fulfill-workers` 并不是 Owner Broker 内存中的一个简单 Offset。Managed Cursor 至少需要表达：
-
-- Mark-delete Position：此前连续确认完成的位置；
-- Individual Deleted Ranges：Mark-delete 之后已经单独 Ack 的洞；
-- Subscription Properties 和持久标识；
-- 当前 Dispatcher、Consumer、Permit 和 Unacked 运行状态。
-
-持久 Cursor 由 Managed Ledger 子系统管理。Cursor 名称和元数据通过 Metadata Store 发现，频繁变化的 Cursor 状态可以写入 BookKeeper 的 Cursor Ledger；在失败或特定配置路径下也可能回写 Metadata Store。关键结论是：Owner Broker 故障后，Cursor 能从持久存储恢复，不依赖客户端上报一个猜测位置。
-
-### 8.1 连续 Ack 与乱序 Ack
-
-假设 Entry 0～10 已投递：
-
-```text
-0..7 已连续 Ack
-8 尚未 Ack
-9、10 已 Ack
-
-Mark-delete = 7
-Individual Ack Holes = {9, 10}
-```
-
-因为 8 仍未完成，Mark-delete 不能直接推进到 10。Shared/Key_Shared 允许多个 Consumer 并行处理，Cursor 必须同时保存连续前缀与后面的 Ack 洞。
-
-乱序未确认范围过多会增加 Cursor 元数据、恢复和重投成本。不能只监控 Backlog 总数，还要观察 Unacked、Redelivery 和 Ack Hole。
-
-### 8.2 Owner Broker 在 Ack 前故障
-
-1. Consumer 已收到消息，业务可能正在处理；
-2. Ack 尚未成为持久 Cursor 状态，Owner Broker 故障；
-3. 新 Broker 获得 Topic 所有权；
-4. 新 Owner 加载 Managed Ledger 与 Cursor；
-5. 未被持久确认的消息重新投递。
-
-如果业务数据库已经提交，这次重投会产生重复。因此 Subscription 恢复提供的是至少一次，而不是跨数据库精确一次。
-
-### 8.3 Ack 已持久化，但响应丢失
-
-消息可能已经从 Cursor 的未确认范围中移除，但 Consumer 没收到 Ack 结果。客户端不能靠超时判断服务端最终状态。若消息再次出现，业务幂等处理；若没有再次出现，也不能由 Consumer 主动跳过一个更大的未知区间。
-
-### 8.4 不同 Subscription 互不推进
-
-`warehouse`、`risk`、`analytics` 各有自己的 Managed Cursor。最慢 Subscription 决定其 Backlog 保留压力；一个 Subscription Ack 不会修改另一个 Cursor。
-
-Retention 与 Backlog Quota 仍可能删除或限制积压。Cursor 表示消费位置，不等于永远钉住所有历史数据。
-
-## 9. Tiered Storage 与长历史
+## 8. Tiered Storage 与长历史
 
 封闭 Ledger 已经不可变，可以异步复制到 S3、GCS、OSS 或文件系统等低成本存储。完成下沉并经过安全等待后，本地 BookKeeper 副本可以删除，Consumer 读取旧历史时由 Broker 透明访问冷存储。
 
@@ -499,7 +451,7 @@ Retention 与 Backlog Quota 仍可能删除或限制积压。Cursor 表示消费
 
 Topic Compaction 则是另一种能力：按 Key 保留最新值的紧凑视图，适合重建最新状态，不等于保存完整审计历史。Retention、TTL、Compaction 和 Tiered Storage 不能互相替代。
 
-## 10. 扩缩容和热点
+## 9. 扩缩容和热点
 
 Pulsar 的存算分离使两类扩容相对独立：
 
@@ -515,7 +467,7 @@ Pulsar 的存算分离使两类扩容相对独立：
 - 所有 Broker 共享 BookKeeper 时，存储热点可能影响多个租户；
 - 元数据操作和百万 Topic 会给 Metadata Store、Bundle 调度和客户端连接带来压力。
 
-## 11. 跨地域复制
+## 10. 跨地域复制
 
 Pulsar 的异步 Geo-replication 在消息本地持久化后，由 Broker 复制到远端集群。远端中断时本地仍可写，代价是存在复制积压和非零 RPO。
 
@@ -530,25 +482,25 @@ Pulsar 也可以通过 BookKeeper region-aware placement 把 Ack Quorum 跨地�
 
 Active-active 还需要处理多地域同时写入的业务冲突、重复和顺序。跨集群复制能搬运消息，不能自动建立跨地域全局业务顺序。
 
-## 12. 运维时真正要观察什么
+## 11. 运维时真正要观察什么
 
 至少需要覆盖四层指标：
 
-### 12.1 Producer 与 Broker
+### 11.1 Producer 与 Broker
 
 - 发布成功率、超时、重试、吞吐和 P99 延迟；
 - Topic/Partition/Bundle 的 Owner 变更和重连次数；
 - Broker CPU、堆外内存、Direct Memory、缓存命中和连接数；
 - 单 Topic/Partition 热点，而不只是集群平均值。
 
-### 12.2 Subscription
+### 11.2 Subscription
 
 - 每个 Subscription 的 backlog 数量和字节；
 - 最老未确认消息年龄；
 - ACK、Negative ACK、Redelivery 和死信增长；
 - Consumer 可用数、处理延迟和未确认消息数量。
 
-### 12.3 BookKeeper
+### 11.3 BookKeeper
 
 - Journal 写入和 fsync 延迟；
 - Ledger/Entry 读写错误；
@@ -556,7 +508,7 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 - 欠副本 Ledger 数、AutoRecovery 队列和修复速度；
 - Ensemble 是否满足机架/地域放置策略。
 
-### 12.4 元数据与冷存储
+### 11.4 元数据与冷存储
 
 - Metadata Store quorum、会话延迟和连接异常；
 - Ledger 元数据 CAS、Topic 加载和 Bundle 分配失败；
@@ -565,7 +517,7 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 
 Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入仍会失败；Bookie 都存活也不代表可用：Metadata Store 失去多数派后，所有权和 Ledger 元数据变更会受阻。
 
-## 13. 实现结论
+## 12. 实现结论
 
 - Topic Partition 的长期日志是 Managed Ledger；Ledger、Fragment 和 Bookie 物理文件是不同层次。
 - Owner Broker 是单 Writer，Bookie 是对等存储节点，因此不是传统主从半同步。
@@ -573,10 +525,9 @@ Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入�
 - Writer 的 LAC、Entry 携带的 priorLAC 与可选 Explicit LAC 解决不同层次的确认信息传播。
 - 未达到 Qa 的 Entry 不能成为恢复后的有效承诺；达到 Qa 但响应丢失仍会导致 Producer 重试和重复。
 - Bookie 切换可以在同一 Ledger 内形成新 Fragment；Ledger 滚动与 Bookie 切换不是同一事件。
-- Managed Cursor 会持久化 Mark-delete 与 Ack 洞，但不能把外部业务事务变成精确一次。
 - Broker、Bookie 和 Metadata Store 分别有独立故障面，运维必须同时观察。
 
-## 14. 参考资料
+## 13. 参考资料
 
 - [Apache Pulsar 4.2 Architecture Overview](https://pulsar.apache.org/docs/4.2.x/concepts-architecture-overview/)
 - [Apache Pulsar 4.2 Messaging Concepts](https://pulsar.apache.org/docs/4.2.x/concepts-messaging/)
@@ -586,7 +537,6 @@ Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入�
 - [Apache BookKeeper Protocol](https://bookkeeper.apache.org/docs/development/protocol/)
 - [BookKeeper Ledger API：LAC 与 Durable Add](https://bookkeeper.apache.org/docs/latest/api/ledger-api/)
 - [BookKeeper Client Configuration：Explicit LAC](https://bookkeeper.apache.org/docs/latest/api/javadoc/org/apache/bookkeeper/conf/ClientConfiguration.html)
-- [Pulsar Consumer API and Key_Shared Batching](https://pulsar.apache.org/docs/4.2.x/client-libraries-consumers/)
 - [Pulsar Retention and Expiry](https://pulsar.apache.org/docs/4.2.x/cookbooks-retention-expiry/)
 - [Pulsar Tiered Storage](https://pulsar.apache.org/docs/4.2.x/tiered-storage-overview/)
 - [Pulsar Topic Compaction](https://pulsar.apache.org/docs/4.2.x/concepts-topic-compaction/)
