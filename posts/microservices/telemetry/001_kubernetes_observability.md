@@ -133,13 +133,22 @@ Gateway：集中处理，解决“数据进入哪个后端、执行什么全局�
 Backend：存储和查询，解决“数据怎样被检索和分析”
 ```
 
-“Agent”这个名称会被不同项目复用，必须结合前缀判断：
+Kubernetes 和 W3C 并没有规定唯一的 Agent 实现。Agent 是一种架构角色，常见实现如下：
 
-| 名称 | 实际含义 |
-| --- | --- |
-| OTel Collector Agent | 以 Agent 角色部署的 OpenTelemetry Collector，通常是 DaemonSet，可处理 Log、Metric、Trace |
-| Log Agent | 专门采集日志的进程，例如 Fluent Bit、Vector，也常以 DaemonSet 运行 |
-| Prometheus Agent Mode | Prometheus 的一种运行模式，专注 scrape 和 Remote Write；它不等于上面的 OTel Node Agent |
+| 实现 | 主要信号 | 典型用途 |
+| --- | --- | --- |
+| OpenTelemetry Collector Contrib | Metrics、Logs、Traces | 通用实现；以 DaemonSet 作为 Node Agent，或以 Deployment 作为 Gateway |
+| Grafana Alloy | Metrics、Logs、Traces、Profiles | 集成 OpenTelemetry、Prometheus 和 Grafana 生态的数据采集与转发 |
+| Fluent Bit | Logs 为主 | 轻量读取容器 stdout/stderr 和节点日志，常以 DaemonSet 部署 |
+| Fluentd | Logs 为主 | 日志解析、路由和插件集成能力强，但资源开销通常高于 Fluent Bit |
+| Vector | Logs、Metrics | 高性能日志与指标采集、转换和路由 |
+| Prometheus Agent Mode | Metrics | 服务发现、抓取指标并通过 Remote Write 转发，不负责日志和 Trace |
+| Elastic Agent | Logs、Metrics、安全数据 | 采集并发送到 Elastic Stack，偏向 Elastic 生态 |
+| Datadog Agent | Metrics、Logs、Traces | Datadog 体系的一体化节点 Agent，偏向厂商后端 |
+
+如果希望采用厂商中立、统一三类信号的方案，通常优先选择 **OpenTelemetry Collector Contrib**。如果已有成熟的 Prometheus 和日志体系，也可以继续让 Prometheus 负责指标、Fluent Bit 或 Vector 负责日志，只让 OTel Collector 负责 Trace 和统一转发。
+
+因此，同一个软件也可能扮演不同角色：OTel Collector 以 DaemonSet 部署时是 Node Agent，以 Deployment 集中部署时则是 Gateway。Prometheus Agent Mode 虽然也叫 Agent，但它特指一种指标转发模式，并不等于 OTel Node Agent。
 
 因此，Agent 并不天然等于“只采 Trace 和 Log”。**软件能力由 Receiver/插件决定，实际职责由架构分工和配置决定。**
 
@@ -162,15 +171,24 @@ Backend：存储和查询，解决“数据怎样被检索和分析”
 因此，在图中的推荐分工是：
 
 ```text
-Node Agent：节点本地数据优先
-  CRI 日志、节点日志、host metrics、kubelet stats；也可以作为本节点 OTLP 中继。
+Metrics：应用/K8s 组件 --/metrics--> Prometheus --Remote Write--> Metrics Backend
 
-Prometheus / Prometheus Agent：以 /metrics 暴露的指标优先
-  应用指标 + Kubernetes 组件指标 + node_exporter + kube-state-metrics。
+Logs：应用 stdout/stderr --> CRI 日志文件 --> Node Agent --> Gateway --> Log Backend
 
-Collector Gateway：集中接收和处理优先
-  接收 OTLP，统一做认证、Resource 补充、过滤、批处理、采样和后端路由。
+Traces：应用 OTel SDK --OTLP--> Collector Gateway --> Trace Backend
+
+节点数据：host metrics / kubelet stats / 节点日志 --> Node Agent --> Gateway 或对应后端
 ```
+
+图中采用的是 **Trace 直达 Gateway** 模式：应用 SDK 把完成的 Span 通过 OTLP 发到 Gateway 的 Kubernetes Service，Node Agent 不经过这条路径。`traceparent` 等 header 仍然只在业务服务之间传播，与 Span 上传路径无关。
+
+也可以使用两级模式：
+
+```text
+应用 OTel SDK --OTLP--> 本节点 Node Agent --OTLP--> Collector Gateway --> Trace Backend
+```
+
+两级模式适合需要节点本地接收、缓冲或预处理的场景，但会增加一跳和一层配置。若 Node Agent 的主要用途只是读取日志和节点指标，应用直接上报 Gateway 更简单。
 
 Prometheus 的 Kubernetes 服务发现只负责找到抓取目标，不会直接把 Deployment、Pod 状态“变成指标”。这部分由 `kube-state-metrics` 监听 Kubernetes API，再以 `/metrics` 暴露给 Prometheus。
 
