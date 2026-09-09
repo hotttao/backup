@@ -6,7 +6,7 @@ lastmod: 2026-09-09T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "沿 Managed Ledger 与 BookKeeper Quorum，理解 Pulsar 的确认时点、故障恢复、扩缩容、去重与事务实现"
+description: "沿 Managed Ledger 与 BookKeeper Quorum，理解 Pulsar 的确认时点、多副本一致性、故障恢复与 Producer 去重"
 featuredImage:
 
 tags: ["message-queue", "pulsar"]
@@ -18,7 +18,9 @@ toc:
   auto: false
 ---
 
-[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC 和 Ensemble 变化解释消息存储、故障恢复、扩缩容、Producer 去重与事务。Shared/Key_Shared 的任务调度、普通 Ack 和 Cursor 见[任务队列实现篇](033_pulsar_task_queue_implementation.md)。
+[架构与流程篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，只回答一条持久消息如何形成连续、唯一、可恢复的日志：先建立存储模型和 Quorum，再说明确认时点，最后分析 Broker、旧 Writer 与 Bookie 故障。
+
+Shared/Key_Shared 的任务投递和 Cursor 恢复见[任务队列实现篇](033_pulsar_task_queue_implementation.md)；Entry Log、索引和空间回收见[BookKeeper 存储细节篇](034_pulsar_entry_log.md)；扩缩容、事务与跨地域见[生产能力与运维篇](035_pulsar_transactions_operations.md)。
 
 <!-- more -->
 
@@ -657,3 +659,31 @@ sequenceDiagram
 ### 7.3 下线 Bookie
 
 不能因为 Bookie 上没有“完整 Topic”就直接关机。一个 Bookie 通常包含大量 Topic 的部分 Ledger Fragment。安全下线流程应先禁止新分配，再执行 decommission/re-replication，确认欠副本清零后才移除节点。
+
+## 8. 实现结论
+
+- 一个 Topic Partition 对应一条 Managed Ledger；Managed Ledger 由多个 Ledger 组成，Ledger 又可因 Ensemble Change 包含多个 Fragment。
+- Pulsar 不是 Broker 主从复制。Owner Broker 是单 Writer，BookKeeper 用 `E/Qw/Qa` 对等副本写入决定持久化成功。
+- 高 Entry 可以先达到自己的 Ack Quorum，但不能越过低 Entry 返回；Writer LAC 始终表示连续确认前缀。
+- Broker 切换时，Recovery 先 fence 旧 Writer、确定旧 Ledger 的唯一结尾，再创建新 Ledger；CAS 防止多个恢复者形成两条历史。
+- 未达到 `Qa` 的尾部 Entry 不会立即从 Journal 擦除，Recovery 决定补齐并保留，还是从逻辑结尾排除。
+- Producer Name 与 Sequence ID 可以识别发布重试，但不能替代跨系统的业务幂等键。
+- 正在写入的 Ledger 由 Ensemble Change 替换故障 Bookie；封闭 Ledger 的欠副本由 AutoRecovery 修复。
+
+至此解决的是“消息怎样可靠落盘”。容量扩展、事务可见性、跨地域和生产监控继续见[下一篇](035_pulsar_transactions_operations.md)。
+
+## 9. 参考资料
+
+- [Apache Pulsar 4.2 Architecture Overview](https://pulsar.apache.org/docs/4.2.x/concepts-architecture-overview/)
+- [Pulsar Metadata Store Administration](https://pulsar.apache.org/docs/4.2.x/administration-metadata-store/)
+- [Pulsar BookKeeper Persistence Policies](https://pulsar.apache.org/docs/4.2.x/administration-zk-bk/)
+- [Apache BookKeeper Protocol](https://bookkeeper.apache.org/docs/development/protocol/)
+- [BookKeeper PendingAddOp：Pending Queue 与有序回调](https://bookkeeper.apache.org/docs/latest/api/javadoc/org/apache/bookkeeper/client/PendingAddOp.html)
+- [Apache BookKeeper AutoRecovery](https://bookkeeper.apache.org/docs/admin/autorecovery/)
+- [Apache BookKeeper Decommission](https://bookkeeper.apache.org/docs/next/admin/decomission/)
+- [BookKeeper Ledger API：LAC 与 Durable Add](https://bookkeeper.apache.org/docs/latest/api/ledger-api/)
+- [BookKeeper Client Configuration：Explicit LAC](https://bookkeeper.apache.org/docs/latest/api/javadoc/org/apache/bookkeeper/conf/ClientConfiguration.html)
+- [Pulsar Message Deduplication](https://pulsar.apache.org/docs/next/cookbooks-deduplication/)
+- [PIP-6：Producer Sequence ID 与去重 Cursor 快照](https://github.com/apache/pulsar/wiki/PIP-6%3A-Guaranteed-Message-Deduplication)
+- [Pulsar CommandSend 协议：sequence_id 与 highest_sequence_id](https://github.com/apache/pulsar/blob/master/pulsar-common/src/main/proto/PulsarApi.proto)
+- [Pulsar ManagedLedgerImpl：Ledger Recovery、滚动与元数据 CAS](https://github.com/apache/pulsar/blob/master/managed-ledger/src/main/java/org/apache/bookkeeper/mledger/impl/ManagedLedgerImpl.java)

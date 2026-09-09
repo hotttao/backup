@@ -1,12 +1,12 @@
 ---
-weight: 32
-title: "Apache Pulsar（二）：消息队列的存储、一致性与故障恢复"
+weight: 35
+title: "Apache Pulsar（五）：扩缩容、事务与生产运维"
 date: 2026-09-06T12:00:00+08:00
 lastmod: 2026-09-09T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
-description: "沿 Managed Ledger 与 BookKeeper Quorum，理解 Pulsar 的确认时点、故障恢复、扩缩容、去重与事务实现"
+description: "理解 Pulsar 的冷热分层、扩缩容、事务可见性、跨地域容灾与生产监控"
 featuredImage:
 
 tags: ["message-queue", "pulsar"]
@@ -18,11 +18,13 @@ toc:
   auto: false
 ---
 
-[第一篇](031_pulsar.md)已经说明 Broker Owner、BookKeeper、Bookie、Managed Ledger、Subscription 和客户端连接路径。本文从 Owner Broker 收到 `order-1001` 的位置继续，沿 Ledger Entry、写入 Quorum、LAC 和 Ensemble 变化解释消息存储、故障恢复、扩缩容、Producer 去重与事务。Shared/Key_Shared 的任务调度、普通 Ack 和 Cursor 见[任务队列实现篇](033_pulsar_task_queue_implementation.md)。
+[存储与一致性篇](032_pulsar_message_queue_implementation.md)已经说明消息如何通过 BookKeeper Quorum 落盘，以及 Broker、Writer 和 Bookie 故障后如何恢复唯一日志。本文继续回答系统进入生产环境后的四类问题：历史数据放在哪里、容量如何扩展、跨 Topic 事务如何控制可见性，以及跨地域和日常运维如何定义边界。
+
+阅读顺序是：先处理单集群内的存储生命周期和扩容，再进入事务，最后讨论跨地域与监控。Shared/Key_Shared 的任务调度和 Cursor 恢复仍见[任务队列实现篇](033_pulsar_task_queue_implementation.md)。
 
 <!-- more -->
 
-## 8. Tiered Storage 与长历史
+## 1. Tiered Storage 与长历史
 
 封闭 Ledger 已经不可变，可以异步复制到 S3、GCS、OSS 或文件系统等低成本存储。完成下沉并经过安全等待后，本地 BookKeeper 副本可以删除，Consumer 读取旧历史时由 Broker 透明访问冷存储。
 
@@ -35,7 +37,7 @@ toc:
 
 Topic Compaction 则是另一种能力：按 Key 保留最新值的紧凑视图，适合重建最新状态，不等于保存完整审计历史。Retention、TTL、Compaction 和 Tiered Storage 不能互相替代。
 
-## 9. 扩缩容和热点
+## 2. 扩缩容和热点
 
 扩容前先判断瓶颈属于哪一层：
 
@@ -48,7 +50,7 @@ Namespace Bundle 太粗：   增加 Broker 间可调度的所有权单元
 
 这四种操作不能互相替代。
 
-### 9.1 增加 Broker：迁移所有权，不迁移历史消息
+### 2.1 增加 Broker：迁移所有权，不迁移历史消息
 
 假设新增 `broker-6`。它注册到集群后可以承接新 Bundle，但不会像 Kafka 新 Follower 那样复制 Topic 历史，因为历史仍在共享的 BookKeeper 中。
 
@@ -82,7 +84,7 @@ sequenceDiagram
 
 新增 Broker 后，Load Manager 可以通过自动负载卸载或人工 Unload/Transfer 让旧 Owner 释放 Bundle。切换期间客户端会短暂重连，但不需要把 Ledger Entry 从旧 Broker 搬到新 Broker。
 
-### 9.2 增加 Bookie：先获得新容量，不代表旧数据已经均衡
+### 2.2 增加 Bookie：先获得新容量，不代表旧数据已经均衡
 
 新增 `bookie-6` 注册为 Writable Bookie 后：
 
@@ -93,7 +95,7 @@ sequenceDiagram
 
 因此“Bookie 数量增加”与“历史数据已经均衡”是两个状态。容量规划还要观察各 Bookie 的磁盘利用率、写入速率和欠副本 Ledger。
 
-### 9.3 Topic 从两个 Partition 增加到四个
+### 2.3 Topic 从两个 Partition 增加到四个
 
 假设 `persistent://shop/order/events` 当前只有：
 
@@ -146,14 +148,14 @@ partition = hash(key) % partitionCount
 
 分区数从 2 变成 4 后，同一个 `order_id` 可能改投新分区，扩容前后的消息就失去单分区顺序。需要连续顺序的业务应预留分区、使用稳定路由表，或者创建新 Topic 做受控迁移。Pulsar 只支持增加 Partition，不能直接减少。
 
-### 9.4 拆分 Bundle 与增加 Topic Partition 的区别
+### 2.4 拆分 Bundle 与增加 Topic Partition 的区别
 
 - **拆分 Bundle**：同一批 Topic 被分成更细的 Broker 所有权范围，方便分散协议处理负载；Topic 的 Ledger、Partition 和消息路由都不变；
 - **增加 Topic Partition**：给一个业务 Topic 新增独立日志，提高 Producer/Consumer 并行上限，但会影响 Key 路由和顺序。
 
 存算分离消除了“Broker 扩容必须搬整个分区历史”的耦合，但没有消除热点：单个非分区 Topic 仍由一个 Owner 服务，单个 Key 仍只落到一个 Partition，共享 BookKeeper 的存储热点还可能影响多个 Broker。
 
-## 10. Pulsar 事务如何实现
+## 3. Pulsar 事务如何实现
 
 Producer 去重只解决同一个 Producer 重试时不重复追加。Pulsar 事务进一步解决：**向一个或多个 Topic 写消息，并确认一个或多个 Subscription 中的输入消息，要么一起生效，要么一起撤销。**
 
@@ -172,7 +174,7 @@ Producer 去重只解决同一个 Producer 重试时不重复追加。Pulsar 事
 
 读取输入消息发生在事务之前。事务覆盖的是“写出结果”和“确认输入”，不是把读取动作倒过来执行。
 
-### 10.1 事务涉及哪些状态
+### 3.1 事务涉及哪些状态
 
 先分清四类状态：
 
@@ -183,7 +185,7 @@ Producer 去重只解决同一个 Producer 重试时不重复追加。Pulsar 事
 
 业务消息、事务状态和事务性 Ack 分别写入三个独立的 Managed Ledger。它们最终都变成 BookKeeper Entry，但可能落在不同 Ledger、不同 Ensemble 和不同 Bookie 上，不存在一条跨越三者的全局物理写入顺序。
 
-### 10.2 正常提交时顺序写入什么
+### 3.2 正常提交时顺序写入什么
 
 仍以事务 `T1` 为例。三个日志中的逻辑内容分别是：
 
@@ -257,7 +259,7 @@ sequenceDiagram
 
 每一次“追加”仍沿普通存储路径进入 BookKeeper：Bookie 先追加 Journal，随后把 Entry 写入 Entry Log 并更新索引。Bookie 的 Journal/Entry Log 会混存多个 Ledger 的 Entry；Pulsar 依靠 `Ledger ID + Entry ID` 找回各条逻辑日志，而不是依靠一个全局事务文件。
 
-### 10.3 Abort 时顺序写入什么
+### 3.3 Abort 时顺序写入什么
 
 Abort 不会回头删除或修改已经落盘的业务 Entry，而是继续追加结果：
 
@@ -278,7 +280,7 @@ Pending Ack Log
 
 业务 Entry 自己携带 TxnID，用于表明它属于哪个事务。Journal 和 Entry Log 不会给这条 Entry 原地补写一个“未提交”标志；Topic Owner 读取后面的 ABORT Marker，才知道它必须永久过滤这条消息。Pending Ack 的 Abort 也不会推进 Subscription Cursor，因此输入消息之后可以重新投递。
 
-### 10.4 Consumer 如何判断事务消息能否读取
+### 3.4 Consumer 如何判断事务消息能否读取
 
 Consumer 不查询 TC，也不直接读取 Transaction Log。目标 Topic Owner 上的 Transaction Buffer 维护两份判断信息：
 
@@ -297,7 +299,7 @@ maxReadPosition 停在 101 之前
 
 即使事务 B 已提交，Consumer 也不能越过尚未结束的事务 A 先读取 Position 102。事务 A 结束后，边界才能推进：已 Commit 的事务消息可见，已 Abort 的事务消息被过滤。该边界按 Topic Partition 独立维护。
 
-### 10.5 Transaction Coordinator 是 Topic Owner 吗
+### 3.5 Transaction Coordinator 是 Topic Owner 吗
 
 不是。两者可以运行在不同 Broker：
 
@@ -307,7 +309,7 @@ maxReadPosition 停在 101 之前
 
 TC 持久化 `COMMITTING` 或 `ABORTING` 后，请求各参与者当前的 Owner Broker 追加 Marker。Consumer 连接的是 Topic Owner，Owner 的 Dispatcher 直接查询本地 Transaction Buffer，因此不需要由 TC 在每次消费时判断可见性。Topic 迁移后，新 Owner 通过 Transaction Buffer 快照和业务 Ledger 中的事务消息、Marker 恢复这些状态。
 
-### 10.6 Pending Ack Log 是否每次消费都会写
+### 3.6 Pending Ack Log 是否每次消费都会写
 
 不会。只有调用 `Ack(Message ID, TxnID)` 的**事务性 Ack**才会写 Pending Ack Log；普通 Ack 直接更新 Subscription 的 Cursor，不经过它。
 
@@ -319,7 +321,7 @@ TC 持久化 `COMMITTING` 或 `ABORTING` 后，请求各参与者当前的 Owner
 
 它不是写入某个固定 Bookie，也不是追加到源 Topic 的业务 Ledger。BookKeeper 为这个独立 Managed Ledger 创建 Ledger 和 Ensemble，再按其 `Qw/Qa` 把 Entry 写入所选 Bookie 的 Journal 与 Entry Log。
 
-### 10.7 故障发生时如何收敛
+### 3.7 故障发生时如何收敛
 
 - **Worker 在 Commit 前故障**：事务超时后由 TC Abort，输出消息不可见，输入 Ack 撤销；
 - **提交决定已持久化，但成功响应丢失**：客户端看到结果未知，TC 仍按 Transaction Log 继续完成各参与者的 Commit；
@@ -327,11 +329,11 @@ TC 持久化 `COMMITTING` 或 `ABORTING` 后，请求各参与者当前的 Owner
 - **Topic Owner 故障**：新 Owner 恢复 Transaction Buffer 或 Pending Ack 状态，再处理 TC 的重试请求；
 - **某个参与者暂时不可用**：事务停留在中间状态，TC 持续重试，不能让不同参与者得到相反结果。
 
-### 10.8 Exactly Once 的边界
+### 3.8 Exactly Once 的边界
 
 事务保证范围只覆盖 Pulsar Topic 与 Subscription。MySQL、Redis、HTTP、支付和仓库设备调用不属于 Pulsar 事务；一旦处理流程越过 Pulsar 边界，仍需 Outbox、Inbox、业务幂等键或状态机。
 
-## 11. 跨地域复制
+## 4. 跨地域复制
 
 Pulsar 的异步 Geo-replication 在消息本地持久化后，由 Broker 复制到远端集群。远端中断时本地仍可写，代价是存在复制积压和非零 RPO。
 
@@ -346,18 +348,18 @@ Pulsar 也可以通过 BookKeeper region-aware placement 把 Ack Quorum 跨地�
 
 Active-active 还需要处理多地域同时写入的业务冲突、重复和顺序。跨集群复制能搬运消息，不能自动建立跨地域全局业务顺序。
 
-## 12. 运维时真正要观察什么
+## 5. 运维时真正要观察什么
 
 至少需要覆盖四层指标：
 
-### 12.1 Producer 与 Broker
+### 5.1 Producer 与 Broker
 
 - 发布成功率、超时、重试、吞吐和 P99 延迟；
 - Topic/Partition/Bundle 的 Owner 变更和重连次数；
 - Broker CPU、堆外内存、Direct Memory、缓存命中和连接数；
 - 单 Topic/Partition 热点，而不只是集群平均值。
 
-### 12.2 BookKeeper
+### 5.2 BookKeeper
 
 - Journal 写入和 fsync 延迟；
 - Ledger/Entry 读写错误；
@@ -365,14 +367,14 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 - 欠副本 Ledger 数、AutoRecovery 队列和修复速度；
 - Ensemble 是否满足机架/地域放置策略。
 
-### 12.3 元数据与冷存储
+### 5.3 元数据与冷存储
 
 - Pulsar Metadata Store 的 quorum、会话延迟，以及 Topic 加载、Bundle 分配与 Managed Ledger 元数据更新失败；
 - BookKeeper Metadata Service 的 quorum、Bookie 注册状态和 Ledger 元数据 CAS 失败；
 - Offload 成功率、冷读延迟、对象存储错误和费用；
 - Geo-replication backlog、复制速率和最老待复制消息。
 
-### 12.4 事务
+### 5.4 事务
 
 - Transaction Coordinator 是否可用，OPEN/COMMITTING/ABORTING 事务数量；
 - 慢事务、超时事务和 Transaction Log 写入延迟；
@@ -381,38 +383,21 @@ Active-active 还需要处理多地域同时写入的业务冲突、重复和顺
 
 Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入仍会失败；Bookie 都存活也不代表可用：Pulsar Metadata Store 失去多数派会阻塞所有权和 Managed Ledger 元数据变更，BookKeeper Metadata Service 失去多数派则会阻塞 Ledger 创建、关闭与 Ensemble 变更。
 
-## 13. 实现结论
+## 6. 实现结论
 
-- Topic Partition 的长期日志是 Managed Ledger；Ledger、Fragment 和 Bookie 物理文件是不同层次。
-- Owner Broker 是单 Writer，Bookie 是对等存储节点，因此不是传统主从半同步。
-- `E/Qw/Qa` 分别决定放置范围、单 Entry 写入范围和成功确认数量。
-- Writer 的 LAC、Entry 携带的 priorLAC 与可选 Explicit LAC 解决不同层次的确认信息传播。
-- 故障前未达到 Qa 的 Entry 尚未获得成功承诺，但 Recovery 可能读出并补齐它，使其进入封闭 Ledger 的连续尾部；达到 Qa 或被 Recovery 保留但响应丢失，都可能导致 Producer 重试和重复。
-- Broker 去重依赖稳定 Producer Name 和 Sequence ID，只覆盖 Producer 到 Topic Partition 的重复发布。
-- Bookie 切换可以在同一 Ledger 内形成新 Fragment；Ledger 滚动与 Bookie 切换不是同一事件。
-- 增加 Broker 迁移的是 Bundle 所有权；增加 Bookie 扩展的是存储；增加 Partition 创建的是新日志。
-- Pulsar 事务通过 Transaction Log、Transaction Buffer 和 Pending Ack Log，原子协调 Topic 写入与 Subscription Ack。
-- Broker、Bookie、Pulsar Metadata Store 和 BookKeeper Metadata Service 分别有独立的逻辑故障面，运维必须同时观察；后两者即使共用 ZooKeeper 集群，也要按各自的路径与操作分别诊断。
+- Tiered Storage、Retention、TTL 和 Compaction 解决不同问题：冷存、保留时间、过期和最新状态视图不能互相替代。
+- 增加 Broker、增加 Bookie、拆分 Bundle 和增加 Topic Partition 分别扩展计算、存储、所有权调度和单 Topic 并行度。
+- Pulsar 事务用 Transaction Log 保存决定，由目标 Topic Owner 的 Transaction Buffer 控制消息可见性，由 Pending Ack Log 暂存事务性 Ack。
+- Transaction Coordinator 不是业务 Topic Owner；它持久化决定并驱动各参与者 Owner 完成 Commit 或 Abort。
+- 异步 Geo-replication 优先地域隔离和本地低延迟，但存在非零 RPO；同步跨地域 Quorum 用写入延迟换取更低 RPO。
+- 运维不能只看 Broker 存活数，还要同时观察 Topic 热点、BookKeeper 持久化、两类元数据操作、事务阻塞和跨地域复制积压。
 
-## 14. 参考资料
+## 7. 参考资料
 
-- [Apache Pulsar 4.2 Architecture Overview](https://pulsar.apache.org/docs/4.2.x/concepts-architecture-overview/)
-- [Apache Pulsar 4.2 Messaging Concepts](https://pulsar.apache.org/docs/4.2.x/concepts-messaging/)
 - [Pulsar Broker Load Balancing](https://pulsar.apache.org/docs/4.2.x/concepts-broker-load-balancing-overview/)
 - [Pulsar Load Balance Administration](https://pulsar.apache.org/docs/4.2.x/administration-load-balance/)
 - [Pulsar Topic Administration](https://pulsar.apache.org/docs/4.2.x/admin-api-topics/)
 - [Pulsar Metadata Store Administration](https://pulsar.apache.org/docs/4.2.x/administration-metadata-store/)
-- [Pulsar BookKeeper Persistence Policies](https://pulsar.apache.org/docs/4.2.x/administration-zk-bk/)
-- [Apache BookKeeper Protocol](https://bookkeeper.apache.org/docs/development/protocol/)
-- [BookKeeper PendingAddOp：Pending Queue 与有序回调](https://bookkeeper.apache.org/docs/latest/api/javadoc/org/apache/bookkeeper/client/PendingAddOp.html)
-- [Apache BookKeeper AutoRecovery](https://bookkeeper.apache.org/docs/admin/autorecovery/)
-- [Apache BookKeeper Decommission](https://bookkeeper.apache.org/docs/next/admin/decomission/)
-- [BookKeeper Ledger API：LAC 与 Durable Add](https://bookkeeper.apache.org/docs/latest/api/ledger-api/)
-- [BookKeeper Client Configuration：Explicit LAC](https://bookkeeper.apache.org/docs/latest/api/javadoc/org/apache/bookkeeper/conf/ClientConfiguration.html)
-- [Pulsar Message Deduplication](https://pulsar.apache.org/docs/next/cookbooks-deduplication/)
-- [PIP-6：Producer Sequence ID 与去重 Cursor 快照](https://github.com/apache/pulsar/wiki/PIP-6%3A-Guaranteed-Message-Deduplication)
-- [Pulsar CommandSend 协议：sequence_id 与 highest_sequence_id](https://github.com/apache/pulsar/blob/master/pulsar-common/src/main/proto/PulsarApi.proto)
-- [Pulsar ManagedLedgerImpl：Ledger Recovery、滚动与元数据 CAS](https://github.com/apache/pulsar/blob/master/managed-ledger/src/main/java/org/apache/bookkeeper/mledger/impl/ManagedLedgerImpl.java)
 - [Pulsar Retention and Expiry](https://pulsar.apache.org/docs/4.2.x/cookbooks-retention-expiry/)
 - [Pulsar Tiered Storage](https://pulsar.apache.org/docs/4.2.x/tiered-storage-overview/)
 - [Pulsar Topic Compaction](https://pulsar.apache.org/docs/4.2.x/concepts-topic-compaction/)
@@ -422,8 +407,6 @@ Broker 全部存活不代表系统健康：若 `Qa` 无法满足，持久写入�
 - [Pulsar TopicTransactionBuffer：可见边界、Commit/Abort Marker 与恢复](https://github.com/apache/pulsar/blob/master/pulsar-broker/src/main/java/org/apache/pulsar/broker/transaction/buffer/impl/TopicTransactionBuffer.java)
 - [Pulsar MLTransactionLogImpl：Transaction Log 的 Managed Ledger 实现](https://github.com/apache/pulsar/blob/master/pulsar-transaction/coordinator/src/main/java/org/apache/pulsar/transaction/coordinator/impl/MLTransactionLogImpl.java)
 - [Pulsar MLPendingAckStore：事务性 Ack 的 Managed Ledger 实现](https://github.com/apache/pulsar/blob/master/pulsar-broker/src/main/java/org/apache/pulsar/broker/transaction/pendingack/impl/MLPendingAckStore.java)
-- [Pulsar Schema Overview](https://pulsar.apache.org/docs/4.2.x/schema-overview/)
 - [Pulsar Geo-replication](https://pulsar.apache.org/docs/4.2.x/concepts-replication/)
 - [Pulsar Release Notes and Supported Versions](https://pulsar.apache.org/download/)
 - [Pulsar 5.0 Milestone：Scalable Topics Preview](https://pulsar.apache.org/release-notes/versioned/pulsar-5.0.0-M1/)
-
