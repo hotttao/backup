@@ -2,7 +2,7 @@
 weight: 32
 title: "Apache Pulsar（二）：消息队列的存储、一致性与故障恢复"
 date: 2026-09-06T12:00:00+08:00
-lastmod: 2026-09-08T10:00:00+08:00
+lastmod: 2026-09-09T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -43,10 +43,11 @@ flowchart LR
 ```text
 Managed Ledger 元数据
     → 记录 Topic 由哪些 Ledger 首尾组成
+    → 保存于 Pulsar Metadata Store
 
-Ledger 元数据
+BookKeeper Ledger 元数据
     → Ledger ID、Ensemble、Fragment 边界、Quorum 参数
-    → 保存于 Metadata Store
+    → 保存于 BookKeeper Metadata Service
 
 Ledger Entry
     → Bookie 先写 Journal，再进入 Entry Log
@@ -59,21 +60,21 @@ Broker 缓存用于降低读延迟，但不构成持久化保证。真正的确�
 
 ### 1.1 控制面与数据面分别保存什么
 
-理解故障恢复前，先把状态按职责分开：
+理解故障恢复前，先把状态按职责分开。这里的 Pulsar Metadata Store 与 BookKeeper Metadata Service 是两套逻辑用途；如[第一篇的架构图](031_pulsar.md#11-%E5%AE%8C%E6%95%B4%E7%94%9F%E4%BA%A7%E6%9E%B6%E6%9E%84)所示，它们可以由同一个 ZooKeeper 集群承载，但不能因此视为同一类元数据：
 
-- **Metadata Store**：保存 Tenant、Namespace、Partitioned Topic 的分区数、Namespace Bundle 范围，以及动态的 Bundle Owner 等控制状态；
-- **Managed Ledger 元数据**：保存一个 Topic Partition 由哪些 Ledger 按顺序组成，以及当前 Ledger 的状态；
-- **BookKeeper Ledger 元数据**：保存 Ledger ID、`E/Qw/Qa`、每个 Fragment 的 Ensemble 和 Ledger 是否已经关闭；
+- **Pulsar Metadata Store**：保存 Tenant、Namespace、Partitioned Topic 的分区数、Namespace Bundle 范围、动态的 Bundle Owner，以及 Managed Ledger 元数据；其中 Managed Ledger 元数据描述一个 Topic Partition 由哪些 Ledger 按顺序组成、当前写到哪个 Ledger；
+- **BookKeeper Metadata Service**：保存可用 Bookie 的注册信息和 BookKeeper Ledger 元数据；其中 Ledger 元数据包含 Ledger ID、`E/Qw/Qa`、每个 Fragment 的 Ensemble，以及 Ledger 是否已经关闭；
 - **Bookie 数据面**：Journal、Entry Log 和索引保存真正的 Ledger Entry；
-- **Owner Broker 内存**：保存当前 Producer、Pending Write、Writer LAC、缓存和 Dispatcher 等运行状态，Broker 切换后可以从前四类持久状态重建。
+- **Owner Broker 内存**：保存当前 Producer、Pending Write、Writer LAC、缓存和 Dispatcher 等运行状态，Broker 切换后可以从上述持久状态重建。
 
 ```text
-Metadata Store        决定：谁拥有 Topic、Ledger 应该去哪些 Bookie
-BookKeeper            保存：Topic 的消息正文和可恢复日志
-Owner Broker          执行：排序、批处理、Quorum 写入和客户端响应
+Pulsar Metadata Store       记录：谁拥有 Topic、Topic 由哪些 Ledger 组成
+BookKeeper Metadata Service 记录：有哪些 Bookie、Ledger 各段使用哪些 Bookie
+Bookie 数据面                保存：Topic 的消息正文和可恢复日志
+Owner Broker                执行：排序、批处理、Quorum 写入和客户端响应
 ```
 
-因此，Metadata Store 达成共识不等于业务消息已经持久化；Bookie 上存在某个 Entry，也不等于该 Entry 已达到 Ack Quorum。控制面解决“谁有权操作”，数据面解决“哪些数据可以承诺”。
+因此，无论 Pulsar Metadata Store 还是 BookKeeper Metadata Service 达成了元数据共识，都不等于业务消息已经持久化；Bookie 上存在某个 Entry，也不等于该 Entry 已达到 Ack Quorum。两套元数据分别回答“谁拥有 Topic、Topic 包含哪些 Ledger”和“Ledger 应写到哪些 Bookie”，Bookie 数据面才负责保存 Entry，而 Ack Quorum 决定哪些写入可以向上层承诺成功。
 
 ## 2. BookKeeper 多副本的三个参数
 

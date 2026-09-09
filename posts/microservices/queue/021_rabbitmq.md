@@ -2,7 +2,7 @@
 weight: 21
 title: "RabbitMQ（一）：架构、流程、核心抽象与语义"
 date: 2026-09-06T10:00:00+08:00
-lastmod: 2026-09-07T23:00:00+08:00
+lastmod: 2026-09-09T00:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -567,10 +567,11 @@ rmq-5.example.internal:5552 → 10.0.0.15
 rabbitmq-streams add_super_stream order-events \
   --vhost /commerce \
   --partitions 3 \
-  --binding-keys 0,1,2 \
   --initial-cluster-size 3 \
   --leader-locator balanced
 ```
+
+使用 `--partitions 3` 时会创建 `order-events-0/1/2` 及其默认 Binding Key `0/1/2`。如果业务希望按 `amer/emea/apac` 这类有含义的 Binding Key 路由，则改为显式指定 Binding Key，而不是同时使用两种分区定义方式。
 
 还应为三个分区 Stream 配置保留策略，例如 `x-max-age=7D` 或容量上限。Super Stream 不是一个新的物理文件，它是以下 AMQP 拓扑的逻辑封装：
 
@@ -700,7 +701,59 @@ Routing Key 1
 
 ### 4.3 Producer 生产事件的完整过程
 
-假设订单 `order-1001` 经稳定哈希得到分区路由键 `1`，因此目标是 `order-events-1`，其 Leader 位于 `rmq-3`。
+#### 4.3.1 Message Key 如何决定分区 Stream
+
+先给结论：使用原生 RabbitMQ Stream客户端发布 Super Stream时，默认由**客户端**选择分区；RabbitMQ Broker不会在收到每条消息后再执行一次哈希分区。
+
+Super Stream Producer创建时先查询：
+
+```text
+Super Stream: order-events
+Partitions:   [order-events-0, order-events-1, order-events-2]
+Bindings:     0 -> order-events-0
+              1 -> order-events-1
+              2 -> order-events-2
+Leaders:      每条分区 Stream 当前的 Leader 地址
+```
+
+应用还必须告诉客户端“从消息的哪个字段提取 Routing Key”，例如使用 `order_id`：
+
+```java
+Producer producer = environment.producerBuilder()
+    .superStream("order-events")
+    .routing(message ->
+        message.getApplicationProperties().get("order_id").toString())
+    .producerBuilder()
+    .build();
+```
+
+原生 Stream客户端有三类路由方式：
+
+- **Hash策略，默认方式**：客户端提取 `order_id=order-1001`，默认使用32位 MurmurHash3计算哈希，再根据分区列表映射到一个分区。假设结果是 `order-events-1`，客户端直接向它的 Leader发布；
+- **Key/Binding策略**：适合 `region=emea` 这种具有业务含义的 Key。客户端使用 Stream协议的 Route命令向 Broker查询哪个 Binding匹配 `emea`，缓存结果后再直接向返回的分区 Stream发布；不是每条消息都先经过 Exchange转发；
+- **自定义策略**：应用提供函数，根据消息和 Super Stream元数据返回一个或多个目标 Stream。它拥有最大控制力，也可能因为实现错误造成倾斜、重复写入或无目标。
+
+如果使用 AMQP 0-9-1发布，路径不同：Producer向 `order-events` Direct Exchange发送已经计算好的 Routing Key，例如 `1`，由服务端 Exchange根据 Binding Key选择 `order-events-1`。这属于服务端路由，但不是原生 Super Stream客户端的默认发布路径。
+
+```text
+原生Stream客户端的Hash策略：
+消息 order_id
+  → 客户端MurmurHash3
+  → 客户端选择order-events-1
+  → 直连order-events-1 Leader
+
+AMQP 0-9-1：
+消息 + Routing Key 1
+  → 服务端Direct Exchange
+  → Binding Key 1
+  → order-events-1
+```
+
+相同 Key稳定进入同一分区，需要所有 Producer使用相同的 Key提取函数、字符编码、哈希算法和分区列表。如果重建或改变 Super Stream的分区拓扑，`Hash(Key) → 分区列表`的结果可能变化；扩容前后的同 Key事件可能进入不同 Stream，因此只能保证各自分区内部的顺序，不能自动保持跨新旧分区的历史顺序。
+
+#### 4.3.2 `order-1001` 从选区到写入
+
+假设 Producer从消息中提取 `order_id=order-1001`，客户端哈希后选择 `order-events-1`，其 Leader位于 `rmq-3`。
 
 ```mermaid
 sequenceDiagram
@@ -714,7 +767,7 @@ sequenceDiagram
     P->>N2: 连接 Stream 端口 5552
     P->>M: 查询 order-events 拓扑
     M-->>P: 分区、Binding、Leader 与 Replica 地址
-    P->>P: routing(order-1001) 得到 Key 1
+    P->>P: 提取order_id并哈希，选择order-events-1
     P->>L: 直连并发布 publishing_id=42
     L->>R4: 复制 Stream Entry
     L->>R5: 复制 Stream Entry
@@ -726,7 +779,7 @@ sequenceDiagram
 
 1. **初始接入**：Producer 用 `mq.example.internal:5552` 或地址列表建立 Stream 连接。这个节点只是发现入口，不一定承载目标分区。
 2. **查询 Super Stream 拓扑**：客户端库查询 `order-events`，得到分区 Stream、Binding Key、各分区 Leader/Replica 的主机与端口。
-3. **选择分区**：应用提供路由函数，从消息取出 `order_id`；客户端根据稳定哈希/路由策略得到 Binding Key `1`，映射到 `order-events-1`。
+3. **选择分区**：应用提供路由函数，从消息取出 `order_id`；默认Hash策略由客户端计算并直接选择 `order-events-1`，不需要先生成 Binding Key `1` 再让服务端路由。
 4. **连接 Leader**：客户端连接 `rmq-3.example.internal:5552`。若已经有到该节点的连接，可复用。
 5. **追加消息**：Producer 带 Producer Name 和递增 Publishing ID 发布，分区 Leader 把消息追加到日志并复制。
 6. **收到确认**：Leader 达到 Stream 的确认条件后返回 Publishing ID 42 的 Confirm。超时仍然表示结果未知，稳定 Producer Name 与 Publishing ID 可用于去重。
@@ -996,6 +1049,7 @@ Stream：Producer → 初始节点查询拓扑 → 客户端选分区 → Partit
 - [RabbitMQ：Quorum Queue Local Delivery](https://www.rabbitmq.com/blog/2020/06/23/quorum-queues-local-delivery)
 - [RabbitMQ Ra：Multi-Raft 实现](https://github.com/rabbitmq/ra)
 - [RabbitMQ Streams and Super Streams](https://www.rabbitmq.com/docs/4.1/streams)
+- [RabbitMQ Stream Java Client：Super Stream路由](https://rabbitmq.github.io/rabbitmq-stream-java-client/snapshot/htmlsingle/#super-streams)
 - [RabbitMQ Stream Plugin](https://www.rabbitmq.com/docs/4.1/stream)
 - [RabbitMQ Stream Client Connections](https://www.rabbitmq.com/docs/next/stream-connections)
 - [RabbitMQ Networking and Ports](https://www.rabbitmq.com/docs/next/networking)

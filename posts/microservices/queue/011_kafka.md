@@ -2,7 +2,7 @@
 weight: 11
 title: "Kafka（一）：架构、流程、核心抽象与语义"
 date: 2025-09-06T09:00:00+08:00
-lastmod: 2025-09-07T9:00:00+08:00
+lastmod: 2026-09-09T00:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -314,6 +314,54 @@ Controller 元数据记录 Topic 配置、三个 Partition、副本分配和当�
 
 假设 Producer 首次连接 `kafka-1`，`order-1001` 被分到 P1，P1 Leader 是 `kafka-4`。
 
+#### 2.2.1 Message Key 如何决定 Partition
+
+先给结论：**Kafka 的分区选择发生在 Producer 客户端，不发生在 Broker 服务端。** Producer 从 Broker 获取 Topic 元数据后，已经知道分区数量和各 Partition Leader，可以在发送请求前确定目标 Partition。
+
+一次发送按下面的优先级决定分区：
+
+1. 应用显式指定 `partition`：直接使用指定 Partition，不再根据 Key 计算；
+2. 配置自定义 `partitioner.class`：由客户端自定义分区器决定；
+3. 没有显式 Partition、存在 Key，并且没有忽略 Key：客户端序列化 Key，对 Key 字节计算哈希，再映射到 Topic 的 Partition 编号；
+4. 没有 Key：默认客户端会暂时粘住一个 Partition 形成批次，达到批次切换条件后再选择其他 Partition，而不是由 Broker 随机分发每条 Record。
+
+本例可以简化为：
+
+```text
+Record Key = order-1001
+    → key.serializer 得到 Key Bytes
+    → 默认分区逻辑计算 Hash(Key Bytes)
+    → Hash 映射到 3 个 Partition
+    → 假设结果为 P1
+    → 从本地元数据找到 P1 Leader = kafka-4
+    → Producer 直接向 kafka-4 发送 Produce Request
+```
+
+Broker `kafka-4` 收到的请求已经明确指定 `order-tasks P1`。它只校验自己是否仍为 P1 Leader并追加日志，不会再次根据 `order_id` 计算分区。
+
+Java Producer只需要把 `order_id` 放入 Record Key，默认分区逻辑就会使用它：
+
+```java
+ProducerRecord<String, byte[]> record = new ProducerRecord<>(
+    "order-tasks",
+    "order-1001",
+    payload
+);
+producer.send(record);
+```
+
+如果业务需要固定映射，可以在 `ProducerRecord` 中显式指定 Partition，或者配置自己的 `partitioner.class`。这两种方式都把路由责任留在客户端，Broker仍只接收已经选好 Partition 的请求。
+
+相同 Key 能稳定进入同一 Partition，需要同时满足：
+
+- Producer使用一致的 Key序列化方式和分区算法；
+- Topic分区数量没有变化；
+- 应用没有显式覆盖 Partition，也没有配置忽略 Key的分区策略。
+
+增加分区时必须特别小心。默认 Key路由可以抽象成 `Hash(Key) → 当前分区集合`；分区数从3变成6后，同一个 Key可能改到另一 Partition。扩容前后的同 Key历史因此可能分散在两个 Partition，Kafka不能继续提供跨这两个 Partition的总顺序。若业务要求 Key永不迁移，需要由应用维护固定映射、使用自定义分区器，或者通过新 Topic迁移，而不能直接依赖默认取模关系。
+
+#### 2.2.2 `order-1001` 从选区到写入
+
 ```mermaid
 sequenceDiagram
     participant P as Producer
@@ -324,7 +372,7 @@ sequenceDiagram
 
     P->>B: 查询 order-tasks 元数据
     B-->>P: P1 Leader 是 kafka-4
-    P->>P: 用 order_id 选择 P1
+    P->>P: 序列化 order_id，由客户端分区器选择 P1
     P->>L: Produce order-1001
     L->>F1: 复制 Record Batch
     L->>F2: 复制 Record Batch
@@ -333,7 +381,7 @@ sequenceDiagram
 ```
 
 1. Producer 连接任一 Bootstrap Broker，获取 Topic、Partition 和 Leader 元数据。
-2. 分区器根据 `order_id` 选择 P1。相同 Key 稳定进入同一 Partition，才能获得同一订单的日志顺序。
+2. Producer 客户端的分区器根据序列化后的 `order_id` 选择 P1。相同 Key 稳定进入同一 Partition，才能获得同一订单的日志顺序。
 3. Producer 直接连接 `kafka-4`，把 Record Batch 交给 P1 Leader。
 4. Leader 分配 Partition 内 Offset，Follower 拉取新日志。
 5. 达到 `acks` 和 ISR 配置要求后，Leader 返回结果。

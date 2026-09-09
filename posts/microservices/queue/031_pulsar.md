@@ -1001,13 +1001,123 @@ worker-2
 
 创建两分区 Topic `persistent://shop/order/events`，Producer 使用 `order_id` 作为 Key。仓储、风控和分析分别创建独立 Subscription：
 
+```bash
+pulsar-admin topics create-partitioned-topic \
+  persistent://shop/order/events \
+  --partitions 2
+```
+
+创建后，Pulsar Metadata Store记录分区数，真正承载消息的是两个内部 Topic：
+
+```text
+persistent://shop/order/events
+├─ persistent://shop/order/events-partition-0
+└─ persistent://shop/order/events-partition-1
+```
+
+每个 Partition都是独立 Topic，分别拥有自己的 Bundle归属、Owner Broker、Managed Ledger和 BookKeeper Ledger。
+
+### 3.1 Message Key 如何决定 Partition
+
+先给结论：**Pulsar 的分区选择发生在 Producer客户端。** Broker/Proxy向客户端提供分区数量和各 Partition的 Lookup结果，但不会在收到每条消息后替 Producer重新计算分区。
+
+创建 Partitioned Producer后，客户端先取得：
+
+```text
+Topic:         persistent://shop/order/events
+Partition数:   2
+内部Topic:     events-partition-0、events-partition-1
+各Partition:   当前Owner Broker地址
+```
+
+发送 `order-1001` 时，客户端执行：
+
+```text
+Message Key = order-1001
+    → 按Producer配置的HashingScheme计算Hash
+    → Hash映射到2个Partition
+    → 假设选择events-partition-1
+    → Lookup得到它的Owner是Broker 5
+    → 经Proxy转发或直接发送给Broker 5
+```
+
+Java客户端可以明确配置跨语言更容易统一的 Murmur3，并把 `order_id` 设置为 Message Key：
+
+```java
+Producer<byte[]> producer = client.newProducer()
+    .topic("persistent://shop/order/events")
+    .messageRoutingMode(MessageRoutingMode.RoundRobinPartition)
+    .hashingScheme(HashingScheme.Murmur3_32Hash)
+    .create();
+
+producer.newMessage()
+    .key("order-1001")
+    .value(payload)
+    .send();
+```
+
+这里的 Partitioned Producer 是客户端侧的复合对象。它为实际使用到的内部 Partition 建立子 Producer；是否一次建立所有连接或按需建立，取决于客户端及其惰性启动配置。
+
+Pulsar内置路由策略可以归纳为：
+
+- **消息有 Key**：在常用的 `RoundRobinPartition` 或 `SinglePartition` 模式下，客户端优先对 Key做哈希，把相同 Key映射到同一 Partition；
+- **没有 Key且使用 RoundRobinPartition**：客户端在各 Partition间轮转。开启批处理时通常按批次切换，而不是每条消息严格轮转，以避免破坏批处理效率；
+- **没有 Key且使用 SinglePartition**：客户端选择一个 Partition，并让这个 Producer的消息集中写入该 Partition；
+- **CustomPartition**：应用实现 MessageRouter，根据消息和当前分区元数据返回目标 Partition。
+
+不同语言客户端必须统一 Key的字节编码和 HashingScheme。若 Java、Go、Python Producer使用不同哈希算法，同一个 `order_id` 仍可能进入不同 Partition。跨语言系统应明确配置共同支持的算法，例如 Murmur3，而不是依赖各客户端可能不同的默认值。
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant P as Partitioned Producer
+    participant PX as Pulsar Proxy
+    participant B as 任一 Broker
+    participant PM as Pulsar Metadata Store
+    participant O as Partition-1 Owner Broker 5
+
+    P->>PX: 查询events的Partition元数据
+    PX->>B: 转发分区元数据请求
+    B->>PM: 读取Partition数量
+    PM-->>B: Partition数=2
+    B-->>PX: 返回partition-0/1
+    PX-->>P: 返回partition-0/1
+    P->>P: Hash(order-1001)映射到partition-1
+    P->>PX: Lookup events-partition-1
+    PX->>B: 查询Partition-1的Owner
+    B->>B: Namespace Service定位所属Bundle
+    B->>PM: 读取Bundle Ownership
+    PM-->>B: Owner=Broker 5
+    B-->>PX: 返回Broker 5
+    P->>PX: Send(order-1001, target=partition-1)
+    PX->>O: 转发给Partition-1 Owner
+```
+
+Broker 5收到请求时，目标已经明确是 `events-partition-1`。它只负责把消息追加到这个 Partition的 Managed Ledger，不会再次根据 `order_id`选择 Partition。
+
+增加 Partition时，客户端刷新元数据后会看到新的分区数量，但 `Hash(Key) → Partition数`的映射也可能改变。例如从2个增加到4个 Partition后，`order-1001` 可能从 Partition 1改到 Partition 3。扩容前后的同 Key事件因此可能分散在两个 Partition，不能再获得跨两段历史的统一顺序。若业务要求 Key长期固定，必须使用自定义稳定映射、迁移到新 Topic，或者在扩容期间设计明确的切换边界。
+
+这里还要区分 Key的两个作用：
+
+```text
+Producer侧Message Key
+    → 决定消息写入哪个Partition
+
+Key_Shared Subscription中的Key
+    → 消息进入Partition后，决定由哪个Consumer处理
+```
+
+它们发生在两个不同阶段。使用 Shared Subscription时，Key只参与生产分区，不保证同 Key固定交给同一个 Consumer；使用 Key_Shared才同时提供同 Key的 Consumer亲和性。
+
+### 3.2 三个 Subscription 如何读取
+
 ```text
 warehouse → 独立 Cursor
 risk      → 独立 Cursor
 analytics → 独立 Cursor
 ```
 
-两个 Partition 可以分别由 Broker 2 和 Broker 5 拥有，各自拥有 Managed Ledger。Producer 查询分区元数据后把消息交给目标 Partition Owner；Consumer 对每个 Partition 建立消费关系。
+两个 Partition 可以分别由 Broker 2 和 Broker 5 拥有，各自拥有 Managed Ledger。Producer客户端查询分区元数据、在本地选择 Partition，再把消息交给目标 Partition Owner；Consumer对每个 Partition建立消费关系。
 
 一个 Subscription 的 Ack 只推进自己的 Cursor，不影响其他 Subscription。消息是否继续保留由 Backlog、Retention 和 TTL 策略共同决定，不能把 Ack 简单等同于立即删除。
 
@@ -1052,6 +1162,7 @@ Shared/Key_Shared 的任务分配、Ack、Cursor 和重复投递见[Pulsar 任�
 
 - [Pulsar Architecture](https://pulsar.apache.org/docs/next/concepts-architecture-overview/)
 - [Pulsar Messaging](https://pulsar.apache.org/docs/next/concepts-messaging/)
+- [Pulsar Producer：Partitioned Topic路由](https://pulsar.apache.org/docs/client-libraries/producers/#publish-messages-to-partitioned-topics)
 - [Pulsar Metadata Store](https://pulsar.apache.org/docs/next/administration-metadata-store/)
 - [Pulsar Broker Load Balancing](https://pulsar.apache.org/docs/next/concepts-broker-load-balancing-concepts/)
 - [Pulsar Transactions](https://pulsar.apache.org/docs/next/txn-how/)
