@@ -222,25 +222,58 @@ Stream 默认依赖操作系统刷新 Page Cache，不为每次 Confirm 单独�
 | Quorum Queue 与 Khepri 的 Raft 节点通信 | 通常 `25672` | RabbitMQ 节点间 Erlang Distribution，不是客户端 AMQP |
 | Osiris Stream 副本复制 | `6000–6500` | Stream 数据副本之间的专用 TCP 通道 |
 
-### 1.3 RabbitMQ 中有哪些协调与主导角色
+### 1.3 按 Kafka 的协调职责理解 RabbitMQ
 
-RabbitMQ 没有一个统一的 Coordinator 家族。不同范围的状态由不同组件或资源 Leader 负责：
+RabbitMQ 没有统一命名的 Coordinator 家族，但 Kafka 的几类协调职责仍然存在，只是被拆给了不同组件。
 
-- **Metadata Store Leader**：协调 Exchange、Queue、Stream、Binding、用户和 Policy 等集群资源定义。使用 Khepri 时，它是 Khepri Raft Group 的 Leader，不参与每条消息路由；
-- **Quorum Queue Leader**：每条 Quorum Queue 都有自己的 Raft Leader。它对入队、Consumer 注册、投递、Ack 和重新入队排序，并把命令复制给该 Queue 的 Followers；
-- **Stream Coordinator**：管理 Stream 副本成员、Writer 生命周期和 SAC 活动消费者等控制状态。它不保存 Stream 消息正文，正文由 Osiris 日志副本保存；
-- **Stream Writer**：每个 Stream 分区的唯一写入主导者，负责追加消息、推动副本复制并返回发布确认。它属于数据面，不是全局协调服务。
+#### KRaft Controller 对应的集群控制职责
 
-对应到本文示例：
+Kafka Controller 同时管理集群元数据和 Partition Leader。RabbitMQ 把这两部分拆开：
+
+- **Metadata Store**保存 Exchange、Queue、Stream、Binding、用户和 Policy 等资源定义。使用 Khepri 时，由 Khepri 的 Raft Leader 对元数据变更排序；
+- **每条 Quorum Queue 自己的 Raft Group**选举自己的 Queue Leader，不由一个全局 Controller 统一选举；
+- **Stream Coordinator**管理 Stream 副本成员和 Writer 生命周期。
+
+所以 RabbitMQ 没有一个组件完全等价于 KRaft Controller，而是由 Metadata Store、Queue Raft Group 和 Stream Coordinator 分担。
+
+#### Group Coordinator 对应的消费者协调职责
+
+Kafka Group Coordinator 管理消费者成员和 Partition 分配。RabbitMQ 中类似职责位于消息资源自身：
+
+- 对 Quorum Queue，**Queue Leader**维护 Consumer、Credit 和投递状态，并决定下一条 Ready 消息交给哪个 Consumer；
+- 对普通 Stream，Consumer 各自读取日志，不存在 Kafka 式的全局 Partition Rebalance；
+- 使用 Stream SAC 时，多个应用实例以同一个名字组成一组主备 Consumer。由**Stream Coordinator**保证一个 stream 只有一个消费者。
+
+总结：
+  - 普通 Stream：多个独立消费者，各读一份。没有协调
+  - Stream SAC：同一组消费者主备消费。由**Stream Coordinator**协调。
+  - Super Stream + SAC：最接近 Kafka Consumer Group 的分区分摊模型。由**Stream Coordinator**协调。
+  - Queue：多个消费者直接竞争单条消息。**Queue Leader**协调。
+
+#### Share Coordinator 对应的逐条任务状态职责
+
+Kafka Share Coordinator 保存消息已获取、已确认或等待重投等状态。RabbitMQ Quorum Queue 中最接近它的是 **Queue Leader 上的 `rabbit_fifo` 状态机**：
+
+- Queue Leader 对入队、投递、Ack、Reject 和重新入队排序；
+- `Ra` 把这些状态机命令复制到该 Queue 的 Followers；
+- Leader 故障后，新 Leader 可以根据已提交状态判断哪些消息仍是 Ready，哪些需要重新投递。
+
+Kafka 把业务 Partition Leader 和 Share Coordinator 分开；RabbitMQ 则把任务消息和投递状态放在同一条 Quorum Queue 的 Raft 状态机中。
+
+#### Transaction Coordinator 对应的事务协调职责
+
+RabbitMQ **没有等价的跨 Queue 分布式 Transaction Coordinator**。AMQP Channel 可以开启事务并提交该 Channel 上的 Publish/Ack，但它不是一套以事务 ID 持久化、协调多个 Queue 最终提交或回滚的 Kafka 式事务协议。Publisher Confirm 也只是发布确认，不是事务协调。
+
+最终对应关系是：
 
 ```text
-集群资源定义                 → Metadata Store Leader
-fulfill.q 的入队与任务投递    → fulfill.q Quorum Queue Leader
-order-events-1 的成员与 SAC   → Stream Coordinator
-order-events-1 的日志追加     → order-events-1 Stream Writer
+Kafka KRaft Controller       → Metadata Store + Queue Raft Group + Stream Coordinator
+Kafka Group Coordinator      → Queue Leader；Stream SAC 场景由 Stream Coordinator 负责
+Kafka Share Coordinator      → Quorum Queue Leader + rabbit_fifo + Ra
+Kafka Transaction Coordinator → 没有完整对应组件
 ```
 
-Exchange 也不是一个需要选举的消息协调者。入口节点读取 Exchange 与 Binding 定义并完成路由，再把消息转交给目标 Queue Leader。RabbitMQ 也没有 Kafka 式的全局 Consumer Group Coordinator：Queue 的消费者分配由该 Queue Leader 管理，Stream 的 SAC 活动实例由 Stream Coordinator 管理。
+Exchange 不属于上述协调角色。入口节点读取 Exchange 与 Binding 定义完成路由，再把消息转交给目标 Queue Leader。
 
 ## 2. 集群启动后，各组件分别保存什么
 
@@ -957,6 +990,7 @@ Stream：Producer → 初始节点查询拓扑 → 客户端选分区 → Partit
 - [RabbitMQ Clustering and Queue Leaders](https://www.rabbitmq.com/docs/clustering)
 - [RabbitMQ Exchanges and Bindings](https://www.rabbitmq.com/docs/exchanges)
 - [RabbitMQ Reliability Guide](https://www.rabbitmq.com/docs/reliability)
+- [RabbitMQ Broker Semantics：AMQP Transaction 边界](https://www.rabbitmq.com/docs/semantics)
 - [Consumer Acknowledgements and Publisher Confirms](https://www.rabbitmq.com/docs/4.1/confirms)
 - [RabbitMQ Quorum Queues](https://www.rabbitmq.com/docs/quorum-queues)
 - [RabbitMQ：Quorum Queue Local Delivery](https://www.rabbitmq.com/blog/2020/06/23/quorum-queues-local-delivery)
