@@ -98,20 +98,19 @@ flowchart TB
     Metrics -. adapter .-> HPA
 ```
 
-### 1.1 图中的“客户端 Span”不是写入数据库
+这张图可以压缩成五层：
 
-原图如果把 `Client Span` 标在应用到数据库的箭头上，容易产生误解。应用访问数据库时实际同时发生两件事：
+| 层次 | 核心问题 | 主要抽象或组件 |
+| --- | --- | --- |
+| 请求传播 | 下游如何知道自己属于哪条 Trace | `traceparent`、`tracestate`、`baggage` |
+| 信号产生 | 系统发生了什么 | Metric、Log Record、Span、Kubernetes Event |
+| 采集处理 | 如何接收、补充、过滤、采样和批处理 | Prometheus、Node Agent、OTel Collector |
+| 传输存储 | 数据怎样离开集群并保存 | OTLP、Remote Write、日志后端协议 |
+| 查询反馈 | 人或控制器怎样消费数据 | Grafana、Alertmanager、HPA |
 
-```text
-业务数据：Service B --SQL / 数据库协议--> DB
-遥测数据：Service B 在进程内创建 Client Span --OTLP--> Collector
-```
+最重要的边界是：**W3C header 负责传播上下文，不负责上传遥测数据；OTLP 等协议负责上传数据，不负责让业务请求属于同一条 Trace。**
 
-Client Span 是应用 SDK 在本地生成的一条遥测记录，用来描述一次出站调用，例如执行的数据库系统、操作名、开始时间、耗时、状态和错误。数据库只接收正常的 SQL 或数据库协议，不负责保存 Span。Span 结束后由 SDK 异步上传到 Collector，最终存入 Tempo、Jaeger 或 APM 后端。
-
-同理，调用 Redis、HTTP 服务或消息队列时也可以生成 Client/Producer Span；“调用下游”和“上传 Span”始终是两条独立的网络路径。
-
-### 1.2 Agent、Node Agent 和 Gateway 是什么
+### 1.1 Agent、Node Agent 和 Gateway 是什么
 
 这里的 **Agent** 不是某个协议，也不特指某个软件。它是一种部署角色：采集程序靠近数据源运行，先在本地接收、读取或抓取数据，再转发到集中式后端。
 
@@ -152,7 +151,7 @@ Kubernetes 和 W3C 并没有规定唯一的 Agent 实现。Agent 是一种架构
 
 因此，Agent 并不天然等于“只采 Trace 和 Log”。**软件能力由 Receiver/插件决定，实际职责由架构分工和配置决定。**
 
-### 1.3 Node Agent 与 Prometheus 的采集边界
+### 1.2 Node Agent 与 Prometheus 的采集边界
 
 `Node Agent / DaemonSet` 描述的是**每个节点部署一个采集实例**，不是一个只能处理固定信号的产品。以 OTel Collector Agent 为例，它能收什么取决于启用的 Receiver：
 
@@ -192,19 +191,38 @@ Traces：应用 OTel SDK --OTLP--> Collector Gateway --> Trace Backend
 
 Prometheus 的 Kubernetes 服务发现只负责找到抓取目标，不会直接把 Deployment、Pod 状态“变成指标”。这部分由 `kube-state-metrics` 监听 Kubernetes API，再以 `/metrics` 暴露给 Prometheus。
 
-还要区分完整 Prometheus 与 Prometheus Agent Mode：前者可以本地存储、查询和执行 recording/alerting rules；Agent Mode 主要负责发现、抓取和 Remote Write，不承担本地 PromQL 查询与规则计算。
+### 1.3 Prometheus、Prometheus Agent Mode 与 Remote Write
 
-这张图可以压缩成五层：
+三者位于同一条指标链路中，但不是同一类东西：
 
-| 层次 | 核心问题 | 主要抽象或组件 |
+| 名称 | 性质 | 负责什么 |
 | --- | --- | --- |
-| 请求传播 | 下游如何知道自己属于哪条 Trace | `traceparent`、`tracestate`、`baggage` |
-| 信号产生 | 系统发生了什么 | Metric、Log Record、Span、Kubernetes Event |
-| 采集处理 | 如何接收、补充、过滤、采样和批处理 | Prometheus、Node Agent、OTel Collector |
-| 传输存储 | 数据怎样离开集群并保存 | OTLP、Remote Write、日志后端协议 |
-| 查询反馈 | 人或控制器怎样消费数据 | Grafana、Alertmanager、HPA |
+| Prometheus | 完整指标系统 | 服务发现、抓取、本地 TSDB、PromQL 查询、recording/alerting rules，也可以向远端写入 |
+| Prometheus Agent Mode | Prometheus 的轻量运行模式 | 服务发现、抓取、WAL 缓冲和 Remote Write；不提供本地 PromQL 查询与规则计算 |
+| Remote Write | 指标传输协议 | 把已经抓取到的时间序列批量发送给远程 Metrics Backend |
 
-最重要的边界是：**W3C header 负责传播上下文，不负责上传遥测数据；OTLP 等协议负责上传数据，不负责让业务请求属于同一条 Trace。**
+完整的数据流是：
+
+```text
+应用与 K8s 组件
+      │ 暴露 /metrics
+      ▼
+Prometheus 或 Prometheus Agent Mode
+      │ scrape：读取指标
+      │ Remote Write：转发时间序列
+      ▼
+Mimir / Thanos Receive / VictoriaMetrics / 云指标后端
+```
+
+Remote Write 传输指标名称、Labels、时间戳、样本值以及相关的 Histogram、Exemplar 数据。它不负责发现目标、不抓取 `/metrics`、不执行 PromQL，也不是存储后端。通常由 Prometheus 或 Agent Mode 作为发送端，应用不直接调用 Remote Write。
+
+选择方式可以简化为：
+
+- 单集群需要本地查询、Dashboard 和告警规则：使用完整 Prometheus，本地保存数据，也可以额外配置 Remote Write。
+- 多集群只需要把指标汇聚到中心后端：每个集群使用 Prometheus Agent Mode 抓取，再通过 Remote Write 集中发送。
+- 已有完整 Prometheus 但需要长期存储：保留 Prometheus 的本地查询和规则能力，同时 Remote Write 到远端后端。
+
+Prometheus Agent Mode 虽然也叫 Agent，但它特指指标抓取和转发模式，并不等于前面负责日志、节点指标或 OTLP 中继的 OTel Node Agent。
 
 ## 2. W3C 约定了哪些可观测性 Header
 
@@ -238,7 +256,95 @@ version-trace-id-parent-id-trace-flags
 | `parent-id` | 调用方当前操作的 8 字节标识，通常就是调用方 Span ID |
 | `trace-flags` | 追踪标志；最低位为 sampled 标志，`01` 表示调用方可能记录了数据 |
 
-当 Service A 调用 Service B 时，两端使用同一个 `trace-id`；A 创建客户端 Span，并把它的 Span ID 写成下游 `traceparent` 的 `parent-id`。B 收到后创建子 Span，再为自己的下游调用生成新的 `parent-id`。
+`traceparent` **不记录应用名称**。它只传递 Trace ID 和调用方 Span ID，用来回答“当前请求接在哪个 Span 后面”。Span 属于哪个应用，由 Span 上传时携带的 OpenTelemetry Resource 决定，例如 `service.name`、`service.instance.id` 和 `k8s.pod.uid`。
+
+下面以 Service A 请求 Service B 为例。假设请求到达 A 时没有 Trace Context，A 创建一条新 Trace：
+
+```text
+Trace ID：4bf92f3577b34da6a3ce929d0e0e4736
+
+Service A
+  Server Span A1：处理入站请求
+  span_id = a1a1a1a1a1a1a1a1
+
+  Client Span A2：请求 Service B
+  span_id        = a2a2a2a2a2a2a2a2
+  parent_span_id = a1a1a1a1a1a1a1a1
+```
+
+A 发起对 B 的 HTTP 请求时，把 **Client Span A2 的 Span ID** 写入 `parent-id`：
+
+```http
+traceparent: 00-4bf92f3577b34da6a3ce929d0e0e4736-a2a2a2a2a2a2a2a2-01
+```
+
+B 收到 header 后，保留同一个 Trace ID，并创建自己的 Server Span B1。B1 的 `parent_span_id` 等于 header 中的 `parent-id`：
+
+```text
+Service B
+  Server Span B1：处理 A 的请求
+  trace_id       = 4bf92f3577b34da6a3ce929d0e0e4736
+  span_id        = b1b1b1b1b1b1b1b1
+  parent_span_id = a2a2a2a2a2a2a2a2
+```
+
+最终 A 和 B 分别通过 OTLP 上传自己的 Span。下面是便于理解的简化数据，真实 OTLP 会将 Resource 和 Span 分层编码：
+
+```json
+[
+  {
+    "resource": {
+      "service.name": "service-a",
+      "service.instance.id": "service-a-pod-7f9c",
+      "k8s.pod.uid": "pod-uid-a"
+    },
+    "name": "POST /publish",
+    "kind": "SERVER",
+    "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+    "span_id": "a1a1a1a1a1a1a1a1",
+    "parent_span_id": ""
+  },
+  {
+    "resource": {
+      "service.name": "service-a",
+      "service.instance.id": "service-a-pod-7f9c",
+      "k8s.pod.uid": "pod-uid-a"
+    },
+    "name": "POST http://service-b/publish",
+    "kind": "CLIENT",
+    "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+    "span_id": "a2a2a2a2a2a2a2a2",
+    "parent_span_id": "a1a1a1a1a1a1a1a1"
+  },
+  {
+    "resource": {
+      "service.name": "service-b",
+      "service.instance.id": "service-b-pod-5d8b",
+      "k8s.pod.uid": "pod-uid-b"
+    },
+    "name": "POST /publish",
+    "kind": "SERVER",
+    "trace_id": "4bf92f3577b34da6a3ce929d0e0e4736",
+    "span_id": "b1b1b1b1b1b1b1b1",
+    "parent_span_id": "a2a2a2a2a2a2a2a2"
+  }
+]
+```
+
+Trace 后端分两步还原调用链：
+
+1. 用相同的 `trace_id` 把所有 Span 放进同一条 Trace。
+2. 用 `span_id` 与 `parent_span_id` 建立父子关系，再读取每条 Span 的 `resource.service.name` 判断它属于哪个应用。
+
+因此最终得到：
+
+```text
+service-a：Server Span A1
+└── service-a：Client Span A2
+    └── service-b：Server Span B1
+```
+
+`parent-id` 不是“这个 Trace 属于哪个应用”的标识，也不总是根 Span ID；它是**当前这一次跨进程调用的直接父 Span ID**，每经过一层调用都会更新。
 
 `sampled=1` 只是传播给下游的建议和状态，不保证这条 Trace 最终一定被保存。Collector 的 tail sampling、后端限流或故障仍可能使数据被丢弃。
 
@@ -425,6 +531,145 @@ Prometheus 模式下的上传链路是：
                                              └-------> Rules / Alertmanager
 ```
 
+#### 5.2.1 Prometheus Operator 提供的 CRD
+
+Kubernetes 原生并不知道 `Prometheus`、`ServiceMonitor` 这些资源。安装 Prometheus Operator 时，需要先注册 `monitoring.coreos.com` API Group 下的 CRD，再运行 Operator 控制器。
+
+这些 CRD 可以分成三组：
+
+| 类型 | CRD | 作用 |
+| --- | --- | --- |
+| 工作负载 | `Prometheus` | 声明完整 Prometheus 集群，Operator 据此创建和维护 StatefulSet |
+| 工作负载 | `PrometheusAgent` | 声明只负责抓取和 Remote Write 的轻量 Prometheus Agent |
+| 工作负载 | `Alertmanager`、`ThanosRuler` | 声明 Alertmanager 和 Thanos Ruler 实例 |
+| 采集配置 | `ServiceMonitor` | 通过 Service 发现一组抓取目标 |
+| 采集配置 | `PodMonitor` | 不经过 Service，直接发现一组 Pod 抓取目标 |
+| 采集配置 | `Probe` | 声明黑盒探测目标，例如 HTTP、TCP、ICMP |
+| 采集配置 | `ScrapeConfig` | 表达 ServiceMonitor/PodMonitor 难以覆盖的抓取配置或集群外目标 |
+| 规则与路由 | `PrometheusRule` | 声明 recording rules 和 alerting rules |
+| 规则与路由 | `AlertmanagerConfig` | 声明告警路由、接收器和抑制规则 |
+
+这里要区分 **CRD** 和 **CR**：
+
+```text
+CRD：向 Kubernetes 注册一种新的资源类型，例如 ServiceMonitor。
+CR：这种资源类型的一个实例，例如名为 content-api 的 ServiceMonitor。
+Operator：监听这些 CR，把声明的期望状态转换成 StatefulSet 和 Prometheus 配置。
+```
+
+#### 5.2.2 ServiceMonitor 如何变成真实抓取任务
+
+下面以 `content-api` 为例。应用 Pod 已经在名为 `metrics` 的端口暴露 `/metrics`，先创建 Service：
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: content-api
+  namespace: apps
+  labels:
+    app: content-api
+spec:
+  selector:
+    app: content-api
+  ports:
+    - name: metrics
+      port: 8080
+      targetPort: metrics
+```
+
+再创建 `ServiceMonitor`。它通过 `spec.selector` 选择上面的 Service，通过 `endpoints` 描述如何抓取：
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: content-api
+  namespace: monitoring
+  labels:
+    monitoring: platform
+spec:
+  namespaceSelector:
+    matchNames:
+      - apps
+  selector:
+    matchLabels:
+      app: content-api
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s
+```
+
+最后创建 `Prometheus` CR，并用 `serviceMonitorSelector` 选择这个 `ServiceMonitor`：
+
+```yaml
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: platform
+  namespace: monitoring
+spec:
+  serviceAccountName: prometheus
+  replicas: 2
+  serviceMonitorSelector:
+    matchLabels:
+      monitoring: platform
+  podMonitorSelector:
+    matchLabels:
+      monitoring: platform
+```
+
+这里存在两次不同的 Label Selector：
+
+```text
+Prometheus.spec.serviceMonitorSelector
+  └── 选择 ServiceMonitor.metadata.labels
+
+ServiceMonitor.spec.selector
+  └── 选择 Service.metadata.labels
+      └── Service.spec.selector 再选择 Pod
+```
+
+`ServiceMonitor.endpoints[].port` 引用的是 **Service Port 的名称** `metrics`，不是端口号，也不是 Deployment 中随意填写的字符串。这是 ServiceMonitor 没有产生 Target 时最常见的排查点之一。
+
+整个控制循环如下：
+
+```mermaid
+flowchart LR
+    CRD[安装 CRD]
+    CR[创建 Prometheus 与 ServiceMonitor CR]
+    Operator[Prometheus Operator\nWatch + Reconcile]
+    Workload[StatefulSet + Service\nPrometheus Pods]
+    Config[生成抓取配置\nConfig Secret]
+    Reload[config-reloader\n触发配置热加载]
+    Discovery[Kubernetes 服务发现\nService → EndpointSlice → Pod]
+    Target[应用 Pod /metrics]
+
+    CRD --> CR
+    CR --> Operator
+    Operator --> Workload
+    Operator --> Config
+    Config --> Reload
+    Reload --> Workload
+    Workload --> Discovery
+    Discovery --> Target
+    Workload -->|定期 scrape| Target
+```
+
+具体过程是：
+
+1. Prometheus Operator watch `Prometheus`、`ServiceMonitor`、`PodMonitor` 等自定义资源。
+2. 创建 `Prometheus/platform` 后，Operator 根据期望状态创建或更新对应的 StatefulSet、Service 和配置。
+3. Operator 根据 `serviceMonitorSelector` 找到 `ServiceMonitor/content-api`。
+4. ServiceMonitor 根据 namespace 和 Service label 找到 `apps/content-api`，Kubernetes 服务发现再解析出后面的 EndpointSlice 和 Pod 地址。
+5. Operator 把 Monitor 转换成 Prometheus scrape 配置；配置变化后，由 Prometheus Pod 中的 config-reloader 触发热加载。
+6. Prometheus 开始定期请求每个目标的 `/metrics`。之后新增或替换 Pod 时，服务发现会更新目标，不需要手工改 Prometheus 配置。
+
+`PodMonitor` 的过程相同，只是跳过 Service：它的 `spec.selector` 直接匹配 Pod label，`podMetricsEndpoints[].port` 引用 Pod 的容器端口名称。相同目标不要同时被 ServiceMonitor 和 PodMonitor 选中，否则会发生重复抓取。
+
+跨 Namespace 发现还需要相应的 Namespace Selector 和 RBAC：Prometheus 要能读取目标 Namespace 中的 Service、EndpointSlice 和 Pod；Operator 也必须有权限读取相关 CR 并更新 StatefulSet、Secret 等资源。
+
 `metrics-server` 只服务 `kubectl top` 和资源指标 HPA，不提供 PromQL、长期存储或通用告警，不能替代 Prometheus。
 
 ### 5.3 Logs：stdout 只是链路起点
@@ -584,3 +829,5 @@ metrics-server 服务资源指标 API，不是 Prometheus 的替代品。
 - [Prometheus：OpenMetrics 1.0](https://prometheus.io/docs/specs/om/open_metrics_spec/)
 - [Prometheus：Remote Write Specification](https://prometheus.io/docs/specs/prw/remote_write_spec/)
 - [Prometheus Operator：Design](https://prometheus-operator.dev/docs/getting-started/design/)
+- [Prometheus Operator：API Reference](https://prometheus-operator.dev/docs/api-reference/api/)
+- [Prometheus Operator：Getting Started](https://prometheus-operator.dev/docs/developer/getting-started/)
