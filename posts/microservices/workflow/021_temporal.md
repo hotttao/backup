@@ -25,9 +25,9 @@ Temporal 是一个**代码优先的持久执行平台**。开发者用 Go、Java
 | Server 实现 | 主要使用 Go |
 | 核心取舍 | 可靠执行和工程控制力强；业务建模 UI 与人工任务产品能力弱 |
 
-下面先解释 Temporal 集群怎样运行，再用一个“生产环境变更审批与发布”实例串起核心对象。否则直接罗列 Workflow、Activity、Task Queue 和 Signal，很难理解这些对象为什么存在。
+下面先看架构，再解释应用如何启动 Workflow、Worker 如何执行任务以及 Server 如何安排重试；随后用“生产环境变更审批与发布”实例串起核心对象，最后讨论持久化和故障恢复。成员发现与分区实现单独引用 022 文档。
 
-## 2. 三节点集群：请求怎样进入，状态存在哪里
+## 2. 三节点架构：Server、应用 Worker 与调用方
 
 ### 2.1 四种 Server Service
 
@@ -79,179 +79,177 @@ flowchart TB
 
 三台 Temporal Server 只能消除 Server 进程的单点，不能补偿单实例数据库故障。Persistence 本身必须使用高可用部署。应用 Worker 也应至少有两个副本，并且不要求与 Temporal Server 同机。内部 Worker Service 负责 Temporal 自身的后台工作，不在普通业务 Workflow 的主调用链中。
 
-#### 2.2.1 成员关系怎样确定 History Shard owner
+## 3. 应用怎样使用 Workflow，执行由谁驱动
 
-Temporal 当前开源实现使用 `ringpop-go`。它没有通过 Raft/Paxos 维护一张强一致的“Shard → History 节点”分配表，而是把**成员发现、确定性放置和写入隔离**分成三层：
+### 3.1 先分清调用方、Server 和应用 Worker
 
-```mermaid
-flowchart LR
-    DB[(cluster_membership)] -->|近期心跳作为 seed| B[Ringpop bootstrap]
-    B --> S[SWIM 探测与 gossip]
-    S --> HR[History 哈希环]
-    S --> MR[Matching 哈希环]
+Workflow 和 Activity 的业务代码都部署在**应用 Worker** 中。Temporal Server 保存执行状态、安排任务、处理结果和超时；它不会直接运行你编写的 Go Workflow 函数。
 
-    SID[History Shard 7] --> HR --> H[History B]
-    QID[Task Queue Partition key] --> MR --> M[Matching C]
-
-    H -->|RangeID 条件写| P[(Persistence)]
-    M -->|queue range_id 条件写| P
-```
-
-具体过程如下：
-
-1. 每个 Temporal Server 进程启动后，把自身的地址、端口、服务角色和心跳写入 Persistence 的 `cluster_membership` 表。当前源码的心跳周期约为 10 秒，并带 0～5 秒抖动。
-2. 新进程查询最近仍有心跳的记录作为 Ringpop seed。当前实现只把最近约 20 秒有心跳的记录用于 bootstrap；数据库行较长的过期时间主要用于排障和清理，不表示该节点一直存活。
-3. 进程加入 Ringpop 后，由 SWIM 协议进行节点探测和 gossip。成员携带 `serviceName`、`servicePort` 等 label。
-4. `ServiceResolver` 从同一批可达成员中按 `serviceName` 过滤，分别构造 Frontend、History、Matching 和 Worker Service 的一致性哈希环。只要各节点看到的可达成员集合相同，用同一个 key 查询就会得到相同 owner。
-5. History 的 `ShardController` 监听成员变化。对 Shard 7，它用字符串化的 Shard ID 查询 History 环；哈希环返回 History B，B 尝试加载该 Shard，其他 History 节点关闭自己不再拥有的 Shard。
-
-这里的“一致”是两级语义：
-
-- **放置结果最终一致**：SWIM 通过探测和 gossip 让各节点的成员视图收敛，一致性哈希让收敛后的节点独立算出同一 owner。扩容、故障或网络抖动期间，不同节点可能短暂看到不同的环。
-- **写入安全由 Persistence 强制保证**：新 owner 必须条件更新 `shards.range_id` 才能取得新的 fencing token。两个节点即使短暂都认为自己应拥有 Shard 7，也只有持有最新 `RangeID` 的节点能成功写入；旧 writer 收到 `ShardOwnershipLost`。
-
-因此不能把 Ringpop 描述成“对 Shard owner 做强一致共识”。Ringpop 负责发现和放置，`RangeID` 才负责脑裂期间的数据安全。后面的 2.4 节会用完整时序展示这次接管。
-
-#### 2.2.2 Task Queue partition 是什么
-
-应用看到的是一个逻辑 Task Queue 名称，例如 `deployment-activity`。为了避免一个 Matching 进程成为吞吐瓶颈，Temporal 会在内部把它拆成多个 partition。一个逻辑队列的身份至少包含：
-
-```text
-Namespace + Task Queue Name + Task Type（Workflow / Activity / Nexus）
-```
-
-这意味着同名的 Workflow Task Queue 和 Activity Task Queue 在内部仍是不同队列。每种队列再拆成 `partition 0..N-1`。当前官方架构文档给出的默认 partition 数是 4，也可通过服务端动态配置调整。
-
-```mermaid
-flowchart LR
-    TQ[逻辑 Activity Task Queue<br/>deployment-activity]
-    TQ --> P0[Partition 0<br/>root]
-    TQ --> P1[Partition 1]
-    TQ --> P2[Partition 2]
-    TQ --> P3[Partition 3]
-
-    P0 --> MA[Matching A]
-    P1 --> MB[Matching B]
-    P2 --> MC[Matching C]
-    P3 --> MA
-```
-
-一个 partition 是 Matching 的**路由、内存加载、积压持久化和故障转移单元**：
-
-- partition key 经 Matching 服务的一致性哈希环映射到一个当前 owner；上图只是一次可能的分配，不要求平均到每台机器；
-- owner 在内存中维护等待中的 poller、可立即同步匹配的 task 和读取进度；
-- 没有 poller 可以立即接收时，task backlog 写入 `tasks/tasks_v2`，partition 元数据和 `range_id` 写入 `task_queues/task_queues_v2`；
-- Matching A 故障后，它拥有的 partition 会映射到其他 Matching 节点，新 owner 从共享 Persistence 加载元数据和 backlog；
-- partition 不是三副本消息队列。任一时刻只有一个有效 Matching owner，可靠性来自持久化存储和 owner 接管。
-
-Partition 之间形成以 root partition 为根的转发树。某个 child partition 没有任务但有等待 poller 时，poll 请求可以向父 partition 转发；某个 child 有任务却没有 poller 时，task 也可以向父级转发，以提高 task 和 poller 相遇的概率。partition 较少时，所有 child 的直接父节点就是 root；更多 partition 时会形成多层树。
-
-以变更发布为例，History 产生一个 `DeployCanary` Activity Task 后，把它加入 `deployment-activity` 的某个写 partition；应用 Worker 的 poll 请求被送到某个读 partition。两者若没有直接同步匹配，Matching 依靠持久 backlog 和 partition 间转发最终完成匹配。
-
-Task Queue partition 也不是 Kafka 那种由业务 key 选择、用于保证分区内业务顺序的分区。Temporal 可能把同一个逻辑 Task Queue 的任务分散到不同 partition，再由多个 Worker 并发执行，因此不能依赖全局严格 FIFO。必须串行的业务步骤应由 Workflow 状态机建立先后关系；低吞吐队列若确实关心近似 FIFO，可以评估把读写 partition 数降为 1。
-
-| 对比项 | History Shard | Task Queue partition |
+| 角色 | 应用开发者需要做什么 | 运行时职责 |
 |---|---|---|
-| 所属服务 | History | Matching |
-| 被分片的对象 | Workflow Execution 的状态和内部任务 | 某个命名 Task Queue 中的待执行任务与 poller |
-| 路由 key | `namespaceID + workflowID` 先算 Shard ID | Namespace、队列名、Task 类型和 partition ID 组成的内部 key |
-| 数量 | 集群初始化时固定 | 每个逻辑 Task Queue 可配置和调整 |
-| 持久化 | `shards`、`executions`、`history_*` | `task_queues*`、`tasks*` |
-| owner 失效 | 新 History owner 用新 `RangeID` 接管 | 新 Matching owner 加载 partition 元数据和 backlog |
+| 业务调用方，例如 HTTP API | 使用 Temporal Client 启动或操作一个 Workflow | 提交类型名、输入、Workflow ID 和 Task Queue；按需查询结果或发 Signal |
+| Temporal Server | 部署或使用已有集群 | 记录事件与状态，创建任务，管理计时与重试 |
+| 应用 Worker | 注册 Workflow 和 Activity 实现，启动 SDK Worker | 主动轮询任务，运行对应代码，再把结果报告给 Server |
 
-### 2.3 Workflow、History Shard 与底层存储怎样对应
+一个应用 Worker 进程可以同时执行 Workflow Task 和 Activity Task，也可以拆成不同进程、不同队列。这里说的 Worker 都是业务进程，与 Server 内部的 Worker Service 不同。
 
-Temporal 在集群初始化时确定 History Shard 总数 `N`。这个数量是逻辑分片数，不等于 History 进程数，也不等于数据库实例数，并且初始化后不能修改。
+### 3.2 应用怎样使用一个已经定义好的 Workflow
 
-一个 Workflow 被分到哪个 Shard 是确定的。当前 Server 源码中的计算可简化为：
+最小使用流程分三步：**写定义 → 部署并注册 Worker → 调用方请求启动**。下面只用一个 Activity，先不引入审批和补偿。代码是三个位置的集成片段，省略 package/import；分别使用 Go SDK 的 `workflow`、`worker`、`client` 包，以及标准库 `context`、`fmt`、`time`。
 
-```text
-shardID = FarmHash32(namespaceID + "_" + workflowID) % N + 1
+**第一步：定义 Workflow 和 Activity，编译到 Worker 程序中。**
+
+```go
+func GreetingWorkflow(ctx workflow.Context, name string) (string, error) {
+    ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+        StartToCloseTimeout: time.Minute,
+    })
+    var result string
+    err := workflow.ExecuteActivity(ctx, "BuildGreeting", name).Get(ctx, &result)
+    return result, err
+}
+
+func BuildGreeting(ctx context.Context, name string) (string, error) {
+    return "Hello, " + name, nil
+}
 ```
 
-`Run ID` 不参与计算。因此同一个 Namespace 下，同一 `Workflow ID` 的重试 Run 或 Continue-As-New 后的新 Run 仍落到同一个 History Shard。Frontend 和 History Client 可以独立算出相同 `shardID`，再通过 History 服务的成员环找到当前 owner。
+**第二步：启动应用 Worker，声明自己能执行什么。** 假定 `c` 是通过 `client.Dial` 创建、连接到目标 Server 和 Namespace 的 Client：
 
-```mermaid
-flowchart LR
-    R[请求<br/>namespaceID + workflowID]
-    H[FarmHash32<br/>mod HistoryShardCount]
-    S[History Shard 7]
-    O[当前 owner<br/>History A]
+```go
+w := worker.New(c, "greeting-tasks", worker.Options{})
+w.RegisterWorkflowWithOptions(GreetingWorkflow,
+    workflow.RegisterOptions{Name: "GreetingWorkflow"})
+w.RegisterActivity(BuildGreeting)
 
-    subgraph DB[同一个 Persistence 中的逻辑数据]
-        SM[shards<br/>PK: shard_id=7<br/>range_id + queue states]
-        MS[executions/current_executions<br/>PK 含 shard_id=7、namespace、workflow、run]
-        EH[history_node/history_tree<br/>PK 以 shard_id=7 开头]
-        HT[history_immediate_tasks / scheduled_tasks<br/>PK 以 shard_id=7 开头]
-    end
-
-    R --> H --> S
-    S -->|membership lookup| O
-    O --> SM
-    O --> MS
-    O --> EH
-    O --> HT
+if err := w.Run(worker.InterruptCh()); err != nil {
+    return err
+}
 ```
 
-以 PostgreSQL schema 为例，存储关系如下：
+注册是在 Worker 进程内建立“类型名 → 函数实现”的对应关系，并不是把 Go 函数上传到 Server。`Run` 启动轮询并维持 Worker 运行；部署两个这样的进程，就有两个可以承接任务的 Worker。[Go Worker 使用说明](https://docs.temporal.io/develop/go/workers/run-worker-process)。
 
-| 数据 | 典型主键 | 含义 |
+**第三步：业务调用方启动一个执行实例。** 调用方只需要知道约定的类型名、参数和队列，无须持有 Workflow 函数实现：
+
+```go
+run, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
+    ID:        "greeting-request-42",
+    TaskQueue: "greeting-tasks",
+}, "GreetingWorkflow", "Tao")
+if err != nil {
+    return err
+}
+fmt.Println(run.GetID(), run.GetRunID())
+
+// 可选：等待整个 Workflow 完成。长流程的 HTTP 接口通常直接返回执行 ID。
+var result string
+if err := run.Get(ctx, &result); err != nil {
+    return err
+}
+```
+
+`ExecuteWorkflow` 成功意味着启动请求已被接受，返回执行句柄，不意味着 Workflow 已完成。调用方断开或不再等待结果，通常不会取消已经启动的执行；取消应显式发送请求。没有可用 Worker 时，已启动的流程会等待任务被处理，而不是自动在调用方进程中执行。调用方与 Worker 必须连接同一目标 Namespace，队列名和注册的类型名也要匹配。[Go Client 使用说明](https://docs.temporal.io/develop/go/client/temporal-client)。
+
+### 3.3 Worker 主动拉什么，Server 返回什么
+
+Worker 主动向 Frontend 发起长轮询。Server 不需要主动连接 Worker 暴露的 HTTP 服务；任务通过尚未返回的轮询请求交给 Worker，完成后 Worker 再发 RPC 报告结果。
+
+| 任务 | Worker 收到的主要内容 | Worker 做什么 | 返回什么 |
+|---|---|---|---|
+| Workflow Task | 本次执行所需的历史事件，以及执行与任务标识 | 运行或恢复 Workflow 代码，计算接下来做什么 | Command，例如安排 Activity、启动 Timer、结束 Workflow |
+| Activity Task | Activity 类型、输入、任务 token 等 | 真正调用 Activity 函数，执行外部操作 | 结果或错误；长任务还可报告 heartbeat |
+
+Workflow Task 和 Activity Task 是两种任务，即使它们配置了同名逻辑队列、由同一个 Worker 进程处理，也不能混成一个调用。
+
+处理 Activity Task 的 Worker 不需要重放整个 Workflow 历史；它只负责本次 Activity 尝试。处理 Workflow Task 的 SDK 才需要用历史恢复流程状态。
+
+### 3.4 ExecuteActivity 并不是每调用一次就先远程查询历史
+
+看下面这一行：
+
+```go
+err := workflow.ExecuteActivity(ctx, "BuildGreeting", name).Get(ctx, &result)
+```
+
+`ExecuteActivity` 调用的是 **Workflow Worker 内的 SDK**。SDK 根据当前任务加载的历史和执行状态处理这次调用；它不等于“立即调用 Activity 函数”，也不等于“按函数名向 Server 查询以前是否执行过”。
+
+可以分三种情况理解：
+
+| 当前状态 | SDK 怎样处理 | 会不会重新执行 Activity |
 |---|---|---|
-| `shards` | `shard_id` | 一行 Shard 元数据，保存 `range_id` 和队列进度等；不包含该 Shard 的全部 Workflow 数据 |
-| `current_executions` | `(shard_id, namespace_id, workflow_id)` | 同一 Workflow ID 当前 Run 的指针和状态 |
-| `executions` | `(shard_id, namespace_id, workflow_id, run_id)` | 每个 Run 的持久化 Mutable State 与执行状态 |
-| `history_node` / `history_tree` | 以 `shard_id`、历史树/分支标识开头的联合键 | 追加式 Event History 及分支元数据 |
-| `history_immediate_tasks` | `(shard_id, category_id, task_id)` | Transfer、Visibility、Replication 等可立即处理的内部任务 |
-| `history_scheduled_tasks` | `(shard_id, category_id, visibility_timestamp, task_id)` | Timer 等按时间触发的内部任务 |
+| 流程第一次运行到这里 | 产生安排 Activity 的 Command；Future 等待结果 | Server 接受调度后，由 Activity Worker 执行 |
+| 恢复时，对应 Activity 已有完成事件 | 重放到这次调用时，使用历史中对应的结果完成 Future | 不会因为重放再次执行 |
+| 对应 Activity 已安排，但尚未取得最终结果 | 恢复这个等待关系，Future 继续等待 | 不会因为恢复就创建一个新的逻辑 Activity；原 Activity 可能由 Server 重试 |
 
-所以“Shard 保存 Workflow 状态”是一种逻辑说法。更准确地说：
+这里的“对应”依赖确定性的命令序列和 Activity 标识，不是按函数名做缓存。例如 Workflow 有意连续调用两次 `BuildGreeting`，那是两个逻辑 Activity，不会因为函数名相同就跳过第二个。
 
-1. `shard_id` 是执行状态、历史事件和内部任务的路由前缀；
-2. 当前 owner 在内存中缓存 Shard 元数据和近期 Workflow 的 Mutable State；
-3. 权威数据仍在共享 Persistence 中；
-4. PostgreSQL/MySQL 可以把所有 Shard 的行放在同一个数据库和同一组表里，`shard_id` 是联合主键的一部分；
-5. Cassandra 的 `executions` 设计则让一个 History Shard 对应一个 Cassandra partition。
+**历史是在处理 Workflow Task 时取得和应用的。** 新 Worker 或缓存失效时，SDK 会获取所需历史并重放；历史较长时可能需要分页读取。有可用的 sticky 缓存时，SDK 可以复用之前的 Workflow 状态并处理新增事件，不必每个任务都从头重放完整历史。[Sticky Execution](https://docs.temporal.io/sticky-execution)。
 
-数据库不会根据负载把 Shard 分配给 History 进程。History 实例的 `ShardController` 根据成员环决定当前应该拥有哪些 Shard；增加 History 副本会重新分配**所有权**，不会搬迁 Workflow 的持久化数据。
+`.Get` 等待的是 SDK 的 Future。当结果还没到，Workflow 逻辑挂起，本轮 Workflow Task 可以提交已经产生的 Command；它不会为了等待一小时的 Activity 结果，一直占用一个操作系统线程。Worker 可能保留可丢弃的缓存，但持久执行不依赖这份缓存。
 
-### 2.4 History 节点失效时怎样接管
+### 3.5 谁推动 Workflow 进入下一步
 
-假设 Shard 7 当前由 History A 持有，数据库中 `shards[7].range_id = 101`：
+执行由 **Server 的任务调度与 Worker 的代码计算共同推进**：Server 根据事件安排 Workflow Task，Worker 执行代码决定下一步，再把决定交回 Server。调用方启动后，不需要写一个循环反复调用“执行下一步”。
+
+以下按普通轮询路径展示 `GreetingWorkflow` 的一次成功执行，省略 eager 等优化。为看清职责，将同一个应用 Worker 可承担的两种角色画成两个参与者；所有 Worker 与 Server 的交互均经过 Frontend。
 
 ```mermaid
 sequenceDiagram
-    participant F as Frontend
-    participant A as History A（旧 owner）
-    participant M as Membership Ring
-    participant B as History B（新 owner）
-    participant P as Persistence
-
-    Note over A,P: A 持有 Shard 7，RangeID=101
-    A->>P: 写状态和任务，携带 RangeID=101
-    P-->>A: 成功
-    A-xM: 进程故障，退出成员环
-    M-->>B: Shard 7 重新映射给 B
-    B->>P: 条件更新 shards[7]，RangeID 101 → 102
-    P-->>B: 获取所有权成功
-    F->>M: 查询 Shard 7 owner
-    M-->>F: History B
-    F->>B: 转发后续请求
-    B->>P: 按需加载 Mutable State、历史和队列进度
-    B->>P: 后续写入携带 RangeID=102
-    Note over A,P: 若 A 网络恢复并尝试旧写入
-    A->>P: 写入，RangeID=101
-    P-->>A: ShardOwnershipLost，拒绝旧 writer
+    participant C as 业务调用方
+    participant S as Temporal Server<br/>Frontend / History / Matching
+    participant W as Workflow Worker
+    participant A as Activity Worker
+    C->>S: ExecuteWorkflow：类型、输入、队列、Workflow ID
+    S-->>C: 接受启动，返回执行标识
+    W->>S: 长轮询 Workflow Task
+    S-->>W: 返回任务及所需历史
+    W->>W: 执行 Workflow，遇到 ExecuteActivity
+    W->>S: 完成本轮任务，提交 ScheduleActivity Command
+    Note over S: 持久化调度状态，安排 Activity Task
+    A->>S: 长轮询 Activity Task
+    S-->>A: BuildGreeting 的类型、参数、task token
+    A->>A: 真正调用 BuildGreeting
+    A->>S: 报告 Activity 完成及结果
+    Note over S: 记录完成事件，安排后续 Workflow Task
+    W->>S: 长轮询 Workflow Task
+    S-->>W: 返回后续任务及历史更新
+    W->>W: 恢复或继续 Workflow，Future 取得结果
+    W->>S: 提交 CompleteWorkflow Command
+    Note over S: 持久化 Workflow 完成状态
+    C->>S: 按需获取执行结果
+    S-->>C: Hello, Tao
 ```
 
-`RangeID` 是单调递增的 fencing token。接管者通过条件更新取得新代际；History 对 Persistence 的写入带上当前代际，旧 owner 即使恢复，也不能用过期 `RangeID` 更新状态。它解决的是 Shard owner 的脑裂写入，并不是提供给业务代码的通用分布式锁。
+Activity 完成、收到 Signal、Timer 到期等事件，都可能使 Server 安排后续 Workflow Task。没有新事件、流程正在等待时，不需要 Worker 不断执行同一段代码检查条件。[History Service 执行链路](https://github.com/temporalio/temporal/blob/main/docs/architecture/history-service.md)。
 
-接管时不需要从 A 的本地磁盘复制状态。B 从共享 Persistence 读取 `shards` 中的队列 checkpoint、`executions` 中的 Mutable State、`history_node/history_tree` 中的 Event History，以及尚未处理的即时任务和定时任务。
+### 3.6 失败之后，究竟谁发起重试
 
-队列 checkpoint 周期性推进，因此 B 可能再次扫描少量已经处理过的内部任务；处理逻辑必须可重入。故障切换期间请求可能短暂重试，但不会由两个有效 owner 同时推进同一 Shard。
+先区分失败的是“做事的 Activity”“计算下一步的 Workflow Task”，还是“整个 Workflow Execution”：
 
-Matching 也通过成员关系分配 Task Queue partition。Matching 节点故障后，Worker 的长轮询经 Frontend 到达新的 Matching owner；已经持久化的积压任务仍可继续分发。应用 Worker 故障则由 Task Timeout 和重试策略处理，和 History Shard 转移是两套机制。
+| 失败对象 | 谁发现、谁调度 | 应用看到什么 |
+|---|---|---|
+| Activity 返回可重试错误 | Activity Worker 报错；Server 按 Retry Policy 计算退避并安排下一次尝试 | 原 Future 通常继续等待，直到成功或最终失败 |
+| Activity Worker 崩溃 | 没有进程能主动报错；Server 根据已配置的超时发现，并按策略重试 | 其他 Activity Worker 可承接下一次尝试 |
+| Workflow Task 失败或超时 | Worker 报告任务失败，或 Server 检测超时；Server 重新安排任务 | 可由其他 Workflow Worker 重放并继续计算，不等于重试整个业务流程 |
+| Workflow 代码返回导致执行失败的错误 | Server 记录 Workflow 失败；只有配置了 Workflow Retry Policy 才自动开始新的 Run | 默认没有整个 Workflow 的 Retry Policy；应用也可另行发起新的执行 |
 
-## 3. 贯穿实例：生产环境变更审批与发布
+以 Activity 第一次失败、第二次成功为例：
+
+```text
+Workflow 调用一次 ExecuteActivity，并等待 Future
+  → Server 安排 Activity attempt 1
+  → Activity Worker 报告可重试错误
+  → Server 等待退避时间，安排 attempt 2
+  → 某个 Activity Worker 成功并报告结果
+  → Server 安排 Workflow Task
+  → Workflow 的同一个 Future 得到成功结果，继续后面的代码
+```
+
+普通服务端 Activity 重试不要求 Workflow 代码每次失败都重新调用 `ExecuteActivity`。最大尝试次数耗尽、遇到不可重试错误或达到相应超时边界后，最终失败才交给 Workflow 的 `.Get`，由代码决定失败结束还是补偿。本文讨论普通 Activity；Local Activity 的调度与重试路径不同。[Retry Policy 说明](https://docs.temporal.io/encyclopedia/retry-policies)。
+
+Workflow Task 的重试也不会修复确定性错误或代码 bug；如果错误一直存在，任务可能反复失败，需要部署修复代码。更详细的超时、幂等和恢复边界放在后文。
+
+## 4. 贯穿实例：生产环境变更审批与发布
 
 选择这个例子，是因为它同时包含外部副作用、人工等待、定时器、失败补偿和长时间运行，能展示 Temporal 的核心价值。
 
@@ -277,23 +275,30 @@ stateDiagram-v2
     失败 --> [*]
 ```
 
-### 3.1 一次执行的完整路径
+### 4.1 一次执行的完整路径
 
 假设创建变更单 `change-20260909-42`：
 
-1. 发布系统用该业务编号作为 `Workflow ID` 启动 `ProductionChangeWorkflow`。
-2. History 持久化 `WorkflowExecutionStarted`，并通过内部 Transfer Task 把 Workflow Task 送到 Matching。
-3. Workflow Worker 拉到任务，重放历史，执行到 `Precheck`，返回 `ScheduleActivityTask` Command。
-4. History 把新 Event、Mutable State 和内部任务持久化；Activity Worker 随后执行预检查。
-5. 预检查完成后，Workflow 安排 `CreateApprovalTicket` Activity，然后等待 `approval-decision` 消息或 24 小时 Timer。
-6. 等待期间没有线程、goroutine 或 Worker 被长期占用。执行状态在 Temporal Persistence 中。
-7. 审批服务收到操作后，用 Update 或 Signal 把决定写给该 Workflow。
-8. Workflow 安排灰度发布 Activity，再进入监控观察窗口；指标异常时安排 Rollback Activity。
-9. Worker 或 Temporal Server 中途重启时，另一实例从历史恢复到当前阶段，继续尚未完成的工作。
+首先部署应用 Worker，注册 `ProductionChangeWorkflow` 及下面代码用到的所有 Activity。为便于理解，这个示例统一使用 `change-tasks` 队列，一个 Worker 进程可以同时承担两种任务角色；生产环境可以再拆队列和进程。
+
+| 阶段 | 谁做什么 | 为什么流程会继续 |
+|---|---|---|
+| 启动 | 发布 API 调用 `ExecuteWorkflow`，指定 Workflow ID、类型、输入和 `change-tasks` | Server 记录启动，并安排第一个 Workflow Task |
+| 决定预检查 | Workflow Worker 取到任务，运行到 `ExecuteActivity(Precheck)`，提交调度 Command | Server 安排 Precheck 的 Activity Task；本轮 Workflow Task 结束 |
+| 真正预检查 | Activity Worker 领取任务，调用预检查接口，报告结果 | Server 记录结果，并安排后续 Workflow Task |
+| 决定创建审批单 | Workflow Worker 恢复或继续执行，Precheck 的 Future 取得结果；代码走到 `CreateApprovalTicket` | 再次经过 Activity 调度、执行和结果报告闭环 |
+| 等待审核 | Workflow Worker 建立 Signal 等待并提交启动 24 小时 Timer 的 Command | Server 保存等待条件；没有新事件时无需反复调用 Workflow 检查审批状态 |
+| 收到审核决定 | 审批 API 用 `SignalWorkflow` 向执行实例发送决定 | Server 记录 Signal，并安排 Workflow Task |
+| 决定是否发布 | Workflow Worker 处理 Signal，审批通过则提交 DeployCanary 调度 Command | Server 安排 Activity，Activity Worker 真正执行灰度发布 |
+| 后续发布与结束 | 指标检查、全量发布或回滚按同一闭环执行；最后 Workflow 返回 | Workflow Worker 提交完成 Command，Server 保存终态，调用方可获取结果 |
+
+如果 Precheck 某次尝试失败但允许重试，Server 负责调度下一次 Precheck 尝试，Workflow 不会直接跳到创建审批单。最终失败才会让对应 `.Get` 返回错误，进入示例中的错误分支。
+
+等待审批不需要维持一条从调用方到 Worker 的长连接，也不占用专门的操作系统线程或 Activity 执行槽位。SDK 可以保留 Workflow 缓存，但即使缓存丢失，也可从持久历史重建等待状态。
 
 这个路径展示了两个闭环：Workflow Task 负责“根据历史计算下一步”，Activity Task 负责“真正操作外部系统”。Workflow 代码不能直接执行部署或查询数据库。
 
-### 3.2 简化的 Go Workflow
+### 4.2 简化的 Go Workflow
 
 ```go
 type ApprovalDecision struct {
@@ -366,7 +371,42 @@ func ProductionChangeWorkflow(ctx workflow.Context, in ChangeInput) (string, err
 
 这只是模型示例。真实系统还应区分审批超时和拒绝，检查重复 `DecisionID`，为回滚设置独立 Retry Policy，并使用 Saga/补偿结构保证错误处理本身可恢复。
 
-## 4. 从实例理解核心对象
+### 4.3 发布 API 和审批 API 怎样调用这个定义
+
+下面片段假定 Worker 已用 `ProductionChangeWorkflow` 这个名字注册函数，调用方的 `c` 已连接同一 Namespace；活动未单独指定 Task Queue 时沿用 Workflow 的队列。
+
+```go
+run, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
+    ID:        "change-20260909-42",
+    TaskQueue: "change-tasks",
+}, "ProductionChangeWorkflow", ChangeInput{
+    ChangeID: "change-20260909-42",
+    Service:  "content-api",
+    Version:  "v2",
+})
+if err != nil {
+    return err
+}
+// HTTP 接口可立即返回这两个 ID，不必一直等待审批和发布结束。
+workflowID, runID := run.GetID(), run.GetRunID()
+```
+
+审核人稍后批准时，审批 API 在完成权限和业务校验后发送 Signal：
+
+```go
+err := c.SignalWorkflow(ctx, workflowID, runID, "approval-decision", ApprovalDecision{
+    DecisionID: "approval-42-1",
+    Approved:   true,
+    Reviewer:   "reviewer-7",
+})
+if err != nil {
+    return err
+}
+```
+
+Signal 成功返回表示消息已被服务接受，不表示灰度发布已经完成。示例的 Signal 名与 Workflow 中 `GetSignalChannel` 的名称一致；如果业务需要同步校验和处理结果，可以使用 Update 并在 Workflow 中定义对应处理逻辑。
+
+## 5. 从实例理解核心对象
 
 | Temporal 抽象 | 定义 | 变更发布实例 |
 |---|---|---|
@@ -391,96 +431,7 @@ func ProductionChangeWorkflow(ctx workflow.Context, in ChangeInput) (string, err
 
 最关键的对象关系是：一个 Workflow Execution 产生一条 Event History；应用 Worker 通过 Workflow Task 读取和重放这条历史，返回 Command；History 接受 Command 后进行状态转换并生成后续任务；Matching 只负责把任务交给合适的 Worker，不决定业务状态。
 
-## 5. 一次状态转换怎样持久化
-
-### 5.1 Event、Mutable State 和 Task 如何一起推进
-
-以 `Precheck` Activity 完成为例：
-
-```mermaid
-sequenceDiagram
-    participant AW as Activity Worker
-    participant H as History Shard
-    participant P as Persistence
-    participant Q as Shard Queue Processor
-    participant M as Matching
-    participant WW as Workflow Worker
-
-    AW->>H: RespondActivityTaskCompleted(result)
-    Note over H: 生成 ActivityTaskCompleted Event<br/>更新 Mutable State<br/>生成 Transfer Task
-    H->>P: 追加 Event
-    H->>P: 事务更新 Mutable State + 写 Transfer Task
-    P-->>H: commit
-    H-->>AW: success
-    Q->>P: 扫描未处理 Transfer Task
-    Q->>M: 创建 Workflow Task
-    M-->>WW: 长轮询返回 Workflow Task
-```
-
-Mutable State 与 History Task 在数据库事务中一起更新。Event History 与它们通过最新事件标识建立一致性；提交失败时，History 丢弃内存中的脏状态并从 Persistence 重新加载。Transfer Task 相当于 History 到 Matching 的 transactional outbox：只有状态转换持久化成功，任务才会最终投递到 Matching。
-
-因此 Matching 暂时不可用不会让流程状态丢失。Shard Queue Processor 会重新读取尚未确认的 Transfer Task，直到成功创建相应 Workflow Task 或 Activity Task。内部任务可能重复处理，所以创建任务和推进 ack level 必须可重入。
-
-### 5.2 Worker 恢复的是执行，不是内存快照
-
-应用 Worker 不保存权威 Workflow 状态。重新得到 Workflow Task 后，SDK 从头重新执行 Workflow 函数，并将代码产生的 Command 与 Event History 对照：
-
-- 历史已经记录 `Precheck` 完成时，重放不会再次调用该 Activity，而是直接取得已记录结果；
-- 历史已经记录审批 Signal 时，`Receive` 会读到该消息；
-- 运行到历史末尾后，代码才产生新的 Command，例如安排 `DeployCanary`。
-
-这要求 Workflow 代码具备确定性。系统时间、随机数、HTTP、数据库查询和部署调用不能直接写进 Workflow，应使用 SDK 的确定性 API 或 Activity。大对象也不应塞进 History；把制品、日志和报告存到对象存储，只把 URI、哈希和必要元数据放入参数或结果。
-
-### 5.3 历史增长和代码升级
-
-长时间运行不代表可以无限增加事件。频繁接收 Signal 或长期循环的 Workflow 应适时 `Continue-As-New`：当前 Run 关闭，新 Run 使用相同 Workflow ID 和新的 Run ID 继续，所需状态作为新输入传入。
-
-一个等待审批数周的 Workflow 可能跨越多个应用版本。直接改变旧历史所对应的 Command 顺序会导致 non-deterministic error。生产升级需要使用 Worker Versioning，或采用 SDK 的 Patching/GetVersion 机制兼容新旧历史，并用真实 Event History 做 replay test。
-
-## 6. 故障、重试与自动恢复
-
-### 6.1 先区分四种故障
-
-| 故障 | 平台行为 | 应用责任 |
-|---|---|---|
-| Workflow Worker 崩溃 | Workflow Task 超时后重新投递，另一 Worker 重放历史 | Workflow 保持确定性 |
-| Activity Worker 崩溃 | 通过 Start-To-Close 或 Heartbeat Timeout 判断尝试失败，再按 Retry Policy 调度 | 设置超时、心跳和业务幂等 |
-| History 节点崩溃 | 其他 History 实例用新 RangeID 接管 Shard 并从 Persistence 加载状态 | Server 与数据库都部署 HA |
-| 外部系统调用结果不确定 | Activity 可能被再次执行 | 使用幂等键、查单、去重或补偿 |
-
-Workflow Worker 暂时全部下线时，Workflow Execution 不会因此失败，只是没有 Worker 计算下一步。Worker 恢复轮询后可以继续执行。
-
-### 6.2 Activity 重试边界
-
-Activity 默认 Retry Policy 使用指数退避，默认最大尝试次数没有固定上限，最终仍受 Schedule-To-Close Timeout 或取消约束。生产配置应按错误类型决定：
-
-- 网络超时、429、服务暂时不可用：重试；
-- 变更计划非法、权限永久不足：标记为 non-retryable；
-- 长时间部署：设置 Heartbeat Timeout，并在 heartbeat details 记录阶段；
-- 下游返回建议等待时间：动态设置下一次 retry delay；
-- 人工审批：由 Workflow 等待 Signal/Update，不要用一个 Activity 持续占着线程等待。
-
-通常不为整个 Workflow 配置重试，而是把可失败的外部操作放在 Activity 中，仅重试失败步骤。审批拒绝、指标不合格等合法业务结果应作为状态或返回值处理，不应全部抛成系统错误。
-
-### 6.3 为什么 Activity 仍需要幂等
-
-一种典型故障是：发布平台已接受灰度请求，但 Activity Worker 在向 Temporal 报告完成前崩溃。Temporal 没有看到完成 Event，超时后会再次调度该 Activity，于是外部副作用可能发生多次。
-
-`DeployCanary` 应将 `ChangeID` 或稳定的 Activity 业务键传给发布平台，并由下游唯一约束保证重复请求返回同一结果。如果下游不支持幂等，需要先查状态再操作，或者提供补偿 Activity。Temporal 能保证自己的历史可靠推进，无法撤销一个已经发生但没有回执的外部副作用。
-
-### 6.4 定时器与 Schedule
-
-Workflow Timer 是执行内部的持久等待，例如审批 24 小时超时。Timer 数据在 History Shard 的 scheduled task 中；Server 或 Worker 重启后仍能触发。等待 Timer 不占用应用线程。
-
-Temporal Schedule 用于按时间启动新的 Workflow，支持 calendar/cron 表达式、时区、暂停、恢复、Backfill、jitter 和多种重叠策略。Catchup Window 决定服务停机期间错过的触发是否在恢复后补跑。两者用途不同：
-
-| 能力 | Workflow Timer | Schedule |
-|---|---|---|
-| 绑定对象 | 某个 Workflow Execution | 独立的调度资源 |
-| 示例 | 当前变更单 24 小时未审批 | 每晚启动一次环境巡检 Workflow |
-| 故障恢复 | 从 History scheduled task 恢复 | 按 Catchup Window 补触发 |
-
-## 7. 人工参与怎样建模
+## 6. 人工参与怎样建模
 
 ```mermaid
 sequenceDiagram
@@ -516,7 +467,7 @@ Temporal 不自带完整的组织、候选组、表单和“我的待办”。�
 
 提醒、升级、撤回和改派可以建模为不同 Signal/Update，再由 Workflow 状态机验证合法转换。业务侧还需实现权限、代理审批、附件、字段权限、`DecisionID` 去重和审计报表。
 
-## 8. Queue 基于什么实现，Worker 能做哪些任务
+## 7. Queue 基于什么实现，Worker 能做哪些任务
 
 Temporal 基本运行不要求外接 Kafka、RabbitMQ 或 Redis。用户看到的 Task Queue 是 Matching Service 提供的逻辑工作分发队列：
 
@@ -543,7 +494,7 @@ Temporal 基本运行不要求外接 Kafka、RabbitMQ 或 Redis。用户看到�
 
 应用还可以组合 Local Activity、Child Workflow、Timer、Signal、Update、Query 和异步 Activity Completion。Temporal 不提供固定的 HTTP、SQL、邮件或人工审核节点目录；这些节点由 Activity 代码或第三方库实现。
 
-## 9. UI 与工作流定义方式
+## 8. UI 与工作流定义方式
 
 Temporal Web UI 可以搜索 Workflow Execution、查看 Metadata 和 Event History、检查待处理 Activity、调试失败以及管理部分 Schedule。它是研发和运维工具，不是 BPMN 设计器，也不应直接当作审批后台。
 
@@ -551,9 +502,104 @@ Workflow 通过 SDK 代码定义。官方主流 SDK 包括 Go、Java、Python、
 
 如果必须动态配置步骤，可以在 Temporal 上编写一个解释 JSON DSL 的 Workflow，但 DSL 校验、版本兼容、权限和可观测性都要自行实现。这样的需求较强时，优先评估 Conductor，通常比在 Temporal 上重建一套声明式引擎更合理。
 
-## 10. 支持的存储
+## 9. 内部实现：状态分片、成员发现与队列分区
 
-### 10.1 核心 Persistence
+前面已经说明应用怎样启动执行、Worker 怎样处理任务，以及 Server 怎样推进流程。需要进一步理解多实例如何分担这些工作时，阅读 [022：Temporal 成员发现与分区](./022_temporal_membership_partition.md)。
+
+该文依次介绍成员发现原理、Temporal 内部组件如何使用成员信息、History Shard 的数据与归属、RangeID 写入隔离，以及 Matching Task Queue partition 的路由和接管。本文不再重复这些实现细节，下面继续解释执行状态怎样持久化，以及不同失败如何恢复。
+
+## 10. 一次状态转换怎样持久化
+
+### 10.1 Event、Mutable State 和 Task 如何一起推进
+
+以 `Precheck` Activity 完成为例：
+
+```mermaid
+sequenceDiagram
+    participant AW as Activity Worker
+    participant H as History Shard
+    participant P as Persistence
+    participant Q as Shard Queue Processor
+    participant M as Matching
+    participant WW as Workflow Worker
+
+    AW->>H: RespondActivityTaskCompleted(result)
+    Note over H: 生成 ActivityTaskCompleted Event<br/>更新 Mutable State<br/>生成 Transfer Task
+    H->>P: 追加 Event
+    H->>P: 事务更新 Mutable State + 写 Transfer Task
+    P-->>H: commit
+    H-->>AW: success
+    Q->>P: 扫描未处理 Transfer Task
+    Q->>M: 创建 Workflow Task
+    M-->>WW: 长轮询返回 Workflow Task
+```
+
+Mutable State 与 History Task 在数据库事务中一起更新。Event History 与它们通过最新事件标识建立一致性；提交失败时，History 丢弃内存中的脏状态并从 Persistence 重新加载。Transfer Task 相当于 History 到 Matching 的 transactional outbox：只有状态转换持久化成功，任务才会最终投递到 Matching。
+
+因此 Matching 暂时不可用不会让流程状态丢失。Shard Queue Processor 会重新读取尚未确认的 Transfer Task，直到成功创建相应 Workflow Task 或 Activity Task。内部任务可能重复处理，所以创建任务和推进 ack level 必须可重入。
+
+### 10.2 Worker 恢复的是执行，不是内存快照
+
+应用 Worker 不保存权威 Workflow 状态。当 Worker 没有可用缓存、需要重建执行时，SDK 从头重放 Workflow 函数，并将代码产生的 Command 与 Event History 对照；缓存可用时则可以处理新增事件继续执行：
+
+- 历史已经记录 `Precheck` 完成时，重放不会再次调用该 Activity，而是直接取得已记录结果；
+- 历史已经记录审批 Signal 时，`Receive` 会读到该消息；
+- 运行到历史末尾后，代码才产生新的 Command，例如安排 `DeployCanary`。
+
+这要求 Workflow 代码具备确定性。系统时间、随机数、HTTP、数据库查询和部署调用不能直接写进 Workflow，应使用 SDK 的确定性 API 或 Activity。大对象也不应塞进 History；把制品、日志和报告存到对象存储，只把 URI、哈希和必要元数据放入参数或结果。
+
+### 10.3 历史增长和代码升级
+
+长时间运行不代表可以无限增加事件。频繁接收 Signal 或长期循环的 Workflow 应适时 `Continue-As-New`：当前 Run 关闭，新 Run 使用相同 Workflow ID 和新的 Run ID 继续，所需状态作为新输入传入。
+
+一个等待审批数周的 Workflow 可能跨越多个应用版本。直接改变旧历史所对应的 Command 顺序会导致 non-deterministic error。生产升级需要使用 Worker Versioning，或采用 SDK 的 Patching/GetVersion 机制兼容新旧历史，并用真实 Event History 做 replay test。
+
+## 11. 故障、重试与自动恢复
+
+### 11.1 先区分四种故障
+
+| 故障 | 平台行为 | 应用责任 |
+|---|---|---|
+| Workflow Worker 崩溃 | Workflow Task 超时后重新投递，另一 Worker 重放历史 | Workflow 保持确定性 |
+| Activity Worker 崩溃 | 通过 Start-To-Close 或 Heartbeat Timeout 判断尝试失败，再按 Retry Policy 调度 | 设置超时、心跳和业务幂等 |
+| History 节点崩溃 | 其他 History 实例用新 RangeID 接管 Shard 并从 Persistence 加载状态 | Server 与数据库都部署 HA |
+| 外部系统调用结果不确定 | Activity 可能被再次执行 | 使用幂等键、查单、去重或补偿 |
+
+Workflow Worker 暂时全部下线时，Workflow Execution 不会因此失败，只是没有 Worker 计算下一步。Worker 恢复轮询后可以继续执行。
+
+### 11.2 Activity 重试边界
+
+Activity 默认 Retry Policy 使用指数退避，默认最大尝试次数没有固定上限，最终仍受 Schedule-To-Close Timeout 或取消约束。生产配置应按错误类型决定：
+
+- 网络超时、429、服务暂时不可用：重试；
+- 变更计划非法、权限永久不足：标记为 non-retryable；
+- 长时间部署：设置 Heartbeat Timeout，并在 heartbeat details 记录阶段；
+- 下游返回建议等待时间：动态设置下一次 retry delay；
+- 人工审批：由 Workflow 等待 Signal/Update，不要用一个 Activity 持续占着线程等待。
+
+通常不为整个 Workflow 配置重试，而是把可失败的外部操作放在 Activity 中，仅重试失败步骤。审批拒绝、指标不合格等合法业务结果应作为状态或返回值处理，不应全部抛成系统错误。
+
+### 11.3 为什么 Activity 仍需要幂等
+
+一种典型故障是：发布平台已接受灰度请求，但 Activity Worker 在向 Temporal 报告完成前崩溃。Temporal 没有看到完成 Event，超时后会再次调度该 Activity，于是外部副作用可能发生多次。
+
+`DeployCanary` 应将 `ChangeID` 或稳定的 Activity 业务键传给发布平台，并由下游唯一约束保证重复请求返回同一结果。如果下游不支持幂等，需要先查状态再操作，或者提供补偿 Activity。Temporal 能保证自己的历史可靠推进，无法撤销一个已经发生但没有回执的外部副作用。
+
+### 11.4 定时器与 Schedule
+
+Workflow Timer 是执行内部的持久等待，例如审批 24 小时超时。Timer 数据在 History Shard 的 scheduled task 中；Server 或 Worker 重启后仍能触发。等待 Timer 不占用应用线程。
+
+Temporal Schedule 用于按时间启动新的 Workflow，支持 calendar/cron 表达式、时区、暂停、恢复、Backfill、jitter 和多种重叠策略。Catchup Window 决定服务停机期间错过的触发是否在恢复后补跑。两者用途不同：
+
+| 能力 | Workflow Timer | Schedule |
+|---|---|---|
+| 绑定对象 | 某个 Workflow Execution | 独立的调度资源 |
+| 示例 | 当前变更单 24 小时未审批 | 每晚启动一次环境巡检 Workflow |
+| 故障恢复 | 从 History scheduled task 恢复 | 按 Catchup Window 补触发 |
+
+## 12. 支持的存储
+
+### 12.1 核心 Persistence
 
 | 存储 | 用途/状态 |
 |---|---|
@@ -564,17 +610,17 @@ Workflow 通过 SDK 代码定义。官方主流 SDK 包括 Go、Java、Python、
 
 核心 Persistence 保存 Namespace、Shard 元数据、Workflow 状态、Event History、Task Queue 积压和内部任务。中小规模自建通常优先复用团队熟悉的 PostgreSQL/MySQL；已有成熟 Cassandra 运维能力并需要大规模吞吐时再评估 Cassandra。复制、备份、恢复、连接数和跨可用区延迟由部署方负责。
 
-### 10.2 Visibility Store
+### 12.2 Visibility Store
 
 Visibility 用于 Workflow 列表、筛选和 Search Attributes。当前版本支持使用 SQL，也支持 Elasticsearch；OpenSearch 的支持应按采用版本核对。Visibility 是最终一致的查询索引，不是单个 Workflow 的权威状态。查看一个执行的精确状态使用 Describe/History，业务列表也可以使用自己的投影表。
 
-### 10.3 Archival 与业务大对象
+### 12.3 Archival 与业务大对象
 
 Archival 可把已关闭执行的 History 和 Visibility 记录复制到 blob storage，使其超过 Namespace retention 后仍可查询。自建时需要按官方标注和实际版本验证成熟度，不能替代数据库备份。
 
 制品、日志、附件和大模型输出等大对象应存入 S3、MinIO 或其他业务对象存储，只在 Workflow 中保留 URI、哈希和必要元数据，以控制 Event History 和 Mutable State 的大小。
 
-## 11. 与另外三类工具的边界
+## 13. 与另外三类工具的边界
 
 | 维度 | Temporal | Conductor OSS | Flowable | Node-RED |
 |---|---|---|---|---|
@@ -587,7 +633,7 @@ Archival 可把已关闭执行的 History 和 Visibility 记录复制到 blob st
 
 Temporal 值得深入学习的不是“能画多少种节点”，而是如何把一个跨服务、跨进程、跨数天的执行变成可恢复状态机。它通过 History Shard 串行化状态转换，通过 Event History 与确定性重放恢复 Workflow，通过 Activity Retry 推进失败步骤，再用幂等和补偿处理无法原子提交的外部副作用。
 
-## 12. 最终评价
+## 14. 最终评价
 
 Temporal 适合由工程团队拥有的可靠长流程，尤其是微服务编排、资源部署、订单履约、异步回调、定时等待和需要人工确认的高价值操作。三节点部署的关键不是把数据复制到三台 Temporal 机器，而是让无状态入口、History Shard owner 和 Matching owner 可以迁移，同时把权威状态放在高可用 Persistence 中。
 
