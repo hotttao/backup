@@ -91,7 +91,7 @@ Workflow 和 Activity 的业务代码都部署在**应用 Worker** 中。Tempora
 | Temporal Server | 部署或使用已有集群 | 记录事件与状态，创建任务，管理计时与重试 |
 | 应用 Worker | 注册 Workflow 和 Activity 实现，启动 SDK Worker | 主动轮询任务，运行对应代码，再把结果报告给 Server |
 
-一个应用 Worker 进程可以同时执行 Workflow Task 和 Activity Task，也可以拆成不同进程、不同队列。这里说的 Worker 都是业务进程，与 Server 内部的 Worker Service 不同。
+一个应用 Worker 进程可以同时执行 Workflow Task 和 Activity Task，也可以拆成不同进程、不同队列。
 
 ### 3.2 应用怎样使用一个已经定义好的 Workflow
 
@@ -100,15 +100,19 @@ Workflow 和 Activity 的业务代码都部署在**应用 Worker** 中。Tempora
 **第一步：定义 Workflow 和 Activity，编译到 Worker 程序中。**
 
 ```go
+// Workflow 定义：由 Workflow Task 驱动，负责决定步骤与等待结果。
 func GreetingWorkflow(ctx workflow.Context, name string) (string, error) {
     ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
         StartToCloseTimeout: time.Minute,
     })
     var result string
-    err := workflow.ExecuteActivity(ctx, "BuildGreeting", name).Get(ctx, &result)
+    // SDK 产生调度 Command；Get 等待后续任务带回 Activity 结果。
+    future := workflow.ExecuteActivity(ctx, "BuildGreeting", name)
+    err := future.Get(ctx, &result)
     return result, err
 }
 
+// Activity 定义：Activity Task 触发一次函数调用，执行具体业务操作。
 func BuildGreeting(ctx context.Context, name string) (string, error) {
     return "Hello, " + name, nil
 }
@@ -159,35 +163,16 @@ Worker 主动向 Frontend 发起长轮询。Server 不需要主动连接 Worker 
 | Workflow Task | 本次执行所需的历史事件，以及执行与任务标识 | 运行或恢复 Workflow 代码，计算接下来做什么 | Command，例如安排 Activity、启动 Timer、结束 Workflow |
 | Activity Task | Activity 类型、输入、任务 token 等 | 真正调用 Activity 函数，执行外部操作 | 结果或错误；长任务还可报告 heartbeat |
 
-Workflow Task 和 Activity Task 是两种任务，即使它们配置了同名逻辑队列、由同一个 Worker 进程处理，也不能混成一个调用。
+开发者编写的是 3.2 中的两个函数，Task 则由 Server 在运行时安排：
 
-处理 Activity Task 的 Worker 不需要重放整个 Workflow 历史；它只负责本次 Activity 尝试。处理 Workflow Task 的 SDK 才需要用历史恢复流程状态。
-
-### 3.4 ExecuteActivity 并不是每调用一次就先远程查询历史
-
-看下面这一行：
-
-```go
-err := workflow.ExecuteActivity(ctx, "BuildGreeting", name).Get(ctx, &result)
-```
-
-`ExecuteActivity` 调用的是 **Workflow Worker 内的 SDK**。SDK 根据当前任务加载的历史和执行状态处理这次调用；它不等于“立即调用 Activity 函数”，也不等于“按函数名向 Server 查询以前是否执行过”。
-
-可以分三种情况理解：
-
-| 当前状态 | SDK 怎样处理 | 会不会重新执行 Activity |
+| 已注册的函数 | 收到 Task 后如何使用它 | 一次 Task 的执行范围 |
 |---|---|---|
-| 流程第一次运行到这里 | 产生安排 Activity 的 Command；Future 等待结果 | Server 接受调度后，由 Activity Worker 执行 |
-| 恢复时，对应 Activity 已有完成事件 | 重放到这次调用时，使用历史中对应的结果完成 Future | 不会因为重放再次执行 |
-| 对应 Activity 已安排，但尚未取得最终结果 | 恢复这个等待关系，Future 继续等待 | 不会因为恢复就创建一个新的逻辑 Activity；原 Activity 可能由 Server 重试 |
+| `GreetingWorkflow(workflow.Context, name)` | SDK 根据历史运行或恢复这个函数 | 推进到需要等待或流程结束，提交本轮 Command；一个 Workflow 通常经历多次 Workflow Task |
+| `BuildGreeting(context.Context, name)` | SDK 解码任务输入，例如 `"Tao"`，调用函数并报告结果 | 一次 Activity 执行尝试；失败重试时可以再次调用 |
 
-这里的“对应”依赖确定性的命令序列和 Activity 标识，不是按函数名做缓存。例如 Workflow 有意连续调用两次 `BuildGreeting`，那是两个逻辑 Activity，不会因为函数名相同就跳过第二个。
+两类任务由 SDK 分别轮询和处理。`workflow.Context` 用于流程的确定性调度与等待，`context.Context` 用于 Activity 的普通业务调用；业务代码无须自行实现 Task 的领取和结果上报。
 
-**历史是在处理 Workflow Task 时取得和应用的。** 新 Worker 或缓存失效时，SDK 会获取所需历史并重放；历史较长时可能需要分页读取。有可用的 sticky 缓存时，SDK 可以复用之前的 Workflow 状态并处理新增事件，不必每个任务都从头重放完整历史。[Sticky Execution](https://docs.temporal.io/sticky-execution)。
-
-`.Get` 等待的是 SDK 的 Future。当结果还没到，Workflow 逻辑挂起，本轮 Workflow Task 可以提交已经产生的 Command；它不会为了等待一小时的 Activity 结果，一直占用一个操作系统线程。Worker 可能保留可丢弃的缓存，但持久执行不依赖这份缓存。
-
-### 3.5 谁推动 Workflow 进入下一步
+### 3.4 谁推动 Workflow 进入下一步
 
 执行由 **Server 的任务调度与 Worker 的代码计算共同推进**：Server 根据事件安排 Workflow Task，Worker 执行代码决定下一步，再把决定交回 Server。调用方启动后，不需要写一个循环反复调用“执行下一步”。
 
@@ -221,6 +206,78 @@ sequenceDiagram
 ```
 
 Activity 完成、收到 Signal、Timer 到期等事件，都可能使 Server 安排后续 Workflow Task。没有新事件、流程正在等待时，不需要 Worker 不断执行同一段代码检查条件。[History Service 执行链路](https://github.com/temporalio/temporal/blob/main/docs/architecture/history-service.md)。
+
+**这里有两个不同的结束时刻：** 第一次 `.Get` 尚未取得结果时，Workflow 逻辑挂起，但本轮 Workflow Task 已可以提交调度 Command 并结束；Activity 完成后，后续 Workflow Task 才让 `.Get` 返回。等待期间无需为该 Workflow 独占一个操作系统线程。
+
+### 3.5 后续 Workflow Task 怎样接着执行
+
+上一节中，Activity 结果到达后，Worker 怎样找到先前的等待位置？SDK 按是否存在有效缓存，选择下面两条路径。**历史在处理 Workflow Task 时加载和应用，`ExecuteActivity` 使用这份执行状态，不会每调用一次就远程查询历史。**
+
+#### 3.5.1 有缓存：应用新增事件，继续等待中的代码
+
+```mermaid
+flowchart TD
+    A[Worker 收到后续 Workflow Task<br/>并且对应缓存仍然有效] --> B[SDK 应用新增历史事件]
+    B --> C{等待的 Activity<br/>有没有完成结果？}
+    C -->|有| D[用结果完成 Future]
+    D --> E[Get 返回<br/>Workflow 继续执行后面的代码]
+    E --> F[例如执行到 return<br/>提交完成 Workflow 的 Command]
+    C -->|没有，例如本轮由 Signal 触发| G[处理该事件对应的逻辑<br/>原 Future 继续等待]
+    G --> H[完成本轮 Workflow Task<br/>等待下一次相关事件]
+```
+
+缓存保存了 Workflow 的执行状态，包括等待中的 Future；sticky 路由会尽量将后续任务交回持有缓存的 Worker。[Sticky Execution](https://docs.temporal.io/sticky-execution)。
+
+#### 3.5.2 无缓存：重放历史，重建执行状态
+
+```mermaid
+flowchart TD
+    A[Worker 收到 Workflow Task<br/>但没有可用缓存] --> B[取得所需历史<br/>必要时补取或分页读取]
+    B --> C[SDK 从头运行 Workflow 函数<br/>按顺序与历史匹配]
+    C --> D[再次走到 ExecuteActivity]
+    D --> E{历史中这一次 Activity<br/>处于什么状态？}
+    E -->|已安排且已完成| F[恢复 Future<br/>填入历史中记录的结果]
+    F --> G[Get 返回<br/>继续后面的代码]
+    E -->|已安排但还没完成| H[恢复等待中的 Future]
+    H --> I[Get 继续等待<br/>不重复安排这个 Activity]
+    E -->|已经追到历史末尾<br/>这是尚未执行的新一步| J[产生新的调度 Command<br/>交给 Server 安排 Activity]
+```
+
+恢复所需的结果来自 Server 保存的历史。即使之前的 Worker 缓存全部丢失，也可以重建流程；如果重放产生的命令与已有历史不一致，则会报告非确定性错误。
+
+#### 3.5.3 同名 Activity 调用两次，怎样区分结果
+
+例如 Workflow 顺序执行以下代码，显式给两次调用设置不同的 Activity ID：
+
+```go
+// 沿用前面配置了超时的 ctx。
+firstCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+    StartToCloseTimeout: time.Minute,
+    ActivityID:          "greeting-1",
+})
+secondCtx := workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
+    StartToCloseTimeout: time.Minute,
+    ActivityID:          "greeting-2",
+})
+
+var first, second string
+workflow.ExecuteActivity(firstCtx, "BuildGreeting", "Tao").Get(firstCtx, &first)
+workflow.ExecuteActivity(secondCtx, "BuildGreeting", "Li").Get(secondCtx, &second)
+// 为突出匹配关系，此片段省略错误处理。
+```
+
+假设第一次已完成，第二次已安排但还在执行，重放时的对应关系如下：
+
+```mermaid
+flowchart LR
+    A[第一个 ExecuteActivity<br/>类型 BuildGreeting<br/>ID greeting-1] --> B[匹配第一次调度事件<br/>沿事件关联找到完成结果]
+    B --> C[第一个 Get 返回<br/>Hello, Tao]
+    C --> D[第二个 ExecuteActivity<br/>类型 BuildGreeting<br/>ID greeting-2]
+    D --> E[匹配第二次调度事件<br/>尚无完成结果]
+    E --> F[第二个 Get 继续等待]
+```
+
+SDK 按确定性的命令顺序与历史匹配，再通过事件关联找到对应 Activity 的结果。同一个函数可以产生多次独立调用；没有显式设置 `ActivityID` 时，SDK 会自动生成标识。
 
 ### 3.6 失败之后，究竟谁发起重试
 
@@ -256,47 +313,40 @@ Workflow Task 的重试也不会修复确定性错误或代码 bug；如果错�
 ```mermaid
 stateDiagram-v2
     [*] --> 预检查
-    预检查 --> 等待审批: 检查通过
+    预检查 --> 创建审批单: 检查通过
     预检查 --> 失败: 检查失败
+    创建审批单 --> 等待审批: 创建成功
+    创建审批单 --> 失败: 创建失败
     等待审批 --> 灰度发布: 审批通过
-    等待审批 --> 已拒绝: 审批拒绝
-    等待审批 --> 已超时: 24 小时未处理
-    灰度发布 --> 观察指标
+    等待审批 --> 拒绝或超时: 审批拒绝或 24 小时未处理
+    灰度发布 --> 观察指标: 发布成功
+    灰度发布 --> 失败: 发布失败
     观察指标 --> 全量发布: 指标正常
-    观察指标 --> 回滚: 指标异常或人工中止
-    全量发布 --> 验证
-    验证 --> 完成: 验证通过
-    验证 --> 回滚: 验证失败
-    回滚 --> 已回滚
+    观察指标 --> 回滚: 指标异常
+    观察指标 --> 失败: 查询失败
+    全量发布 --> 完成: 发布成功
+    全量发布 --> 回滚: 发布失败
+    回滚 --> 已回滚: 回滚成功
+    回滚 --> 失败: 回滚失败
     完成 --> [*]
-    已拒绝 --> [*]
-    已超时 --> [*]
+    拒绝或超时 --> [*]
     已回滚 --> [*]
     失败 --> [*]
 ```
 
-### 4.1 一次执行的完整路径
+### 4.1 把业务步骤映射到 Temporal 能力
 
-假设创建变更单 `change-20260909-42`：
+假设变更单为 `change-20260909-42`。Worker 注册 `ProductionChangeWorkflow` 及其 Activity，统一轮询 `change-tasks`。沿用第 3 节的执行机制，这里新增的问题是如何表达外部操作、人工等待与业务分支：
 
-首先部署应用 Worker，注册 `ProductionChangeWorkflow` 及下面代码用到的所有 Activity。为便于理解，这个示例统一使用 `change-tasks` 队列，一个 Worker 进程可以同时承担两种任务角色；生产环境可以再拆队列和进程。
-
-| 阶段 | 谁做什么 | 为什么流程会继续 |
+| 业务需求 | 使用的能力 | 实例中的行为 |
 |---|---|---|
-| 启动 | 发布 API 调用 `ExecuteWorkflow`，指定 Workflow ID、类型、输入和 `change-tasks` | Server 记录启动，并安排第一个 Workflow Task |
-| 决定预检查 | Workflow Worker 取到任务，运行到 `ExecuteActivity(Precheck)`，提交调度 Command | Server 安排 Precheck 的 Activity Task；本轮 Workflow Task 结束 |
-| 真正预检查 | Activity Worker 领取任务，调用预检查接口，报告结果 | Server 记录结果，并安排后续 Workflow Task |
-| 决定创建审批单 | Workflow Worker 恢复或继续执行，Precheck 的 Future 取得结果；代码走到 `CreateApprovalTicket` | 再次经过 Activity 调度、执行和结果报告闭环 |
-| 等待审核 | Workflow Worker 建立 Signal 等待并提交启动 24 小时 Timer 的 Command | Server 保存等待条件；没有新事件时无需反复调用 Workflow 检查审批状态 |
-| 收到审核决定 | 审批 API 用 `SignalWorkflow` 向执行实例发送决定 | Server 记录 Signal，并安排 Workflow Task |
-| 决定是否发布 | Workflow Worker 处理 Signal，审批通过则提交 DeployCanary 调度 Command | Server 安排 Activity，Activity Worker 真正执行灰度发布 |
-| 后续发布与结束 | 指标检查、全量发布或回滚按同一闭环执行；最后 Workflow 返回 | Workflow Worker 提交完成 Command，Server 保存终态，调用方可获取结果 |
+| 查询和修改外部系统 | Activity | 预检查、创建审批单、部署、检查指标、回滚 |
+| 等待审核人决定 | Signal + Workflow 等待 | 接收 `approval-decision`，取得批准或拒绝结果 |
+| 限制审批等待时间 | Timer + Selector | 在审批消息和 24 小时超时之间等待先发生的一项 |
+| 根据结果选择后续步骤 | Workflow 中的条件分支 | 批准后灰度发布；指标异常时安排回滚 |
+| 关联业务单据与执行 | Workflow ID | 发布 API 与审批 API 使用同一变更单标识定位流程 |
 
-如果 Precheck 某次尝试失败但允许重试，Server 负责调度下一次 Precheck 尝试，Workflow 不会直接跳到创建审批单。最终失败才会让对应 `.Get` 返回错误，进入示例中的错误分支。
-
-等待审批不需要维持一条从调用方到 Worker 的长连接，也不占用专门的操作系统线程或 Activity 执行槽位。SDK 可以保留 Workflow 缓存，但即使缓存丢失，也可从持久历史重建等待状态。
-
-这个路径展示了两个闭环：Workflow Task 负责“根据历史计算下一步”，Activity Task 负责“真正操作外部系统”。Workflow 代码不能直接执行部署或查询数据库。
+审批等待放在 Workflow 中，审批单、权限与通知由业务系统负责。第 6 节说明这些应用功能怎样配合。
 
 ### 4.2 简化的 Go Workflow
 
@@ -357,12 +407,16 @@ func ProductionChangeWorkflow(ctx workflow.Context, in ChangeInput) (string, err
         return "METRICS_FAILED", err
     }
     if !healthy {
-        _ = workflow.ExecuteActivity(ctx, Rollback, in, in.ChangeID).Get(ctx, nil)
+        if err := workflow.ExecuteActivity(ctx, Rollback, in, in.ChangeID).Get(ctx, nil); err != nil {
+            return "ROLLBACK_FAILED", err
+        }
         return "ROLLED_BACK", nil
     }
 
     if err := workflow.ExecuteActivity(ctx, DeployAll, in, in.ChangeID).Get(ctx, nil); err != nil {
-        _ = workflow.ExecuteActivity(ctx, Rollback, in, in.ChangeID).Get(ctx, nil)
+        if rollbackErr := workflow.ExecuteActivity(ctx, Rollback, in, in.ChangeID).Get(ctx, nil); rollbackErr != nil {
+            return "ROLLBACK_FAILED", rollbackErr
+        }
         return "ROLLED_BACK", err
     }
     return "COMPLETED", nil
@@ -418,35 +472,18 @@ Signal 成功返回表示消息已被服务接受，不表示灰度发布已经�
 | Event History | 该执行已发生事实的有序序列 | 已启动、预检查完成、收到审批、Timer 触发 |
 | Mutable State | History 为快速处理保存的当前状态摘要 | 当前等待哪个 Activity、Timer 和 Child Workflow |
 | Command | Workflow Worker 根据历史计算出的决定 | 安排 Activity、启动 Timer、完成 Workflow |
-| Workflow Task | 要求 Worker 重放历史并产生下一批 Command | 收到审批后决定灰度发布 |
+| Workflow Task | 要求 Worker 推进流程并产生下一批 Command | 收到审批后决定灰度发布 |
 | Activity | 可以访问外部世界、可以失败和重试的代码 | 预检查、发布、查指标、回滚 |
 | Activity Task | Activity 的某一次执行尝试 | 第 2 次 `DeployCanary` 尝试 |
-| Task Queue | 应用 Worker 长轮询的逻辑队列 | `change-workflow`、`deployment-activity` |
-| Signal | 向运行中 Workflow 异步写消息 | 审批通过、紧急中止 |
+| Task Queue | 应用 Worker 长轮询的逻辑队列 | 本例统一使用 `change-tasks` |
+| Signal | 向运行中 Workflow 异步写消息 | 审批通过或拒绝 |
 | Update | 可校验并等待结果的写请求 | 审批时校验当前是否仍可处理 |
 | Query | 不改变历史的状态查询 | 查询当前阶段和已审批人 |
-| Timer | Server 持久化的逻辑时间等待 | 审批 24 小时超时、灰度观察 10 分钟 |
-| Child Workflow | 有独立生命周期的子流程 | 每个区域的发布流程 |
-| Continue-As-New | 用新 Run 延续同一 Workflow ID | 长期运行的变更协调器缩短历史 |
-
-最关键的对象关系是：一个 Workflow Execution 产生一条 Event History；应用 Worker 通过 Workflow Task 读取和重放这条历史，返回 Command；History 接受 Command 后进行状态转换并生成后续任务；Matching 只负责把任务交给合适的 Worker，不决定业务状态。
+| Timer | Server 持久化的逻辑时间等待 | 审批 24 小时超时 |
+| Child Workflow | 有独立生命周期的子流程 | 扩展多区域发布时，可为每个区域启动子流程 |
+| Continue-As-New | 用新 Run 延续同一 Workflow ID | 扩展为长期运行的协调器时，用于缩短单个 Run 的历史 |
 
 ## 6. 人工参与怎样建模
-
-```mermaid
-sequenceDiagram
-    participant W as Change Workflow
-    participant API as Approval API / UI
-    participant U as Reviewer
-
-    W->>API: CreateApprovalTicket Activity
-    API-->>U: 待办与通知
-    W->>W: 等待 Signal/Update 或 Timer
-    U->>API: approve / reject
-    API->>W: Update 或 Signal<br/>Workflow ID=change-20260909-42
-    W->>W: 校验状态并记录决定
-    W->>W: 灰度发布 / 拒绝 / 超时升级
-```
 
 Temporal 不自带完整的组织、候选组、表单和“我的待办”。实际系统通常这样补齐：
 
@@ -467,7 +504,7 @@ Temporal 不自带完整的组织、候选组、表单和“我的待办”。�
 
 提醒、升级、撤回和改派可以建模为不同 Signal/Update，再由 Workflow 状态机验证合法转换。业务侧还需实现权限、代理审批、附件、字段权限、`DecisionID` 去重和审计报表。
 
-## 7. Queue 基于什么实现，Worker 能做哪些任务
+## 7. Task Queue 怎样承接负载
 
 Temporal 基本运行不要求外接 Kafka、RabbitMQ 或 Redis。用户看到的 Task Queue 是 Matching Service 提供的逻辑工作分发队列：
 
@@ -484,13 +521,7 @@ Temporal 基本运行不要求外接 Kafka、RabbitMQ 或 Redis。用户看到�
 | History 内部任务 | 每个 History Shard | Transfer、Timer、Visibility、Replication | 否 |
 | 应用 Task Queue | Matching Service | Workflow、Activity、Nexus Task Queue | 是 |
 
-当前 Server 协议中，应用 Worker 主要接收三类任务：
-
-| Task 类型 | 谁执行 | 用途 | 积压是否持久化 |
-|---|---|---|---|
-| Workflow Task | 注册 Workflow 的 Worker | 重放历史并计算 Command | 是 |
-| Activity Task | 注册 Activity 的 Worker | 执行 HTTP、DB、部署、文件等外部操作 | 是 |
-| Nexus Task | Nexus Worker | 跨 Namespace 或团队调用长期运行 Operation | 否，由调用方按策略重试 |
+除第 3 节的 Workflow Task 和 Activity Task 外，Nexus Task 用于跨 Namespace 或团队调用长期运行 Operation，由 Nexus Worker 处理。它的积压不按上述两类任务持久化，而由调用方按策略重试。
 
 应用还可以组合 Local Activity、Child Workflow、Timer、Signal、Update、Query 和异步 Activity Completion。Temporal 不提供固定的 HTTP、SQL、邮件或人工审核节点目录；这些节点由 Activity 代码或第三方库实现。
 
@@ -538,15 +569,18 @@ Mutable State 与 History Task 在数据库事务中一起更新。Event History
 
 因此 Matching 暂时不可用不会让流程状态丢失。Shard Queue Processor 会重新读取尚未确认的 Transfer Task，直到成功创建相应 Workflow Task 或 Activity Task。内部任务可能重复处理，所以创建任务和推进 ack level 必须可重入。
 
-### 10.2 Worker 恢复的是执行，不是内存快照
+### 10.2 持久历史对 Workflow 代码有什么约束
 
-应用 Worker 不保存权威 Workflow 状态。当 Worker 没有可用缓存、需要重建执行时，SDK 从头重放 Workflow 函数，并将代码产生的 Command 与 Event History 对照；缓存可用时则可以处理新增事件继续执行：
+3.5 已说明 Worker 如何利用历史恢复执行。这个机制要求同一份历史能让 Workflow 产生兼容的命令序列，因此编写代码时需要遵守以下边界：
 
-- 历史已经记录 `Precheck` 完成时，重放不会再次调用该 Activity，而是直接取得已记录结果；
-- 历史已经记录审批 Signal 时，`Receive` 会读到该消息；
-- 运行到历史末尾后，代码才产生新的 Command，例如安排 `DeployCanary`。
+| 代码中的需求 | 应放在哪里 | 原因 |
+|---|---|---|
+| HTTP、数据库查询、部署调用 | Activity | 外部结果会变化，应把结果记录下来供重放使用 |
+| 当前时间与等待 | `workflow.Now`、Workflow Timer 等 SDK API | 保证恢复时沿用流程的逻辑时间与事件 |
+| 随机值等非确定性输入 | Activity，或适用的 SDK Side Effect API | 将首次取得的值记录下来，后续重放使用同一值 |
+| 条件判断与步骤编排 | Workflow | 依据输入和已记录结果，产生确定的后续命令 |
 
-这要求 Workflow 代码具备确定性。系统时间、随机数、HTTP、数据库查询和部署调用不能直接写进 Workflow，应使用 SDK 的确定性 API 或 Activity。大对象也不应塞进 History；把制品、日志和报告存到对象存储，只把 URI、哈希和必要元数据放入参数或结果。
+代码本身也是恢复执行的条件；数据库保存了历史，Worker 仍需部署能正确重放它的版本。
 
 ### 10.3 历史增长和代码升级
 
@@ -556,16 +590,18 @@ Mutable State 与 History Task 在数据库事务中一起更新。Event History
 
 ## 11. 故障、重试与自动恢复
 
-### 11.1 先区分四种故障
+### 11.1 按故障位置确定从哪里恢复
 
-| 故障 | 平台行为 | 应用责任 |
+3.6 已说明任务失败由谁重试。结合第 10 节的持久化过程，下面看进程在不同位置退出后，系统还保留了什么：
+
+| 故障位置 | 已保留的状态 | 恢复入口 |
 |---|---|---|
-| Workflow Worker 崩溃 | Workflow Task 超时后重新投递，另一 Worker 重放历史 | Workflow 保持确定性 |
-| Activity Worker 崩溃 | 通过 Start-To-Close 或 Heartbeat Timeout 判断尝试失败，再按 Retry Policy 调度 | 设置超时、心跳和业务幂等 |
-| History 节点崩溃 | 其他 History 实例用新 RangeID 接管 Shard 并从 Persistence 加载状态 | Server 与数据库都部署 HA |
-| 外部系统调用结果不确定 | Activity 可能被再次执行 | 使用幂等键、查单、去重或补偿 |
+| Workflow Worker 提交本轮 Command 前崩溃 | 之前已提交的 Event History | 未完成任务超时后重新安排，由可用 Worker 按 3.5 重建执行 |
+| History 已提交状态，但还没把后续任务投递到 Matching | Mutable State 与未处理的 Transfer Task | Queue Processor 继续投递，过程见 10.1 |
+| History 节点崩溃 | Persistence 中已提交的状态和内部任务 | 新 owner 接管并加载；归属与写入隔离见 [022 第 4 节](./022_temporal_membership_partition.md) |
+| Activity 已产生外部副作用，但尚未成功报告结果 | 外部系统可能成功，Temporal 尚无完成记录 | 超时重试可能重复操作，业务幂等处理见 11.3 |
 
-Workflow Worker 暂时全部下线时，Workflow Execution 不会因此失败，只是没有 Worker 计算下一步。Worker 恢复轮询后可以继续执行。
+应用 Worker 暂时全部下线时，流程会等待可用 Worker；已配置的超时仍按其规则生效。
 
 ### 11.2 Activity 重试边界
 
@@ -587,7 +623,7 @@ Activity 默认 Retry Policy 使用指数退避，默认最大尝试次数没有
 
 ### 11.4 定时器与 Schedule
 
-Workflow Timer 是执行内部的持久等待，例如审批 24 小时超时。Timer 数据在 History Shard 的 scheduled task 中；Server 或 Worker 重启后仍能触发。等待 Timer 不占用应用线程。
+审批示例使用的是执行内部的 Workflow Timer。另一类需求是“每晚启动一个新的巡检流程”，应使用独立的 Schedule。
 
 Temporal Schedule 用于按时间启动新的 Workflow，支持 calendar/cron 表达式、时区、暂停、恢复、Backfill、jitter 和多种重叠策略。Catchup Window 决定服务停机期间错过的触发是否在恢复后补跑。两者用途不同：
 
@@ -633,11 +669,11 @@ Archival 可把已关闭执行的 History 和 Visibility 记录复制到 blob st
 
 Temporal 值得深入学习的不是“能画多少种节点”，而是如何把一个跨服务、跨进程、跨数天的执行变成可恢复状态机。它通过 History Shard 串行化状态转换，通过 Event History 与确定性重放恢复 Workflow，通过 Activity Retry 推进失败步骤，再用幂等和补偿处理无法原子提交的外部副作用。
 
-## 14. 最终评价
+## 14. 采用时需要具备哪些条件
 
-Temporal 适合由工程团队拥有的可靠长流程，尤其是微服务编排、资源部署、订单履约、异步回调、定时等待和需要人工确认的高价值操作。三节点部署的关键不是把数据复制到三台 Temporal 机器，而是让无状态入口、History Shard owner 和 Matching owner 可以迁移，同时把权威状态放在高可用 Persistence 中。
+选择 Temporal，意味着团队愿意用代码维护流程，并承担三项工程工作：保持 Workflow 重放兼容，为 Activity 的外部副作用实现幂等或补偿，以及运维高可用 Persistence 和足够的 Worker 容量。
 
-理解 Temporal 可以抓住一条主线：`namespaceID + workflowID` 确定 History Shard，成员环确定当前 History owner，`RangeID` 隔离新旧 owner，Persistence 保存状态与任务，Worker 用 Event History 重放出业务执行。把这条链路弄清楚，Workflow、Activity、Task Queue、Signal、Timer 和故障恢复便不再是互相孤立的概念。
+如果主要目标是可靠执行跨服务、跨天的业务流程，这些投入能换来持久等待和故障恢复能力；如果主要目标是让业务人员配置表单、审批权限和可视化流程，则还需要相应的业务平台。
 
 ## 参考资料
 
