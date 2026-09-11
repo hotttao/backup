@@ -344,7 +344,7 @@ Application
 
 一次 Application 是一次完整程序运行。Driver 启动后可以连续提出多个结果需求；每调用一次 Action，通常就触发一个新的 Job。
 
-~~~python
+```python
 rdd = sc.textFile("hdfs:///input")
 words = rdd.flatMap(lambda line: line.split())
 valid = words.filter(lambda word: len(word) > 3)
@@ -352,17 +352,17 @@ valid = words.filter(lambda word: len(word) > 3)
 count = valid.count()                       # Action 1，Job 0
 sample = valid.take(10)                     # Action 2，Job 1
 valid.saveAsTextFile("hdfs:///output")      # Action 3，Job 2
-~~~
+```
 
 如果没有缓存，三个 Job 都可能沿 lineage 重新读取和计算 valid。需要复用时可以：
 
-~~~python
+```python
 valid.cache()
 
 valid.count()                    # 第一次计算并物化缓存
 valid.take(10)                   # 尽量读取缓存
 valid.saveAsTextFile("output")   # 尽量读取缓存
-~~~
+```
 
 cache 本身也是惰性的；第一次 Action 才会真正计算并缓存各 partition。
 
@@ -396,7 +396,7 @@ cache 本身也是惰性的；第一次 Action 才会真正计算并缓存各 pa
 13. ResultTask 返回小结果或写入外部存储
         ↓
 14. Driver 汇总状态；还可以继续触发下一个 Action/Job
-~~~
+```
 
 ### 7.7 为什么不是每个算子创建一个 Task
 
@@ -451,4 +451,4 @@ Spark 分层
 = Cluster Manager 管资源
   + Driver 管计算
   + Executor 跑 Task
-~~~
+```
