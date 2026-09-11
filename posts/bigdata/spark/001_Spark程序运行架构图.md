@@ -452,3 +452,190 @@ Spark 分层
   + Driver 管计算
   + Executor 跑 Task
 ```
+
+---
+
+## 八、Executor 内存管理机制
+
+前面的架构图显示，一个 Executor JVM 会并发运行多个 Task，并同时保存缓存和 Shuffle 数据。这些对象共享 Executor 进程，因此内存管理要解决两个问题：不同用途怎样划分空间，以及多个 Task 怎样竞争空间。
+
+### 8.1 Executor 内存消耗来自哪里
+
+```text
+Executor 内存
+    ├─ Spark 执行数据
+    │    Shuffle buffer、HashMap、排序、Join 和聚合状态
+    ├─ Spark 存储数据
+    │    RDD/DataFrame 缓存、广播 block、部分 TaskResult
+    └─ 用户与进程外数据
+         用户对象、第三方库、off-heap、Python Worker
+```
+
+这些消耗随 Task 输入和算子动态变化。Executor 能并发的 Task 越多，每个 Task 能获得的平均执行内存通常越少。
+
+### 8.2 从静态划分到统一内存管理
+
+早期 Spark 将 Execution 和 Storage 划为相对固定的区域：
+
+```text
+[ Execution 固定区域 ][ Storage 固定区域 ][ User ]
+```
+
+可能出现 Execution 已满并不断 spill，而 Storage 仍然空闲；或者缓存无法写入，但 Execution 当前没有使用。
+
+Spark 1.6 以后默认使用 Unified Memory Manager：
+
+```text
+Executor JVM Heap
+    ├─ Reserved Memory
+    │    Spark 内部保留空间
+    ├─ User Memory
+    │    用户对象和未被 Spark 精确管理的对象
+    └─ Unified Framework Memory
+         ├─ Execution Memory
+         └─ Storage Memory
+```
+
+Execution Memory 主要服务于 Shuffle、排序、聚合和 Join；Storage Memory 主要保存 persist/cache、广播和部分 block。两者在规则范围内共享空间。
+
+### 8.3 Execution 与 Storage 怎样互相影响
+
+```text
+Storage 使用当前空闲空间保存缓存
+                  ↓
+运行中的 Task 需要更多 Execution Memory
+                  ↓
+可以驱逐部分可重算缓存
+                  ↓
+仍然不足时，排序和聚合结构 spill 到本地磁盘
+```
+
+| 内存类别 | 空间不足时的典型处理 |
+|---|---|
+| Execution Memory | spill 中间结果，仍无法运行时可能 OOM |
+| Storage Memory | 驱逐缓存、按 StorageLevel 写磁盘或放弃缓存 |
+| User Memory | Spark 难以精确控制，过大时可能直接 OOM |
+
+缓存可以借用当前空闲的执行空间，但不能保证这部分空间长期属于缓存。正在运行的计算需要内存时，可重算 blocks 可能被驱逐。
+
+### 8.4 多个 Task 的内存竞争
+
+同一 Executor 中的活跃 Tasks 共享 Execution Memory。Spark 会限制单个 Task 无限占用，使其他 Tasks 仍有机会获得空间。
+
+```text
+相同 Executor 内存：
+
+2 个并发 Tasks → 单 Task 通常可获得较大份额
+8 个并发 Tasks → 单 Task 份额下降，更容易 spill
+```
+
+所以增加 executor.cores 不一定更快。并发 Task 增加后，CPU、内存、GC 和本地磁盘竞争也会增加。应同时考虑 Executor 数量、每个 Executor 的 core、内存和单个 partition 大小。
+
+### 8.5 Shuffle 为什么特别消耗内存
+
+Shuffle Write 可能维护：
+
+- 按 partitionId 缓冲的 records；
+- map-side combine 的聚合 Map；
+- key 排序结构；
+- 序列化 pages 和指针数组。
+
+Shuffle Read 可能维护：
+
+- 网络 fetch buffers；
+- Reduce 端聚合 Map；
+- 排序和归并结构；
+- 同时到达的多个远程 blocks。
+
+内存压力可以概括为：
+
+```text
+单 Task 输入量
++ key 基数和聚合状态大小
++ 排序要求
++ 数据倾斜
++ Executor 并发 Task 数
+```
+
+热点 key 让一个 partition 远大于其他 partitions 时，即使集群总内存很多，负责该 partition 的单个 Task 仍可能大量 spill 或 OOM。
+
+### 8.6 Serialized Shuffle 为什么能减少 GC
+
+普通 JVM 对象包含对象头、引用和对齐空间，实际内存可能远大于字段本身。Serialized Shuffle 把 records 写入连续 memory pages，并用指针记录 partitionId、page 和 offset：
+
+```text
+Pointer
+    ├─ partitionId
+    ├─ page 编号
+    └─ offset/length
+
+Memory Pages
+    └─ 连续的序列化 record bytes
+```
+
+排序时主要移动指针，不必移动大量 Java 对象，可以减少对象和 GC、改善连续内存访问，并支持部分堆外路径和按 page spill。
+
+代价是序列化 CPU 和适用条件限制。需要 map-side combine 或特殊排序语义时，不一定能使用最简单的序列化路径。
+
+### 8.7 堆外内存不等于没有内存问题
+
+堆外内存减少 JVM GC 管理的对象，但仍然有限。Executor 还可能因为以下原因退出：
+
+- off-heap 不足；
+- Python Worker OOM；
+- Arrow、NumPy、RocksDB 等 native memory 过大；
+- 容器总内存超限；
+- memory overhead 不足。
+
+操作系统、YARN 或 Kubernetes 观察的是进程总内存，不只是 JVM Heap。PySpark 中还要把 Python Worker 纳入容量规划。
+
+### 8.8 TaskResult 和 collect
+
+较大的 TaskResult 可能先由 Executor BlockManager 保存，再由 Driver 间接获取。但 collect 最终仍会把所有 records 放入 Driver：
+
+```text
+多个 Executor 的大量 records
+        → collect
+        → Driver 集中持有
+        → 可能 Driver OOM
+```
+
+Executor 内存充足不代表 collect 安全。大结果应写入分布式存储，或者先在 Executor 聚合，只返回小结果。
+
+### 8.9 内存问题的诊断顺序
+
+1. 只有少数 Task 特别大：优先检查数据倾斜；
+2. 所有 Task 都很大：检查 partition 数是否太少；
+3. 检查 key 基数和聚合状态大小；
+4. 检查是否缓存了不再使用的数据；
+5. 检查 Executor core 是否过多，导致单 Task 内存份额过小；
+6. 查看 GC Time、Spill、Shuffle Read/Write 和 Peak Execution Memory；
+7. 检查 Python Worker、off-heap 和 memory overhead；
+8. 检查是否 collect 大量数据；
+9. 检查用户函数是否把整个 partition 转成 list、dict 或 Pandas DataFrame。
+
+常见改进包括调整 partition、处理热点 key、使用 map-side combine、及时 unpersist、减少单 Executor core、使用紧凑或序列化数据结构，以及避免大 collect。增加内存应建立在数据流和指标分析之后。
+
+### 8.10 内存管理总结
+
+```text
+Executor 内存压力
+= 用户对象
+  + Shuffle/Join/聚合数据
+  + RDD 和广播缓存
+  + TaskResult
+  + Python/native/off-heap 内存
+
+统一内存管理
+= Execution 与 Storage 共享框架空间
+
+Execution 不足
+→ 必要时驱逐可重算缓存
+→ 仍不足则 spill
+
+Storage 不足
+→ 驱逐、写磁盘或放弃缓存
+
+User/native 内存不足
+→ Spark 难以通过 spill 自动解决，可能直接 OOM
+```
