@@ -68,6 +68,66 @@ Spark 中的 `flatMap()`、`groupByKey()` 等操作主要是在描述计算流�
 
 如果程序只定义 transformation 而没有 action，通常不会真正处理数据。
 
+### 5.1 为什么一个 Application 可以对应多个 Action
+
+Application、Job、Stage 和 Task 是不同层级的概念：
+
+```text
+Application
+  ├── Job 1：由 Action 1 触发
+  ├── Job 2：由 Action 2 触发
+  └── Job 3：由 Action 3 触发
+```
+
+- **Application**：一次提交的完整 Spark 程序，通常包含一个 Driver 和多个 Executor。
+- **Job**：一个 Action 触发的一次计算任务。
+- **Stage**：Job 按 Shuffle 边界切分出的执行阶段。
+- **Task**：Stage 中针对一个 partition 的执行实例。
+
+一个 Application 的 Driver 在启动后可以连续执行多段计算。每遇到一个 Action，Spark 就根据该 Action 所需的最终结果创建一个 Job，因此一个 Application 不需要只能执行一个 Action。
+
+例如：
+
+```python
+rdd = sc.textFile("input.txt")
+
+words = rdd.flatMap(lambda line: line.split())
+valid_words = words.filter(lambda word: len(word) > 3)
+
+# Action 1，触发 Job 1
+count = valid_words.count()
+
+# Action 2，触发 Job 2
+sample = valid_words.take(10)
+
+# Action 3，触发 Job 3
+valid_words.saveAsTextFile("output")
+```
+
+`textFile`、`flatMap` 和 `filter` 是 Transformation，只构建 RDD 的依赖关系和计算逻辑；`count()`、`take()`、`saveAsTextFile()` 分别提出了三个不同的结果需求，因此会分别触发 Job。
+
+如果多个 Action 使用同一个中间 RDD，且希望复用计算结果，可以缓存该 RDD：
+
+```python
+valid_words.cache()
+
+valid_words.count()                    # 第一次计算并尝试缓存
+valid_words.take(10)                   # 后续尽量读取缓存
+valid_words.saveAsTextFile("output")   # 后续尽量读取缓存
+```
+
+`cache()` 本身不会立即执行计算。第一次 Action 执行时，Spark 才会计算并缓存各个 partition；缓存不足或缓存数据丢失时，仍然可以根据 lineage 重新计算。
+
+因此，多个 Action 的关系可以概括为：
+
+```text
+一次 Application
+    → 可以包含多个 Action
+    → 通常每个 Action 至少触发一个 Job
+    → 每个 Job 再按 Shuffle 边界划分 Stage
+    → 每个 Stage 为 partition 调度 Task
+```
+
 ## 6. 从代码到 RDD 逻辑流程
 
 示例中的 RDD 链路可以抽象为：
@@ -147,16 +207,3 @@ Spark UI 可以验证应用的逻辑和物理执行过程：
 ### Spark Application、Job、Stage、Task 的关系
 
 Application 是用户提交的完整程序；一个 Application 可以因为多个 action 产生多个 Job；一个 Job 会依据依赖关系切成多个 Stage；一个 Stage 通常会为每个 partition 生成一个 Task。
-
-### Driver 和 Executor 的区别
-
-Driver 运行应用逻辑、构建执行计划、协调任务并接收结果；Executor 是集群中的执行进程，负责运行 task 和保存应用需要的缓存数据。
-
-### 为什么 `cache()` 不会立即缓存
-
-因为 Spark 是惰性计算。`cache()` 只是标记 RDD 的持久化意图，必须等后续 action 真正计算该 RDD 时，分区才会被物化并缓存。
-
-### 普通变量和 RDD 的区别
-
-普通 Scala/Java/Python 变量只存在于 Driver 的本地进程；RDD 是 Spark 可识别、可分区、可并行处理的分布式数据抽象。
-
