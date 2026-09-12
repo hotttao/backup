@@ -1,8 +1,8 @@
 # Apache Iceberg 学习路线
 
-这组文章沿用 `spark` 目录的叙述逻辑：先建立整体架构，再跟踪一次查询和一次写入，随后理解长期演进与生产实践。
+这组文章先通过具体数据认识 Iceberg 的存储体系，再建立整体架构，然后跟踪一次查询和一次写入，最后理解长期演进与生产实践。
 
-1. [Iceberg 整体架构与表格式](./001_Iceberg整体架构与表格式.md)：Iceberg 位于哪一层，Catalog、Snapshot、Manifest 和数据文件是什么关系。
+1. [Iceberg 存储体系与整体架构](./001_Iceberg存储体系入门.md)：从六条订单出发，认识 Data File、Delete File、Manifest、Snapshot、Metadata、Catalog，以及 Iceberg 在完整架构中的位置。
 2. [元数据树与查询规划](./002_元数据树与查询规划.md)：查询谓词怎样逐层剪枝，hidden partitioning、field id 和 Scan Task 怎样工作。
 3. [写入事务与行级更新](./003_写入事务与行级更新.md)：原子提交、乐观并发、Copy-on-Write、Merge-on-Read 和 Delete Files。
 4. [表演进与性能维护](./004_表演进与性能维护.md)：Schema/Partition/Sort Evolution，以及 compaction、snapshot expiration 和 orphan cleanup。
@@ -17,4 +17,3 @@
 ```
 
 其余能力都建立在这两条主线之上。
-
