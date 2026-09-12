@@ -107,12 +107,53 @@ Shuffle Merge Service
 Reduce Task
 ```
 
-它优化的是网络请求数量和磁盘随机读，而不是取消 Shuffle：
+基本可以理解为：
 
-- 逻辑上仍然存在 M × R 个 Map 输出块；
-- 物理传输前，多个 Map 的同一 Reduce 分区数据被合并；
-- Reduce 端由“拉很多小块”变为“拉少量大块”；
-- 在机械盘、Map 数量巨大、单块很小时收益尤其明显。
+> 把 Reduce 阶段大量分散的网络请求和随机磁盘读取，提前转换为“Map 端网络推送 + Merger 顺序追加写”，从而让 Reduce 端进行少量大块、连续读取。
+
+```text
+传统 Shuffle：
+
+Reduce
+  → 发起大量小网络请求
+  → 多个 Shuffle Service
+  → 从不同 Map 文件的不同区间读取
+  → 返回大量小 block
+```
+
+```text
+Push-based Shuffle：
+
+Map
+  → 通过网络推送小 block
+  → Shuffle Merger 按 reduceId 顺序追加
+  → 形成较大的 merged chunks
+
+Reduce
+  → 发起少量大请求
+  → 连续读取 merged chunks
+```
+
+但需要注意两个细节：
+
+1. **不是单纯将磁盘随机 I/O 转换成网络 I/O**：传统 Shuffle 本来也需要通过网络把数据发送给 Reduce。Push-based Shuffle 额外增加了 `Map → Merger` 这一段网络传输，并用它换取 Reduce 阶段更高效的读取。
+2. **不一定合并成一个大文件**：更准确地说是若干较大的连续 merged chunks。数据还可能分散在多个 Merger 节点上，避免形成单点和超大文件。
+
+它的成本和收益可以概括为：
+
+```text
+额外成本：
+Map → Merger 的网络传输
++ Merger 的顺序写
+
+换来的收益：
+更少的 Reduce fetch 请求
++ 更少的数据来源
++ 更连续的磁盘读取
++ 更低的 Reduce 长尾
+```
+
+所以，逻辑上仍然存在 M × R 个 Map 输出块，Shuffle 数据总量也没有减少。Push-based Shuffle 是通过增加一次预传输和顺序合并写，减少 Reduce 阶段的细碎 fetch、随机读取和并发请求。它是一种“增加部分总工作量，但缩短关键路径”的优化，在 Map 数量巨大、单块很小、Reduce 长尾明显时收益尤其明显。
 
 它依赖集群侧 Shuffle 合并服务和相应部署条件，并不是所有部署模式都会自动受益。
 

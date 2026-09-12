@@ -10,7 +10,7 @@ Shuffle 的本质是：
 
 > 上游数据原来按照输入分区存放，现在需要按照新的 Partitioner 重新组织，使相关 records 进入同一个下游 partition。
 
-~~~text
+```text
 Driver 创建 ShuffleDependency
         │
         ▼
@@ -33,7 +33,7 @@ Driver 创建 ShuffleDependency
     → 最终聚合或排序
     → 内存不足时 spill
     → 把 iterator 交给后续算子
-~~~
+```
 
 需要分清四个独立问题：
 
@@ -52,21 +52,21 @@ Driver 创建 ShuffleDependency
 
 Shuffle 后，一个下游 partition 通常依赖所有上游 Map Task 的一部分输出：
 
-~~~text
+```text
 Map Task 0 的 reduce-0 block ─┐
 Map Task 1 的 reduce-0 block ─┼─> 下游 Task 0
 Map Task 2 的 reduce-0 block ─┘
-~~~
+```
 
 上游必须先产生可以定位的 Shuffle blocks，下游才能拉取，因此形成：
 
-~~~text
+```text
 ShuffleMapStage
     → Shuffle Write
     → 物化 Stage 边界
     → Shuffle Read
     → 下游 Stage
-~~~
+```
 
 只有 Stage 末端的 ShuffleMapTask 执行 Shuffle Write。Shuffle 前的 map、filter 等窄依赖算子仍在这个 Task 中流水线执行。下游 Task 完成 Shuffle Read 后，也可以继续执行 reduce、map、filter 等算子。
 
@@ -76,7 +76,7 @@ ShuffleMapStage
 
 Driver 构建逻辑 DAG 时，ShuffleDependency 已经描述这次交换：
 
-~~~python
+```python
 class ShuffleDependency:
     parent_rdd
     shuffle_id
@@ -85,7 +85,7 @@ class ShuffleDependency:
     aggregator
     map_side_combine
     key_ordering
-~~~
+```
 
 主要字段：
 
@@ -109,6 +109,93 @@ class ShuffleDependency:
 
 Writer 根据这些规则和运行配置选择执行路径，不会在 Executor 中猜测用户想做什么。
 
+### 3.1 物理计划是什么
+
+逻辑计划描述“要完成什么计算”，物理计划描述“选择哪些具体执行算子以及怎样交换数据来完成计算”。例如，同一个 Join 的逻辑需求，可以根据数据规模和分布选择 BroadcastHashJoin、SortMergeJoin 或 ShuffledHashJoin。
+
+需要先区分 SQL/DataFrame 和 RDD 两条路径。
+
+#### SQL/DataFrame 的物理计划
+
+SQL/DataFrame 会经过 Catalyst：
+
+```text
+SQL / DataFrame
+    ↓
+未解析逻辑计划
+    ↓ 绑定表、列和函数
+已解析逻辑计划
+    ↓ 谓词下推、列裁剪、常量折叠等
+优化后的逻辑计划
+    ↓ 选择 Join、Aggregate、Exchange 等实现
+物理计划 SparkPlan
+    ↓ 执行 doExecute
+RDD 与 ShuffleDependency
+    ↓ DAGScheduler
+Stage 和 Task
+```
+
+例如一个按 key 聚合的逻辑计划：
+
+```text
+Aggregate(key, sum(value))
+```
+
+可能生成类似下面的物理计划：
+
+```text
+HashAggregateExec                    # Reduce 端最终聚合
+  └─ Exchange hashpartitioning(key)  # 按 key 重新分区
+       └─ HashAggregateExec          # Map 端局部聚合
+            └─ Scan
+```
+
+这里的 `Exchange` 表示数据分布不满足下游要求，需要发生 Shuffle。执行到 `ShuffleExchangeExec` 时，Spark 才进一步创建携带 Partitioner、Serializer 和可选 Aggregator 等信息的 `ShuffleDependency`。DAGScheduler 看到这个依赖后，再把 RDD DAG 切成上游 ShuffleMapStage 和下游 Stage。
+
+因此这几个概念属于不同层次：
+
+| 层次 | 典型对象 | 回答的问题 |
+|---|---|---|
+| 逻辑计划 | Join、Aggregate、Filter | 要计算什么 |
+| 物理计划 | SortMergeJoinExec、HashAggregateExec、Exchange | 用哪些具体算法和数据分布完成 |
+| RDD 执行图 | RDD、Dependency、ShuffleDependency | partition 怎样计算和依赖上游 |
+| Stage DAG | ShuffleMapStage、ResultStage | 哪些 Task 必须跨 Shuffle 分阶段运行 |
+| 运行时 | Task、ShuffleWriter、ShuffleReader | 某个 partition 在哪个 Executor 上怎样读写 |
+
+物理计划不会预先固定每个 Task 运行在哪个 Executor，也不会保存实际 Shuffle block 的位置。这些属于运行时调度结果；Map Task 完成后才产生 MapStatus，记录 block 的位置和估算大小。
+
+可以用下面的方式观察 SQL/DataFrame 物理计划：
+
+```python
+df.explain("formatted")
+```
+
+重点查看：
+
+- `Exchange`：通常意味着需要重新分区并形成 Shuffle；
+- `HashAggregate`：通常包含 Map 端局部聚合和 Reduce 端最终聚合；
+- `Sort`：当前输入需要建立分区内顺序；
+- `SortMergeJoin`：两侧通常需要按 Join key 分区并排序；
+- `BroadcastHashJoin`：小表通过广播分发，通常不需要两侧都 Shuffle。
+
+AQE 启用后，最初的 physical plan 也不一定是最终执行计划。上游 Shuffle Stage 完成并产生真实统计后，Spark 可以合并分区、处理倾斜或切换 Join 策略，因此应同时区分 initial plan 和 final plan。
+
+#### RDD API 没有 Catalyst 物理计划
+
+直接调用 `reduceByKey`、`groupByKey` 等 RDD API 时，不会先生成 Catalyst 的 LogicalPlan 和 SparkPlan。RDD 类型本身已经携带具体实现及依赖关系：
+
+```text
+PairRDD.reduceByKey
+    ↓
+创建 ShuffledRDD + ShuffleDependency
+    ↓
+DAGScheduler 按 ShuffleDependency 切 Stage
+    ↓
+Task 执行时选择具体 ShuffleWriter / ShuffleReader
+```
+
+所以在 RDD 语境中，人们有时会把 Stage DAG、Task 以及 Shuffle Writer 的选择宽泛地称为“物理执行计划”，但它不是 Spark SQL 中正式的 `SparkPlan` 对象。本文后面讨论的 ShuffleDependency、Stage、Writer 和 Reader，正是物理计划最终落到 RDD 执行层后的实现。
+
 ---
 
 ## 四、下游 partition 数量何时确定
@@ -121,17 +208,17 @@ Writer 根据这些规则和运行配置选择执行路径，不会在 Executor 
 - Partitioner 的 numPartitions；
 - SQL 物理计划的分布要求。
 
-~~~python
+```python
 rdd.reduceByKey(add, numPartitions=4)
-~~~
+```
 
 执行前已知：
 
-~~~text
+```text
 目标逻辑分区数 = 4
 初始下游 Task 数 = 4
 分区规则 = HashPartitioner(4)
-~~~
+```
 
 上游执行完成后才知道：
 
@@ -151,39 +238,39 @@ rdd.reduceByKey(add, numPartitions=4)
 
 每条进入 Shuffle 的 key-value record 都要经过 Partitioner：
 
-~~~python
+```python
 partition_id = partitioner.getPartition(key)
-~~~
+```
 
 HashPartitioner 可以近似理解为：
 
-~~~python
+```python
 def get_partition(key, num_partitions):
     return non_negative_mod(hash(key), num_partitions)
-~~~
+```
 
 例如目标有四个分区：
 
-~~~text
+```text
 record             hash(key) % 4       目标
 ------------------------------------------------
 (apple, 10)               2            partition 2
 (banana, 20)              0            partition 0
 (apple, 30)               2            partition 2
-~~~
+```
 
 相同 key 使用同一个 Partitioner，因此进入相同下游 partition。
 
 这个过程与 combine 无关：
 
-~~~text
+```text
 没有 combine：
   每条原始 record 计算 partitionId 并写出
 
 有 combine：
   每条原始 record 仍要确定 partitionId
   再按照 (partitionId, key) 更新聚合状态
-~~~
+```
 
 ### 5.2 Partitioner 不一定使用 Hash
 
@@ -198,23 +285,23 @@ record             hash(key) % 4       目标
 
 概念过程：
 
-~~~python
+```python
 for key, value in upstream_iterator:
     pid = partitioner.getPartition(key)
     partition_output[pid].write(key, value)
-~~~
+```
 
 一种 bypass 路径会为每个目标分区写临时输出，Task 结束后拼接：
 
-~~~text
+```text
 临时 partition-0 输出 ─┐
 临时 partition-1 输出 ─┼─ 顺序拼接 ─> data 文件
 临时 partition-2 输出 ─┘                index 文件
-~~~
+```
 
 最终文件：
 
-~~~text
+```text
 data:
 [partition 0 bytes][partition 1 bytes][partition 2 bytes]
 
@@ -222,7 +309,7 @@ index:
 partition 0：offset 0 ～ A
 partition 1：offset A ～ B
 partition 2：offset B ～ C
-~~~
+```
 
 下游 Task 1 根据索引只读取 A 到 B。
 
@@ -251,30 +338,30 @@ Map-side combine 是：
 
 输入：
 
-~~~text
+```text
 Map Task 0：                   Map Task 1：
 (a,1)                         (a,4)
 (a,2)                         (b,5)
 (b,3)                         (a,6)
-~~~
+```
 
 reduceByKey 在 Map 端先聚合：
 
-~~~text
+```text
 Map 0：(a,3)、(b,3)
 Map 1：(a,10)、(b,5)
-~~~
+```
 
 网络传输从六条原始 records 减少成四条局部结果。Reduce 端仍要合并：
 
-~~~text
+```text
 a：3 + 10 = 13
 b：3 + 5  = 8
-~~~
+```
 
 完整语义：
 
-~~~text
+```text
 Map 端 combine
   = 当前 Map Task 内相同 key 的局部聚合
             ↓
@@ -282,11 +369,11 @@ Shuffle
             ↓
 Reduce 端 combine
   = 所有 Map Tasks 局部状态的最终聚合
-~~~
+```
 
 ### 6.2 Aggregator 的三个函数
 
-~~~python
+```python
 def create_combiner(value):
     return value
 
@@ -295,11 +382,11 @@ def merge_value(combiner, value):
 
 def merge_combiners(left, right):
     return left + right
-~~~
+```
 
 Map 端聚合结构可以概念化为：
 
-~~~python
+```python
 for key, value in records:
     pid = partitioner.getPartition(key)
 
@@ -308,7 +395,7 @@ for key, value in records:
         map.put(pid, key, merge_value(old, value))
     else:
         map.put(pid, key, create_combiner(value))
-~~~
+```
 
 逻辑键中包含 partitionId，是因为 Writer 既要聚合相同 key，也要按目标分区输出。
 
@@ -324,7 +411,7 @@ for key, value in records:
 
 平均值不能直接平均各分区平均值：
 
-~~~text
+```text
 错误：avg(local_avg_1, local_avg_2)
 
 正确：
@@ -332,7 +419,7 @@ Map 0 → (sum=30, count=2)
 Map 1 → (sum=90, count=3)
 合并 → (120, 5)
 最终平均值 → 24
-~~~
+```
 
 reduceByKey 的函数通常应满足结合律和交换律，否则不同分区和执行顺序可能产生不同结果。
 
@@ -340,19 +427,19 @@ reduceByKey 的函数通常应满足结合律和交换律，否则不同分区�
 
 groupByKey 的结果要求保留全部 values：
 
-~~~text
+```text
 a → [1,2,4,6]
-~~~
+```
 
 即使 Map 端先构造 [1,2]，其中每个元素仍要通过网络。它不像求和那样把多个 values 压缩成一个数字，还可能增加 Map 端集合内存。
 
-~~~python
+```python
 # 发送全部 values
 rdd.groupByKey().mapValues(sum)
 
 # Map 端先发送局部和
 rdd.reduceByKey(lambda x, y: x + y)
-~~~
+```
 
 如果只需要 sum、count、max 等结果，应选择可以 combine 的聚合。
 
@@ -370,7 +457,7 @@ Shuffle Writer 可能在内存中保存：
 
 当 Task 无法继续获得足够 execution memory 时，会把当前中间结果临时写入 Executor 本地磁盘：
 
-~~~text
+```text
 读取一部分输入
     → 内存结构增长
     → 内存不足
@@ -380,7 +467,7 @@ Shuffle Writer 可能在内存中保存：
     → 写 spill-2
     → 输入结束
     → 归并 spills 和最后的内存结果
-~~~
+```
 
 Spark 会结合内存结构大小估计和 Task 从执行内存池获得的空间决定是否 spill，不只是检查一个简单的 record 数量阈值。
 
@@ -388,7 +475,7 @@ Spark 会结合内存结构大小估计和 Task 从执行内存池获得的空�
 
 无 combine 时，保存一批待组织的 records；有 combine 时，通常保存当前已局部聚合的 (key, combiner)。
 
-~~~text
+```text
 spill-1：(a,3)、(b,8)
 spill-2：(a,4)、(c,6)
 内存中：(a,5)、(b,2)
@@ -397,7 +484,7 @@ spill-2：(a,4)、(c,6)
 a = 3 + 4 + 5
 b = 8 + 2
 c = 6
-~~~
+```
 
 相同 key 可能出现在多个 spill 文件中，所以最终归并还要继续合并局部状态。
 
@@ -447,7 +534,7 @@ AppendOnlyMap 是为 Spark 内部聚合设计的只增不删结构；ExternalSor
 
 每个 ShuffleMapTask 通常留下：
 
-~~~text
+```text
 data 文件
     = 各目标分区的序列化数据
 
@@ -456,17 +543,17 @@ index 文件
 
 MapStatus
     = Map 输出的位置和各 block 大小摘要
-~~~
+```
 
 MapStatus 报告给 Driver 侧 MapOutputTracker。Shuffle 数据不会完整发送给 Driver，仍存放在 Executor 本地磁盘、外部 Shuffle Service 或配置的远程 Shuffle 存储。
 
 假设三个 Map Tasks、两个目标分区：
 
-~~~text
+```text
 Map 0 data：[reduce-0 block][reduce-1 block]
 Map 1 data：[reduce-0 block][reduce-1 block]
 Map 2 data：[reduce-0 block][reduce-1 block]
-~~~
+```
 
 逻辑上有 3 × 2 个 blocks。Sort-based Shuffle 通常让一个 Map Task 使用一个 data 文件加 index 文件，而不是永久创建两个独立数据文件。
 
@@ -476,11 +563,11 @@ Map 2 data：[reduce-0 block][reduce-1 block]
 
 ### 10.1 一个 Task 只读取自己的 reduce partition
 
-~~~text
+```text
 Map 0 的 reduce-0 block ─┐
 Map 1 的 reduce-0 block ─┼─> 下游 Task 0
 Map 2 的 reduce-0 block ─┘
-~~~
+```
 
 步骤：
 
@@ -496,17 +583,17 @@ Map 2 的 reduce-0 block ─┘
 
 Map-side combine 只能产生局部状态：
 
-~~~text
+```text
 Map 0：(a,3)
 Map 1：(a,10)
 Map 2：(a,7)
-~~~
+```
 
 Reduce Task 必须得到：
 
-~~~text
+```text
 a = 3 + 10 + 7 = 20
-~~~
+```
 
 groupByKey 没有压缩式 combine 时，下游则组织全部原始 values。
 
@@ -514,7 +601,7 @@ groupByKey 没有压缩式 combine 时，下游则组织全部原始 values。
 
 ## 十一、用 reduceByKey 贯穿完整过程
 
-~~~python
+```python
 rdd = sc.parallelize(
     [("a", 1), ("b", 2), ("a", 3),
      ("c", 4), ("b", 5), ("a", 6)],
@@ -527,28 +614,28 @@ result = rdd.reduceByKey(
 )
 
 result.collect()
-~~~
+```
 
 输入：
 
-~~~text
+```text
 上游 partition 0：              上游 partition 1：
 (a,1)、(b,2)、(a,3)             (c,4)、(b,5)、(a,6)
-~~~
+```
 
 Driver 创建：
 
-~~~text
+```text
 Stage 0：两个 ShuffleMapTasks
 Stage 1：两个 ResultTasks
 HashPartitioner(2)
 mapSideCombine = true
 Aggregator = 加法
-~~~
+```
 
 Map 端局部聚合：
 
-~~~text
+```text
 Map 0：
 (a,1)、(a,3) → (a,4)
 (b,2)        → (b,2)
@@ -557,40 +644,40 @@ Map 1：
 (c,4)        → (c,4)
 (b,5)        → (b,5)
 (a,6)        → (a,6)
-~~~
+```
 
 假设 a、c 进入 reduce partition 0，b 进入 reduce partition 1：
 
-~~~text
+```text
 Map 0 data：[(a,4)]       [(b,2)]
              reduce-0      reduce-1
 
 Map 1 data：[(c,4),(a,6)] [(b,5)]
              reduce-0      reduce-1
-~~~
+```
 
 下游 Task 0：
 
-~~~text
+```text
 拉取 Map 0 reduce-0：(a,4)
 拉取 Map 1 reduce-0：(c,4)、(a,6)
 聚合：(a,10)、(c,4)
-~~~
+```
 
 下游 Task 1：
 
-~~~text
+```text
 拉取 Map 0 reduce-1：(b,2)
 拉取 Map 1 reduce-1：(b,5)
 聚合：(b,7)
-~~~
+```
 
 最终 RDD：
 
-~~~text
+```text
 partition 0：(a,10)、(c,4)
 partition 1：(b,7)
-~~~
+```
 
 collect 把最终 records 返回 Driver。这是 ResultTask 的输出，不是按 key 重新分区的 Shuffle Write。
 
@@ -602,35 +689,35 @@ collect 把最终 records 返回 Driver。这是 ResultTask 的输出，不是�
 
 只重新分布数据，没有相同 key 的聚合语义：
 
-~~~text
+```text
 计算目标 partitionId → Write → Read
-~~~
+```
 
 ### 12.2 groupByKey
 
 保留全部原始 values：
 
-~~~text
+```text
 Map 端发送原始 values → 下游按 key 构造 values 集合
-~~~
+```
 
 ### 12.3 reduceByKey
 
 允许局部状态压缩：
 
-~~~text
+```text
 Map combine → 发送局部结果 → Reduce 最终 combine
-~~~
+```
 
 ### 12.4 sortByKey
 
 先通过采样建立 RangePartitioner，再保证：
 
-~~~text
+```text
 partition 0 的 key 范围
     < partition 1 的 key 范围
     < partition 2 的 key 范围
-~~~
+```
 
 分区内部也要按 key 排序。
 
@@ -644,7 +731,7 @@ partition 0 的 key 范围
 
 保存 Map 输出的 Executor 故障时：
 
-~~~text
+```text
 下游 Task 发生 FetchFailed
     → Driver 将相应 MapStatus 标记为不可用
     → 根据 ShuffleDependency 找到上游 ShuffleMapStage
@@ -652,7 +739,7 @@ partition 0 的 key 范围
     → 在新位置写出 data/index
     → 更新 MapStatus
     → 重试受影响的下游 Task
-~~~
+```
 
 如果使用外部 Shuffle Service、decommission block 迁移或远程 Shuffle 存储，Executor 退出后部分数据仍可能可读，从而避免重算。
 
@@ -701,7 +788,7 @@ Spark UI 中重点查看：
 - Task Duration 和输入大小分布；
 - 是否有少量异常大 Task。
 
-~~~text
+```text
 Shuffle 总量过大
     → 提前 filter、列裁剪、使用可 combine 聚合
 
@@ -717,7 +804,7 @@ Shuffle 总量过大
 
 Fetch Wait 很高
     → 检查网络、磁盘、block 数量、Executor 丢失和本地性
-~~~
+```
 
 不能看到 spill 就只增加 Executor 总内存。数据倾斜时，热点 partition 仍集中在一个 Task，应先修正数据分布。
 
@@ -725,7 +812,7 @@ Fetch Wait 很高
 
 ## 十六、最终心智模型
 
-~~~text
+```text
 Shuffle Write：
 
 上游 Task 执行窄依赖链
@@ -744,11 +831,10 @@ Shuffle Read：
     → 最终聚合或排序
     → 必要时 spill
     → 输出下游 RDD partition iterator
-~~~
+```
 
 三个关键问题：
 
 1. **没有 combine 时怎样确定分区**：仍由 Partitioner.getPartition(key) 计算 partitionId。
 2. **combine 是什么**：一个 Map Task 在发送前合并自身相同 key 的 values；下游再合并各 Map Task 的局部结果。
 3. **spill 是什么**：当前 Task 的内存结构放不下时，把中间结果临时写入 Executor 本地磁盘，释放内存后继续处理，最后归并；它不会改变 Stage、Task 或 partition 数。
-
