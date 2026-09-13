@@ -97,7 +97,7 @@ Workflow 和 Activity 的业务代码都部署在**应用 Worker** 中。Tempora
 
 最小使用流程分三步：**写定义 → 部署并注册 Worker → 调用方请求启动**。下面只用一个 Activity，先不引入审批和补偿。代码是三个位置的集成片段，省略 package/import；分别使用 Go SDK 的 `workflow`、`worker`、`client` 包，以及标准库 `context`、`fmt`、`time`。
 
-**第一步：定义 Workflow 和 Activity，编译到 Worker 程序中。**
+#### 3.2.1 定义 Workflow 和 Activity，编译到 Worker 程序中
 
 ```go
 // Workflow 定义：由 Workflow Task 驱动，负责决定步骤与等待结果。
@@ -106,7 +106,7 @@ func GreetingWorkflow(ctx workflow.Context, name string) (string, error) {
         StartToCloseTimeout: time.Minute,
     })
     var result string
-    // SDK 产生调度 Command；Get 等待后续任务带回 Activity 结果。
+    // 字符串是 Activity Type；Activity Worker 按这个名字查找注册函数。
     future := workflow.ExecuteActivity(ctx, "BuildGreeting", name)
     err := future.Get(ctx, &result)
     return result, err
@@ -118,7 +118,9 @@ func BuildGreeting(ctx context.Context, name string) (string, error) {
 }
 ```
 
-**第二步：启动应用 Worker，声明自己能执行什么。** 假定 `c` 是通过 `client.Dial` 创建、连接到目标 Server 和 Namespace 的 Client：
+#### 3.2.2 启动应用 Worker，声明自己能执行什么
+
+假定 `c` 是通过 `client.Dial` 创建、连接到目标 Server 和 Namespace 的 Client：
 
 ```go
 w := worker.New(c, "greeting-tasks", worker.Options{})
@@ -131,9 +133,115 @@ if err := w.Run(worker.InterruptCh()); err != nil {
 }
 ```
 
-注册是在 Worker 进程内建立“类型名 → 函数实现”的对应关系，并不是把 Go 函数上传到 Server。`Run` 启动轮询并维持 Worker 运行；部署两个这样的进程，就有两个可以承接任务的 Worker。[Go Worker 使用说明](https://docs.temporal.io/develop/go/workers/run-worker-process)。
+**应用 Worker 是什么形态。**
 
-**第三步：业务调用方启动一个执行实例。** 调用方只需要知道约定的类型名、参数和队列，无须持有 Workflow 函数实现：
+应用 Worker 通常是一个独立的、长期运行的 Go 服务，可以编译成可执行文件，由 systemd、Docker 或 Kubernetes Deployment 启动。它不是“调用一次 Workflow 的临时进程”，也不会在某个 Workflow 完成后退出。
+
+一个应用 Worker 进程可以注册多种 Workflow 和 Activity：
+
+```go
+w := worker.New(c, "media-tasks", worker.Options{})
+
+w.RegisterWorkflow(ContentWorkflow)
+w.RegisterWorkflow(PublishWorkflow)
+w.RegisterWorkflow(ReviewWorkflow)
+
+w.RegisterActivity(GenerateContent)
+w.RegisterActivity(ReviewContent)
+w.RegisterActivity(PublishContent)
+
+// 阻塞运行，直到进程收到退出信号。
+if err := w.Run(worker.InterruptCh()); err != nil {
+    return err
+}
+```
+
+`worker.New` 创建的 Worker 对象对应一个 Namespace 下的一个 Task Queue。`Run` 启动 SDK 内部的 Workflow Task poller、Activity Task poller 和任务执行协程，然后阻塞等待退出信号。它的逻辑可以近似理解为：
+
+```text
+应用 Worker 进程持续运行
+  ├─ Workflow Task poller：反复长轮询 media-tasks
+  │    └─ 按 Workflow Type 找到注册的 Workflow 函数
+  ├─ Activity Task poller：反复长轮询 media-tasks
+  │    └─ 按 Activity Type 找到注册的 Activity 函数
+  └─ 并发执行已经领取的任务，并向 Server 上报结果
+```
+
+底层确实存在持续轮询循环，但这个循环由 Temporal SDK 实现。业务代码不需要自己编写 `while true`、领取任务、发送心跳或提交结果。`w.Run(...)` 就是这个常驻服务的阻塞入口。
+
+同一个 Worker 进程可以同时处理很多 Workflow Execution。注册三个 Workflow 的意思是它具备处理三种 Workflow Type 的能力，不是只能各运行一次。实际并发数由 `worker.Options`、Worker 进程数量以及 Task Queue 上的任务量共同决定。
+
+如果一个进程需要监听多个 Task Queue，可以创建多个 Worker 对象，分别注册函数并调用 `Start`，最后由进程统一等待退出信号；多数生产部署会按资源需求或业务边界拆成不同 Deployment。
+
+```mermaid
+flowchart LR
+    subgraph P[应用 Worker 进程 / Pod]
+        R[内存注册表]
+        WP[Workflow Task pollers]
+        AP[Activity Task pollers]
+        WE[Workflow 执行协程]
+        AE[Activity 执行协程]
+        R --> WE
+        R --> AE
+        WP --> WE
+        AP --> AE
+    end
+
+    WP <-->|长轮询与 Command| S[Temporal Server<br/>Task Queue: media-tasks]
+    AP <-->|长轮询与 Activity 结果| S
+```
+
+部署两个相同的 Worker Pod，相当于有两个进程轮询同一个 Task Queue。Server 可以把不同 Workflow Execution 的任务分配给任意一个可用进程；某个 Pod 退出后，后续任务可由另一个 Pod 处理。[Go Worker 使用说明](https://docs.temporal.io/develop/go/workers/run-worker-process)。
+
+**`RegisterActivity` 怎样与字符串名称关联。**
+
+注册发生在应用 Worker 进程的内存中，不会把 Go 函数上传到 Server：
+
+```go
+w.RegisterActivity(BuildGreeting)
+```
+
+没有显式指定名称时，Go SDK 使用函数名作为默认 Activity Type，可以近似理解为在 Worker 内建立：
+
+```text
+Activity 注册表
+  "BuildGreeting" → BuildGreeting 函数
+```
+
+Workflow Worker 执行下面的代码时，并不会直接调用 `BuildGreeting`：
+
+```go
+future := workflow.ExecuteActivity(ctx, "BuildGreeting", name)
+```
+
+它产生一个调度 Command，其中记录 `ActivityType="BuildGreeting"`、参数和目标 Task Queue。Server 将 Activity Task 放入队列；Activity Worker 取得任务后，用 Activity Type 查询自己的注册表，找到并调用 `BuildGreeting`。
+
+```text
+Workflow Worker 产生 Command：ActivityType="BuildGreeting"
+  → Server 把 Activity Task 放入 greeting-tasks
+  → Activity Worker 从 greeting-tasks 取得任务
+  → 本地注册表["BuildGreeting"]
+  → 调用 BuildGreeting(ctx, name)
+```
+
+所以能否执行取决于两层匹配：
+
+1. **Task Queue 相同**：决定哪一组应用 Worker 能取得任务；
+2. **Activity Type 已注册**：决定取得任务后调用哪个 Go 函数。
+
+也可以传函数引用：
+
+```go
+future := workflow.ExecuteActivity(ctx, BuildGreeting, name)
+```
+
+这仍然不会在 Workflow Worker 中直接执行 Activity。SDK 只是从函数引用取得类型名称并检查参数，实际函数依旧由取得 Activity Task 的 Activity Worker 调用。函数引用比手写字符串更容易在重构时发现错误。
+
+如果使用 `RegisterActivityWithOptions` 显式设置 `Name`，Workflow 就应使用该自定义 Activity Type。Go SDK 内部按注册名称保存并查询 Activity 实现，见 [Activity 注册表实现](https://github.com/temporalio/sdk-go/blob/main/internal/internal_worker.go)。
+
+#### 3.2.3 业务调用方启动一个执行实例
+
+调用方只需要知道约定的类型名、参数和队列，无须持有 Workflow 函数实现：
 
 ```go
 run, err := c.ExecuteWorkflow(ctx, client.StartWorkflowOptions{
@@ -211,13 +319,15 @@ Activity 完成、收到 Signal、Timer 到期等事件，都可能使 Server �
 
 ### 3.5 后续 Workflow Task 怎样接着执行
 
-上一节中，Activity 结果到达后，Worker 怎样找到先前的等待位置？SDK 按是否存在有效缓存，选择下面两条路径。**历史在处理 Workflow Task 时加载和应用，`ExecuteActivity` 使用这份执行状态，不会每调用一次就远程查询历史。**
+上一节中，**Activity Worker** 执行完 Activity，把结果上报给 Temporal Server；Server 保存完成事件，并创建后续 Workflow Task。接下来处理这个 Workflow Task 的是 **Workflow Worker**。这里要回答的是：Workflow Worker 怎样恢复到先前等待 Activity 结果的位置？
+
+Workflow Worker 中的 SDK 会根据本机是否还保留这次 Workflow Execution 的有效缓存，选择下面两条路径。**Workflow Worker 在处理 Workflow Task 时取得并应用相关历史，`ExecuteActivity` 使用 SDK 已经恢复出的执行状态；它不会每执行一次就远程查询历史。**
 
 #### 3.5.1 有缓存：应用新增事件，继续等待中的代码
 
 ```mermaid
 flowchart TD
-    A[Worker 收到后续 Workflow Task<br/>并且对应缓存仍然有效] --> B[SDK 应用新增历史事件]
+    A[Workflow Worker 收到后续 Workflow Task<br/>并且对应缓存仍然有效] --> B[SDK 应用新增历史事件]
     B --> C{等待的 Activity<br/>有没有完成结果？}
     C -->|有| D[用结果完成 Future]
     D --> E[Get 返回<br/>Workflow 继续执行后面的代码]
@@ -226,13 +336,13 @@ flowchart TD
     G --> H[完成本轮 Workflow Task<br/>等待下一次相关事件]
 ```
 
-缓存保存了 Workflow 的执行状态，包括等待中的 Future；sticky 路由会尽量将后续任务交回持有缓存的 Worker。[Sticky Execution](https://docs.temporal.io/sticky-execution)。
+缓存保存在 Workflow Worker 中，包含 Workflow 的执行状态和等待中的 Future；sticky 路由会尽量将后续 Workflow Task 交回持有该缓存的 Workflow Worker。[Sticky Execution](https://docs.temporal.io/sticky-execution)。
 
 #### 3.5.2 无缓存：重放历史，重建执行状态
 
 ```mermaid
 flowchart TD
-    A[Worker 收到 Workflow Task<br/>但没有可用缓存] --> B[取得所需历史<br/>必要时补取或分页读取]
+    A[Workflow Worker 收到 Workflow Task<br/>但没有可用缓存] --> B[从 Server 取得所需历史<br/>必要时补取或分页读取]
     B --> C[SDK 从头运行 Workflow 函数<br/>按顺序与历史匹配]
     C --> D[再次走到 ExecuteActivity]
     D --> E{历史中这一次 Activity<br/>处于什么状态？}
@@ -243,7 +353,7 @@ flowchart TD
     E -->|已经追到历史末尾<br/>这是尚未执行的新一步| J[产生新的调度 Command<br/>交给 Server 安排 Activity]
 ```
 
-恢复所需的结果来自 Server 保存的历史。即使之前的 Worker 缓存全部丢失，也可以重建流程；如果重放产生的命令与已有历史不一致，则会报告非确定性错误。
+恢复所需的结果来自 Server 保存的历史。即使之前的 Workflow Worker 缓存全部丢失，另一台 Workflow Worker 也可以通过重放重建执行状态；如果重放产生的命令与已有历史不一致，则会报告非确定性错误。
 
 #### 3.5.3 同名 Activity 调用两次，怎样区分结果
 
@@ -351,6 +461,8 @@ stateDiagram-v2
 ### 4.2 简化的 Go Workflow
 
 ```go
+// 审批系统通过 Signal 发送给 Workflow 的数据。
+// DecisionID 可用于识别重复审批，示例为了突出主流程暂未实现去重。
 type ApprovalDecision struct {
     DecisionID string
     Approved   bool
@@ -358,6 +470,8 @@ type ApprovalDecision struct {
     Reviewer   string
 }
 
+// 启动 Workflow 时传入的业务参数。
+// 这些输入会被序列化，并记录到 Workflow Event History 中。
 type ChangeInput struct {
     ChangeID string
     Service  string
@@ -365,60 +479,130 @@ type ChangeInput struct {
 }
 
 func ProductionChangeWorkflow(ctx workflow.Context, in ChangeInput) (string, error) {
+    // 为后面所有 ExecuteActivity 设置默认执行策略。
+    // StartToCloseTimeout 限制一次 Activity 尝试的最长执行时间。
+    // RetryPolicy 由 Temporal Server 管理；Activity Worker 失败后，
+    // 不需要 Workflow 代码自己写 for 循环重试。
     ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
         StartToCloseTimeout: 10 * time.Minute,
         RetryPolicy: &temporal.RetryPolicy{
-            InitialInterval:        time.Second,
-            BackoffCoefficient:     2,
-            MaximumInterval:        time.Minute,
-            MaximumAttempts:        5,
+            InitialInterval:        time.Second, // 第一次重试前等待 1 秒。
+            BackoffCoefficient:     2,           // 此后按 2 倍指数退避。
+            MaximumInterval:        time.Minute, // 单次退避最长 1 分钟。
+            MaximumAttempts:        5,           // 包含第一次在内最多尝试 5 次。
             NonRetryableErrorTypes: []string{"InvalidChangePlan"},
         },
     })
 
+    // 第一阶段：发布前检查。
+    // ExecuteActivity 只产生“调度 Precheck”的 Command；
+    // 真正的 Precheck 函数由 Activity Worker 执行。
+    // Get 等待 Activity 结果时只暂停 Workflow 协程，不占用操作系统线程。
     if err := workflow.ExecuteActivity(ctx, Precheck, in).Get(ctx, nil); err != nil {
         return "PRECHECK_FAILED", err
     }
+
+    // 创建外部审批单，例如写入审批系统并通知审核人。
+    // Workflow 等待的是 Activity 的成功结果，不是在这里直接调用审批 API。
     if err := workflow.ExecuteActivity(ctx, CreateApprovalTicket, in).Get(ctx, nil); err != nil {
         return "NOTIFY_FAILED", err
     }
 
+    // 第二阶段：等待“人工审批 Signal”和“24 小时 Timer”中的任意一个。
     var decision ApprovalDecision
     approved := false
     selector := workflow.NewSelector(ctx)
-    selector.AddReceive(workflow.GetSignalChannel(ctx, "approval-decision"),
+
+    // Signal 名必须与审批 API 调用 SignalWorkflow 时使用的名称一致。
+    // Signal 到达后，Server 把它写入 Event History，并创建新的 Workflow Task；
+    // Workflow Worker 再执行这个回调，从 Channel 中取出审批数据。
+    approvalChannel := workflow.GetSignalChannel(ctx, "approval-decision")
+    selector.AddReceive(approvalChannel,
         func(ch workflow.ReceiveChannel, _ bool) {
             ch.Receive(ctx, &decision)
             approved = decision.Approved
         })
-    selector.AddFuture(workflow.NewTimer(ctx, 24*time.Hour),
-        func(workflow.Future) { approved = false })
+
+    // 这是由 Temporal Server 管理的持久 Timer。
+    // 等待 24 小时不会让某个 Workflow Worker 进程或线程一直被占用。
+    approvalTimeout := workflow.NewTimer(ctx, 24*time.Hour)
+    selector.AddFuture(approvalTimeout,
+        func(workflow.Future) {
+            // Timer 先触发时，将本次流程视为没有获得批准。
+            approved = false
+        })
+
+    // 只等待上面两个分支中的第一个事件。
+    // 当前 Workflow Task 在这里结束；Signal 或 Timer 到达后，
+    // Server 创建后续 Workflow Task，Workflow Worker 再恢复到这里继续执行。
     selector.Select(ctx)
 
+    // 示例把“明确拒绝”和“等待超时”合并成同一个结果。
     if !approved {
         return "REJECTED_OR_TIMEOUT", nil
     }
-    if err := workflow.ExecuteActivity(ctx, DeployCanary, in, in.ChangeID).Get(ctx, nil); err != nil {
+
+    // 第三阶段：审批通过，开始灰度发布。
+    // ChangeID 作为参数传给 Activity，Activity 实现应真正用它做幂等控制；
+    // 仅仅传入这个值，并不会自动获得幂等保证。
+    if err := workflow.ExecuteActivity(
+        ctx,
+        DeployCanary,
+        in,
+        in.ChangeID,
+    ).Get(ctx, nil); err != nil {
         return "CANARY_FAILED", err
     }
 
+    // 灰度发布完成后查询监控结果。
+    // Activity 返回的 bool 会被反序列化到 healthy。
     var healthy bool
-    if err := workflow.ExecuteActivity(ctx, CheckCanaryMetrics, in).Get(ctx, &healthy); err != nil {
+    if err := workflow.ExecuteActivity(
+        ctx,
+        CheckCanaryMetrics,
+        in,
+    ).Get(ctx, &healthy); err != nil {
         return "METRICS_FAILED", err
     }
+
+    // 指标不健康时执行补偿操作：回滚灰度版本。
     if !healthy {
-        if err := workflow.ExecuteActivity(ctx, Rollback, in, in.ChangeID).Get(ctx, nil); err != nil {
+        if err := workflow.ExecuteActivity(
+            ctx,
+            Rollback,
+            in,
+            in.ChangeID,
+        ).Get(ctx, nil); err != nil {
+            // 回滚本身也可能失败，因此要返回独立状态。
             return "ROLLBACK_FAILED", err
         }
         return "ROLLED_BACK", nil
     }
 
-    if err := workflow.ExecuteActivity(ctx, DeployAll, in, in.ChangeID).Get(ctx, nil); err != nil {
-        if rollbackErr := workflow.ExecuteActivity(ctx, Rollback, in, in.ChangeID).Get(ctx, nil); rollbackErr != nil {
+    // 第四阶段：灰度指标正常，执行全量发布。
+    if err := workflow.ExecuteActivity(
+        ctx,
+        DeployAll,
+        in,
+        in.ChangeID,
+    ).Get(ctx, nil); err != nil {
+        // 全量发布失败后再次安排回滚。
+        // 真实系统通常会给补偿 Activity 设置独立、更加保守的重试策略。
+        if rollbackErr := workflow.ExecuteActivity(
+            ctx,
+            Rollback,
+            in,
+            in.ChangeID,
+        ).Get(ctx, nil); rollbackErr != nil {
             return "ROLLBACK_FAILED", rollbackErr
         }
+
+        // 回滚成功，但全量发布仍然失败，所以保留原始发布错误。
         return "ROLLED_BACK", err
     }
+
+    // 返回值和 Workflow 完成事件会由 Workflow Worker 提交给 Server，
+    // 随后调用方可以通过 Workflow ID 查询或等待这个结果。
     return "COMPLETED", nil
 }
 ```

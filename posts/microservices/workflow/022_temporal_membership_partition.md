@@ -352,268 +352,339 @@ Matching 使用类似的事务保护，但检查的是队列元数据的代际�
 
 “成员一致性协议”这个说法容易把三层混为一谈。更准确地说，成员视图逐步收敛，放置算法根据视图计算，数据库执行写入隔离。
 
-## 5. Task Queue partition：把任务匹配工作分成多份
+## 5. Task Queue partition：Task 怎样找到 Worker
 
-### 5.1 为什么已经有 History Shard，还需要另一种分区
+History Shard 负责推进 Workflow 状态；Task Queue partition 负责把已经产生的 Workflow Task 或 Activity Task 交给应用 Worker。先看完整结构，再拆解每一步。
 
-History 管理 Workflow 的状态，Matching 把待执行任务交给应用 Worker。它们处理的是不同工作，也可能遇到不同瓶颈。
+### 5.1 先看 Task、partition、Matching owner 与 Worker 的关系
 
-假设很多 Workflow 都往 `deployment-activity` 队列投递 Activity，同时有很多 Worker 轮询这个队列。如果整个队列的匹配都由一个 Matching 实例处理，其他 Matching 实例就难以分担这部分负载。
-
-Temporal 因此把一个逻辑 Task Queue 拆成多个内部 partition，让多个 Matching 实例共同提供这个队列的服务。
-
-### 5.2 Queue、partition、Matching 实例分别是什么
-
-| 名称 | 在例子里的含义 |
-|---|---|
-| 队列名 | 应用配置的 `deployment-activity`；完整队列身份还包含 Namespace 和任务类型 |
-| Task Type | 任务类型；此处是 Activity Task，即要求 Worker 真正执行某个 Activity 函数的任务 |
-| partition | 这个逻辑队列内部的一部分匹配与积压管理工作 |
-| Matching owner | 当前负责这个 partition 的 Matching 实例 |
-| 应用 Worker | 发起任务轮询，并执行注册的 Workflow 或 Activity 代码 |
-
-**队列名相同，不表示两种任务混放在一个队列里。** 假设应用在 `production-ops` Namespace 中创建一个 Worker，配置队列名为 `deployment-activity`，同时注册 Workflow 和 Activity。这个名字由应用任意指定，名字中带有 `activity` 也不会限制它只能用于 Activity。
-
-Matching 在内部用任务类型进一步区分：
-
-| Namespace | 应用配置的队列名 | Task Type | 里面放什么任务 |
-|---|---|---|---|
-| `production-ops` | `deployment-activity` | Workflow | 请运行或恢复某个 Workflow，计算下一步，例如决定安排 DeployCanary |
-| `production-ops` | `deployment-activity` | Activity | 请真正执行 DeployCanary 函数，调用发布接口 |
-
-上面是两个按任务类型区分的逻辑队列。它们共享应用配置的名字，但分别接收任务和处理轮询，并可各自划分 partition。
-
-```text
-应用 Worker 配置队列名 deployment-activity，并注册两种代码
-  → Workflow Task 轮询：领取“运行流程、计算下一步”的任务
-  → Activity Task 轮询：领取“执行 Activity 函数”的任务
-```
-
-SDK 分别发起两种轮询，Matching 返回对应类型的任务。同一个 Worker 进程可以同时承担两种执行角色。
-
-一个逻辑队列的身份至少包含 **Namespace + 队列名 + Task Type**。后文以表格第二行的普通 Activity Task Queue 为例。
-
-假设该队列配置了四个 partition，可能有如下分配：
+下面以逻辑 Activity Task Queue `deployment-activity` 为例。它有三个 partition，集群中有两个 Matching 实例和两个应用 Worker。
 
 ```mermaid
 flowchart LR
-    Q[逻辑 Activity Task Queue<br/>deployment-activity]
-    Q --> P0[partition 0]
-    Q --> P1[partition 1]
-    Q --> P2[partition 2]
-    Q --> P3[partition 3]
-    P0 --> A[Matching A]
-    P1 --> B[Matching B]
-    P2 --> C[Matching C]
-    P3 --> A
+    subgraph Producer[任务生产侧]
+        direction TB
+        H[History Service<br/>产生 Activity Task]
+        WC[History 进程内<br/>Matching Client]
+        H -->|AddActivityTask| WC
+    end
+
+    subgraph Queue[逻辑 Activity Task Queue：deployment-activity]
+        direction TB
+        P0[partition 0<br/>root]
+        P1[partition 1]
+        P2[partition 2]
+    end
+
+    subgraph Matching[Matching Service]
+        MA[Matching A<br/>owner: P0、P2]
+        MB[Matching B<br/>owner: P1]
+        DB[(Persistence<br/>task_queues* 元数据<br/>tasks* backlog)]
+        MA <-->|加载元数据与 backlog| DB
+        MB <-->|加载元数据与 backlog| DB
+    end
+
+    subgraph Consumer[任务消费侧]
+        direction LR
+        F[Frontend<br/>Matching Client]
+        W1[应用 Worker W1<br/>轮询 deployment-activity]
+        W2[应用 Worker W2<br/>轮询 deployment-activity]
+        F <-->|② 长轮询请求向左<br/>Task 结果向右| W1
+        F <-->|② 长轮询请求向左<br/>Task 结果向右| W2
+    end
+
+    WC -->|① 新 Task 选择写 partition<br/>例如 P1| P1
+
+    P0 -->|④ partition key 查 owner| MA
+    P2 -->|④ partition key 查 owner| MA
+    P1 -->|④ partition key 查 owner| MB
+
+    F -.->|③ W1 的这次 Poll 选择 P1| P1
+    F -.->|③ W2 的这次 Poll 选择 P2| P2
+    MB ==>|⑤ Task 沿等待中的 Poll 返回| F
+
+    WC ~~~ P0
+    MA ~~~ F
 ```
 
-四个 partition 不要求四台机器，也不表示每个任务有四份副本。应用 Worker 通常只配置逻辑队列名，内部路由再选择 partition 和 Matching owner。
+图固定为从左到右的四个区域：任务生产侧、逻辑 partition、Matching owner、应用 Worker。Worker 位于最右侧。虚线表示 Worker 发起的长轮询从右向左路由到 partition owner；粗线表示匹配成功后，Task 沿同一条尚未结束的 Poll RPC 向右返回 Worker。
 
-#### 5.2.1 partition 有逻辑标识，也有对应的持久化数据
+这张图表达了五个关键关系：
 
-**partition 是逻辑分区，但不意味着它只存在于内存、没有数据库记录。** 一个普通 Activity partition 可以从三层看：
+1. **Task 属于逻辑 Task Queue，但每次投递还要选择一个写 partition。**
+2. **Worker 只配置逻辑队列名，不固定绑定某个 partition。**
+3. Worker 的每次长轮询会选择一个读 partition，不同轮询可以落到不同 partition。
+4. partition 不是一台机器；它通过 Matching resolver 找到当前 Matching owner。一个实例可以同时管理多个 partition。
+5. owner 在内存中做同步匹配；暂时匹配不到的任务会作为 backlog 写入共享 Persistence。
 
-| 层次 | 具体是什么 |
-|---|---|
-| 逻辑身份 | 某个 Namespace、队列名和任务类型下的 partition 编号 |
-| 内存对象 | 当前 Matching owner 中的 partition manager，管理匹配、等待者和下属物理队列 |
-| 持久化数据 | 下属物理队列的元数据记录，以及需要持久化的积压任务记录 |
+所以完整路径是：
 
-用最简单的**未启用版本化、使用 V1 存储的普通 Activity 队列**举例：`deployment-activity` 有两个 partition，且两者都已经加载并建立了持久队列元数据。
+```text
+History 产生 Task
+  → Matching Client 选择 partition
+  → 用 partition key 查找 Matching owner
+  → owner 尝试与等待中的 Worker Poll 同步匹配
+  → 没有合适 Poll 时写入 backlog
+  → 后续 Poll 取出 Task
+  → Task 沿长轮询 RPC 返回 Worker
+```
 
-| partition | 内部持久化队列名 | 示例 owner |
-|---|---|---|
-| 0（root） | `deployment-activity` | Matching A |
-| 1 | `/_sys/deployment-activity/1` | Matching B |
+### 5.2 一个逻辑队列怎样划分 partition
 
-这两个名字与 Namespace ID、Activity 类型等信息一起编码为数据库的 `task_queue_id`。假设将编码结果简写成 K0、K1，数据库中会有如下记录：
+一个逻辑 Task Queue 的身份至少包括：
 
-**`task_queues`：保存队列元数据。**
+```text
+Namespace + Task Queue Name + Task Type
+```
 
-| range_hash | task_queue_id | range_id | data 中的内容 |
+Task Type 不能省略。同一个 Worker 可以使用相同队列名同时注册 Workflow 和 Activity，但 Matching 内部会将它们视为不同的逻辑队列：
+
+| Namespace | 队列名 | Task Type | 任务内容 |
 |---|---|---|---|
-| hash(K0) | K0 | 12 | partition 0 对应队列的进度等元数据 |
-| hash(K1) | K1 | 8 | partition 1 对应队列的进度等元数据 |
+| `production-ops` | `deployment-activity` | Workflow | 运行或恢复 Workflow，计算下一步 |
+| `production-ops` | `deployment-activity` | Activity | 执行 DeployCanary 等 Activity 函数 |
 
-**`tasks`：保存尚需交付的持久化任务。**
-
-| range_hash | task_queue_id | task_id | data 中的任务 |
-|---|---|---|---|
-| hash(K0) | K0 | 100 | 某次 DeployCanary Activity Task |
-| hash(K0) | K0 | 101 | 另一次 DeployCanary Activity Task |
-| hash(K1) | K1 | 200 | 某次 CheckCanaryMetrics Activity Task |
-
-K0、K1 和编号是便于阅读的示例值，实际 `task_queue_id` 是二进制编码。因此数据库里即使没有单独的 `partition_id` 列，也能通过不同的队列标识区分 partition 的数据。两个 partition 的记录可以放在**同一张表**里，不需要为每个 partition 创建一张表，更不要求每个 partition 使用一台数据库。
-
-Matching B 失效后，新的 owner 可以按 K1 读取元数据和任务，继续处理 partition 1。原来 B 内存里的等待轮询则需要 Worker 重新发起，不能从这些数据库记录中恢复连接。
-
-一个 partition 在版本化等模式下还可以包含多个物理队列，所以更准确的关系是 **partition → 物理队列 → 元数据与任务记录**，不能在所有模式下简化成“一个 partition 永远只对应一行”。此外，任务若直接同步匹配成功，不一定形成持久 backlog；配置分区数也不等于立即预建所有记录。[partition 定义](https://github.com/temporalio/temporal/blob/main/common/tqid/task_queue_id.go)、[持久化队列名](https://github.com/temporalio/temporal/blob/main/service/matching/physical_task_queue_key.go)、[数据库标识编码](https://github.com/temporalio/temporal/blob/main/common/persistence/sql/task_util.go)。
-
-### 5.3 partition 的 owner 也由本地 resolver 算出来
-
-partition 的归属计算复用第 2 节的机制，只是目标服务和路由 key 不同：
+每个逻辑队列再划分为 `partition 0..N-1`。partition 0 是 root，其他是非 root partition。
 
 ```text
-History Shard：Shard ID → History resolver → History 实例
-Task Queue partition：内部 partition key → Matching resolver → Matching 实例
+production-ops / deployment-activity / Activity
+  ├─ partition 0（root）
+  ├─ partition 1
+  └─ partition 2
 ```
 
-例如，路由 `production-ops` 下 `deployment-activity` 的 Activity partition 1 时，Matching Client 根据这个 partition 的内部 key 查询本地 Matching resolver，得到上图中的 Matching B 地址。
+partition 的作用是拆分匹配和 backlog 管理负载。三个 partition 不表示一条任务有三份副本，也不要求三台 Matching 机器。
 
-两类分区没有一一对应关系。Shard 7 可以向不同 Task Queue 投递任务，一个 Task Queue 也可以接收很多 History Shard 产生的任务。
+#### 5.2.1 新 Task 如何选择写 partition
 
-#### 5.3.1 先选择 partition，再用 partition key 找 owner
+新任务不是按 `hash(WorkflowID) % 分区数` 固定分区。普通 Task Queue 由 Matching Client 的负载均衡器为每次投递选择 partition，因此同一个 Workflow 产生的不同任务可以进入不同 partition。
 
-这两步不要混淆：
+以文章研究时使用的 Temporal 提交 `706e0b437` 为例：
 
-```text
-一条新任务
-  → 负载均衡器选择 partition ID，例如 1
-  → 构造 partition 的路由 key
-  → Matching resolver 根据一致性哈希找到 owner
-```
+- 有完整 backlog 信息和有效容量目标时，按各 partition 的剩余容量加权随机，倾向积压较少的 partition。
+- 信息不足或所有 partition 达到容量目标时，退回均匀随机。
+- 容量目标用来计算路由权重，不是数据库拒绝写入的硬上限。
 
-**第一步不是 `hash(WorkflowID) % 分区数`。** 普通 Task Queue 通过 Matching Client 的负载均衡器选择 partition，同一个 Workflow 产生的不同任务可以进入不同 partition。
+具体策略可能随 Temporal 版本和动态配置调整，代码入口见 [loadbalancer.go](https://github.com/temporalio/temporal/blob/706e0b437/client/matching/loadbalancer.go)。
 
-以本地 Temporal 提交 `706e0b437` 的实现为准：
+#### 5.2.2 Worker 如何选择读 partition
 
-| 请求 | 选择 partition 的策略 |
-|---|---|
-| 投递新任务 | 有完整 backlog 信息和有效容量目标时，按各分区剩余容量的权重随机选择，倾向积压较少的分区；信息不足或所有分区达到目标时，退回均匀随机 |
-| Worker 轮询 | 有可用 backlog 信息时，按积压权重随机选择，倾向积压较多的分区；否则优先选择该负载均衡器记录的在途轮询较少的分区 |
-
-这里的容量目标用于计算路由权重，不是数据库拒绝写入的硬上限；轮询计数也是本地负载均衡器的统计。具体策略随版本和配置变化。[loadbalancer.go](https://github.com/temporalio/temporal/blob/706e0b437/client/matching/loadbalancer.go)。
-
-**第二步的 key 标识的是 partition 本身。** 普通 partition 的完整身份包括：
-
-```text
-Namespace ID + Task Queue Name + Task Type + Partition ID
-```
-
-在未启用 spread routing 的路径中，实际路由字符串为：
-
-```text
-NamespaceID:PartitionRpcName:TaskType数字
-
-partition 0：<namespace-uuid>:deployment-activity:2
-partition 1：<namespace-uuid>:/_sys/deployment-activity/1:2
-```
-
-其中 `2` 表示 Activity 类型，`<namespace-uuid>` 表示实际 Namespace ID。resolver 使用 **FarmHash Fingerprint32 + 虚拟节点一致性哈希环**，将该字符串映射到 Matching 实例。这里不是简单对 Matching 实例数量取模。
-
-源码另有 spread routing 路径：把同一队列的 partition 分批，为每批构造共同 key，再结合批内索引和 `LookupN` 分散到成员上。因此完整 partition 身份、RPC 名称和实际参与哈希的字符串需要区分。[RoutingKey 实现](https://github.com/temporalio/temporal/blob/706e0b437/common/tqid/task_queue_id.go)、[resolver 哈希环](https://github.com/temporalio/temporal/blob/706e0b437/common/membership/ringpop/service_resolver.go)。
-
-### 5.4 分区数量怎样调整
-
-
-**Task Queue 的 partition 数量可以调整，不像 History Shard 总数那样在集群初始化后固定。** 分区数量和分区归属是两个独立的问题：
-
-| 要改变什么 | 例子 | 由什么决定 |
-|---|---|---|
-| 一个队列使用多少个 partition | 从 4 个调整为 8 个 | Task Queue 的分区配置及当前版本的分区管理机制 |
-| 某个 partition 由哪个 Matching 实例管理 | partition 1 从 Matching B 转到 Matching C | Matching resolver 根据成员环计算 |
-
-例如，原来一个 Activity Task Queue 使用 `partition 0..3`，调整为 8 个后，可以使用 `partition 0..7`。每个 partition 再根据自己的内部 key 查找 owner；这 8 个 partition 可以分配在 3 个 Matching 实例上，并不要求启动 8 台机器。应用 Worker 仍然轮询原来的逻辑队列名。
-
-反过来，仅把 Matching 实例从 3 个扩到 5 个，也不等于显式把队列分区数改成 5；成员变化首先影响的是 owner 分配。
-
-实现中分别记录**写分区数**和**读分区数**：前者控制新任务投递到哪些 partition，后者控制轮询可以选择哪些 partition。服务端动态配置包含 `matching.numTaskqueueWritePartitions` 和 `matching.numTaskqueueReadPartitions`。
-
-缩减分区时，旧分区可能仍有积压任务，需要按所用版本的机制完成读写范围过渡和积压处理。[动态配置定义](https://github.com/temporalio/temporal/blob/main/common/dynamicconfig/constants.go)、[读写分区计数结构](https://github.com/temporalio/temporal/blob/main/client/matching/partition_counts.go)。
-
-#### 扩分区不会自动把旧积压重新均分
-
-假设队列从 2 个 partition 扩为 4 个，在扩容瞬间有如下积压：
-
-| partition | 扩容前 backlog | 扩容刚生效时的旧 backlog |
-|---|---|---|
-| 0 | 1000 条 | 仍归 partition 0 管理 |
-| 1 | 200 条 | 仍归 partition 1 管理 |
-| 2 | 不存在 | 不会自动分到旧任务 |
-| 3 | 不存在 | 不会自动分到旧任务 |
-
-改变分区数会调整后续投递和轮询的选择范围，不会仅因这个配置变化就把旧任务记录重新哈希、均分到四个 partition。新任务仍可进入旧 partition，也可进入新增 partition。
-
-但“旧任务的存储归属不自动改变”不等于“处理旧任务的负载永远不变”：旧 partition 可以更换 Matching owner，轮询与任务也可以向父 partition 转发，应用 Worker 则继续通过逻辑队列领取工作。这些都会影响旧 backlog 的处理位置或速度，而不要求先迁移它的全部数据库记录。
-
-这种扩展方式依靠稳定的 partition 标识、可接管的元数据与可继续消费的 backlog。没有全局 FIFO 约束使跨分区匹配更灵活，但仍必须确保旧分区的任务能被读取和交付，尤其在缩减分区时。[Matching 架构](https://github.com/temporalio/temporal/blob/main/docs/architecture/matching-service.md)、[任务和轮询转发实现](https://github.com/temporalio/temporal/blob/main/service/matching/forwarder.go)。
-
-### 5.5 一条任务怎样遇到一个 Worker
-
-Matching 需要让“待执行任务”和“等待任务的轮询请求”相遇。后者称为 **poller**；尚未交付的积压任务称为 **backlog**。以 `DeployCanary` Activity 为例：
-
-1. History 持久化流程变化，并通过内部任务处理路径向 Matching 投递 Activity Task。
-2. History 进程内的 Matching Client 选择写入 partition，并查询 Matching resolver，把任务发给当前 owner。
-3. 应用 Worker 发起轮询，Frontend 进程内的 Matching Client 选择读取 partition，再将轮询转发给对应 owner。
-4. 如果任务和等待中的 poller 能直接匹配，Matching 就把任务交给 Worker。
-5. 如果暂时没有合适的 poller，普通 Activity 任务可以形成持久化 backlog，之后再交付。
-
-“写 partition”和“读 partition”描述两条请求路径各自选中了哪里，不表示队列有两套完全独立的数据副本。相关路由代码位于本地 `tmp/temporal/client/matching/`。
-
-### 5.6 Worker 怎样轮询 partition，任务和轮询错开怎么办
-
-#### 5.6.1 每次轮询会选 partition，Worker 不固定绑定 partition
-
-对于这里讨论的普通 Activity Task Queue，应用 Worker 配置的是**逻辑队列名**：
+Worker SDK 只配置逻辑队列名：
 
 ```go
 w := worker.New(c, "deployment-activity", worker.Options{})
 w.RegisterActivity(DeployCanary)
 ```
 
-Worker 向 Frontend 请求该队列的 Activity Task；Frontend 内部的 Matching Client 为**这一次轮询请求**选择读取 partition，再根据 resolver 将请求发给该 partition 的 Matching owner。
+Worker 发起 `PollActivityTaskQueue` 后，Frontend 内部的 Matching Client 为**这一次轮询**选择一个读 partition：
 
-| 对象 | 与 partition 的关系 |
-|---|---|
-| 应用 Worker 进程 | 轮询逻辑队列，可发起多次或并发轮询；不固定绑定一个 partition |
-| 一次轮询请求 | 初始路由到一个读取 partition，之后可能向父 partition 转发 |
-| Matching owner | 管理 partition 的匹配状态与 backlog；是 Server 实例，不是应用 Worker |
+- 有 backlog 信息时，按积压权重选择，倾向任务较多的 partition。
+- 信息不足时，倾向本地记录中在途轮询较少的 partition。
+- 一次轮询结束后，下次轮询会重新选择，可能仍是原 partition，也可能是另一个。
 
-例如同一个 Worker W 可以出现下面的路由结果，具体选取策略见 5.3.1：
+因此不是“Worker W1 对应 partition 1”，而是“W1 当前的一次 Poll 正在 partition 1 等待”。Worker 数量也不需要等于 partition 数量。
 
-```mermaid
-flowchart LR
-    W[应用 Worker W<br/>配置 deployment-activity] -->|轮询请求 A| F[Frontend 内部<br/>Matching Client]
-    W -->|轮询请求 B| F
-    F -->|A 选择 partition 1| P1[partition 1<br/>Matching B 管理]
-    F -->|B 选择 partition 2| P2[partition 2<br/>Matching C 管理]
-```
+### 5.3 Task 和 Poll 没在同一 partition 怎么办
 
-A、B 可以是先后两次轮询，也可以是 Worker 有足够容量时发出的并发轮询。一次轮询拿到任务、超时或失败后，后续请求会再次经过选分区逻辑；它可能选择原分区，也可能选择其他分区。Worker 数量因此不需要与 partition 数量相等。
-
-#### 5.6.2 当前任务和轮询没有相遇时，向父 partition 寻找机会
-
-“partition 2 有 Worker”更准确的说法是：**某个 Worker 当前的一次轮询请求正在 partition 2 等待**。它不表示这个 Worker 此后只能消费 partition 2。
-
-假设 partition 1 有任务却没有等待中的轮询请求，partition 2 有轮询请求却没有任务。Temporal 允许任务和轮询沿 partition 的父子关系向父 partition 转发，增加两者相遇的机会。
+Matching 优先在当前 partition 内让 Task 和等待中的 Poll 同步匹配。如果 partition 1 有 Task，但 Poll 正在 partition 2，任务和 Poll 可以沿 partition 的父子关系向父 partition 转发，增加相遇机会。
 
 ```mermaid
 flowchart TB
-    P1[partition 1<br/>有任务，缺 poller] -->|任务可向父级转发| P0[partition 0<br/>root]
-    P2[partition 2<br/>有 poller，缺任务] -->|轮询可向父级转发| P0
+    P1[partition 1<br/>有 Task，缺 Poll] -->|Task 可向父级转发| P0[partition 0<br/>root]
+    P2[partition 2<br/>有 Poll，缺 Task] -->|Poll 可向父级转发| P0
 ```
 
-能够在本 partition 匹配的请求直接完成匹配，需要转发的请求再向父级寻找机会。partition 较少时，子分区直接连接 root；更多 partition 可以形成多层树。
+partition 较少时，非 root partition 直接连接 root；数量更多时可以形成多层树。转发改变的是匹配请求经过的位置，不会把整个 partition 的持久化数据迁移到父 partition。
 
-匹配成功后，任务沿尚未结束的轮询 RPC 返回给应用 Worker。下一次轮询仍按逻辑队列重新路由，不会因为这次取得了 partition 1 的任务，就把 Worker 绑定到 partition 1。
+匹配成功后，Task 沿尚未结束的长轮询 RPC 返回 Worker。这个 Worker 的下一次 Poll 仍重新选择读 partition，不会因为本次取得了某个 partition 的任务而与它绑定。[Matching 架构](https://github.com/temporalio/temporal/blob/main/docs/architecture/matching-service.md)、[转发实现](https://github.com/temporalio/temporal/blob/main/service/matching/forwarder.go)。
 
-### 5.7 Matching owner 失效后恢复什么
+### 5.4 选择 partition 后，怎样找到它的 owner
 
-partition 的元数据和持久 backlog 在共享 Persistence 中，当前 owner 的内存中还维护等待者及匹配状态。
+“选择 partition”和“查找 owner”是先后两步：
 
-沿用上图，partition 1 由 Matching B 管理。如果 B 故障：
+```text
+选择 partition ID
+  → 构造 partition 路由 key
+  → 查询本地 Matching resolver
+  → 得到 Matching owner 的 RPC 地址
+  → 向 owner 发送 AddTask 或 Poll 请求
+```
 
-1. 成员变化传播，各实例更新本地 Matching resolver。
-2. 原来映射到 B 的 partition 重新映射到其他 Matching 实例。
-3. 新 owner 取得对应队列写入代际，并从 Persistence 加载元数据和 backlog。
-4. 原连接上的长轮询通过超时或错误结束，Worker 重试后连到新的 owner；旧进程内存中的 poller 不会被复制过去。
+普通 partition 的完整身份包括：
 
-已经交给应用 Worker 执行的 Activity，还涉及任务完成、超时和重试机制，不能只用 Matching partition 的迁移来解释。
+```text
+Namespace ID + Task Queue Name + Task Type + Partition ID
+```
 
-普通队列的持久化涉及 `task_queues*`、`tasks*` 等结构，具体表名随后端和版本而变。架构说明见 [Matching Service](https://github.com/temporalio/temporal/blob/main/docs/architecture/matching-service.md)。
+未启用 spread routing 时，路由字符串类似：
 
-## 6. 把两类分区放在一起对照
+```text
+partition 0：<namespace-uuid>:deployment-activity:2
+partition 1：<namespace-uuid>:/_sys/deployment-activity/1:2
+```
+
+其中 `2` 表示 Activity 类型，非 root partition 使用内部 RPC 名称。Matching resolver 对路由字符串计算 FarmHash Fingerprint32，再通过带虚拟节点的一致性哈希环选择 Matching 实例，不是简单对实例数量取模。
+
+例如：
+
+```text
+P0 key → Matching resolver → Matching A
+P1 key → Matching resolver → Matching B
+P2 key → Matching resolver → Matching A
+```
+
+所有调用方根据自己的 Matching 成员视图在本地计算，所以正常收敛后会得到相同 owner。源码还提供 spread routing：为一批 partition 构造共同 key，再结合批内索引和 `LookupN` 将其分散到成员上。[RoutingKey 实现](https://github.com/temporalio/temporal/blob/706e0b437/common/tqid/task_queue_id.go)、[resolver 实现](https://github.com/temporalio/temporal/blob/706e0b437/common/membership/ringpop/service_resolver.go)。
+
+Task Queue partition 与 History Shard 没有一一对应关系。一个 History Shard 可以向多个 Task Queue 投递任务，一个 Task Queue 也可以接收多个 History Shard 产生的任务。
+
+### 5.5 owner 内部如何匹配，什么时候落盘
+
+当前 owner 会为 partition 加载 partition manager，并在内存中维护等待中的 Poll、匹配状态和下属物理队列。
+
+收到新 Task 后有两条路径：
+
+```mermaid
+flowchart TB
+    T[owner 收到 Task] --> Q{内存中有合适的 Poll 吗}
+    Q -->|有| Sync[同步匹配<br/>直接沿 Poll RPC 返回 Worker]
+    Q -->|没有| Persist[写入持久化 backlog]
+    Persist --> Later[后续 Poll 到达]
+    Later --> Load[从 backlog 读取 Task]
+    Load --> Worker[返回 Worker]
+```
+
+因此，并非每个 Task 都一定先写入 Matching 的 `tasks*` 表。能够同步匹配的 Task 可以直接交付；没有 Poll、同步匹配失败或需要保证后续可恢复时，才进入持久 backlog。
+
+需要区分三层对象：
+
+| 层次 | 含义 |
+|---|---|
+| partition | Namespace、队列名、任务类型和 partition ID 组成的逻辑分区 |
+| partition manager | 当前 owner 内存中的管理对象，维护匹配状态和 Poll |
+| physical task queue | partition 下实际读写 Persistence 的队列；版本化场景下一个 partition 可有多个 |
+
+### 5.6 partition 的哪些数据会落盘
+
+以**未启用 Worker Versioning、使用 V1 存储的普通 Activity 队列**为例：
+
+| partition | 内部持久化队列名 | owner 示例 |
+|---|---|---|
+| 0（root） | `deployment-activity` | Matching A |
+| 1 | `/_sys/deployment-activity/1` | Matching B |
+
+内部队列名与 Namespace ID、Task Type 等信息编码为数据库的 `task_queue_id`。把两个编码值简写成 K0、K1：
+
+**`task_queues` 保存队列元数据和 owner 代际：**
+
+| range_hash | task_queue_id | range_id | data |
+|---|---|---|---|
+| hash(K0) | K0 | 12 | partition 0 对应物理队列的进度等元数据 |
+| hash(K1) | K1 | 8 | partition 1 对应物理队列的进度等元数据 |
+
+**`tasks` 保存尚未交付的持久化 backlog：**
+
+| range_hash | task_queue_id | task_id | data |
+|---|---|---|---|
+| hash(K0) | K0 | 100 | 某次 DeployCanary Activity Task |
+| hash(K0) | K0 | 101 | 另一次 DeployCanary Activity Task |
+| hash(K1) | K1 | 200 | 某次 CheckCanaryMetrics Activity Task |
+
+数据库不需要单独的 `partition_id` 列，也不会为每个 partition 建一张表；partition 身份已经编码在 `task_queue_id` 中。不同 partition 的记录可以放在同一组表里，共享同一个 Persistence 集群。
+
+`range_id` 是物理队列 owner 的写入代际。Matching 写入任务时，会在同一事务内锁定并检查相应 `task_queues*` 元数据的 `range_id`；旧 owner 携带过期代际时，任务写入会回滚。这套编号独立于 History Shard 的 `range_id`。
+
+V2 存储使用 `task_queues_v2`、`tasks_v2`；Worker Versioning 等模式下，一个 partition 还可能包含多个 physical task queue。因此“一个 partition 永远对应一行元数据”并不成立。[partition 定义](https://github.com/temporalio/temporal/blob/main/common/tqid/task_queue_id.go)、[持久化队列名](https://github.com/temporalio/temporal/blob/main/service/matching/physical_task_queue_key.go)、[SQL 标识编码](https://github.com/temporalio/temporal/blob/main/common/persistence/sql/task_util.go)、[V1 事务](https://github.com/temporalio/temporal/blob/main/common/persistence/sql/task_v1.go)、[V2 事务](https://github.com/temporalio/temporal/blob/main/common/persistence/sql/task_v2.go)。
+
+### 5.7 一条 Activity Task 的完整链路
+
+把前面的结构、选分区、owner 和落盘串起来：
+
+1. History 提交 Workflow 状态变化，并产生 `DeployCanary` Activity Task。
+2. History 进程内的 Matching Client 选择写 partition，例如 P1。
+3. Client 用 P1 的路由 key 查询本地 Matching resolver，得到 Matching B。
+4. Matching B 检查 P1 当前是否有等待中的 Poll。
+5. 有 Poll 时直接同步匹配；没有时，将 Task 写入 P1 对应 physical task queue 的 backlog。
+6. Worker 向 Frontend 发起下一次长轮询，Matching Client 选择读 partition。
+7. Poll 在本 partition 或经父 partition 转发后遇到 Task。
+8. Task 沿 Poll RPC 返回 Worker，Worker 执行注册的 Activity。
+9. Worker 向 Temporal 报告完成或失败；History 据此继续推进 Workflow。
+
+“写 partition”和“读 partition”只是 Task 投递与 Worker 轮询两条请求各自选中的入口，不是两份独立队列。
+
+### 5.8 partition 数量怎样调整
+
+Task Queue partition 数可以调整，不像 History Shard 总数那样在集群初始化后固定。需要区分两个变化：
+
+| 改变 | 例子 | 决定机制 |
+|---|---|---|
+| 一个逻辑队列使用多少个 partition | 从 4 调整为 8 | Task Queue 分区配置 |
+| 某个 partition 由谁管理 | P1 从 Matching B 转到 C | resolver 根据成员环计算 owner |
+
+Temporal 分别记录写分区数与读分区数，动态配置包括 `matching.numTaskqueueWritePartitions` 和 `matching.numTaskqueueReadPartitions`，以便读写范围逐步过渡。
+
+扩容不会重新哈希并搬迁旧 backlog。例如从两个扩为四个 partition：
+
+| partition | 扩容前 backlog | 扩容刚生效 |
+|---|---:|---|
+| P0 | 1000 | 仍在 P0 |
+| P1 | 200 | 仍在 P1 |
+| P2 | 不存在 | 不会自动分到旧任务 |
+| P3 | 不存在 | 不会自动分到旧任务 |
+
+配置变化影响后续 Task 和 Poll 可以选择的范围；旧任务仍由旧 partition 的 owner 从原 physical task queue 读取。缩减时必须保证旧 partition 的 backlog 仍在读取范围内，等待过渡完成后再停止使用。[动态配置](https://github.com/temporalio/temporal/blob/main/common/dynamicconfig/constants.go)、[读写分区计数](https://github.com/temporalio/temporal/blob/main/client/matching/partition_counts.go)。
+
+## 6. Matching owner 故障与恢复
+
+### 6.1 owner 失效后，partition 怎样被接管
+
+假设 P1 当前由 Matching B 管理，B 随后故障：
+
+```mermaid
+sequenceDiagram
+    participant B as Matching B（旧 owner）
+    participant R as Membership / Resolver
+    participant C as Matching C（新 owner）
+    participant DB as Persistence
+    participant F as Frontend
+    participant W as Worker
+
+    B-xR: 心跳或探测失败
+    R-->>C: C 的成员视图更新
+    C->>C: 本地 resolver 算出 P1 的 owner 是 C
+    C->>DB: 加载 P1 元数据并取得新 range_id
+    C->>DB: 读取 P1 的持久 backlog
+    W->>F: 原 Poll 结束后重新轮询
+    F->>C: 将 P1 的新 Poll 路由到 C
+    C-->>F: 交付恢复后的 Task
+    F-->>W: Task 沿长轮询返回
+```
+
+成员变化只决定“P1 现在应该去 C”。C 还要通过 Persistence 取得新的 `range_id`，成为数据库认可的写入代际，然后加载对应 physical task queue 的元数据和 backlog。
+
+### 6.2 哪些状态能恢复，哪些不能
+
+| 状态 | 故障后结果 |
+|---|---|
+| `task_queues*` 中的队列元数据 | 新 owner 可以加载 |
+| `tasks*` 中尚未交付的 backlog | 新 owner 可以继续读取和交付 |
+| 旧 owner 内存中的等待 Poll | 不会复制；连接超时或报错后由 Worker 重试 |
+| 已同步匹配并交给 Worker 的 Activity | 由 Activity 完成、超时、心跳和重试机制处理 |
+| 旧 owner 尚未成功提交的内存变化 | 不会凭空恢复，必须以 Persistence 中已提交状态为准 |
+
+因此，“partition 切换 owner”不等于把 B 的内存复制到 C。真正可以恢复的是共享 Persistence 中已经提交的数据，连接和内存等待者靠客户端重试重新建立。
+
+### 6.3 怎样阻止旧 owner 继续落盘
+
+如果 B 只是与部分节点失联，它可能暂时还认为自己是 P1 的 owner。C 成功接管后，队列元数据的 `range_id` 已被推进：
+
+| 时刻 | 数据库 range_id | B 携带 | C 携带 |
+|---|---:|---:|---:|
+| 接管前 | 8 | 8 | 尚未取得 |
+| C 接管后 | 9 | 8，过期 | 9 |
+
+B 再写入 Task 时，Persistence 在事务内检查队列元数据代际，发现不匹配便拒绝并回滚。这里保护的是 Matching 队列写入；History Workflow 状态写入使用的是第 4 节介绍的另一套 Shard `range_id`。
+
+## 7. 把两类分区放在一起对照
 
 | 对比项 | History Shard | Task Queue partition |
 |---|---|---|
@@ -621,7 +692,7 @@ partition 的元数据和持久 backlog 在共享 Persistence 中，当前 owner
 | 由哪个服务管理 | History | Matching |
 | 第一层归类 | Workflow 标识算出 Shard ID | 逻辑队列内部选择 partition |
 | owner 查询 | History resolver | Matching resolver |
-| 数量 | History Shard 总数在集群初始化时确定 | 普通逻辑队列的分区数可配置；默认架构说明为 4 |
+| 数量 | History Shard 总数在集群初始化时确定 | 普通逻辑队列的分区数可配置，读写计数可独立过渡 |
 | 扩容时主要改变 | Shard 到 History 实例的归属 | partition 到 Matching 实例的归属 |
 | 可靠数据在哪里 | Persistence | Persistence；内存等待者需重新建立 |
 | 是否是机器之间的复制组 | 否 | 否 |
@@ -640,7 +711,7 @@ Workflow change-42
 
 Task Queue partition 不提供严格的业务执行顺序：多个 partition、多个 Worker 和重试都可能改变实际顺序。即使只用一个 partition，也不能仅凭入队顺序保证多个并发任务按顺序完成。必须先完成 A 再执行 B 的业务关系，应由 Workflow 明确表达。
 
-## 7. 看源码时按职责找文件
+## 8. 看源码时按职责找文件
 
 | 想确认的问题 | Temporal 本地路径（相对 `tmp/temporal`） |
 |---|---|
