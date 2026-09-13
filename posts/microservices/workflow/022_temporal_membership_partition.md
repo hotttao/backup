@@ -1,6 +1,39 @@
-# Temporal 成员发现与分区：从找到其他节点到确定 owner
+---
+weight: 22
+title: "Temporal 任务分配原理：Membership、History Shard 与 Task Queue Partition"
+date: 2024-10-11T08:00:00+08:00
+lastmod: 2026-09-14T08:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "详细解释 Temporal 如何发现成员、确定 History Shard 与 Matching Partition 的归属，以及节点失效后的接管与写入隔离"
+featuredImage:
 
-本文解释 Temporal 如何发现服务实例、计算工作归属，并在实例失效后接管工作。阅读顺序是：成员发现 → 本地路由 → History 状态分片 → 写入隔离 → Matching 队列分区。Workflow 与应用 Worker 的执行交互见 [Temporal 总览](./021_temporal.md)。全文以各 Server 服务分别部署为例，A、B、C 表示服务实例。
+tags: ["workflow"]
+categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+# Temporal 任务分配原理：Membership、History Shard 与 Task Queue Partition
+
+这是 Temporal 系列的第二篇：
+
+1. [021：基础与架构](./021_temporal.md)通过 Greeting 示例说明 Temporal 怎样使用，并给出归属、路由和推进结论；
+2. **本文**展开 Membership、History Shard、Task Queue Partition、owner 和故障接管的内部原理；
+3. [023：执行流程与故障恢复](./023_temporal_execution_recovery.md)解释任务如何形成执行闭环，以及重放、重试和恢复。
+
+本文集中回答四个问题：
+
+1. Server 实例怎样互相发现，并知道成员发生了变化；
+2. 一次 Workflow Execution 的状态归哪个 History Shard 和哪台 History 实例；
+3. 一个 Task Queue 怎样分区，各 Partition 归哪台 Matching 实例；
+4. owner 失效后怎样接管，并避免新旧 owner 同时写入。
+
+阅读顺序是：成员发现 → 本地路由 → History 状态分片 → 写入隔离 → Matching 队列分区。全文以各 Server Service 分别部署为例，A、B、C 表示服务实例。Workflow Worker 如何执行任务不在本文展开，见 [023](./023_temporal_execution_recovery.md)。
 
 ## 1. 成员发现：新实例怎样找到集群
 
