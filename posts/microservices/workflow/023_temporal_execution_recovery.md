@@ -24,7 +24,8 @@ toc:
 
 1. [021：基础与架构](./021_temporal.md)通过 Greeting 示例建立整体认识；
 2. [022：成员发现、状态分片与任务分配](./022_temporal_membership_partition.md)解释 Shard、Partition 和 owner；
-3. **本文**沿用同一个示例，展开执行推进、持久化、重放、重试和故障恢复。
+3. **本文**沿用同一个示例，展开执行推进、持久化、重放、重试和故障恢复；
+4. [024：任务投递与数据变化](./024_temporal_task_delivery_data_model.md)对着完整时序图解释 Worker 长轮询、Matching 配对、请求参数和状态记录。
 
 本文不再重复 Membership 和一致性哈希算法。只要先记住：一次 Workflow Execution 的状态属于固定的 History Shard，而 Workflow Task 和 Activity Task 通过 Matching 匹配给应用 Worker。
 
@@ -106,31 +107,7 @@ History 保存 Activity 完成事件，使原来等待的 Future 变为可用，
 
 History 最终持久化 `WorkflowExecutionCompleted`。到这里，一次执行才成为已完成状态。
 
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant H as History
-    participant M as Matching
-    participant WW as Workflow Worker
-    participant AW as Activity Worker
-
-    C->>H: StartWorkflowExecution
-    H->>H: 保存 Started，创建 Workflow Task
-    H->>M: 投递 Workflow Task
-    M-->>WW: 匹配任务
-    WW->>H: ScheduleActivityTask Command
-    H->>H: 保存 ActivityScheduled，创建 Activity Task
-    H->>M: 投递 Activity Task
-    M-->>AW: 匹配任务
-    AW->>H: Activity 完成
-    H->>H: 保存 ActivityCompleted，创建 Workflow Task
-    H->>M: 投递 Workflow Task
-    M-->>WW: 匹配任务
-    WW->>H: CompleteWorkflowExecution Command
-    H->>H: 保存 WorkflowCompleted
-```
-
-图中省略了 Frontend 和具体 owner 路由，路由过程见 [022](./022_temporal_membership_partition.md)。
+本节关注 History、Workflow Worker 和 Activity Worker 如何形成执行闭环。包含 Frontend、长轮询、Matching 配对、请求参数和每一步数据变化的完整时序图，单独放在 [024](./024_temporal_task_delivery_data_model.md)；Shard owner 路由过程见 [022](./022_temporal_membership_partition.md)。
 
 ## 3. Workflow Task 与 Activity Task 为什么要分开
 

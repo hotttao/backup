@@ -22,11 +22,12 @@ toc:
 
 本文讨论开源 Temporal Server 及其 SDK，不包含 Temporal Cloud 的托管能力。
 
-Temporal 内容拆成三篇，阅读顺序如下：
+Temporal 内容拆成四篇，阅读顺序如下：
 
 1. **本文**：通过一个最小例子学会使用 Temporal，再建立整体架构认识；
 2. [022：Temporal 成员发现、状态分片与任务分配](./022_temporal_membership_partition.md)：详细解释 Membership、History Shard、Matching Partition 和 owner；
-3. [023：Temporal 执行流程与故障恢复](./023_temporal_execution_recovery.md)：详细解释任务推进、状态持久化、重放、超时、重试和故障恢复。
+3. [023：Temporal 执行流程与故障恢复](./023_temporal_execution_recovery.md)：解释任务推进、状态持久化、重放、超时、重试和故障恢复；
+4. [024：Temporal 任务投递与数据变化](./024_temporal_task_delivery_data_model.md)：对着完整时序图理解 Worker 长轮询、Matching 配对、请求参数和状态记录。
 
 ## 1. Temporal 解决什么问题
 
@@ -229,37 +230,7 @@ flowchart TB
 
 ### 3.3 回到示例：Greeting Workflow 怎样经过这张架构图
 
-下面仍以 `greeting-request-42` 为例，只看一次正常执行中的归属、路由和推进关系：
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant F as Frontend
-    participant H as History Shard owner
-    participant M as Matching Partition owner
-    participant WW as Workflow Worker
-    participant AW as Activity Worker
-
-    C->>F: 启动 greeting-request-42
-    F->>H: 按 Namespace ID + Workflow ID 路由
-    H->>H: 保存启动事件并创建 Workflow Task
-    H->>M: 路由到 greeting-tasks 的 Workflow Task Partition
-    WW->>M: 长轮询 Workflow Task
-    M-->>WW: 匹配本次 Workflow Task
-    WW->>H: 返回 ScheduleActivityTask Command
-    H->>H: 保存决定并创建 Activity Task
-    H->>M: 路由到 greeting-tasks 的 Activity Task Partition
-    AW->>M: 长轮询 Activity Task
-    M-->>AW: 匹配 BuildGreeting
-    AW->>H: 上报 Activity 结果
-    H->>H: 保存结果并创建下一个 Workflow Task
-    H->>M: 再次投递 Workflow Task
-    M-->>WW: 匹配任务
-    WW->>H: 返回 CompleteWorkflowExecution Command
-    H->>H: 保存 Workflow 完成事件
-```
-
-这条链路把架构图中的三个容易混淆的责任连在了一起：
+仍以 `greeting-request-42` 为例，先记住这条链路中的四个结论：
 
 1. **Workflow 状态归谁**：`Namespace ID + Workflow ID` 先映射到固定 History Shard，该 Shard 当前的 History owner 负责读取和修改这次执行的权威状态；
 2. **任务怎样找到 Worker**：History 把任务送往对应的 Task Queue Partition，Matching owner 将任务匹配给正在长轮询的某个 Worker；Worker 不长期拥有 Workflow 或 Partition；
@@ -268,7 +239,7 @@ sequenceDiagram
 
 Membership 不保存 Workflow 状态，也不直接把某一条 Activity Task 指派给某个 Worker。它通过成员探测和 Gossip 让各 Server 获得成员视图，再由本地 Resolver 计算 History Shard 或 Matching Partition 当前应路由到哪个 Server 实例；具体 Worker 则由 Matching 根据长轮询请求完成匹配。
 
-这里故意略去了内部事件、持久化事务、Sticky Cache、重放和失败重试。分片 owner 与路由算法见 [022](./022_temporal_membership_partition.md)，完整执行与恢复过程见 [023](./023_temporal_execution_recovery.md)。
+这里故意略去了具体时序、请求参数和状态记录。分片 owner 与路由算法见 [022](./022_temporal_membership_partition.md)，执行与故障恢复见 [023](./023_temporal_execution_recovery.md)，完整任务投递时序和数据变化见 [024](./024_temporal_task_delivery_data_model.md)。
 
 ### 3.4 并发、归属和推进：这里只记结论
 
@@ -387,6 +358,7 @@ Temporal Web UI 可以搜索 Workflow Execution、查看 Event History、检查�
 
 - 想知道 Shard、Gossip、owner 和 Partition 到底怎样计算，继续读 [022](./022_temporal_membership_partition.md)；
 - 想知道一次执行怎样落库、Worker 崩溃后怎样恢复，继续读 [023](./023_temporal_execution_recovery.md)。
+- 想逐步查看任务投递请求和每次数据变化，继续读 [024](./024_temporal_task_delivery_data_model.md)。
 
 ## 参考资料
 

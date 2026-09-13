@@ -24,7 +24,8 @@ toc:
 
 1. [021：基础与架构](./021_temporal.md)通过 Greeting 示例说明 Temporal 怎样使用，并给出归属、路由和推进结论；
 2. **本文**展开 Membership、History Shard、Task Queue Partition、owner 和故障接管的内部原理；
-3. [023：执行流程与故障恢复](./023_temporal_execution_recovery.md)解释任务如何形成执行闭环，以及重放、重试和恢复。
+3. [023：执行流程与故障恢复](./023_temporal_execution_recovery.md)解释任务如何形成执行闭环，以及重放、重试和恢复；
+4. [024：任务投递与数据变化](./024_temporal_task_delivery_data_model.md)对着完整时序图解释 Worker 长轮询、Matching 配对、请求参数和状态记录。
 
 本文集中回答四个问题：
 
