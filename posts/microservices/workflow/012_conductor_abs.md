@@ -1,9 +1,34 @@
-# Conductor OSS 核心抽象：Queue 与 Distributed Lock
+---
+weight: 12
+title: "Conductor 任务分配原理：QueueDAO、逻辑分区与 Distributed Lock"
+date: 2024-10-11T08:00:00+08:00
+lastmod: 2026-09-14T08:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "解释队列、分区、锁和冲突控制"
+featuredImage:
 
-调研日期：2026-09-09。本文补充 [011_conductor.md](./011_conductor.md) 中的三节点运行机制，重点回答两个问题：
+tags: ["workflow"]
+categories: ["microservice"]
 
-1. Conductor 的内部任务队列基于什么实现？
-2. 多节点 Workflow 执行锁支持哪些后端？
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+# Conductor 任务分配原理：QueueDAO、逻辑分区与 Distributed Lock
+
+Conductor 内容分成四篇：
+
+1. [第 1 篇](./011_conductor.md)；
+
+2. **本文**；
+
+3. [第 3 篇](./013_conductor_execution_recovery.md)；
+
+4. [第 4 篇](./014_conductor_task_delivery_data_model.md)。
 
 ## 1. 结论
 

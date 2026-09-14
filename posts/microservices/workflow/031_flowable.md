@@ -1,6 +1,34 @@
-# Flowable 深入调研：BPMN、人工任务与数据库任务队列
+---
+weight: 31
+title: "Flowable 基础与架构：从人工会审 BPMN 到三节点集群"
+date: 2024-10-11T08:00:00+08:00
+lastmod: 2026-09-14T08:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "通过示例认识 Flowable 与三节点架构"
+featuredImage:
 
-调研日期：2026-09-09。调研问题见 [question.md](./question.md)。本文以 Flowable OSS 8.0.0 为版本基线，讨论 BPMN/CMMN/DMN 引擎和 REST API；旧版 6.x 曾经附带的 Modeler、Task、Admin、IDM UI，不作为当前 OSS 8.x 的能力。
+tags: ["workflow"]
+categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+# Flowable 基础与架构：从人工会审 BPMN 到三节点集群
+
+Flowable 内容分成四篇：
+
+1. **本文**；
+
+2. [第 2 篇](./032_flowable_job_assignment.md)；
+
+3. [第 3 篇](./033_flowable_execution_recovery.md)；
+
+4. [第 4 篇](./034_flowable_task_delivery_data_model.md)。
 
 ## 1. 结论先行
 
@@ -180,146 +208,35 @@ Flowable 的可部署流程定义是 BPMN 2.0 XML。下面省略图形坐标，�
 
 这意味着负载均衡器不需要会话粘滞。真正需要保证的是共享数据库、相同流程实现和幂等外部操作。
 
-## 4. 执行语义：事务一直推进到等待点
+### 3.2 回到示例：内容会审 BPMN 怎样经过这张架构图
 
-理解 Flowable 的核心不是“每个节点都是队列任务”，而是 **命令上下文中的同步推进 + wait state 持久化 + 异步 Job**。
-
-例如，完成 `editorReview` 后：
-
-1. `TaskService.complete()` 开启数据库事务；
-2. 删除/结束当前运行时 Task，记录变量 `decision`；
-3. 经过网关选择路径；
-4. 如果下一步是普通同步 Java Service Task，当前线程直接执行它；
-5. 继续前进，直到新的 User Task、Receive Task、Timer、External Worker Task、异步边界或结束；
-6. 一次提交该事务中的流程状态变化。
-
-如果同步 Service Task 抛出未处理异常，事务回滚。调用前的等待状态仍然存在；本次 `complete()` 失败，并不会自动变成三次异步重试。需要自动重试的技术步骤应建模成 `flowable:async="true"` 的 Service Task、External Worker Task，或由调用方显式安全重试。
-
-### 4.1 业务错误和技术异常要分开
-
-- **BPMN Error** 表达已知业务结果，例如“内容侵权风险过高”，由 Boundary Error Event 或 Event Subprocess 捕获并走明确分支。
-- **Java Exception/技术失败** 表达数据库不可用、网络超时等执行问题。同步时回滚事务；异步时进入 Job 重试。
-- **补偿** 表达已经产生外部效果后的业务撤销，例如删除已创建的草稿或释放资源。数据库回滚不能撤销第三方平台动作。
-
-任何远程调用都可能出现“远端成功，本地提交失败”。External Worker、HTTP Task 和 Java Delegate 都应使用业务幂等键，如 `processInstanceId + activityId + attempt/businessVersion`，并在必要时使用 outbox、状态查询或补偿。
-
-## 5. 工作流状态如何持久化
-
-Flowable 使用关系数据库表保存定义、运行态、任务、变量、Job 和历史。表名前缀通常为 `ACT_`：
-
-| 表类别 | 用途 | 常见内容 |
-|---|---|---|
-| `ACT_RE_*` | Repository | Deployment、Process Definition、BPMN 资源 |
-| `ACT_RU_*` | Runtime | Execution、User Task、Variable、Job、Event Subscription |
-| `ACT_HI_*` | History | 已启动/结束的实例、活动、任务、变量更新 |
-| `ACT_GE_*` | General | 通用属性和二进制资源 |
-
-运行中的 Process Instance 不是一份整体 JSON 快照。引擎把 Execution 树、变量、Task、Job、事件订阅等规范化地存到多张表。实例结束后，运行态记录会被删除；是否保留以及保留多少历史取决于 history level。
-
-常用历史级别包括：
-
-- `none`：不保存历史；
-- `activity`：保存实例和活动；
-- `audit`：默认常用级别，进一步保存任务、当前变量和表单属性；
-- `full`：保留更细的变量更新等详情，数据量最大。
-
-不要把视频、图片、长文本和大模型完整上下文直接堆进流程变量。推荐把大对象存入 S3/MinIO/数据库业务表，流程变量只保存 URI、业务 ID、摘要、版本和校验值。
-
-### 5.1 乐观锁和并发
-
-当两个请求同时修改同一个流程实例，Flowable 通过数据库版本字段和乐观锁检测冲突，可能抛出 `FlowableOptimisticLockingException`。调用端应判断操作是否可安全重试。对并行异步任务可使用 exclusive job，避免同一流程实例的多个 Job 同时推进产生冲突；这会降低单实例内部并发，需要按流程选择。
-
-## 6. Queue 基于什么实现
-
-Flowable 核心 Job Queue **基于关系数据库表实现**，不要求 Redis、Kafka、RabbitMQ 或 ZooKeeper。
-
-主要运行态队列可以理解为：
-
-| 状态/表 | 含义 |
-|---|---|
-| Timer Job | 未到期的定时器，带 due date |
-| Executable Job | 已可执行的异步工作 |
-| Dead Letter Job | 重试耗尽，停止自动执行 |
-| Suspended Job | 因定义/实例挂起而暂停 |
-| External Worker Job | 等待外部 Worker 按 topic 获取 |
-
-Async Executor 的获取线程查询可运行且未锁定的 Job，通过数据库更新写入 lock owner 和 lock expiration time，成功抢占后交给节点本地线程池。节点内还有一个有界内存队列，但它只是执行缓冲层，不是持久化真相。如果本地队列已满，Job 会被解锁/退回，以便以后重新获取。
-
-因此 Queue 分成两层：
+前面的内容发布流程会这样运行：
 
 ```text
-关系数据库 Job 表（持久、集群共享、可恢复）
-        -> 节点 acquisition thread 抢锁
-        -> 节点本地 executor queue（短暂内存缓冲）
-        -> worker thread 执行
+1. Client 向负载均衡后的任一 Flowable 应用节点启动 Process Instance
+2. 该节点的 Engine 在一个 CommandContext 中执行 BPMN Token
+3. Token 到达 editorialReview User Task，Engine 把 Execution、Task 和 Variable 提交到共享数据库
+4. 编辑从任一节点查询并 claim User Task，完成请求再次推进 Token
+5. Token 到达异步 Service Task 时，Engine 创建数据库 Job 后结束当前事务
+6. 某个节点的 Async Executor 获取并锁定 Job，执行服务调用
+7. Job 完成后 Engine 继续推进到会签、定时器或结束事件
+8. 流程结束时运行时记录转为历史审计记录
 ```
 
-Event Registry 可以连接 Kafka、RabbitMQ、JMS 或 HTTP，用于收发业务事件。它们不是核心异步 Job Queue 的必选依赖，也不替代数据库里的流程状态。
+| 问题 | 结论 | 详细原理 |
+|---|---|---|
+| Process Instance 状态归谁 | 共享 Flowable Database 中的 Runtime Execution、Task、Variable 是当前权威状态 | [033](./033_flowable_execution_recovery.md) |
+| 同步步骤归哪个节点 | 哪台应用节点收到 API 请求，就由哪台节点在当前事务中推进到下一个等待点，不需要长期归属 | [033](./033_flowable_execution_recovery.md) |
+| 异步 Job 归哪个节点 | 多个 Async Executor 竞争到期 Job，只有成功写入 lock owner/expiration 的节点获得本次执行权 | [032](./032_flowable_job_assignment.md) |
+| User Task 归谁 | 候选人都能看到；claim 后记录 assignee。这里是业务人员归属，不是 Server 节点归属 | 本文第 4 节 |
+| 怎样并发 | 不同实例可并发；同一实例的并行 Token 依靠数据库事务、乐观锁和 Job 锁防止覆盖 | [032](./032_flowable_job_assignment.md) |
+| 谁推进流程 | API 请求线程或 Async Executor 调用 Engine 推进 BPMN Token，直到新的 wait state | [033](./033_flowable_execution_recovery.md) |
 
-## 7. Distributed Lock 是否只支持 Redis 或 ZooKeeper
+完整 Job 获取、External Worker 拉取和运行时表变化见 [034](./034_flowable_task_delivery_data_model.md)。
 
-Flowable 的普通流程推进和 Job 获取都不以 Redis/ZooKeeper 为前提。三节点共享关系数据库，通过行更新、乐观锁、lock owner 和 lock expiration 等机制协调任务归属。
+## 4. 人工任务能力
 
-一个 Job 被节点 1 获取后会带租约。若节点 1 宕机，没有清理锁，租约到期后清理/重置线程会让它重新可获取，节点 2 或 3 可以继续执行。官方高级文档给出的典型默认值是 Job lock 约 5 分钟、过期锁重置扫描约 60 秒；实际值应以部署配置为准。这也意味着恢复不是瞬时的，最坏延迟受锁时长与扫描周期影响。
-
-对核心调度来说，更准确的问题不是“支持哪一种外部分布式锁”，而是：
-
-- 共享数据库能否承受获取 Job 的查询和更新；
-- 锁租约是否覆盖正常任务耗时；
-- 节点 GC 暂停、网络分区或任务超时后会不会重复执行；
-- 业务副作用是否幂等；
-- 数据库故障转移时连接和事务行为是否正确。
-
-Redis、ZooKeeper 或 Consul 可以用于应用的其他协调需求，但不是 Flowable 三节点 Job Executor 的标准必需组件。
-
-## 8. 异常恢复和重试
-
-### 8.1 节点重启
-
-流程在 wait state 时，所需状态已经提交数据库。三个 Flowable 节点全部重启后，只要数据库和流程实现可用：
-
-- User Task 仍能查询和完成；
-- Timer Job 根据 due date 重新进入执行；
-- 未锁 Job 可以被重新获取；
-- 锁在已宕机节点名下的 Job 等租约到期后重新获取；
-- External Worker Job 未完成时仍可在锁过期后被 Worker 再次获取；
-- Receive Task/消息订阅继续等待相关事件。
-
-如果进程在远程调用后、数据库提交前宕机，任务可能再次执行。这是典型的至少一次效果，必须靠幂等实现处理。
-
-### 8.2 异步 Job 重试
-
-异步 Job 默认常见重试次数为 3。执行失败后可转成带下一次到期时间的 Timer Job；重试耗尽后进入 Dead Letter Job，不再自动执行，需要运维人员修复根因后重新移动/激活。可以用 `flowable:failedJobRetryTimeCycle` 为任务配置重试节奏，例如等待 10 秒重试 3 次。
-
-重试范围取决于事务边界。把很长的一串同步 Service Task 放在同一事务中，末尾失败会回滚整段。对有远程副作用或耗时较长的步骤，应在模型中加入异步边界，把失败和重试隔离到合理粒度。
-
-### 8.3 External Worker 失败
-
-External Worker 获取任务时提供 topic、锁时长、最大数量和 worker ID：
-
-```java
-List<AcquiredExternalWorkerJob> jobs = managementService
-    .createExternalWorkerJobAcquireBuilder()
-    .topic("generate-content", Duration.ofMinutes(30))
-    .acquireAndLock(5, "python-worker-01");
-```
-
-只有持有该锁的 Worker 能完成任务。技术失败时，Worker 可以上报错误、剩余重试次数和 retry timeout：
-
-```java
-managementService
-    .createExternalWorkerJobFailureBuilder(jobId, "python-worker-01")
-    .errorMessage("LLM provider timeout")
-    .retries(4)
-    .retryTimeout(Duration.ofMinutes(10))
-    .fail();
-```
-
-已知业务结果可以完成为 BPMN Error，让流程走模型里的业务分支。技术失败重试耗尽则进入 Dead Letter。锁时长要覆盖任务的最大正常耗时；若任务可能更长，应拆分任务或实现可靠的锁延期/重新获取策略，并始终保证幂等。
-
-## 9. 人工任务能力
-
-### 9.1 分配、候选与认领
+### 4.1 分配、候选与认领
 
 - `assignee`：任务直接分配给某个用户；
 - `candidateUsers`：一组候选用户都能看到，某人 claim 后成为 assignee；
@@ -331,7 +248,7 @@ managementService
 
 Flowable 引擎不会替业务应用验证 BPMN 中写的用户 ID 是否真实存在。这样便于集成 LDAP、Active Directory、OIDC 或企业权限中心，但也意味着身份映射、租户隔离和授权校验需要认真设计。
 
-### 9.2 会签
+### 4.2 会签
 
 User Task 可以配置 multi-instance：
 
@@ -342,11 +259,11 @@ User Task 可以配置 multi-instance：
 
 会签结果不应只依赖一个被多人覆盖的流程变量。推荐把每个意见写入业务审计表，或使用局部变量/变量聚合器，再在 completion condition 中根据结构化结果判断。
 
-### 9.3 超时、提醒和升级
+### 4.3 超时、提醒和升级
 
 在 User Task 上挂非中断 Boundary Timer，可以在不取消原任务的情况下提醒；挂中断 Boundary Timer，可以在超时后取消原任务并转给主管。Timer 依赖 Async Executor 执行。还可以使用循环 Timer 实现重复提醒，但要控制通知幂等和频率。
 
-### 9.4 表单与任务门户
+### 4.4 表单与任务门户
 
 BPMN User Task 可以带 `formKey`，引擎能保存任务元数据和表单属性，但当前 OSS 8.x 不等于附送完整可用的审批门户。实际项目通常需要：
 
@@ -356,30 +273,15 @@ BPMN User Task 可以带 `formKey`，引擎能保存任务元数据和表单属�
 4. 把业务数据权限与“能否完成这个 Task”同时校验；
 5. 把附件和长表单数据保存在业务存储，只向 Flowable 写关键变量。
 
-## 10. 定时任务和自动恢复
+## 5. UI 与工作流定义方式
 
-Flowable 支持：
-
-- Timer Start Event：按时间启动流程；
-- Intermediate Catching Timer Event：流程中等待到某个时间；
-- Boundary Timer Event：任务 SLA、提醒、升级；
-- `timeDate`：某个绝对时间；
-- `timeDuration`：等待一段时间；
-- `timeCycle`：重复执行，可使用 ISO-8601 重复表达式，也支持 cron 形式。
-
-Timer 会持久化为数据库 Job。引擎重启不会丢失它；到期后由任一 Async Executor 节点获取并执行。停机期间已经到期的 Timer，在恢复后会成为可执行 Job，但具体追赶速度受到 Worker 数量、获取批次、本地队列和数据库吞吐影响。
-
-Timer Start Event 通常随流程定义部署而创建。部署同 key 的新版本后，新启动一般使用新版本，旧实例仍按旧定义运行。对“每天 1 点生成内容”这类简单调度 Flowable 能完成；如果核心诉求是上千数据 DAG 的补数、数据区间、分区依赖和批量回填，Airflow 的调度抽象更合适。
-
-## 11. UI 与工作流定义方式
-
-### 11.1 当前 OSS UI 边界
+### 5.1 当前 OSS UI 边界
 
 Flowable 6.x 的资料经常展示 Modeler、Task、Admin 和 IDM 应用。Flowable 7.0 官方发布说明明确：7 系列聚焦 BPMN、CMMN、DMN、Event Registry 引擎与 REST API，不包含 UI applications；Flowable 8.0 延续新的引擎技术栈。因而评估当前 OSS 时，不应把旧版 UI 当成开箱即用能力。
 
 官方提供可免费使用的 Flowable Cloud Design 来建模，也有商业 Flowable Platform。它们的托管方式、许可证和功能边界与 `flowable-engine` OSS 仓库不同。采用 OSS 可以使用支持 BPMN 2.0 的外部建模器，或自行建设建模发布和任务门户。
 
-### 11.2 YAML、JSON 和 XML
+### 5.2 YAML、JSON 和 XML
 
 | 格式 | 能否作为核心流程定义 | 说明 |
 |---|---|---|
@@ -391,7 +293,7 @@ Flowable 6.x 的资料经常展示 Modeler、Task、Admin 和 IDM 应用。Flowa
 
 如果团队希望像 Conductor 一样让平台通过 JSON 直接创建/修改工作流，Flowable 会多一层 BPMN XML 生成和校验。如果希望模型符合 BPMN 标准、能表达复杂人工协作，XML 是合理代价。
 
-## 12. Worker 节点和任务类型
+## 6. Worker 节点和任务类型
 
 Flowable 没有把所有执行者统一叫 Worker。执行位置取决于任务类型：
 
@@ -411,36 +313,7 @@ Flowable 没有把所有执行者统一叫 Worker。执行位置取决于任务�
 
 对 `media_agent`，建议让 Flowable 只负责状态机、审批和 SLA；Go/Python 进程以 External Worker 处理 LLM、浏览器、图片和视频任务。这样 Flowable 节点无需安装媒体工具和 Python 依赖，Worker 可按 topic 独立限流和扩容。
 
-## 13. 存储支持
-
-Flowable OSS 使用 JDBC 关系数据库。官方 OSS 配置文档列出的数据库包括 H2、MySQL、Oracle、PostgreSQL、DB2 和 Microsoft SQL Server。文档里的具体数据库版本可能滞后，落地 Flowable 8 前要以目标版本依赖、建表脚本和驱动矩阵做兼容性验证。
-
-建议：
-
-- 本地开发和测试可用 H2；
-- 生产优先选团队熟悉的 PostgreSQL/MySQL/Oracle/SQL Server；
-- 三节点必须连接同一个逻辑数据库；
-- 不要使用每节点独立数据库后再做异步复制；
-- schema 升级要配合 Flowable 版本发布执行，并在副本验证；
-- 历史表增长、变量大小、索引、Dead Letter 积压和 Job 获取查询要纳入监控。
-
-Flowable 的核心状态不能只换成 Redis、MongoDB 或 Elasticsearch。可把业务数据、检索索引、文件和事件放在其他存储中，但引擎仍需要受支持的关系数据库。
-
-## 14. 定义版本与运行中实例迁移
-
-相同 process key 的新部署会产生递增版本。新启动实例默认使用最新定义，已运行实例继续引用启动时的旧版本。这是安全默认值，因为运行令牌可能停在新模型中已经不存在的 Activity 上。
-
-如果必须让运行中实例升级，可使用 `ProcessMigrationService` 指定源/目标定义并映射 Activity。迁移前需要回答：
-
-- 旧实例当前可能停在哪些 User Task、Timer、Receive Task；
-- 新旧 Activity ID 如何对应；
-- 已存在的 Job、事件订阅和局部变量如何处理；
-- 删除或新增并行路径后 Execution 树是否合法；
-- 是否要批量迁移，如何失败回滚和审计。
-
-流程定义中的 Activity ID 应当视为长期接口，避免每次画图时随机重建 ID。
-
-## 15. 与 Airflow、Temporal、Conductor 的定位对比
+## 7. 与 Airflow、Temporal、Conductor 的定位对比
 
 | 维度 | Flowable | Airflow | Temporal | Conductor OSS |
 |---|---|---|---|---|
@@ -463,26 +336,7 @@ Flowable 的核心状态不能只换成 Redis、MongoDB 或 Elasticsearch。可�
 
 Flowable 与 Temporal 也可以组合，但早期项目不建议同时引入两个状态权威。先按最主要的失败模型选一个，否则跨引擎一致性、观测和运维成本会超过收益。
 
-## 16. 建议的最小 PoC
-
-用三台逻辑节点或三个容器完成以下验证：
-
-1. 部署包含 External Worker、User Task、Boundary Timer、网关和发布任务的 BPMN；
-2. 启动 100 个内容实例，Python Worker 获取 `generate-content`；
-3. 在 Worker 已调用模拟 LLM 后强制杀进程，验证锁过期后的再次获取和幂等；
-4. 在一个 Flowable 节点执行 Job 时杀节点，记录恢复延迟；
-5. 三节点同时运行，确认同一 Job 不被正常并发执行；
-6. 用候选组查询、claim、complete 实现一个最小任务页面；
-7. 验证非中断提醒和中断升级两种 Boundary Timer；
-8. 让异步任务重试耗尽进入 Dead Letter，再修复并恢复；
-9. 部署流程 v2，验证新实例使用 v2、旧实例继续 v1；
-10. 对一批旧实例执行受控迁移；
-11. 测量 10 万历史 Task、Variable 和 Job 下的查询、获取与清理；
-12. 数据库主备切换后，验证连接恢复、重复执行和 Timer 积压追赶。
-
-验收指标至少包括：任务恢复时间、重复副作用数量、Dead Letter 可发现时间、User Task 查询延迟、Timer 延迟、数据库 QPS/锁等待、Worker 吞吐和流程迁移失败率。
-
-## 17. 最终评价
+## 8. 最终评价
 
 Flowable 的学习价值主要不在“怎么把函数串起来”，而在业务流程建模：什么是持久等待点，哪些错误是业务分支，任务归谁、谁能认领、什么时候超时、并行会签如何结束、流程升级时旧实例怎么办。
 

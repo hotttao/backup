@@ -1,6 +1,34 @@
-# Conductor OSS 深入调研：声明式微服务与 Agent 工作流编排
+---
+weight: 11
+title: "Conductor 基础与架构：从视频生产 Workflow 到三节点集群"
+date: 2024-10-11T08:00:00+08:00
+lastmod: 2026-09-14T08:00:00+08:00
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "通过示例认识 Conductor 与三节点架构"
+featuredImage:
 
-调研日期：2026-09-09。调研问题见 [question.md](./question.md)。
+tags: ["workflow"]
+categories: ["microservice"]
+
+lightgallery: true
+
+toc:
+  auto: false
+---
+
+# Conductor 基础与架构：从视频生产 Workflow 到三节点集群
+
+Conductor 内容分成四篇：
+
+1. **本文**；
+
+2. [012：Queue 与冲突控制](./012_conductor_abs.md)；
+
+3. [013：执行与故障恢复](./013_conductor_execution_recovery.md)；
+
+4. [014：任务投递与数据变化](./014_conductor_task_delivery_data_model.md)。
 
 ## 1. 结论先行
 
@@ -225,7 +253,7 @@ flowchart TB
 | Database | 保存定义、Workflow/Task Execution 和事件处理定义等 | 所有节点共享 |
 | Queue | 保存待执行、延迟和待 Sweeper 处理的任务 | 所有节点共享，不能使用进程内队列做三节点生产部署 |
 | Index | 为 UI 和搜索 API 提供工作流、任务检索 | 可使用 PostgreSQL，也可独立使用 Elasticsearch/OpenSearch |
-| Distributed Lock | 防止多个 Decider 同时推进同一个工作流 | 三节点生产部署必须启用 Redis 或 ZooKeeper 锁 |
+| Distributed Lock | 防止多个 Decider 同时推进同一个工作流 | 三节点生产部署必须启用目标版本支持的共享锁后端 |
 | External Worker | 执行 `SIMPLE` 任务中的业务代码 | 独立扩缩容，可以使用 Go、Python 或其他语言 |
 
 官方生产部署文档明确把 API Server、Decider、Sweeper、System Task Worker、Event Processor、数据库、队列、索引和锁作为主要组件，并要求多实例生产环境使用分布式锁。参见 [Production Deployment](https://conductor-oss.github.io/conductor/devguide/running/deploy.html)。
@@ -234,417 +262,36 @@ flowchart TB
 
 Conductor Server 不应把唯一的工作流真相保存在本机内存。定义、运行状态和任务状态写入共享数据库，待处理任务写入共享队列；因此任一 Server 节点下线后，其他节点仍能读取同一状态并继续决策。
 
-多节点需要特别处理同一工作流被并发决定的问题。如果两个节点同时读取相同状态并各自调度下一任务，就可能生成重复任务。生产环境必须启用分布式执行锁，使同一个 `workflowId` 在一个时刻只有一个有效的状态决策过程。本地锁只适用于单实例开发环境。
+多节点需要特别处理同一工作流被并发决定的问题。如果两个节点同时读取相同状态并各自调度下一任务，就可能生成重复任务。生产环境必须启用分布式执行锁，使同一个 `workflowId` 在一个时刻只有一个有效的状态决策过程。本地锁只适用于单实例开发环境；PostgreSQL、Redis、ZooKeeper 等后端的版本差异见 [012](./012_conductor_abs.md)。
 
-## 4. 内部实现：任务分区、领取与冲突控制
+### 3.4 回到示例：视频生产 Workflow 怎样经过这张架构图
 
-这一节只回答三个问题：
-
-1. Conductor 把任务分到哪里；
-2. 多个 Worker 同时轮询时，为什么通常不会拿到同一个任务；
-3. 多个 Server 同时推进工作流时，为什么不会重复创建下一批任务。
-
-先给出结论：Conductor 的“任务分区”不是 Kafka 那种预先创建固定数量 Partition、再把 Partition 分配给消费者的模型。Conductor 先根据任务属性生成**逻辑队列名**，Worker 对指定队列进行竞争式拉取；消息的原子领取由 `QueueDAO` 的 PostgreSQL 或 Redis 实现负责，工作流状态的并发推进则由以 `workflowId` 为粒度的分布式锁负责。
-
-### 4.1 Queue 中放的是 taskId，不是完整任务状态
-
-以下仍使用第 2 节中的 `generate_copy`：
+前面的 `video_pipeline` 会沿下面的链路运行：
 
 ```text
-workflowId = wf-1001
-taskId = task-2001
-taskType = generate_copy
-status = SCHEDULED
+1. Client 请求任一 Conductor Server 启动 video_pipeline
+2. Server 从定义存储读取 Workflow Definition，创建 Workflow Execution
+3. Decider 根据定义创建第一个 SIMPLE Task，并把 taskId 写入对应 QueueDAO 队列
+4. generate_script Worker 向任一 Server Poll 对应 Task Type
+5. Server 从 QueueDAO 领取 taskId，再从 Execution DAO 读取完整 Task 返回 Worker
+6. Worker 上报 COMPLETED 和 outputData
+7. Decider 在 workflowId 级互斥保护下重新计算，创建视频生成或审核等后续 Task
+8. 所有终结任务完成后，Decider 把 Workflow Execution 更新为 COMPLETED
 ```
 
-任务被调度后会出现两份不同用途的数据：
-
-```text
-ExecutionDAO / 数据库
-└─ task-2001 的完整 Task Execution
-   ├─ workflowId = wf-1001
-   ├─ status = SCHEDULED
-   ├─ inputData = {...}
-   ├─ retryCount = 0
-   └─ timeout / callback / workerId 等字段
-
-QueueDAO / 任务队列
-└─ queue generate_copy
-   └─ messageId = task-2001
-```
-
-数据库中的 Task Execution 是任务状态的权威记录；队列更像“哪些 taskId 现在值得被 Worker 取走”的可恢复索引。Worker 轮询时，Server 先从 QueueDAO 取出 taskId，再到 ExecutionDAO 加载完整任务。如果队列里残留的 taskId 已不存在或任务已经进入终态，Server 会删除这条队列消息，而不会把无效任务交给 Worker。[ExecutionService.poll 源码](https://github.com/conductor-oss/conductor/blob/main/core/src/main/java/com/netflix/conductor/service/ExecutionService.java)
-
-这个拆分也解释了为什么写状态与写队列不需要假装成一个跨存储事务：源码先调用 `createTasks` 持久化任务，再调用 `addTaskToQueue`。如果入队失败，已经保存的 Task 不会丢失，`WorkflowRepairService` 可以把缺失的消息重新发布到队列。[WorkflowExecutorOps.scheduleTask 源码](https://github.com/conductor-oss/conductor/blob/main/core/src/main/java/com/netflix/conductor/core/execution/WorkflowExecutorOps.java)
-
-### 4.2 所谓“分区”，首先是按属性生成不同队列
-
-`QueueUtils.getQueueName` 使用四个字段生成队列名：
-
-```text
-[domain:]taskType[@executionNamespace][-isolationGroupId]
-```
-
-例如：
-
-| 任务属性 | 最终队列名 | 哪些 Worker 会取得 |
+| 问题 | 结论 | 详细原理 |
 |---|---|---|
-| 只有 `taskType=generate_copy` | `generate_copy` | 轮询默认 `generate_copy` 队列的 Worker |
-| `domain=prod` | `prod:generate_copy` | 指定 `domain=prod` 的 Worker |
-| 再加 `executionNamespace=media` | `prod:generate_copy@media` | 对应执行命名空间的内部执行器 |
-| 再加 `isolationGroupId=gpu` | `prod:generate_copy@media-gpu` | 对应隔离组的执行器 |
+| Workflow 和 Task 状态归谁 | 共享 Execution DAO/数据库保存权威状态；Queue 主要保存待领取 taskId | [013](./013_conductor_execution_recovery.md) |
+| 谁拥有 Workflow 推进权 | Server 节点只在一次 Decider 执行期间取得 `workflowId` 级锁，不永久拥有 Workflow | [012](./012_conductor_abs.md) |
+| Task 归哪个 Worker | 多个 Worker 按 Task Type Poll，QueueDAO 的原子 pop/lease 让一个 Poll 获得本次执行机会 | [014](./014_conductor_task_delivery_data_model.md) |
+| 怎样并发 | 不同 Workflow、不同分支 Task 可并发；同一 Workflow 的状态决策由分布式锁、条件更新和幂等检查约束 | [012](./012_conductor_abs.md) |
+| 谁推进 Workflow | Decider 读取定义和现有 Task 状态创建下一批 Task；Sweeper 负责重新唤起长期未推进的 Workflow | [013](./013_conductor_execution_recovery.md) |
 
-因此，逻辑路由的第一层通常就是 `taskType`：
+Worker 不加入 Server 集群，也不直接访问 QueueDAO。具体 Poll、lease、ACK 和记录变化见 [014](./014_conductor_task_delivery_data_model.md)。
 
-```text
-generate_copy Queue  → 文案 Worker 池
-submit_video Queue   → 视频提交 Worker 池
-publish_content Queue → 发布 Worker 池
-```
+## 4. UI 与工作流定义方式
 
-Domain 可以把同一种任务再拆成不同队列。例如 `prod:generate_copy` 与 `dev:generate_copy` 是两条队列，开发机只轮询 `dev`，不会误领生产任务。启动 Workflow 时还可以为 Domain 配置候选顺序；Conductor 根据最近的 Worker PollData 判断候选 Domain 是否活跃，选择第一个活跃项，否则按 `NO_DOMAIN` 或最后一个候选项回退。[Task Domains](https://conductor-oss.github.io/conductor/documentation/api/taskdomains.html)
-
-这是一种**路由隔离**，不是自动负载均衡分片。假设十个 Worker Pod 都轮询 `prod:generate_copy`，它们竞争消费同一逻辑队列，并没有 `partition-0` 到 `partition-9` 的固定所有权：
-
-```text
-prod:generate_copy
-  ├─ Worker Pod A ─┐
-  ├─ Worker Pod B ─┼─ 竞争 poll，谁先成功领取谁执行
-  └─ Worker Pod C ─┘
-```
-
-如果业务确实需要地域、租户、环境或硬件隔离，应显式设计 Domain、Isolation Group 或不同 Task Type；不要期待 Conductor 自动按 `taskId` 把一条热点队列均匀切成固定分区。
-
-### 4.3 存储层有没有物理分片
-
-这取决于 QueueDAO 后端，不能从“Conductor 集群有三个 Server”直接推导出“三个队列分区”。
-
-| QueueDAO | 当前实现方式 | 并发领取手段 | 是否等价于 Kafka Partition |
-|---|---|---|---|
-| PostgreSQL | `queue_message` 表保存不同 `queue_name` 的消息 | 行锁、`FOR UPDATE SKIP LOCKED` 和条件更新 | 否；源码的 verbose 统计明确注明 queue sharding 尚未实现 |
-| Redis | 每个逻辑队列对应带 namespace、stack、queue name 和 queue shard 的 Redis Key | Redis 队列数据结构及原子操作 | 否；Redis Cluster 的 Key Slot 也不是 Worker 可见的 Kafka Partition |
-
-PostgreSQL 实现中的队列主键由 `queue_name + message_id` 标识。即使重复入队相同 taskId，`ON CONFLICT` 也会更新原记录，而不是再插入一条相同消息。领取时核心 SQL 可以简化为：
-
-```sql
-WITH picked AS (
-    SELECT queue_name, message_id
-    FROM queue_message
-    WHERE queue_name = :queueName
-      AND popped = false
-      AND deliver_on <= current_timestamp
-    ORDER BY deliver_on, priority DESC, created_on
-    LIMIT :count
-    FOR UPDATE SKIP LOCKED
-)
-UPDATE queue_message
-SET popped = true
-FROM picked
-WHERE queue_message.queue_name = picked.queue_name
-  AND queue_message.message_id = picked.message_id
-RETURNING queue_message.message_id;
-```
-
-`FOR UPDATE SKIP LOCKED` 的作用是：Server A 已锁定 `task-2001` 时，Server B 不等待它，而是跳过这行去领取其他任务。选择和 `popped=true` 又在同一事务中完成，所以两个并发 Poll 通常不会同时成功领取同一条消息。[PostgresQueueDAO 源码](https://github.com/conductor-oss/conductor/blob/main/postgres-persistence/src/main/java/com/netflix/conductor/postgres/dao/PostgresQueueDAO.java)
-
-Redis 实现会构造类似下面的 Key：
-
-```text
-{queueNamespace}.{stack}.QUEUE.{queueName}.{queueShard}
-```
-
-其中 `queueShard` 来自配置的 Availability Zone 标识。ClusteredRedisQueueDAO 使用 Redis Cluster 客户端保存这些 Key，但这仍是 QueueDAO 的物理存储实现，不能把它理解成“一个 Task Type 自动获得 N 个消费者分区”。[BaseRedisQueueDAO 源码](https://github.com/conductor-oss/conductor/blob/main/redis-persistence/src/main/java/io/orkes/conductor/mq/dao/BaseRedisQueueDAO.java)
-
-### 4.4 一个任务从调度到完成的完整链路
-
-```mermaid
-sequenceDiagram
-    participant D as Decider
-    participant DB as ExecutionDAO
-    participant Q as QueueDAO
-    participant S as Conductor Server
-    participant W as External Worker
-
-    D->>DB: createTasks(task-2001, SCHEDULED)
-    D->>Q: push(generate_copy, task-2001)
-    W->>S: poll(generate_copy, worker-A)
-    S->>Q: pop(generate_copy)
-    Q-->>S: task-2001，暂时标为已领取
-    S->>DB: 读取 task-2001
-    S->>DB: 更新 IN_PROGRESS / workerId / pollCount
-    S->>Q: ack(task-2001)
-    S-->>W: 返回完整 Task
-    W->>W: 执行业务代码
-    W->>S: updateTask(COMPLETED, output)
-    S->>DB: 保存 Task 终态
-    S->>D: decide(wf-1001)
-    D->>DB: 保存 Workflow 状态并创建后续 Task
-```
-
-Worker 调用的是任务 Poll API，例如：
-
-```http
-GET /api/tasks/poll/batch/generate_copy
-    ?count=10
-    &timeout=1000
-    &workerid=worker-A
-    &domain=prod
-```
-
-官方 SDK 把这段轮询、执行和结果上报封装在 Worker 运行器中，业务通常不需要手写 HTTP 循环。服务端 `ExecutionService.poll` 的关键顺序是：
-
-```text
-queueDAO.pop
-→ executionDAO.getTask
-→ 检查并发限制和频率限制
-→ Task 改成 IN_PROGRESS，写入 workerId、pollCount
-→ executionDAO.updateTask
-→ queueDAO.ack
-→ 把 Task 返回给 Worker
-```
-
-如果达到 Task Definition 的并发限制或频率限制，Server 不会把任务交给 Worker，而是调用 `postpone`，让它延迟一段时间后重新可见。[Task API](https://conductor-oss.github.io/conductor/documentation/api/task.html)
-
-### 4.5 Queue 的 ack 和 Worker 执行完成不是一回事
-
-这里最容易误解。`queueDAO.ack` 只表示：
-
-```text
-Conductor Server 已经把 task-2001 从 QueueDAO 取出，
-并且已把 Task Execution 更新为 IN_PROGRESS。
-```
-
-它不表示 Worker 的业务任务已经完成。真正完成要等 Worker 调用 `updateTask(COMPLETED)`。
-
-因此存在两个不同的故障恢复边界：
-
-| 故障窗口 | 依靠什么恢复 |
-|---|---|
-| QueueDAO 已 pop，但 Server 在写入 IN_PROGRESS 或 ack 前宕机 | 未确认消息的可见性超时；PostgreSQL 定期把过期的 `popped=true` 改回可领取 |
-| Server 已 ack，但 Worker 没收到响应或执行中宕机 | Task 已是 IN_PROGRESS；由 `responseTimeoutSeconds`、Sweeper 和重试逻辑恢复 |
-
-PostgreSQL QueueDAO 每分钟处理过期的 unacked 消息，批量使用 `FOR UPDATE SKIP LOCKED`，避免多个 Server 的清理线程互相阻塞。Redis QueueDAO 也通过 `ack`、unack timeout 和重新可见机制实现相同的 QueueDAO 契约。[QueueDAO 接口](https://github.com/conductor-oss/conductor/blob/main/core/src/main/java/com/netflix/conductor/dao/QueueDAO.java)
-
-### 4.6 多个 Server 怎样避免重复推进同一个 Workflow
-
-任务领取锁只保护一条队列消息，不能保护整个工作流。例如两个并行任务几乎同时完成：
-
-```text
-task-A COMPLETED ─→ Server 1 ─┐
-                              ├─ 都准备 decide(wf-1001)
-task-B COMPLETED ─→ Server 2 ─┘
-```
-
-如果两个 Decider 同时读取旧状态并创建下一节点，可能重复调度。Conductor 为此使用以 `workflowId` 为 Key 的 Execution Lock：
-
-```text
-Server 1: acquireLock(wf-1001) 成功
-          → 读取完整 Workflow 和 Tasks
-          → Decider 计算下一状态
-          → 保存状态、创建后续任务
-          → releaseLock(wf-1001)
-
-Server 2: acquireLock(wf-1001) 失败
-          → 把 wf-1001 重新放入 DECIDER_QUEUE，稍后再试
-```
-
-锁的粒度是单个 Workflow Execution，而不是锁住整个 Conductor 集群。因此不同 workflowId 仍可以由不同 Server 并行推进。生产环境应使用 Redis 或 ZooKeeper 分布式锁；`local_only` 只能保护单进程。[生产锁配置](https://github.com/conductor-oss/conductor/blob/main/docs/devguide/running/deploy.md#locking)
-
-源码还会限制一次 `decide` 在锁中的运行时间：接近 `lockLeaseTime` 时停止继续循环，保存当前状态并重新入队，避免在租约过期后仍长时间持有已经失效的逻辑所有权。常用参数是：
-
-```properties
-conductor.workflow-execution-lock.type=redis
-conductor.app.workflowExecutionLockEnabled=true
-conductor.app.lockLeaseTime=60000
-conductor.app.lockTimeToTry=500
-```
-
-### 4.7 防重复并不是只靠一把锁
-
-Conductor 在不同边界使用不同机制：
-
-| 冲突 | 控制机制 |
-|---|---|
-| 同一个 Workflow 被多个 Decider 并发推进 | `workflowId` 分布式锁 |
-| 两个 Poll 同时领取同一队列消息 | QueueDAO 原子 pop；PostgreSQL 使用 `FOR UPDATE SKIP LOCKED` |
-| Decider 在同一次重算中再次生成同一逻辑任务 | 按 `taskReferenceName + retryCount` 去重 |
-| 同一个 taskId 被重复放进 Queue | `pushIfNotExists`；PostgreSQL 使用 `queue_name + message_id` 冲突处理 |
-| 已经终态的 Task 又收到较晚的结果上报 | 读取到终态后忽略更新并清理残留队列消息 |
-| 任务状态已保存但入队失败 | WorkflowRepairService 根据持久化状态补发消息 |
-
-这些机制解决的是 Conductor 内部状态冲突，但不能提供业务副作用的 Exactly Once。
-
-### 4.8 为什么仍然可能重复调用外部系统
-
-考虑最典型的故障窗口：
-
-```text
-Worker 调用视频平台成功
-→ 视频平台已经创建任务 externalJobId=V9001
-→ Worker 向 Conductor 上报 COMPLETED 时网络断开
-→ Conductor 没有可靠保存完成结果
-→ response timeout 后创建新的重试 Task
-→ 另一个 Worker 再次调用视频平台
-```
-
-队列没有把同一条消息同时交给两个 Worker，并不代表外部调用只发生一次。为了从故障中恢复，Conductor 的任务执行仍然是 **at-least-once 倾向**：一个逻辑业务动作在异常窗口中可能执行多次。
-
-正确做法是在业务端增加稳定幂等键，例如：
-
-```text
-idempotencyKey = workflowId + ":" + taskReferenceName
-               = wf-1001:submit_video_ref
-```
-
-第三方接口支持幂等键时直接传递；不支持时，在自己的数据库建立唯一约束并保存 `idempotencyKey → externalJobId`。重试 Task 可能获得新的 taskId，所以不要把 taskId 当作跨重试稳定的业务幂等键。
-
-## 5. Workflow 抽象与状态持久化
-
-### 5.1 Workflow 是版本化 JSON，而不是可恢复函数
-
-Conductor 的规范表示是 JSON。无论工作流通过 UI、SDK、API 还是文件创建，最终都会变成服务端保存和解释的 JSON 文档。每一个 Workflow Execution 在启动时取得定义快照；后续修改定义不会改变已经运行的实例。多个版本可以同时运行。[JSON + Code Native](https://conductor-oss.github.io/conductor/architecture/json-native.html) 和 [Workflow Versioning](https://conductor-oss.github.io/conductor/devguide/how-tos/Workflows/versioning-workflows.html) 对此有明确说明。
-
-这与 Temporal 的恢复模型不同：
-
-- Conductor 持久化当前 Workflow/Task Execution，并由状态机重新计算下一节点；
-- Temporal 主要依据事件历史重放确定性 Workflow 代码以重建状态；
-- Conductor Worker 不会通过“重放业务函数”恢复局部变量，节点之间应显式传递 JSON 输入输出或外部数据 URI。
-
-### 5.2 四类存储职责
-
-| 存储职责 | 保存内容 | 可选实现 |
-|---|---|---|
-| Database / MetadataDAO、ExecutionDAO | Task/Workflow Definition、执行状态、任务状态、事件处理定义 | PostgreSQL、MySQL、Redis、Cassandra、SQLite |
-| Queue / QueueDAO | 待执行任务、延迟任务、Sweeper 与系统任务所需队列 | PostgreSQL、Redis、SQLite；扩展接口允许其他实现 |
-| Index / IndexDAO | UI 与 API 的工作流、任务检索索引 | PostgreSQL、Elasticsearch 7/8、OpenSearch 2/3、SQLite，或关闭 |
-| External Payload Storage | 超过阈值的工作流/任务输入输出 | S3、Azure Blob、PostgreSQL；客户端支持范围需按语言核对 |
-
-生产环境的推荐起点是：
-
-```properties
-conductor.db.type=postgres
-conductor.queue.type=postgres
-conductor.indexing.enabled=true
-conductor.indexing.type=postgres
-conductor.elasticsearch.version=0
-
-conductor.workflow-execution-lock.type=redis
-conductor.app.workflowExecutionLockEnabled=true
-conductor.redis-lock.serverAddress=redis://redis-host:6379
-```
-
-这个组合用 PostgreSQL 保存状态、队列和搜索索引，只额外使用 Redis 做分布式锁，组件数量较少。MySQL 数据库目前需要搭配独立的 Redis 队列；SQLite 只适合本地开发。需要更强全文检索或更低队列延迟时，可改为 Redis 队列以及 Elasticsearch/OpenSearch 索引。具体支持矩阵和属性见 [部署配置](https://github.com/conductor-oss/conductor/blob/main/docs/devguide/running/deploy.md)。
-
-视频、图片等业务文件不应该直接放入 Workflow/Task 的 JSON 输出。流程中只传 `videoUri`、`assetId` 和校验值，文件本体放对象存储。Conductor 的 External Payload Storage 用于卸载过大的 JSON Payload，也不应被理解成完整的媒体资产管理系统。参见 [External Payload Storage](https://conductor-oss.github.io/conductor/documentation/advanced/externalpayloadstorage.html)。
-
-### 5.3 状态如何推进
-
-Worker 任务的主要状态包括：
-
-```text
-SCHEDULED → IN_PROGRESS → COMPLETED
-                       ├→ FAILED → 延迟 → 新的重试执行
-                       ├→ FAILED_WITH_TERMINAL_ERROR
-                       └→ TIMED_OUT → 按策略重试或结束 Workflow
-```
-
-此外还有 `CANCELED`、`SKIPPED` 和适用于可选任务的 `COMPLETED_WITH_ERRORS`。每次 Worker 更新任务结果后，服务端先保存 Task Execution，再触发工作流状态决策；Decider 根据定义、已完成任务输出和当前状态，创建下一批任务。任务生命周期见 [Task Lifecycle](https://conductor-oss.github.io/conductor/devguide/architecture/tasklifecycle.html)。
-
-## 6. 异常恢复与重试
-
-### 6.1 自动恢复能力
-
-| 故障 | 能否继续 | 恢复机制 | 限制 |
-|---|---|---|---|
-| 一个 Conductor Server 节点宕机 | 可以 | 其他节点读取共享状态和队列；Sweeper 重新触发决策 | 需要高可用后端和分布式锁 |
-| 三个 Server 全部重启 | 可以 | 定义、运行状态、任务状态和队列保存在外部持久化后端；启动后 Sweeper 继续评估运行实例 | 使用内存或损坏的单节点存储则无法保证 |
-| Worker 领取任务后宕机，尚未回报结果 | 可以重试 | `responseTimeoutSeconds` 到期后任务被判定无响应并重新调度 | 可能产生重复执行 |
-| Worker 明确报告 `FAILED` | 可以自动重试 | 按 Task Definition 的次数、退避和延迟创建重试 | 超过次数后 Workflow 失败，除非定义了其他处理 |
-| Worker 报告 `FAILED_WITH_TERMINAL_ERROR` | 不自动重试 | 直接视为不可重试失败 | 适合参数错误等确定性失败 |
-| 流程正在 `WAIT` 或 `HUMAN` | 可以 | 等待节点状态已持久化，收到时间条件、API 完成或外部信号后继续 | 外部事件必须能正确关联 `workflowId`/任务 |
-| Workflow 已进入失败终态 | 默认不会自行变回运行 | 通过 UI/API 执行 retry、rerun 或 restart | 这是人工/运维恢复，不是自动恢复 |
-| 数据库或队列不可用 | 暂停或失败 | 后端恢复后由队列和 Sweeper 继续处理 | 恢复效果取决于后端持久性与一致性 |
-
-### 6.2 自动重试配置
-
-Task Definition 提供以下关键控制项：
-
-| 参数 | 作用 |
-|---|---|
-| `retryCount` | 最大重试次数 |
-| `retryLogic` | `FIXED`、`EXPONENTIAL_BACKOFF` 或 `LINEAR_BACKOFF` |
-| `retryDelaySeconds` | 基础重试间隔 |
-| `maxRetryDelaySeconds` | 限制退避后的最大间隔 |
-| `backoffJitterMs` | 给重试增加随机抖动，降低惊群 |
-| `responseTimeoutSeconds` | Worker 领取后多久不更新视为失联，类似心跳超时 |
-| `pollTimeoutSeconds` | 任务长时间无人领取时的超时 |
-| `timeoutSeconds` | 单次任务执行的超时/SLA |
-| `totalTimeoutSeconds` | 跨所有重试尝试的总时间预算 |
-| `timeoutPolicy` | `RETRY`、`TIME_OUT_WF` 或 `ALERT_ONLY` |
-
-详细规则见 [Task Definition](https://conductor-oss.github.io/conductor/documentation/configuration/taskdef.html)。
-
-自动重试并不等于外部副作用只执行一次。考虑下面的故障窗口：
-
-```text
-submit_video Worker 调用第三方成功
-              ↓
-第三方返回 externalJobId
-              ↓
-Worker 在向 Conductor 上报 COMPLETED 前宕机
-              ↓
-response timeout 后 Conductor 重新调度 submit_video
-```
-
-Conductor 无法知道第三方调用是否成功，因此第二个 Worker 可能再次提交视频。解决方法是把稳定的业务幂等键传给第三方，例如 `workflowId + taskReferenceName` 或业务 Job ID，并在本地数据库建立唯一约束。不要直接依赖某一次重试的 `taskId`，因为新的尝试可能拥有不同执行标识。
-
-### 6.3 Workflow 级人工恢复
-
-在问题修复后，可以选择：
-
-- **Retry**：从最后一个失败任务继续；
-- **Rerun**：从指定任务开始，复用前面任务的输出；
-- **Restart with current definitions**：从头开始，使用原执行启动时的定义快照；
-- **Restart with latest definitions**：从头开始，改用最新定义。
-
-这些操作可通过 UI、CLI 或 API 完成。它们可能再次执行已经产生外部副作用的节点，因此仍要求幂等或补偿机制。参见 [Debugging Workflows](https://conductor-oss.github.io/conductor/devguide/how-tos/Workflows/debugging-workflows.html)。
-
-Workflow Definition 还可以配置失败工作流，在主流程失败后启动补偿流程。例如发布成功但记录结果失败时，补偿流程可以查询发布状态并补写记录；对于无法撤销的外部发布，不应假装回滚成功，而应记录实际状态并转人工处理。
-
-## 7. 定时任务
-
-Conductor OSS 支持 Scheduler。启用 `conductor.scheduler.enabled=true` 后，可以通过 UI、CLI 或 `/api/scheduler` 创建、查询、暂停和恢复 Schedule。Schedule 使用 Quartz 风格的 6 或 7 段 Cron 表达式，例如：
-
-```json
-{
-  "name": "daily-media-report",
-  "cronExpression": "0 0 2 * * ?",
-  "startWorkflowRequest": {
-    "name": "media_daily_report",
-    "version": 1,
-    "input": {
-      "scope": "yesterday"
-    },
-    "correlationId": "daily-media-report"
-  },
-  "scheduleStartTime": 0,
-  "scheduleEndTime": 0,
-  "paused": false
-}
-```
-
-Schedule 本质上是在 Cron 时间点启动 Workflow 的触发器。它不是 Airflow 的数据区间或补数模型：
-
-- Schedule 自身没有与 Airflow DagRun 等价的独立执行历史；需要通过生成的 Workflow Execution 查询运行记录；
-- 官方资料没有承诺服务停机期间的所有错过时间点都会自动 catchup；
-- 对错过的周期进行补跑时，应显式启动对应日期的 Workflow，并把业务日期作为输入；
-- 应使用稳定的 `correlationId` 或业务唯一键防止同一周期重复启动。
-
-因此，Conductor 适合“定时触发一个业务流程”，不适合把复杂历史补数、数据分区和数据集依赖作为核心需求。Scheduler 操作见 [Scheduler API](https://conductor-oss.github.io/conductor/documentation/api/index.html)；Cron 示例及补跑说明见 [Schedules](https://conductor-oss.github.io/conductor-skills/skills/conductor/references/schedules.html)。
-
-## 8. UI 与工作流定义方式
-
-### 8.1 Web UI
+### 4.1 Web UI
 
 Conductor UI 支持：
 
@@ -658,7 +305,7 @@ Conductor UI 支持：
 
 UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 Git，通过 CLI/API 在 CI/CD 中发布，避免 UI 中的修改脱离版本控制。创建方式见 [Creating Workflows](https://conductor-oss.github.io/conductor/devguide/how-tos/Workflows/creating-workflows.html)。
 
-### 8.2 UI 之外的定义方式
+### 4.2 UI 之外的定义方式
 
 | 方式 | 是否支持 | 说明 |
 |---|---|---|
@@ -670,9 +317,9 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 
 不要把 Spring Boot 的 YAML/Properties 服务配置与 Workflow Definition 混淆。前者配置 Conductor Server，后者的规范格式是 JSON。
 
-## 9. 支持的工作节点类型
+## 5. 支持的工作节点类型
 
-### 9.1 外部 Worker 任务
+### 5.1 外部 Worker 任务
 
 | 类型 | 执行位置 | 用途 |
 |---|---|---|
@@ -680,7 +327,7 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 
 `SIMPLE` 是最重要的扩展点。Conductor 只负责任务分发、状态、超时和重试，具体实现由 Worker 完成。Worker 可以独立部署和扩缩容，也可以按 Task Domain/Isolation Group 把特定任务路由到特定 Worker 池。
 
-### 9.2 通用系统任务
+### 5.2 通用系统任务
 
 | 类型 | 用途 |
 |---|---|
@@ -695,7 +342,7 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 | `PULL_WORKFLOW_MESSAGES` | 从某个运行中工作流的持久化消息队列取消息 |
 | `NOOP` | 占位或合并流程分支 |
 
-### 9.3 流程控制任务
+### 5.3 流程控制任务
 
 | 类型 | 用途 |
 |---|---|
@@ -711,7 +358,7 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 | `TERMINATE` | 以指定状态终止工作流 |
 | `DYNAMIC` | 在运行时决定实际任务类型 |
 
-### 9.4 AI、MCP 与 Agent 任务
+### 5.4 AI、MCP 与 Agent 任务
 
 启用 AI 集成模块并配置相应 Provider 后，还可以使用：
 
@@ -723,9 +370,9 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 
 这些任务依赖具体版本的 AI 模块、Provider 和服务器配置，并不意味着安装基础 Conductor Server 后即可直接调用所有模型。完整列表见 [System Tasks](https://conductor-oss.github.io/conductor/documentation/configuration/workflowdef/systemtasks/index.html) 和 [AI Tasks](https://conductor-oss.github.io/conductor/documentation/configuration/workflowdef/systemtasks/ai-tasks.html)。
 
-## 10. 适用场景与不适用场景
+## 6. 适用场景与不适用场景
 
-### 10.1 适用场景
+### 6.1 适用场景
 
 - 多语言微服务之间的业务编排；
 - 需要动态修改、版本化和可视化的流程平台；
@@ -734,7 +381,7 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 - 需要把 LLM、MCP 工具、人工确认和现有服务组合起来的 Agent 工作流；
 - 希望 Worker 与编排引擎独立扩缩容的系统。
 
-### 10.2 不适合作为首选的场景
+### 6.2 不适合作为首选的场景
 
 - 以数据日期、分区、补数、数据资产和血缘为核心：优先评估 Airflow 或 Dagster；
 - 任务天然是 Kubernetes Pod，核心需求是容器资源和集群调度：优先评估 Argo Workflows；
@@ -742,7 +389,7 @@ UI 适合探索、调试和运维。正式环境中建议把 JSON 定义纳入 G
 - 以 BPMN 标准、组织角色、候选人、会签和复杂人工待办为中心：优先评估 Flowable；
 - 只需要简单同步调用几个服务：直接写应用代码通常更简单。
 
-## 11. 针对 media_agent 的判断
+## 7. 针对 media_agent 的判断
 
 Conductor 与当前 `media_workflow` 的领域模型很接近：
 
@@ -770,7 +417,7 @@ Conductor 与当前 `media_workflow` 的领域模型很接近：
 
 如果目标是为项目增加用户可配置的多语言 DAG，Conductor 是这几种候选中最值得优先做源码对照和 PoC 的组件。
 
-## 12. 建议的验证实验
+## 8. 建议的验证实验
 
 使用第 2 节的视频流程，至少完成下面的故障注入：
 
