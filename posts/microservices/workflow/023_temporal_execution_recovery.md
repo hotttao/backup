@@ -1,6 +1,6 @@
 ---
 weight: 23
-title: "Temporal 执行流程与故障恢复：从任务推进到重放恢复"
+title: "Temporal 执行与故障恢复"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,16 +18,17 @@ toc:
   auto: false
 ---
 
-# Temporal 执行流程与故障恢复：从任务推进到重放恢复
+# Temporal 执行与故障恢复
 
-这是 Temporal 系列的第三篇：
+Temporal 内容分成四篇：
 
-1. [021：基础与架构](./021_temporal.md)通过 Greeting 示例建立整体认识；
-2. [022：成员发现、状态分片与任务分配](./022_temporal_membership_partition.md)解释 Shard、Partition 和 owner；
-3. **本文**沿用同一个示例，展开执行推进、持久化、重放、重试和故障恢复；
-4. [024：任务投递与数据变化](./024_temporal_task_delivery_data_model.md)对着完整时序图解释 Worker 长轮询、Matching 配对、请求参数和状态记录。
+1. [基础与架构](./021_temporal.md);
 
-本文不再重复 Membership 和一致性哈希算法。只要先记住：一次 Workflow Execution 的状态属于固定的 History Shard，而 Workflow Task 和 Activity Task 通过 Matching 匹配给应用 Worker。
+2. [任务分配与并发控制](./022_temporal_membership_partition.md);
+
+3. **执行与故障恢复（本文）**;
+
+4. [任务投递与状态变化](./024_temporal_task_delivery_data_model.md);
 
 ## 1. 先分清三种责任
 
@@ -45,69 +46,19 @@ Temporal 的执行不是由某一个组件从头跑到尾：
 - Workflow Worker **计算下一步决定**；
 - History **持久化决定并推进权威状态**。
 
-## 2. Greeting Workflow 的完整正常链路
+## 2. Greeting Workflow 的执行闭环
 
-第一篇中的 Workflow 会安排一个 `BuildGreeting` Activity：
-
-```go
-func GreetingWorkflow(ctx workflow.Context, name string) (string, error) {
-    ctx = workflow.WithActivityOptions(ctx, workflow.ActivityOptions{
-        StartToCloseTimeout: time.Minute,
-    })
-
-    var result string
-    err := workflow.ExecuteActivity(ctx, BuildGreeting, name).Get(ctx, &result)
-    return result, err
-}
-```
-
-### 2.1 启动 Workflow Execution
+Greeting 示例不断重复下面的循环：
 
 ```text
-Client
-  → Frontend
-  → 根据 Namespace ID + Workflow ID 算出 History Shard
-  → 路由到该 Shard 当前的 History owner
+History 保存事件并创建 Task
+  → Matching 将 Task 匹配给 Worker
+  → Workflow Worker 返回 Command，或 Activity Worker 返回 Result
+  → History 校验并持久化
+  → 创建下一项 Task，直到 Workflow 完成
 ```
 
-History 在持久化层创建 Workflow Execution，追加 `WorkflowExecutionStarted` 等事件，更新 Mutable State，并产生第一个 Workflow Task。
-
-Workflow ID 是业务稳定标识，Run ID 标识某一次具体运行。重试、Continue-As-New 或显式重新运行可能产生新的 Run，但仍可沿用同一个 Workflow ID。
-
-### 2.2 Workflow Task 被 Worker 领取
-
-History 不直接选择某个 Worker 进程，而是把 Workflow Task 路由到 `greeting-tasks` 对应的 Workflow Task Queue Partition：
-
-```text
-History
-  → Matching Partition owner
-  ↔ 长轮询 greeting-tasks 的 Workflow Worker
-```
-
-Matching 将 Task 与某个可用 Poll 匹配。Worker 得到任务后运行 `GreetingWorkflow`，走到 `ExecuteActivity`，本次计算产生“安排 `BuildGreeting`”的 Command。
-
-Worker 返回的不是整个 Workflow 内存快照，也不是直接写数据库的 SQL，而是一组 Command。History 验证 Command 与当前状态是否一致，再把它转成新的 Event、Mutable State 变化和待投递任务。
-
-### 2.3 Activity Task 被 Worker 执行
-
-History 持久化安排 Activity 的决定后，Activity Task 经对应的 Task Queue Partition 匹配给某个 Activity Worker：
-
-```text
-Activity Worker
-  → 执行 BuildGreeting("Tao")
-  → 返回 "Hello, Tao"
-  → Frontend 根据 Task Token 路由回原 History Shard
-```
-
-Task Token 携带 Server 定位并校验这次任务所需的信息。应用不应解析它，只需在完成、失败或心跳 RPC 中原样交还 SDK。
-
-### 2.4 Activity 结果再次唤醒 Workflow
-
-History 保存 Activity 完成事件，使原来等待的 Future 变为可用，并创建新的 Workflow Task。Workflow Worker 再次运行后，`Get` 得到 `Hello, Tao`，于是返回完成 Workflow 的 Command。
-
-History 最终持久化 `WorkflowExecutionCompleted`。到这里，一次执行才成为已完成状态。
-
-本节关注 History、Workflow Worker 和 Activity Worker 如何形成执行闭环。包含 Frontend、长轮询、Matching 配对、请求参数和每一步数据变化的完整时序图，单独放在 [024](./024_temporal_task_delivery_data_model.md)；Shard owner 路由过程见 [022](./022_temporal_membership_partition.md)。
+History 是权威状态机；Workflow Worker 计算决定；Activity Worker 执行外部副作用。后文只讨论这个闭环在缓存丢失、节点崩溃、超时和重试时怎样恢复。Frontend、长轮询、Matching 配对、Task Token 和逐步数据变化见 [024](./024_temporal_task_delivery_data_model.md)。
 
 ## 3. Workflow Task 与 Activity Task 为什么要分开
 

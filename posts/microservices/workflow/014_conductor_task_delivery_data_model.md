@@ -1,6 +1,6 @@
 ---
 weight: 14
-title: "Conductor 任务投递与数据变化：Worker Poll、QueueDAO 与状态记录"
+title: "Conductor 任务投递与状态变化"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,14 +18,17 @@ toc:
   auto: false
 ---
 
-# Conductor 任务投递与数据变化：Worker Poll、QueueDAO 与状态记录
+# Conductor 任务投递与状态变化
 
 Conductor 内容分成四篇：
 
-1. [011：基础与架构](./011_conductor.md)；
-2. [012：Queue、分区与冲突控制](./012_conductor_abs.md)；
-3. [013：执行与故障恢复](./013_conductor_execution_recovery.md)；
-4. **本文**。
+1. [基础与架构](./011_conductor.md);
+
+2. [任务分配与并发控制](./012_conductor_abs.md);
+
+3. [执行与故障恢复](./013_conductor_execution_recovery.md);
+
+4. **任务投递与状态变化（本文）**;
 
 ## 1. 完整时序图
 
@@ -117,4 +120,3 @@ Worker 只上报单个 Task 的结果。Conductor Server 中的 Decider 读取 W
 ## 参考资料
 
 详细来源沿用 [011](./011_conductor.md) 与 [012](./012_conductor_abs.md) 的参考资料。
-

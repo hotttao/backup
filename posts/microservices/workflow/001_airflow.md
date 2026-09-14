@@ -1,6 +1,6 @@
 ---
 weight: 1
-title: "Airflow 基础与架构：从内容生产 DAG 到三节点集群"
+title: "Airflow 基础与架构"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Airflow 基础与架构：从内容生产 DAG 到三节点集群
+# Airflow 基础与架构
 
 Airflow 内容分成四篇：
 
-1. **本文**；
+1. **基础与架构（本文）**;
 
-2. [002：调度归属与任务分配](./002_airflow_scheduler_assignment.md)；
+2. [任务分配与并发控制](./002_airflow_scheduler_assignment.md);
 
-3. [003：执行与故障恢复](./003_airflow_execution_recovery.md)；
+3. [执行与故障恢复](./003_airflow_execution_recovery.md);
 
-4. [004：任务投递与数据变化](./004_airflow_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./004_airflow_task_delivery_data_model.md);
 
 ## 1. 结论先行
 
@@ -241,7 +241,7 @@ flowchart TB
 
 Metadata DB 保存“任务运行到哪里”，不是整个数据湖；Celery Broker 负责投递执行命令，不是 DagRun 的权威状态库；XCom 适合传小型元数据，不适合传视频或大批量数据。
 
-### 3.4 回到示例：内容生产 DAG 怎样经过这张架构图
+### 3.4 示例流转与架构结论
 
 前面的 `daily_media_pipeline` 会按下面的路径流转：
 
@@ -260,11 +260,12 @@ Metadata DB 保存“任务运行到哪里”，不是整个数据湖；Celery B
 
 | 问题 | 结论 | 详细原理 |
 |---|---|---|
-| DagRun、TaskInstance 状态归谁 | Metadata Database 是权威状态库，不归某台 Scheduler 或 Worker 的内存 | [003](./003_airflow_execution_recovery.md) |
-| 谁负责发现可运行任务 | 多个 Scheduler 共同调度，通过数据库锁和条件更新临时取得一批调度工作，不永久拥有某个 DAG | [002](./002_airflow_scheduler_assignment.md) |
-| 一条 Celery 任务归哪个 Worker | Executor 按 queue 发布，Broker 把消息交给一个消费该 queue 的 Worker；Worker 没有固定 DAG 所有权 | [004](./004_airflow_task_delivery_data_model.md) |
-| 怎样并发 | 不同 TaskInstance 可由多个 Worker 并发执行，同时受 DAG 并发、Pool、queue、Worker concurrency 等限制 | [002](./002_airflow_scheduler_assignment.md) |
-| 谁推进 DAG | Scheduler 根据 Metadata DB 中的依赖和终态决定哪些下游 TaskInstance 可以进入队列；Worker 只执行单个 TaskInstance | [003](./003_airflow_execution_recovery.md) |
+| Workflow 进度存在哪里 | DagRun、TaskInstance 等状态保存在 Metadata Database，不属于某台 Scheduler 或 Worker 的内存 | [003](./003_airflow_execution_recovery.md) |
+| 谁推进 Workflow | Scheduler 根据依赖和终态决定哪些下游 TaskInstance 可以运行；Worker 只执行单个 TaskInstance | [003](./003_airflow_execution_recovery.md) |
+| Task 怎样分配 | Scheduler 经 Executor 按 queue 发布，Celery Broker 把消息交给一个消费该 queue 的 Worker | [004](./004_airflow_task_delivery_data_model.md) |
+| Worker 是否长期拥有 Task 或 Workflow | 否。Worker 只获得一次 TaskInstance Attempt；Scheduler 也只临时取得一批调度工作 | [002](./002_airflow_scheduler_assignment.md) |
+| 怎样并发 | 不同 TaskInstance 可由多个 Worker 并发执行，受 DAG 并发、Pool、queue 和 Worker concurrency 限制 | [002](./002_airflow_scheduler_assignment.md) |
+| 节点故障后谁接管 | 其他 Scheduler 继续调度；Celery 消息和孤儿 TaskInstance 按 Executor、Broker 与 Airflow 恢复规则重新处理 | [003](./003_airflow_execution_recovery.md) |
 
 这里不展开 Broker ACK、Worker 消费和每次数据库状态变化，完整时序见 [004](./004_airflow_task_delivery_data_model.md)。
 

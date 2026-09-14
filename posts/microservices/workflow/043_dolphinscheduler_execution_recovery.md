@@ -1,6 +1,6 @@
 ---
 weight: 43
-title: "DolphinScheduler 执行流程与故障恢复：Command、TaskInstance 与 Failover"
+title: "DolphinScheduler 执行与故障恢复"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,32 +18,28 @@ toc:
   auto: false
 ---
 
-# DolphinScheduler 执行流程与故障恢复：Command、TaskInstance 与 Failover
+# DolphinScheduler 执行与故障恢复
 
 DolphinScheduler 内容分成四篇：
 
-1. [第 1 篇](./041_dolphinscheduler.md)；
+1. [基础与架构](./041_dolphinscheduler.md);
 
-2. [第 2 篇](./042_dolphinscheduler_assignment.md)；
+2. [任务分配与并发控制](./042_dolphinscheduler_assignment.md);
 
-3. **本文**；
+3. **执行与故障恢复（本文）**;
 
-4. [第 4 篇](./044_dolphinscheduler_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./044_dolphinscheduler_task_delivery_data_model.md);
 
-## 1. 从 Schedule 到 Worker 的完整流程
+## 1. 先明确执行状态机的边界
 
-以每天 01:00 的流水线为例：
+```text
+Schedule/API 创建 Command
+  → Master 创建 Workflow Instance 并决定可运行 TaskInstance
+  → Worker 执行一个 TaskInstance 并上报
+  → Master 根据数据库终态推进下游
+```
 
-1. Quartz 调度触发计划，产生一条持久化 Command；手工运行、API 触发、补数和失败恢复也会产生相应 Command。
-2. Master 集群协调谁负责处理 Command，创建 Workflow Instance 并加载对应版本的 DAG。
-3. Master 找出没有未满足上游依赖的 Task，创建/更新 Task Instance。
-4. Task 根据 Worker Group、优先级和负载均衡策略进入待分发队列。
-5. Master 选择目标 Worker，通过内部 RPC 发送任务。
-6. Worker 接收、确认并执行相应 Task Plugin。
-7. Worker 将运行、成功、失败、取消等事件回传 Master；Master 持久化实例状态并推进后续节点。
-8. Workflow 达到终态后，根据告警策略通知 Alert Server。
-
-这与 Airflow “Scheduler 解析 DAG、把 TaskInstance 交给 Executor”相似，但 DolphinScheduler 把 Master/Worker RPC、Worker Group 和大量大数据 Task Plugin 作为平台核心，不需要用 CeleryExecutor 才获得分布式 Worker。
+Master 是 DAG 状态机推进者，Worker 是单任务执行者，Metadata Database 是权威进度存储。本篇讨论实例持久化、Failover、重试和补数；Master 选 Worker、RPC 分发及每一步字段变化见 [044](./044_dolphinscheduler_task_delivery_data_model.md)。
 
 ## 2. 状态持久化与异常恢复
 

@@ -1,6 +1,6 @@
 ---
 weight: 52
-title: "River 任务归属原理：PostgreSQL Queue、SKIP LOCKED 与 Leader"
+title: "River 任务分配与并发控制"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,19 +18,19 @@ toc:
   auto: false
 ---
 
-# River 任务归属原理：PostgreSQL Queue、SKIP LOCKED 与 Leader
+# River 任务分配与并发控制
 
 River 内容分成四篇：
 
-1. [第 1 篇](./051_river.md)；
+1. [基础与架构](./051_river.md);
 
-2. **本文**；
+2. **任务分配与并发控制（本文）**;
 
-3. [第 3 篇](./053_river_execution_recovery.md)；
+3. [执行与故障恢复](./053_river_execution_recovery.md);
 
-4. [第 4 篇](./054_river_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./054_river_task_delivery_data_model.md);
 
-## 1. 三节点部署：谁领取任务，状态存在哪里
+## 1. 三节点架构与存储归属
 
 ### 1.1 进程里有哪些组件
 
@@ -107,7 +107,7 @@ Job：id = 1001
 
 `river_leader` 的 UNLOGGED 定位与 `river_job` 不同：前者是可重新选举的协调信息，后者才是需要保留的任务状态。不能把 Leader 行当成任务可靠性的来源。表结构和查询可直接阅读 [river_job.sql](https://github.com/riverqueue/river/blob/a4cf56f7233ce1a84a4dc188d91bd09399522763/riverdriver/riverpgxv5/internal/dbsqlc/river_job.sql)、[river_queue.sql](https://github.com/riverqueue/river/blob/a4cf56f7233ce1a84a4dc188d91bd09399522763/riverdriver/riverpgxv5/internal/dbsqlc/river_queue.sql) 和 [river_leader.sql](https://github.com/riverqueue/river/blob/a4cf56f7233ce1a84a4dc188d91bd09399522763/riverdriver/riverpgxv5/internal/dbsqlc/river_leader.sql)。
 
-### 1.4 多个节点怎样避免同时领取同一任务
+## 2. 多个 Client 怎样避免领取同一 Job
 
 PostgreSQL 路径中的核心是 `JobGetAvailable`。以下是保留关键逻辑的简化 SQL，不是可直接替换源码的版本：
 
@@ -137,7 +137,7 @@ RETURNING j.*;
 
 排序是 `priority → scheduled_at → id`，其中 priority 数字越小越优先。多节点、多个 goroutine、重试以及跳过锁定行都会影响实际开始和完成顺序，不能把它当成严格 FIFO 的业务顺序保证。依据见上述 `river_job.sql` 的 `JobGetAvailable`。
 
-### 1.5 成员协调与维护 Leader 怎样确定
+## 3. 维护 Leader 怎样产生
 
 River 的这条执行路径不依赖 Ringpop 成员环。Client 只要连接到同一数据库和 Schema，就能竞争领取任务；需要集群协调的是“谁负责执行一份维护工作”。
 
@@ -153,7 +153,7 @@ River 的这条执行路径不依赖 Ringpop 成员环。Client 只要连接到�
 
 维护 Leader 负责推进到期任务、生成周期任务、回收 stuck jobs、清理终态任务等。**失去维护 Leader 不等于整个队列马上停止执行**：其他 Client 仍可领取已满足条件的 `available` Job，但依赖维护服务的调度和回收可能延迟。
 
-### 1.6 执行节点失效时怎样恢复
+## 4. Client 失效后怎样接管
 
 假设 Job 1001 被 A 领取，A 写入 `running` 后突然断电：
 

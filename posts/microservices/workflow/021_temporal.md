@@ -1,6 +1,6 @@
 ---
 weight: 21
-title: "Temporal 基础与架构：从第一个 Workflow 到三节点集群"
+title: "Temporal 基础与架构"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,16 +18,19 @@ toc:
   auto: false
 ---
 
-# Temporal 基础与架构：从第一个 Workflow 到三节点集群
+# Temporal 基础与架构
 
 本文讨论开源 Temporal Server 及其 SDK，不包含 Temporal Cloud 的托管能力。
 
-Temporal 内容拆成四篇，阅读顺序如下：
+Temporal 内容分成四篇：
 
-1. **本文**：通过一个最小例子学会使用 Temporal，再建立整体架构认识；
-2. [022：Temporal 成员发现、状态分片与任务分配](./022_temporal_membership_partition.md)：详细解释 Membership、History Shard、Matching Partition 和 owner；
-3. [023：Temporal 执行流程与故障恢复](./023_temporal_execution_recovery.md)：解释任务推进、状态持久化、重放、超时、重试和故障恢复；
-4. [024：Temporal 任务投递与数据变化](./024_temporal_task_delivery_data_model.md)：对着完整时序图理解 Worker 长轮询、Matching 配对、请求参数和状态记录。
+1. **基础与架构（本文）**;
+
+2. [任务分配与并发控制](./022_temporal_membership_partition.md);
+
+3. [执行与故障恢复](./023_temporal_execution_recovery.md);
+
+4. [任务投递与状态变化](./024_temporal_task_delivery_data_model.md);
 
 ## 1. Temporal 解决什么问题
 
@@ -228,46 +231,31 @@ flowchart TB
     F -->|列表与搜索| V
 ```
 
-### 3.3 回到示例：Greeting Workflow 怎样经过这张架构图
+### 3.3 示例流转与架构结论
 
-仍以 `greeting-request-42` 为例，先记住这条链路中的四个结论：
+`greeting-request-42` 会沿着下面的架构链路运行：
 
-1. **Workflow 状态归谁**：`Namespace ID + Workflow ID` 先映射到固定 History Shard，该 Shard 当前的 History owner 负责读取和修改这次执行的权威状态；
-2. **任务怎样找到 Worker**：History 把任务送往对应的 Task Queue Partition，Matching owner 将任务匹配给正在长轮询的某个 Worker；Worker 不长期拥有 Workflow 或 Partition；
-3. **谁推进 Workflow**：Workflow Worker 运行代码并计算 Command，History 校验、持久化这些决定并创建后续任务，因此真正掌握持久状态推进权的是 History；
-4. **怎样并发**：不同 Workflow Execution、不同 Activity Task 可以分布到多个 Shard、Partition 和 Worker 槽位并发处理；同一 Workflow Execution 的状态变更由其 History Shard 串行提交。
-
-Membership 不保存 Workflow 状态，也不直接把某一条 Activity Task 指派给某个 Worker。它通过成员探测和 Gossip 让各 Server 获得成员视图，再由本地 Resolver 计算 History Shard 或 Matching Partition 当前应路由到哪个 Server 实例；具体 Worker 则由 Matching 根据长轮询请求完成匹配。
-
-这里故意略去了具体时序、请求参数和状态记录。分片 owner 与路由算法见 [022](./022_temporal_membership_partition.md)，执行与故障恢复见 [023](./023_temporal_execution_recovery.md)，完整任务投递时序和数据变化见 [024](./024_temporal_task_delivery_data_model.md)。
-
-### 3.4 并发、归属和推进：这里只记结论
+```text
+1. Client 经 Frontend 启动 Workflow Execution
+2. Frontend 根据 Namespace ID + Workflow ID 路由到固定 History Shard 的当前 owner
+3. History 保存启动状态并创建 Workflow Task，经 Matching 匹配给 Workflow Worker
+4. Workflow Worker 返回安排 BuildGreeting 的 Command，History 保存决定并创建 Activity Task
+5. Matching 把 Activity Task 匹配给某个 Activity Worker
+6. Activity 结果回到原 History Shard；History 创建下一次 Workflow Task 并最终保存完成状态
+```
 
 | 问题 | 结论 | 详细原理 |
 |---|---|---|
-| Workflow 状态怎样分片 | `Namespace ID + Workflow ID` 经稳定哈希映射到固定的 History Shard | [022 第 3、4 节](./022_temporal_membership_partition.md) |
-| History Shard 归哪台节点 | History 成员通过 SWIM/Gossip 维护成员视图，各节点基于一致性哈希计算 owner；真正写入还受 Shard Range ID 隔离 | [022 第 1～4 节](./022_temporal_membership_partition.md) |
-| Task Queue 怎样分区 | 一个逻辑 Task Queue Family 可以拆成多个读写 Partition | [022 第 5 节](./022_temporal_membership_partition.md) |
-| Matching Partition 归哪台节点 | 根据 Namespace、Task Queue、Task Type 和 Partition 形成路由 Key，再通过 Matching 成员 Resolver 找 owner | [022 第 5、6 节](./022_temporal_membership_partition.md) |
-| 某条任务归哪个 Worker | Worker 没有固定 Partition 所有权；多个 Worker 长轮询同一 Task Queue，由 Matching 将一个可用 Task 匹配给一个可用 Poll | [022 第 5 节](./022_temporal_membership_partition.md) |
-| Activity 怎样并发执行 | 不同 Activity Task 可以由多个 Worker 进程和多个执行槽位并发处理，受 Worker 并发配置与服务端限流约束 | [023](./023_temporal_execution_recovery.md) |
-| 同一 Workflow 怎样避免乱序推进 | History 是权威状态机；一次状态转换基于当前 Mutable State 串行提交，同一执行不会靠多个 Worker 随意并发修改 | [023](./023_temporal_execution_recovery.md) |
-| 谁推进 Workflow | History 根据事件安排 Workflow Task；Workflow Worker 运行代码产生 Command；History 校验并持久化 Command 对应的新事件和任务 | [023](./023_temporal_execution_recovery.md) |
+| Workflow 进度存在哪里 | Event History 和 Mutable State 保存在 Persistence，由固定 History Shard 管理 | [023](./023_temporal_execution_recovery.md) |
+| 谁推进 Workflow | Workflow Worker 计算 Command；History 校验并持久化 Command，掌握权威状态推进权 | [023](./023_temporal_execution_recovery.md) |
+| Task 怎样分配 | History 创建 Task；Matching Partition owner 把 Task 与一个 Worker Poll 匹配 | [022](./022_temporal_membership_partition.md) |
+| Worker 是否长期拥有 Task 或 Workflow | 否。Worker 只执行本次取得的 Task，不拥有 Workflow 或 Task Queue Partition | [024](./024_temporal_task_delivery_data_model.md) |
+| 怎样并发 | 不同 Workflow 和 Activity 可跨 Shard、Partition、Worker 槽位并发；单个 Workflow 的状态转换由 History 串行提交 | [022](./022_temporal_membership_partition.md) |
+| 节点故障后谁接管 | Membership 发现成员变化，新 History/Matching owner 接管；Range ID 防止旧 History owner 继续写入 | [022](./022_temporal_membership_partition.md) |
 
-最容易混淆的是“任务归属”和“状态归属”：
+这里不展开 Gossip、分片算法、Task Token 和持久化事务。分别见 [022](./022_temporal_membership_partition.md)、[023](./023_temporal_execution_recovery.md) 和 [024](./024_temporal_task_delivery_data_model.md)。
 
-```text
-History Shard owner
-└─ 负责某批 Workflow Execution 的权威状态
-
-Matching Partition owner
-└─ 负责某个 Task Queue Partition 的任务与 Poll 匹配
-
-应用 Worker
-└─ 没有长期拥有某个 Workflow 或 Partition，只执行本次取得的 Task
-```
-
-### 3.5 三台机器如何部署
+### 3.4 三台机器如何部署
 
 三台宿主机可以分别运行四种 Server Service 的副本：
 

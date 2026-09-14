@@ -1,6 +1,6 @@
 ---
 weight: 41
-title: "DolphinScheduler 基础与架构：从内容生产 DAG 到三节点集群"
+title: "DolphinScheduler 基础与架构"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# DolphinScheduler 基础与架构：从内容生产 DAG 到三节点集群
+# DolphinScheduler 基础与架构
 
 DolphinScheduler 内容分成四篇：
 
-1. **本文**；
+1. **基础与架构（本文）**;
 
-2. [第 2 篇](./042_dolphinscheduler_assignment.md)；
+2. [任务分配与并发控制](./042_dolphinscheduler_assignment.md);
 
-3. [第 3 篇](./043_dolphinscheduler_execution_recovery.md)；
+3. [执行与故障恢复](./043_dolphinscheduler_execution_recovery.md);
 
-4. [第 4 篇](./044_dolphinscheduler_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./044_dolphinscheduler_task_delivery_data_model.md);
 
 ## 1. 结论先行
 
@@ -143,7 +143,7 @@ Node 1      │ API 1   │     │ API 2   │     │ API 3   │
 
 三台物理机同时运行 Master 和 Worker 虽然节省机器，但大型 Spark 提交、Python 计算或媒体处理可能抢占 Master 的 CPU、内存和磁盘。生产环境应通过独立 Worker Group 或独立节点隔离调度控制面与执行负载。
 
-### 3.1 回到示例：内容生产 DAG 怎样经过这张架构图
+### 3.1 示例流转与架构结论
 
 前面的每日内容流水线会这样运行：
 
@@ -159,11 +159,12 @@ Node 1      │ API 1   │     │ API 2   │     │ API 3   │
 
 | 问题 | 结论 | 详细原理 |
 |---|---|---|
-| Workflow/TaskInstance 状态归谁 | Metadata Database 保存权威状态，不归 Master 本机内存 | [043](./043_dolphinscheduler_execution_recovery.md) |
-| Workflow 由哪个 Master 推进 | 多个 Master 协调领取 Command/实例；取得本次处理权的 Master 推进状态，故障后可以接管 | [042](./042_dolphinscheduler_assignment.md) |
-| Task 归哪个 Worker | Master 先选 Worker Group，再结合 Registry 中的存活、负载和槽位选择具体 Worker | [044](./044_dolphinscheduler_task_delivery_data_model.md) |
-| 怎样并发 | 不同 Workflow 和无依赖 Task 可并发；并发度受 Master 调度、Worker Group、Worker 槽位和租户资源限制 | [042](./042_dolphinscheduler_assignment.md) |
-| 谁推进 DAG | Master 是流程状态机推进者；Worker 只执行一个 TaskInstance 并上报 | [043](./043_dolphinscheduler_execution_recovery.md) |
+| Workflow 进度存在哪里 | WorkflowInstance、TaskInstance 状态保存在 Metadata Database，不属于 Master 本机内存 | [043](./043_dolphinscheduler_execution_recovery.md) |
+| 谁推进 Workflow | Master 是 DAG 状态机推进者；Worker 只执行一个 TaskInstance 并上报 | [043](./043_dolphinscheduler_execution_recovery.md) |
+| Task 怎样分配 | Master 先选 Worker Group，再结合 Registry 中的存活、负载和槽位选择具体 Worker | [044](./044_dolphinscheduler_task_delivery_data_model.md) |
+| Worker 是否长期拥有 Task 或 Workflow | 否。Worker 只执行本次 RPC 收到的 Task；Master 也可在故障后由其他节点接管 | [042](./042_dolphinscheduler_assignment.md) |
+| 怎样并发 | 不同 Workflow 和无依赖 Task 可并发，受 Master、Worker Group、Worker 槽位和租户资源限制 | [042](./042_dolphinscheduler_assignment.md) |
+| 节点故障后谁接管 | Registry 感知 Master/Worker 失效，存活 Master 根据 Metadata DB 中的实例状态执行 Failover | [043](./043_dolphinscheduler_execution_recovery.md) |
 
 DolphinScheduler 不是 Worker 主动长轮询队列，而是 Master 主动 RPC 分发。逐次请求和数据变化见 [044](./044_dolphinscheduler_task_delivery_data_model.md)。
 

@@ -1,6 +1,6 @@
 ---
 weight: 42
-title: "DolphinScheduler 任务分配原理：Master、Worker Group、注册中心与锁"
+title: "DolphinScheduler 任务分配与并发控制"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# DolphinScheduler 任务分配原理：Master、Worker Group、注册中心与锁
+# DolphinScheduler 任务分配与并发控制
 
 DolphinScheduler 内容分成四篇：
 
-1. [第 1 篇](./041_dolphinscheduler.md)；
+1. [基础与架构](./041_dolphinscheduler.md);
 
-2. **本文**；
+2. **任务分配与并发控制（本文）**;
 
-3. [第 3 篇](./043_dolphinscheduler_execution_recovery.md)；
+3. [执行与故障恢复](./043_dolphinscheduler_execution_recovery.md);
 
-4. [第 4 篇](./044_dolphinscheduler_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./044_dolphinscheduler_task_delivery_data_model.md);
 
 ## 1. Queue 基于什么实现
 

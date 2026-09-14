@@ -1,6 +1,6 @@
 ---
 weight: 51
-title: "River 基础与架构：从事务入队到三节点 Worker 集群"
+title: "River 基础与架构"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# River 基础与架构：从事务入队到三节点 Worker 集群
+# River 基础与架构
 
 River 内容分成四篇：
 
-1. **本文**；
+1. **基础与架构（本文）**;
 
-2. [第 2 篇](./052_river_job_assignment.md)；
+2. [任务分配与并发控制](./052_river_job_assignment.md);
 
-3. [第 3 篇](./053_river_execution_recovery.md)；
+3. [执行与故障恢复](./053_river_execution_recovery.md);
 
-4. [第 4 篇](./054_river_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./054_river_task_delivery_data_model.md);
 
 ## 1. 结论先行
 
@@ -146,7 +146,7 @@ flowchart TB
 
 具体锁、`SKIP LOCKED`、Queue 并发限制和 Leader 选举见 [052](./052_river_job_assignment.md)，逐次数据变化见 [054](./054_river_task_delivery_data_model.md)。
 
-### 3.1 回到示例：内容生产 Job 怎样经过这张架构图
+### 3.1 示例流转与架构结论
 
 前面的 `PrepareContentJob` 会这样运行：
 
@@ -162,11 +162,12 @@ flowchart TB
 
 | 问题 | 结论 | 详细原理 |
 |---|---|---|
-| Job 状态和队列归谁 | PostgreSQL 中的 `river_job` 同时保存权威状态和可领取队列记录 | [053](./053_river_execution_recovery.md) |
-| Job 归哪个 Client | 多个 Client 通过数据库锁和 `SKIP LOCKED` 类机制竞争；成功更新状态者取得本次执行权 | [052](./052_river_job_assignment.md) |
-| Job 归哪个 Worker | Client 根据 Kind 调用本进程注册的 Go Worker；Worker 不是远程节点 | [054](./054_river_task_delivery_data_model.md) |
+| Workflow 进度存在哪里 | River 只原生保存单个 Job 进度；`river_job` 同时是 PostgreSQL 中的权威状态和队列记录 | [053](./053_river_execution_recovery.md) |
+| 谁推进 Workflow | River Client 推进单个 Job；跨 Job Workflow 由业务代码、Resumable Jobs 或 River Pro 组织 | [053](./053_river_execution_recovery.md) |
+| Task 怎样分配 | 多个 Client 竞争到期 Job，数据库锁使一个 Client 取得本次执行权，再按 Kind 调用本地 Worker | [052](./052_river_job_assignment.md) |
+| Worker 是否长期拥有 Task 或 Workflow | 否。Worker 是 Client 进程内函数，只处理当前 Job；River 没有固定 Queue owner | [054](./054_river_task_delivery_data_model.md) |
 | 怎样并发 | 不同 Job 可由多个 Client 并发；Queue 的 MaxWorkers 主要限制单个 Client 的本地执行槽位 | [052](./052_river_job_assignment.md) |
-| 谁推进 Workflow | River Client 只推进单个 Job 状态；跨 Job Workflow 需要业务代码、Resumable Jobs 或 River Pro 显式组织 | [053](./053_river_execution_recovery.md) |
+| 节点故障后谁接管 | 其他 Client 根据 PostgreSQL 中的执行状态和救援机制重新获得 Job；没有固定 Queue owner | [053](./053_river_execution_recovery.md) |
 
 River 没有独立 Scheduler 或 Matching。完整领取请求和 `river_job` 字段变化见 [054](./054_river_task_delivery_data_model.md)。
 

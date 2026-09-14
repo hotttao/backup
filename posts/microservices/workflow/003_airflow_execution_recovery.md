@@ -1,6 +1,6 @@
 ---
 weight: 3
-title: "Airflow 执行流程与故障恢复：TaskInstance、重试、补跑与幂等"
+title: "Airflow 执行与故障恢复"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,104 +18,32 @@ toc:
   auto: false
 ---
 
-# Airflow 执行流程与故障恢复：TaskInstance、重试、补跑与幂等
+# Airflow 执行与故障恢复
 
 Airflow 内容分成四篇：
 
-1. [001：基础与架构](./001_airflow.md)；
+1. [基础与架构](./001_airflow.md);
 
-2. [002：调度归属与任务分配](./002_airflow_scheduler_assignment.md)；
+2. [任务分配与并发控制](./002_airflow_scheduler_assignment.md);
 
-3. **本文**；
+3. **执行与故障恢复（本文）**;
 
-4. [004：任务投递与数据变化](./004_airflow_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./004_airflow_task_delivery_data_model.md);
 
-## 1. 一条 TaskInstance 是怎样被执行的
+## 1. 先明确执行状态机的边界
 
-### 1.1 第一步：DAG 定义进入 Airflow
-
-开发者用 Python 定义 DAG 和 Task，再把代码发布到 Dag Bundle。DAG Processor 负责：
+Airflow 的执行闭环只有三类责任：
 
 ```text
-加载指定 Dag Bundle 版本
-  → 执行 Python 文件的顶层 DAG 定义代码
-  → 得到 DAG、Task 和依赖关系
-  → 序列化为调度所需结构
-  → 写入 Metadata DB
+Scheduler 根据 Metadata DB 决定哪些 TaskInstance 可运行
+  → Executor 把执行请求交给 Celery、Kubernetes 等后端
+  → Worker 执行一个 TaskInstance 并上报终态
+  → Scheduler 再根据终态推进下游
 ```
 
-Scheduler 和 API Server 主要读取 Serialized DAG，不需要反复执行 DAG 作者的顶层代码。Worker 真正运行某个 Task 时，再取得该 DagRun 对应的 Bundle 版本和任务代码。
+Scheduler 不执行 Operator 业务代码，Worker 也不决定 DAG 的下一个节点。DagRun 和 TaskInstance 的权威进度保存在 Metadata Database。
 
-所以 DAG Python 文件有两个不同执行阶段：
-
-1. **解析阶段**：DAG Processor 执行顶层定义，构造任务图；
-2. **任务阶段**：Worker 只执行被选中的 Operator 或 TaskFlow 函数。
-
-不要在 DAG 顶层发 HTTP 请求、扫描大目录或读取大量业务数据，否则每次解析都会产生副作用和性能问题。
-
-### 1.2 第二步：Scheduler 创建 DagRun 和 TaskInstance
-
-Scheduler 根据 Timetable、`start_date`、现有运行和 `catchup` 决定是否创建 DagRun。每个 DagRun 对应一个业务数据区间，不是简单记录“机器几点启动”。
-
-创建 DagRun 后，Scheduler 为其中的 Task 建立 TaskInstance，并持续检查：
-
-- 上游 TaskInstance 是否完成；
-- Trigger Rule 是否满足；
-- Pool 是否还有 slot；
-- DAG、Task 和 DagRun 并发限制；
-- 重试时间、开始时间等条件。
-
-条件满足的 TaskInstance 从 `scheduled` 进入 `queued`。多 Scheduler 会在调度关键区使用 Metadata DB 行锁，避免同时占用同一批 Pool slot 或重复排队。
-
-### 1.3 第三步：Executor 把任务交给执行后端
-
-Airflow 没有一种固定的任务队列，提交方式由 Executor 决定：
-
-| Executor | 如何启动 TaskInstance | 是否需要 Celery Broker |
-|---|---|---:|
-| LocalExecutor | Scheduler 所在机器的本地进程 | 否 |
-| CeleryExecutor | 将执行命令发送到 RabbitMQ/Redis，由常驻 Celery Worker 消费 | 是 |
-| KubernetesExecutor | 通过 Kubernetes API 为每个 TaskInstance 创建 Pod | 否 |
-| 自定义/批处理 Executor | 提交到实现指定的计算后端 | 取决于实现 |
-
-以 CeleryExecutor 为例：
-
-```mermaid
-sequenceDiagram
-    participant DP as DAG Processor
-    participant DB as Metadata DB
-    participant S as Scheduler / Executor
-    participant B as Celery Broker
-    participant W as Celery Worker
-    participant API as API Server
-
-    DP->>DB: 写入 Serialized DAG 和 Bundle 版本
-    S->>DB: 创建 DagRun / TaskInstance
-    S->>DB: 锁定调度关键区，标记 queued
-    S->>B: 发布执行命令
-    W->>B: 消费命令
-    W->>API: 取得运行上下文，汇报 running
-    W->>W: 执行 Operator / TaskFlow 函数
-    W->>API: 汇报 success/failed、XCom 和心跳
-    API->>DB: 更新 TaskInstance
-    S->>DB: 发现依赖满足，排队下游任务
-```
-
-Airflow 3 的任务进程通过 Task Execution API 与控制面交互，不应让用户 Task 代码直接操作 Metadata DB。
-
-### 1.4 谁推动 DAG 进入下一步
-
-不是 Worker 直接启动下游 Task。Worker 只报告当前 TaskInstance 的结果；Scheduler 再读取数据库，判断下游依赖是否满足，然后交给 Executor。
-
-```text
-Worker 完成 generate
-  → API Server 记录 generate=success
-  → Scheduler 发现 review 的上游已成功
-  → Scheduler 将 review 排队
-  → Executor 启动 review
-```
-
-因此，Airflow 的推进方式是 **数据库状态 + Scheduler 调和**。Scheduler 短暂重启不会丢失已经提交的 TaskInstance 状态，新 Scheduler 可以继续扫描并推进。
+本篇从这个边界出发讨论持久化、补跑、重试和故障恢复。Scheduler、Broker 与 Worker 的逐次投递请求和状态字段统一见 [004](./004_airflow_task_delivery_data_model.md)。
 
 ## 2. DAG 定义、运行状态与业务数据怎样持久化
 

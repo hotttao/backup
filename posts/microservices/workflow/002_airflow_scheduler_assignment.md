@@ -1,6 +1,6 @@
 ---
 weight: 2
-title: "Airflow 调度归属与任务分配：Scheduler、Executor、Queue 与并发控制"
+title: "Airflow 任务分配与并发控制"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Airflow 调度归属与任务分配：Scheduler、Executor、Queue 与并发控制
+# Airflow 任务分配与并发控制
 
 Airflow 内容分成四篇：
 
-1. [001：基础与架构](./001_airflow.md)；
+1. [基础与架构](./001_airflow.md);
 
-2. **本文**；
+2. **任务分配与并发控制（本文）**;
 
-3. [003：执行与故障恢复](./003_airflow_execution_recovery.md)；
+3. [执行与故障恢复](./003_airflow_execution_recovery.md);
 
-4. [004：任务投递与数据变化](./004_airflow_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./004_airflow_task_delivery_data_model.md);
 
 ## 1. Queue 与 Executor：Task 到底排在哪里
 

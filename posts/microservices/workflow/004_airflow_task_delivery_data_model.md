@@ -1,6 +1,6 @@
 ---
 weight: 4
-title: "Airflow 任务投递与数据变化：Celery Broker、Worker 消费与 Metadata Database"
+title: "Airflow 任务投递与状态变化"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,14 +18,17 @@ toc:
   auto: false
 ---
 
-# Airflow 任务投递与数据变化：Celery Broker、Worker 消费与 Metadata Database
+# Airflow 任务投递与状态变化
 
 Airflow 内容分成四篇：
 
-1. [001：基础与架构](./001_airflow.md)；
-2. [002：调度归属与任务分配](./002_airflow_scheduler_assignment.md)；
-3. [003：执行与故障恢复](./003_airflow_execution_recovery.md)；
-4. **本文**。
+1. [基础与架构](./001_airflow.md);
+
+2. [任务分配与并发控制](./002_airflow_scheduler_assignment.md);
+
+3. [执行与故障恢复](./003_airflow_execution_recovery.md);
+
+4. **任务投递与状态变化（本文）**;
 
 ## 1. 先看完整时序图
 
@@ -44,7 +47,7 @@ sequenceDiagram
 
     DP->>DB: 保存 Serialized DAG / DAG Version
     S->>DB: 创建 DagRun 与 TaskInstance(SCHEDULED)
-    S->>DB: 竞争可调度 TaskInstance并更新为 QUEUED
+    S->>DB: 竞争可调度 TaskInstance 并更新为 QUEUED
     S->>E: queue_workload(TaskInstance workload)
     E->>B: publish(queue=content-generation)
     W->>B: 持续消费指定 Celery queue
@@ -147,4 +150,3 @@ Metadata Database 中的状态
 ## 参考资料
 
 详细来源沿用 [001](./001_airflow.md) 的参考资料；Executor、Celery 故障与补跑机制见 [002](./002_airflow_scheduler_assignment.md) 和 [003](./003_airflow_execution_recovery.md)。
-

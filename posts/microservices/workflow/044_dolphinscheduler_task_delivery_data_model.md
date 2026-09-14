@@ -1,6 +1,6 @@
 ---
 weight: 44
-title: "DolphinScheduler 任务投递与数据变化：Master 分发、Worker RPC 与实例状态"
+title: "DolphinScheduler 任务投递与状态变化"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# DolphinScheduler 任务投递与数据变化：Master 分发、Worker RPC 与实例状态
+# DolphinScheduler 任务投递与状态变化
 
 DolphinScheduler 内容分成四篇：
 
-1. [041：基础与架构](./041_dolphinscheduler.md)；
+1. [基础与架构](./041_dolphinscheduler.md);
 
-2. [042：Master、Worker 与任务归属](./042_dolphinscheduler_assignment.md)；
+2. [任务分配与并发控制](./042_dolphinscheduler_assignment.md);
 
-3. [043：执行与故障恢复](./043_dolphinscheduler_execution_recovery.md)；
+3. [执行与故障恢复](./043_dolphinscheduler_execution_recovery.md);
 
-4. **本文**。
+4. **任务投递与状态变化（本文）**;
 
 ## 1. 完整时序图
 
@@ -48,7 +48,7 @@ sequenceDiagram
  W->>DB: 读取资源/准备环境
  W->>W: 执行 Shell/SQL/Spark 等任务
  W->>M: 上报 RUNNING/终态
- M->>DB: 更新 TaskInstance并推进 DAG
+ M->>DB: 更新 TaskInstance 并推进 DAG
 ```
 
 ## 2. Worker 与谁通信
@@ -79,4 +79,4 @@ worker: {address: worker-a:1234, group: content, heartbeat: alive}
 
 ## 5. 谁推进 DAG
 
-Master 是流程状态机的推进者；Worker只执行单个 TaskInstance 并上报。Metadata Database 保存权威实例状态，注册中心提供活性与路由信息，不能替代数据库状态。
+Master 是流程状态机的推进者；Worker 只执行单个 TaskInstance 并上报。Metadata Database 保存权威实例状态，注册中心提供活性与路由信息，不能替代数据库状态。

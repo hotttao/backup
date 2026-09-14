@@ -1,6 +1,6 @@
 ---
 weight: 34
-title: "Flowable 任务投递与数据变化：Async Executor、External Worker 与运行时表"
+title: "Flowable 任务投递与状态变化"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Flowable 任务投递与数据变化：Async Executor、External Worker 与运行时表
+# Flowable 任务投递与状态变化
 
 Flowable 内容分成四篇：
 
-1. [031：基础与架构](./031_flowable.md)；
+1. [基础与架构](./031_flowable.md);
 
-2. [032：Job 归属与并发控制](./032_flowable_job_assignment.md)；
+2. [任务分配与并发控制](./032_flowable_job_assignment.md);
 
-3. [033：执行与故障恢复](./033_flowable_execution_recovery.md)；
+3. [执行与故障恢复](./033_flowable_execution_recovery.md);
 
-4. **本文**。
+4. **任务投递与状态变化（本文）**;
 
 ## 1. 完整时序图
 
@@ -83,4 +83,4 @@ variable: {processInstanceId: proc-42, name: articleId, value: article-42}
 
 ## 5. 谁推进流程
 
-执行 API 的应用线程或 Async Executor 在一个 CommandContext 中持续执行 BPMN Token，直到 User Task、Receive Task、Timer、异步边界等等待点，然后提交数据库事务。External Worker只完成外部工作，Server 收到完成请求后再推进 Token。
+执行 API 的应用线程或 Async Executor 在一个 CommandContext 中持续执行 BPMN Token，直到 User Task、Receive Task、Timer、异步边界等等待点，然后提交数据库事务。External Worker 只完成外部工作，Server 收到完成请求后再推进 Token。

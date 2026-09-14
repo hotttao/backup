@@ -1,6 +1,6 @@
 ---
 weight: 11
-title: "Conductor 基础与架构：从视频生产 Workflow 到三节点集群"
+title: "Conductor 基础与架构"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Conductor 基础与架构：从视频生产 Workflow 到三节点集群
+# Conductor 基础与架构
 
 Conductor 内容分成四篇：
 
-1. **本文**；
+1. **基础与架构（本文）**;
 
-2. [012：Queue 与冲突控制](./012_conductor_abs.md)；
+2. [任务分配与并发控制](./012_conductor_abs.md);
 
-3. [013：执行与故障恢复](./013_conductor_execution_recovery.md)；
+3. [执行与故障恢复](./013_conductor_execution_recovery.md);
 
-4. [014：任务投递与数据变化](./014_conductor_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./014_conductor_task_delivery_data_model.md);
 
 ## 1. 结论先行
 
@@ -264,7 +264,7 @@ Conductor Server 不应把唯一的工作流真相保存在本机内存。定义
 
 多节点需要特别处理同一工作流被并发决定的问题。如果两个节点同时读取相同状态并各自调度下一任务，就可能生成重复任务。生产环境必须启用分布式执行锁，使同一个 `workflowId` 在一个时刻只有一个有效的状态决策过程。本地锁只适用于单实例开发环境；PostgreSQL、Redis、ZooKeeper 等后端的版本差异见 [012](./012_conductor_abs.md)。
 
-### 3.4 回到示例：视频生产 Workflow 怎样经过这张架构图
+### 3.4 示例流转与架构结论
 
 前面的 `video_pipeline` 会沿下面的链路运行：
 
@@ -281,11 +281,12 @@ Conductor Server 不应把唯一的工作流真相保存在本机内存。定义
 
 | 问题 | 结论 | 详细原理 |
 |---|---|---|
-| Workflow 和 Task 状态归谁 | 共享 Execution DAO/数据库保存权威状态；Queue 主要保存待领取 taskId | [013](./013_conductor_execution_recovery.md) |
-| 谁拥有 Workflow 推进权 | Server 节点只在一次 Decider 执行期间取得 `workflowId` 级锁，不永久拥有 Workflow | [012](./012_conductor_abs.md) |
-| Task 归哪个 Worker | 多个 Worker 按 Task Type Poll，QueueDAO 的原子 pop/lease 让一个 Poll 获得本次执行机会 | [014](./014_conductor_task_delivery_data_model.md) |
-| 怎样并发 | 不同 Workflow、不同分支 Task 可并发；同一 Workflow 的状态决策由分布式锁、条件更新和幂等检查约束 | [012](./012_conductor_abs.md) |
-| 谁推进 Workflow | Decider 读取定义和现有 Task 状态创建下一批 Task；Sweeper 负责重新唤起长期未推进的 Workflow | [013](./013_conductor_execution_recovery.md) |
+| Workflow 进度存在哪里 | Workflow/Task Execution 保存在共享数据库；Queue 主要保存待领取 taskId | [013](./013_conductor_execution_recovery.md) |
+| 谁推进 Workflow | Decider 读取定义和 Task 状态创建下一批 Task；Sweeper 重新唤起长期未推进的 Workflow | [013](./013_conductor_execution_recovery.md) |
+| Task 怎样分配 | Worker 按 Task Type Poll，QueueDAO 的原子 pop/lease 让一个 Poll 获得本次执行机会 | [014](./014_conductor_task_delivery_data_model.md) |
+| Worker 是否长期拥有 Task 或 Workflow | 否。Worker 只执行本次 Poll 到的 Task；Server 只在一次 decide 期间取得 `workflowId` 级锁 | [012](./012_conductor_abs.md) |
+| 怎样并发 | 不同 Workflow 和并行分支可并发；同一 Workflow 的决策受分布式锁、条件更新和幂等检查约束 | [012](./012_conductor_abs.md) |
+| 节点故障后谁接管 | Server 无长期 Workflow 所有权；锁释放或超时后其他 Server 的 Decider/Sweeper 可读取共享状态继续推进 | [012](./012_conductor_abs.md) |
 
 Worker 不加入 Server 集群，也不直接访问 QueueDAO。具体 Poll、lease、ACK 和记录变化见 [014](./014_conductor_task_delivery_data_model.md)。
 

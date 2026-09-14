@@ -1,6 +1,6 @@
 ---
 weight: 24
-title: "Temporal 任务投递与数据变化：Worker 长轮询、Matching 与持久化记录"
+title: "Temporal 任务投递与状态变化"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,11 +18,17 @@ toc:
   auto: false
 ---
 
-# Temporal 任务投递与数据变化：Worker 长轮询、Matching 与持久化记录
+# Temporal 任务投递与状态变化
 
-这是 Temporal 系列的第四篇。前三篇分别介绍[基础与总体架构](./021_temporal.md)、[任务归属与分区原理](./022_temporal_membership_partition.md)、[执行与故障恢复](./023_temporal_execution_recovery.md)。
+Temporal 内容分成四篇：
 
-本文只回答一组紧密相关的问题：应用 Worker 实际连接谁，Task 怎样穿过 Frontend 和 Matching 找到一个 Worker，以及每一步请求会追加哪些 Event、更新哪些 Mutable State、创建哪些后续任务。
+1. [基础与架构](./021_temporal.md);
+
+2. [任务分配与并发控制](./022_temporal_membership_partition.md);
+
+3. [执行与故障恢复](./023_temporal_execution_recovery.md);
+
+4. **任务投递与状态变化（本文）**;
 
 ## 1. 先看完整时序图
 

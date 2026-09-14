@@ -1,6 +1,6 @@
 ---
 weight: 13
-title: "Conductor 执行流程与故障恢复：Decider、重试与状态恢复"
+title: "Conductor 执行与故障恢复"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,162 +18,30 @@ toc:
   auto: false
 ---
 
-# Conductor 执行流程与故障恢复：Decider、重试与状态恢复
+# Conductor 执行与故障恢复
 
 Conductor 内容分成四篇：
 
-1. [第 1 篇](./011_conductor.md)；
+1. [基础与架构](./011_conductor.md);
 
-2. [第 2 篇](./012_conductor_abs.md)；
+2. [任务分配与并发控制](./012_conductor_abs.md);
 
-3. **本文**；
+3. **执行与故障恢复（本文）**;
 
-4. [第 4 篇](./014_conductor_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./014_conductor_task_delivery_data_model.md);
 
-## 1. 一次任务怎样形成执行闭环
+## 1. 先明确执行与恢复边界
 
-### 1.4 一个任务从调度到完成的完整链路
-
-```mermaid
-sequenceDiagram
-    participant D as Decider
-    participant DB as ExecutionDAO
-    participant Q as QueueDAO
-    participant S as Conductor Server
-    participant W as External Worker
-
-    D->>DB: createTasks(task-2001, SCHEDULED)
-    D->>Q: push(generate_copy, task-2001)
-    W->>S: poll(generate_copy, worker-A)
-    S->>Q: pop(generate_copy)
-    Q-->>S: task-2001，暂时标为已领取
-    S->>DB: 读取 task-2001
-    S->>DB: 更新 IN_PROGRESS / workerId / pollCount
-    S->>Q: ack(task-2001)
-    S-->>W: 返回完整 Task
-    W->>W: 执行业务代码
-    W->>S: updateTask(COMPLETED, output)
-    S->>DB: 保存 Task 终态
-    S->>D: decide(wf-1001)
-    D->>DB: 保存 Workflow 状态并创建后续 Task
-```
-
-Worker 调用的是任务 Poll API，例如：
-
-```http
-GET /api/tasks/poll/batch/generate_copy
-    ?count=10
-    &timeout=1000
-    &workerid=worker-A
-    &domain=prod
-```
-
-官方 SDK 把这段轮询、执行和结果上报封装在 Worker 运行器中，业务通常不需要手写 HTTP 循环。服务端 `ExecutionService.poll` 的关键顺序是：
+Conductor Server 的 Decider 根据 Workflow Definition 和 Task Execution 状态创建下一批任务；External Worker 只领取并执行一个 Task。Queue ACK 只表示 Server 已经接收并处理队列消息，不表示 Worker 的业务动作已经完成。
 
 ```text
-queueDAO.pop
-→ executionDAO.getTask
-→ 检查并发限制和频率限制
-→ Task 改成 IN_PROGRESS，写入 workerId、pollCount
-→ executionDAO.updateTask
-→ queueDAO.ack
-→ 把 Task 返回给 Worker
+Decider 创建 Task 并入队
+  → Worker Poll 并执行
+  → Worker 上报终态
+  → Decider 重新计算 Workflow
 ```
 
-如果达到 Task Definition 的并发限制或频率限制，Server 不会把任务交给 Worker，而是调用 `postpone`，让它延迟一段时间后重新可见。[Task API](https://conductor-oss.github.io/conductor/documentation/api/task.html)
-
-### 1.5 Queue 的 ack 和 Worker 执行完成不是一回事
-
-这里最容易误解。`queueDAO.ack` 只表示：
-
-```text
-Conductor Server 已经把 task-2001 从 QueueDAO 取出，
-并且已把 Task Execution 更新为 IN_PROGRESS。
-```
-
-它不表示 Worker 的业务任务已经完成。真正完成要等 Worker 调用 `updateTask(COMPLETED)`。
-
-因此存在两个不同的故障恢复边界：
-
-| 故障窗口 | 依靠什么恢复 |
-|---|---|
-| QueueDAO 已 pop，但 Server 在写入 IN_PROGRESS 或 ack 前宕机 | 未确认消息的可见性超时；PostgreSQL 定期把过期的 `popped=true` 改回可领取 |
-| Server 已 ack，但 Worker 没收到响应或执行中宕机 | Task 已是 IN_PROGRESS；由 `responseTimeoutSeconds`、Sweeper 和重试逻辑恢复 |
-
-PostgreSQL QueueDAO 每分钟处理过期的 unacked 消息，批量使用 `FOR UPDATE SKIP LOCKED`，避免多个 Server 的清理线程互相阻塞。Redis QueueDAO 也通过 `ack`、unack timeout 和重新可见机制实现相同的 QueueDAO 契约。[QueueDAO 接口](https://github.com/conductor-oss/conductor/blob/main/core/src/main/java/com/netflix/conductor/dao/QueueDAO.java)
-
-### 1.6 多个 Server 怎样避免重复推进同一个 Workflow
-
-任务领取锁只保护一条队列消息，不能保护整个工作流。例如两个并行任务几乎同时完成：
-
-```text
-task-A COMPLETED ─→ Server 1 ─┐
-                              ├─ 都准备 decide(wf-1001)
-task-B COMPLETED ─→ Server 2 ─┘
-```
-
-如果两个 Decider 同时读取旧状态并创建下一节点，可能重复调度。Conductor 为此使用以 `workflowId` 为 Key 的 Execution Lock：
-
-```text
-Server 1: acquireLock(wf-1001) 成功
-          → 读取完整 Workflow 和 Tasks
-          → Decider 计算下一状态
-          → 保存状态、创建后续任务
-          → releaseLock(wf-1001)
-
-Server 2: acquireLock(wf-1001) 失败
-          → 把 wf-1001 重新放入 DECIDER_QUEUE，稍后再试
-```
-
-锁的粒度是单个 Workflow Execution，而不是锁住整个 Conductor 集群。因此不同 workflowId 仍可以由不同 Server 并行推进。生产环境应使用 Redis 或 ZooKeeper 分布式锁；`local_only` 只能保护单进程。[生产锁配置](https://github.com/conductor-oss/conductor/blob/main/docs/devguide/running/deploy.md#locking)
-
-源码还会限制一次 `decide` 在锁中的运行时间：接近 `lockLeaseTime` 时停止继续循环，保存当前状态并重新入队，避免在租约过期后仍长时间持有已经失效的逻辑所有权。常用参数是：
-
-```properties
-conductor.workflow-execution-lock.type=redis
-conductor.app.workflowExecutionLockEnabled=true
-conductor.app.lockLeaseTime=60000
-conductor.app.lockTimeToTry=500
-```
-
-### 1.7 防重复并不是只靠一把锁
-
-Conductor 在不同边界使用不同机制：
-
-| 冲突 | 控制机制 |
-|---|---|
-| 同一个 Workflow 被多个 Decider 并发推进 | `workflowId` 分布式锁 |
-| 两个 Poll 同时领取同一队列消息 | QueueDAO 原子 pop；PostgreSQL 使用 `FOR UPDATE SKIP LOCKED` |
-| Decider 在同一次重算中再次生成同一逻辑任务 | 按 `taskReferenceName + retryCount` 去重 |
-| 同一个 taskId 被重复放进 Queue | `pushIfNotExists`；PostgreSQL 使用 `queue_name + message_id` 冲突处理 |
-| 已经终态的 Task 又收到较晚的结果上报 | 读取到终态后忽略更新并清理残留队列消息 |
-| 任务状态已保存但入队失败 | WorkflowRepairService 根据持久化状态补发消息 |
-
-这些机制解决的是 Conductor 内部状态冲突，但不能提供业务副作用的 Exactly Once。
-
-### 1.8 为什么仍然可能重复调用外部系统
-
-考虑最典型的故障窗口：
-
-```text
-Worker 调用视频平台成功
-→ 视频平台已经创建任务 externalJobId=V9001
-→ Worker 向 Conductor 上报 COMPLETED 时网络断开
-→ Conductor 没有可靠保存完成结果
-→ response timeout 后创建新的重试 Task
-→ 另一个 Worker 再次调用视频平台
-```
-
-队列没有把同一条消息同时交给两个 Worker，并不代表外部调用只发生一次。为了从故障中恢复，Conductor 的任务执行仍然是 **at-least-once 倾向**：一个逻辑业务动作在异常窗口中可能执行多次。
-
-正确做法是在业务端增加稳定幂等键，例如：
-
-```text
-idempotencyKey = workflowId + ":" + taskReferenceName
-               = wf-1001:submit_video_ref
-```
-
-第三方接口支持幂等键时直接传递；不支持时，在自己的数据库建立唯一约束并保存 `idempotencyKey → externalJobId`。重试 Task 可能获得新的 taskId，所以不要把 taskId 当作跨重试稳定的业务幂等键。
+Worker 调用外部系统成功、但上报结果前断线时，任务可能再次执行。因此 Conductor 内部的 Queue 原子领取和 Workflow 锁不能替代业务幂等。完整 Poll、ACK、lease 和请求字段见 [014](./014_conductor_task_delivery_data_model.md)，QueueDAO 与锁算法见 [012](./012_conductor_abs.md)。
 
 ## 2. Workflow 抽象与状态持久化
 

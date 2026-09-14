@@ -1,6 +1,6 @@
 ---
 weight: 54
-title: "River 任务领取与数据变化：数据库抢占、Worker 执行与 Job 状态"
+title: "River 任务投递与状态变化"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# River 任务领取与数据变化：数据库抢占、Worker 执行与 Job 状态
+# River 任务投递与状态变化
 
 River 内容分成四篇：
 
-1. [051：基础与架构](./051_river.md)；
+1. [基础与架构](./051_river.md);
 
-2. [052：Queue 与任务归属](./052_river_job_assignment.md)；
+2. [任务分配与并发控制](./052_river_job_assignment.md);
 
-3. [053：执行与故障恢复](./053_river_execution_recovery.md)；
+3. [执行与故障恢复](./053_river_execution_recovery.md);
 
-4. **本文**。
+4. **任务投递与状态变化（本文）**;
 
 ## 1. 完整时序图
 

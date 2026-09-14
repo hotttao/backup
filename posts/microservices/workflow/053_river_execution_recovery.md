@@ -1,6 +1,6 @@
 ---
 weight: 53
-title: "River 执行流程与故障恢复：事务状态机、重试与 Resumable Jobs"
+title: "River 执行与故障恢复"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# River 执行流程与故障恢复：事务状态机、重试与 Resumable Jobs
+# River 执行与故障恢复
 
 River 内容分成四篇：
 
-1. [第 1 篇](./051_river.md)；
+1. [基础与架构](./051_river.md);
 
-2. [第 2 篇](./052_river_job_assignment.md)；
+2. [任务分配与并发控制](./052_river_job_assignment.md);
 
-3. **本文**；
+3. **执行与故障恢复（本文）**;
 
-4. [第 4 篇](./054_river_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./054_river_task_delivery_data_model.md);
 
 ## 1. 一次状态转换怎样持久化
 

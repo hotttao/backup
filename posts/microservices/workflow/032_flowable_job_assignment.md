@@ -1,6 +1,6 @@
 ---
 weight: 32
-title: "Flowable 任务归属原理：数据库 Job、锁与并发控制"
+title: "Flowable 任务分配与并发控制"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Flowable 任务归属原理：数据库 Job、锁与并发控制
+# Flowable 任务分配与并发控制
 
 Flowable 内容分成四篇：
 
-1. [第 1 篇](./031_flowable.md)；
+1. [基础与架构](./031_flowable.md);
 
-2. **本文**；
+2. **任务分配与并发控制（本文）**;
 
-3. [第 3 篇](./033_flowable_execution_recovery.md)；
+3. [执行与故障恢复](./033_flowable_execution_recovery.md);
 
-4. [第 4 篇](./034_flowable_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./034_flowable_task_delivery_data_model.md);
 
 ## 1. Queue 基于什么实现
 

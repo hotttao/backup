@@ -1,6 +1,6 @@
 ---
 weight: 31
-title: "Flowable 基础与架构：从人工会审 BPMN 到三节点集群"
+title: "Flowable 基础与架构"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Flowable 基础与架构：从人工会审 BPMN 到三节点集群
+# Flowable 基础与架构
 
 Flowable 内容分成四篇：
 
-1. **本文**；
+1. **基础与架构（本文）**;
 
-2. [第 2 篇](./032_flowable_job_assignment.md)；
+2. [任务分配与并发控制](./032_flowable_job_assignment.md);
 
-3. [第 3 篇](./033_flowable_execution_recovery.md)；
+3. [执行与故障恢复](./033_flowable_execution_recovery.md);
 
-4. [第 4 篇](./034_flowable_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./034_flowable_task_delivery_data_model.md);
 
 ## 1. 结论先行
 
@@ -208,7 +208,7 @@ Flowable 的可部署流程定义是 BPMN 2.0 XML。下面省略图形坐标，�
 
 这意味着负载均衡器不需要会话粘滞。真正需要保证的是共享数据库、相同流程实现和幂等外部操作。
 
-### 3.2 回到示例：内容会审 BPMN 怎样经过这张架构图
+### 3.2 示例流转与架构结论
 
 前面的内容发布流程会这样运行：
 
@@ -225,12 +225,12 @@ Flowable 的可部署流程定义是 BPMN 2.0 XML。下面省略图形坐标，�
 
 | 问题 | 结论 | 详细原理 |
 |---|---|---|
-| Process Instance 状态归谁 | 共享 Flowable Database 中的 Runtime Execution、Task、Variable 是当前权威状态 | [033](./033_flowable_execution_recovery.md) |
-| 同步步骤归哪个节点 | 哪台应用节点收到 API 请求，就由哪台节点在当前事务中推进到下一个等待点，不需要长期归属 | [033](./033_flowable_execution_recovery.md) |
-| 异步 Job 归哪个节点 | 多个 Async Executor 竞争到期 Job，只有成功写入 lock owner/expiration 的节点获得本次执行权 | [032](./032_flowable_job_assignment.md) |
-| User Task 归谁 | 候选人都能看到；claim 后记录 assignee。这里是业务人员归属，不是 Server 节点归属 | 本文第 4 节 |
-| 怎样并发 | 不同实例可并发；同一实例的并行 Token 依靠数据库事务、乐观锁和 Job 锁防止覆盖 | [032](./032_flowable_job_assignment.md) |
-| 谁推进流程 | API 请求线程或 Async Executor 调用 Engine 推进 BPMN Token，直到新的 wait state | [033](./033_flowable_execution_recovery.md) |
+| Workflow 进度存在哪里 | Runtime Execution、Task、Variable 保存在共享 Flowable Database | [033](./033_flowable_execution_recovery.md) |
+| 谁推进 Workflow | 收到 API 请求的 Engine 线程或 Async Executor 推进 BPMN Token，直到新的 wait state | [033](./033_flowable_execution_recovery.md) |
+| Task 怎样分配 | User Task 通过候选人/assignee 分配；异步 Job 由多个 Async Executor 竞争数据库锁 | [032](./032_flowable_job_assignment.md) |
+| Worker 是否长期拥有 Task 或 Workflow | 否。应用节点只推进当前事务；Async Executor 或 External Worker 只持有当前 Job 的锁或租约 | [034](./034_flowable_task_delivery_data_model.md) |
+| 怎样并发 | 不同实例可并发；同一实例的并行 Token 依靠数据库事务、乐观锁和 Job 锁避免覆盖 | [032](./032_flowable_job_assignment.md) |
+| 节点故障后谁接管 | 同步事务回滚后由调用方重试；过期 Job 锁可被其他 Async Executor 节点重新获取 | [033](./033_flowable_execution_recovery.md) |
 
 完整 Job 获取、External Worker 拉取和运行时表变化见 [034](./034_flowable_task_delivery_data_model.md)。
 

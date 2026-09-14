@@ -1,6 +1,6 @@
 ---
 weight: 33
-title: "Flowable 执行流程与故障恢复：事务等待点、Job 重试与实例恢复"
+title: "Flowable 执行与故障恢复"
 date: 2024-10-11T08:00:00+08:00
 lastmod: 2026-09-14T08:00:00+08:00
 draft: false
@@ -18,17 +18,17 @@ toc:
   auto: false
 ---
 
-# Flowable 执行流程与故障恢复：事务等待点、Job 重试与实例恢复
+# Flowable 执行与故障恢复
 
 Flowable 内容分成四篇：
 
-1. [第 1 篇](./031_flowable.md)；
+1. [基础与架构](./031_flowable.md);
 
-2. [第 2 篇](./032_flowable_job_assignment.md)；
+2. [任务分配与并发控制](./032_flowable_job_assignment.md);
 
-3. **本文**；
+3. **执行与故障恢复（本文）**;
 
-4. [第 4 篇](./034_flowable_task_delivery_data_model.md)。
+4. [任务投递与状态变化](./034_flowable_task_delivery_data_model.md);
 
 ## 1. 执行语义：事务一直推进到等待点
 
