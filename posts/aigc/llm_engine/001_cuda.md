@@ -327,6 +327,67 @@ Thread 31 计算 C[31] = A[31] + B[31]
 3. Warp 1 等待数据时，又可以执行 Warp 2。
 4. Warp 0 的数据准备好后，再继续执行加法和写回。
 
+这里的“Warp 0 发起显存读取”，可以进一步理解为：Warp 中的每个 Thread 把自己需要的数据从 GPU 全局内存读取到自己的寄存器中。
+
+以前面的向量加法为例，假设某个 Thread 的逻辑编号是 `i`，它执行的过程可以简化为：
+
+```cpp
+int i = blockIdx.x * blockDim.x + threadIdx.x;
+
+float a = A[i];  // 从 d_A 对应的位置读取到当前 Thread 的寄存器
+float b = B[i];  // 从 d_B 对应的位置读取到当前 Thread 的寄存器
+float c = a + b; // 使用寄存器中的 a、b 完成计算
+C[i] = c;        // 把寄存器中的结果写回 d_C
+```
+
+因此，单个 Thread 的数据流可以画成：
+
+```text
+GPU 全局内存 d_A、d_B
+          ↓ load
+当前 Thread 私有的寄存器
+          ↓
+       A[i] + B[i]
+          ↓
+当前 Thread 私有的寄存器
+          ↓ store
+GPU 全局内存 d_C
+```
+
+更准确地说，数据不一定每次都直接从显存芯片读取。一次全局内存加载通常会经过 GPU 的缓存层级：
+
+```text
+GPU 显存 DRAM
+      ↓
+    L2 Cache
+      ↓
+ L1 Cache 等缓存
+      ↓
+ Thread 寄存器
+```
+
+如果数据已经在 L1 或 L2 Cache 中命中，GPU 就可以从缓存中取得数据；如果没有命中，才需要访问更慢的 GPU 显存。日常所说的“从显存读取”，通常是对这整个过程的概括。
+
+还需要区分 Warp 和寄存器的关系：
+
+- Warp Scheduler 选择的是一个 Warp 的下一条指令；
+- Warp 中的 32 个 Thread 通常会一起执行这条指令；
+- 但每个 Thread 读取的 `A[i]`、`B[i]` 不同，并且结果放在各自的寄存器中；
+- 寄存器默认是 Thread 私有的，不是整个 Warp 共享的存储空间。
+
+例如一个 Warp 可以同时执行：
+
+```text
+Thread 0：读取 A[0]、B[0] → 自己的寄存器
+Thread 1：读取 A[1]、B[1] → 自己的寄存器
+...
+Thread 31：读取 A[31]、B[31] → 自己的寄存器
+```
+
+当相邻 Thread 访问相邻地址时，GPU 通常可以把这些访问合并为较少的内存事务，这叫作合并访存。它能减少显存访问开销，但并不改变“数据最终要进入各个 Thread 自己的寄存器”这一基本理解。
+
+所以，前面“Warp 0 等待 A 和 B 的数据”可以展开成：Warp 0 中的 Thread 已经发出了加载指令，但相应数据还没有到达各自的寄存器。Warp Scheduler 会先去执行其他已经准备好的 Warp；当这些加载完成后，Warp 0 才能继续使用寄存器中的 `a`、`b` 完成加法。
+
 ```mermaid
 flowchart LR
     A[Warp 0 发起显存读取] --> B[Warp 0 等待数据]
@@ -399,6 +460,132 @@ CUDA 中也可以找到“运行环境—任务队列—计算任务—硬件执
 
 这个类比只是帮助理解“资源环境—任务队列—硬件调度”的分层关系。
 
+## 三（补充）、CUDA Runtime、CUDA Driver 和 CUDA Context 是什么关系
+
+前面我们说“CPU 进程获得 CUDA Context”，又说“通过 CUDA Runtime 和 Driver 提交 Kernel”。这几个概念处在不同层次，不能把它们理解成三个并列的 GPU 调度器。
+
+### 1. 先看三者的层级
+
+```text
+Python / PyTorch / CUDA Library
+              ↓
+       CUDA Runtime API
+              ↓
+        CUDA Driver API
+              ↓
+        CUDA Context
+              ↓
+       GPU Driver / GPU 硬件
+```
+
+- **CUDA Runtime**：面向普通 CUDA 程序的较高层 API，负责提供更容易使用的设备管理、内存分配、Kernel Launch、Stream 和 Event 接口。常见的 `cudaMalloc`、`cudaMemcpy`、`cudaStreamCreate` 就属于 Runtime API。
+- **CUDA Driver**：更底层的驱动接口和实现。它负责与 GPU 驱动和硬件交互，管理 Context、模块、设备内存、Stream 等资源，并把程序提交的工作交给 GPU。Driver API 中的函数通常带有 `cu` 前缀，例如 `cuCtxCreate`、`cuMemAlloc`。
+- **CUDA Context**：某个 CPU 进程在某个 GPU 上使用 CUDA 资源时的状态和资源容器。它里面关联着设备内存分配、已加载的 Kernel 模块、Stream、Event 以及当前执行状态。
+
+因此，Runtime 和 Driver 更像“操作接口层”，Context 更像“这些操作作用于其中的运行环境”。它们的关系不是：
+
+```text
+Runtime 创建 Driver，Driver 创建 GPU Thread
+```
+
+而更接近：
+
+```text
+程序调用 Runtime API
+        ↓
+Runtime API 转而调用 Driver 能理解的底层接口
+        ↓
+Driver 在某个 CUDA Context 中创建资源、加载模块、提交命令
+        ↓
+GPU 执行 Kernel
+```
+
+### 2. 它们负责创建什么
+
+以第一次执行 CUDA 操作为例，程序可能只写了：
+
+```python
+a = torch.arange(1024, device="cuda")
+```
+
+背后大致会发生：
+
+```text
+PyTorch 请求使用 CUDA
+        ↓
+CUDA Runtime / PyTorch 初始化 CUDA Driver
+        ↓
+Driver 为当前进程和 GPU 准备或激活 Context
+        ↓
+Runtime / PyTorch 在 Context 中申请 GPU 内存
+        ↓
+返回一个指向 GPU Tensor Storage 的句柄
+```
+
+所以可以说：**CUDA Context 是由 Driver 层创建或管理的；CUDA Runtime 通常负责在需要时触发初始化，并使用 Driver 管理的 Context。**
+
+在 CUDA Driver API 中，程序可以显式创建 Context，例如调用 `cuCtxCreate`。而使用 CUDA Runtime API 时，通常不需要手动创建 Context；Runtime 会为当前设备使用对应的 **Primary Context**，并自动完成初始化和绑定。PyTorch 也主要隐藏了这些细节。
+
+这里的“创建 Context”不是创建一个 GPU 进程，也不是创建一个 SM、Warp 或 Thread。它只是建立一套让 Driver 知道“当前这个 CPU 进程正在怎样使用这张 GPU”的资源和状态。
+
+### 3. Context、Stream 和 Kernel 的关系
+
+可以把一次计算中的对象关系画成：
+
+```text
+一个 CPU 进程
+└── 一个 GPU 上的 CUDA Context
+    ├── GPU 内存：d_A、d_B、d_C
+    ├── Kernel 模块：vector_add
+    ├── Stream 0：复制 A → 复制 B → 启动 Kernel
+    └── Event：记录某个操作是否完成
+```
+
+CPU 进程首先在 Context 中申请 `d_A`、`d_B` 和 `d_C`，然后把 `vector_add` 这个 Kernel 放入某个 Stream。Driver 根据 Stream 中的命令和依赖关系，把 Kernel Launch 交给 GPU。之后 GPU 才会创建这次 Launch 对应的 Grid，并把其中的 Block 分配到 SM。
+
+所以创建顺序可以粗略理解为：
+
+```text
+Driver 初始化 / 激活 Context
+        ↓
+创建或取得 Stream
+        ↓
+分配 GPU 内存、加载 Kernel
+        ↓
+向 Stream 提交 Kernel Launch
+        ↓
+GPU 将 Grid 中的 Block 分配到 SM
+```
+
+### 4. Runtime 和 Driver 是两个不同 API，不一定是两个独立进程
+
+“CUDA Runtime”和“CUDA Driver”有时容易让人误以为系统中运行着两个后台服务。更准确的理解是：它们主要是不同层次的库和 API。
+
+```text
+CUDA Runtime API：更方便，隐藏更多细节
+CUDA Driver API：更底层，控制粒度更细
+```
+
+一个 CUDA 程序通常可以直接使用 Runtime API，也可以直接使用 Driver API。Runtime API 的实现会调用 Driver API；PyTorch、cuBLAS、FlashAttention 等组件则可能通过 Runtime、Driver 或 CUDA 库间接完成内存分配和 Kernel 提交。
+
+不同组件如果共同使用同一块 GPU，通常会通过当前设备对应的 Context 协作。它们并不是各自创建一套独立的 GPU 硬件，而是在自己的调用边界内使用 Context 中的资源。
+
+### 5. 和 CPU 进程的类比
+
+可以做一个不完全等价但有帮助的类比：
+
+| CPU 世界 | CUDA 世界 |
+| --- | --- |
+| 操作系统 API / 系统调用 | CUDA Runtime / Driver API |
+| 进程地址空间和资源上下文 | CUDA Context |
+| 线程或任务队列 | CUDA Stream |
+| 被提交执行的函数 | CUDA Kernel |
+| CPU Core 执行线程 | SM 执行 Thread Block |
+
+这个类比只用于理解“接口、资源环境、任务队列和硬件执行”的层次，不表示 CUDA Context 就等于 OS 进程，也不表示 Stream 就等于 GPU Thread。
+
+有了这个过渡，再看下一节的 PyTorch 示例就比较自然了：PyTorch 负责提出“我要在 CUDA Tensor 上做加法”，Runtime 和 Driver 负责把请求放进某个 Context 的 Stream，GPU 最终负责执行 Kernel。
+
 ## 四、一次 PyTorch 计算是怎样到达 GPU 的
 
 回到前面的数组加法。如果使用 PyTorch，可以写成：
@@ -409,7 +596,7 @@ b = torch.arange(1024, device="cuda", dtype=torch.float32)
 c = a + b
 ```
 
-`c = a + b` 描述的是逐元素加法。PyTorch 会为 CUDA Tensor 选择对应的 GPU 实现，并通过 CUDA Runtime 和 Driver 提交 Kernel。
+`c = a + b` 描述的是逐元素加法。PyTorch 会为 CUDA Tensor 选择对应的 GPU 实现，并通过当前 CUDA Context 中的 Stream 提交 Kernel。这个过程通常会经过 CUDA Runtime，再由 Runtime 调用更底层的 CUDA Driver；PyTorch 用户不需要手动创建 Context 或 Stream。
 
 PyTorch 实际选择的 Kernel 和 Block 大小可能与前面手写的教学示例不同，但从 CPU 提交到 GPU 执行的层级关系相同：
 
@@ -465,9 +652,204 @@ flowchart TD
 
 ### 5.1 批处理
 
-假设每次 Kernel Launch 都有固定开销。如果每个请求都单独执行，固定开销会重复发生。推理引擎可以把多个请求组成 Batch，一次交给 GPU 处理。
+这里的 Batch 不是“把相同数据复制多份”，也不是“把不同请求分别提交到多张 GPU”。它的含义是：多个请求共同作为一次模型前向的输入，使用同一份模型权重和同一组 Kernel 计算。
 
-模型的数学逻辑没有变化，但 GPU 一次处理了更多数据，固定开销被分摊，总体吞吐提高。
+例如一个线性层可以接受这样的输入：
+
+```text
+请求 A 的 hidden states → 第 0 行
+请求 B 的 hidden states → 第 1 行
+请求 C 的 hidden states → 第 2 行
+```
+
+输入 Tensor 的形状可以抽象为：
+
+```text
+[batch_size, hidden_size]
+```
+
+Kernel 仍然只有一份，但它的 Grid 中会有更多 Thread 去处理不同请求的不同数据：
+
+```text
+Thread Block 0 → 处理请求 A 的部分数据
+Thread Block 1 → 处理请求 B 的部分数据
+Thread Block 2 → 处理请求 C 的部分数据
+```
+
+也就是说，Batch 解决的是“多个数据样本共同使用一次计算流程”，而不是要求这些样本的数据相同。模型权重相同即可；每个请求的输入、输出和状态仍然可以不同。
+
+### 不同长度的 Prompt 怎么组成 Batch
+
+普通神经网络经常把不同长度的输入 Padding 到相同长度：
+
+```text
+请求 A：[我, 爱, 吃, 苹果]
+请求 B：[请, 介绍, CUDA, PAD]
+请求 C：[你好, PAD, PAD, PAD]
+```
+
+`PAD` 位置通过 Mask 忽略。这样输入可以放进规则的二维 Tensor，但 Padding 也会浪费计算。
+
+LLM 推理引擎还可以使用变长输入，把多个请求的有效 Token 拼接成一维数组，再用每个请求的边界描述真实长度：
+
+```text
+input_ids = [A0, A1, A2, A3, B0, B1, C0, C1]
+cu_seqlens = [0, 4, 6, 8]
+```
+
+`cu_seqlens` 表示：
+
+```text
+请求 A：input_ids[0:4]
+请求 B：input_ids[4:6]
+请求 C：input_ids[6:8]
+```
+
+这样仍然是一次模型前向和一次批量计算，但不需要把短请求补齐到最长请求。nano-vLLM 的 `ModelRunner.prepare_prefill()` 正是把多个序列的 Token 拼接到 `input_ids`，同时构造 `cu_seqlens_q` 和 `cu_seqlens_k`，交给变长 Attention Kernel。
+
+### 模型内部如何知道每个请求的边界
+
+这里容易产生一个误解：好像模型函数收到一维数组后，必须先在 Python 中切分：
+
+```python
+for request in requests:
+    part = input_ids[start:end]
+    output = model(part)
+```
+
+如果真的这样做，就失去了批处理的意义。实际情况是，边界信息会作为额外的 Tensor 传给底层算子，模型内部不需要把请求逐个还原成独立调用。
+
+以拼接后的隐藏状态为例：
+
+```text
+hidden_states.shape = [8, hidden_size]
+```
+
+其中前 4 行属于请求 A，接下来 2 行属于请求 B，最后 2 行属于请求 C。对于 Linear、RMSNorm、激活函数和 MLP 这些“每个 Token 可以独立处理”的算子，Kernel 直接把 8 行当作一批输入：
+
+```text
+第 0～3 行 → 请求 A
+第 4～5 行 → 请求 B
+第 6～7 行 → 请求 C
+```
+
+它甚至不需要知道请求边界，因为这些算子对每一行做的数学操作相同，也不会让一行数据去读取另一行数据。计算完成后，输出仍然保持相同的行顺序：
+
+```text
+output[0:4] → 请求 A 的输出
+output[4:6] → 请求 B 的输出
+output[6:8] → 请求 C 的输出
+```
+
+真正需要边界的是 Attention。Attention 会让一个 Token 读取同一请求中的历史 K/V，不能让请求 A 的 Token 读取请求 B 的 K/V。于是变长 Attention Kernel 接收：
+
+```text
+Q/K/V：所有请求拼接后的数据
+cu_seqlens_q：每个请求的 Query 起止位置
+cu_seqlens_k：每个请求的 Key/Value 起止位置
+```
+
+例如：
+
+```text
+cu_seqlens_q = [0, 4, 6, 8]
+cu_seqlens_k = [0, 4, 6, 8]
+```
+
+Kernel 可以据此理解为：
+
+```text
+请求 A 的 Q[0:4] 只能与 K/V[0:4] 做 Attention
+请求 B 的 Q[4:6] 只能与 K/V[4:6] 做 Attention
+请求 C 的 Q[6:8] 只能与 K/V[6:8] 做 Attention
+```
+
+这个过程不是“先切分，再调用三次 Attention”，而是一次变长 Attention Kernel 内部根据每条序列的起止偏移计算自己的数据范围。`cu_seqlens` 本质上就是批处理中每个请求的边界表。
+
+可以把它类比成一个仓库的连续货架：货物被连续摆放，但系统额外记录每个订单的起始和结束位置。搬运工可以一次处理整排货物，同时根据订单边界避免把不同订单混在一起。
+
+nano-vLLM 在 `prepare_prefill()` 中维护的：
+
+```python
+cu_seqlens_q.append(cu_seqlens_q[-1] + seqlen_q)
+cu_seqlens_k.append(cu_seqlens_k[-1] + seqlen_k)
+```
+
+就是在构造这张边界表。之后它把这些 Tensor 放到 GPU 上，通过 `set_context()` 交给 Attention 层。Attention 再把它们传给 `flash_attn_varlen_func()`。
+
+Decode 阶段的边界表达方式略有不同：每条请求通常只有一个 Query Token，所以 Batch 的第一维就是请求编号；`context_lens` 表示每条请求应该读取多长的历史，`block_tables` 表示这些历史 K/V 位于 KV Cache 的哪些 Block。请求边界因此同样由元数据表达，而不是依靠 Python 循环逐个执行模型。
+
+最后，模型输出仍然是拼接后的 Batch 输出。推理引擎只需要知道每条请求对应哪些行，通常取每条序列最后一个有效位置的 logits 进行采样，再把采样结果放回对应的 `Sequence`。所以“拼接”和“区分边界”分别是：
+
+```text
+拼接：让 GPU 有更多 Token 可以并行处理
+边界元数据：保证不同请求之间不会错误地互相读取
+```
+
+### LLM Decode 阶段的数据明明不同，怎么 Batch
+
+Decode 阶段更加能说明这个问题。假设有三个正在生成的请求：
+
+```text
+请求 A 当前上下文长度：100
+请求 B 当前上下文长度：250
+请求 C 当前上下文长度：37
+```
+
+这一轮它们各自只输入一个新 Token：
+
+```text
+input_ids = [A 的新 Token, B 的新 Token, C 的新 Token]
+```
+
+这三个 Token 不同，但可以组成一个 batch。模型使用同一份权重执行一次前向；每条请求自己的差异通过额外的元数据传入：
+
+```text
+context_lens  → 每条请求应该读取多长的历史 KV Cache
+block_tables  → 每条请求的 KV 位于哪些物理 Block
+slot_mapping  → 当前新 Token 的 K/V 写入哪个 slot
+positions      → 当前 Token 在自己的序列中位于什么位置
+```
+
+nano-vLLM 的 `prepare_decode()` 就是在构造这些按请求排列的数组。随后一次 `run_model()` 处理整个 Decode batch。请求 A、B、C 的 KV Cache 可以完全不同，但它们仍然调用同一个 Attention 实现。
+
+因此，Decode Batch 可以理解为：
+
+```text
+一次 Kernel Launch
+├── Thread / Block 处理请求 A 的新 Token
+├── Thread / Block 处理请求 B 的新 Token
+└── Thread / Block 处理请求 C 的新 Token
+```
+
+### Batch 和多 GPU 是两件不同的事
+
+多个 GPU 分别执行不同 Kernel，属于多 GPU 并行或 Tensor Parallelism，不是 Batch 的定义。Batch 即使只有一张 GPU 也成立：
+
+```text
+一张 GPU
+└── 一次模型前向
+    ├── 请求 A
+    ├── 请求 B
+    └── 请求 C
+```
+
+如果同时使用 Batch 和 Tensor Parallelism，则是两种机制叠加：
+
+```text
+Batch：一次处理多个请求
+Tensor Parallelism：同一次计算再分布到多个 GPU
+```
+
+在 nano-vLLM 中，`Scheduler.schedule()` 从 waiting/running 队列选出多条序列，`ModelRunner.run()` 接收 `seqs` 列表并把它们整理成批量输入。`tensor_parallel_size` 则决定模型计算是否跨多个 GPU rank 分片执行，它不是 Batch 的必要条件。
+
+批处理的收益来自：
+
+1. 多个请求共同分摊 Kernel Launch、权重读取和算子准备等固定成本；
+2. GPU 可以同时拥有更多可执行的 Thread Block，提高硬件利用率；
+3. 同一份模型权重被多个请求共同使用，减少重复的计算准备。
+
+代价是 Batch 越大，需要的临时 Tensor、KV Cache 读写和调度资源也越多。因此推理引擎必须在吞吐、延迟和显存之间取平衡。
 
 ### 5.2 显存管理
 
