@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 33 动态规划实战
 date: 2018-11-12
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-11-12
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "33 动态规划实战"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 编程思想之动态规划实战

@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 22 堆的应用
 date: 2018-10-29
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-29
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "22 堆的应用"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 ![heap](/images/algo/heap/heap_use.jpg)

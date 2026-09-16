@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 18 二叉查找树与完全二叉树
 date: 2018-10-25
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-25
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "18 二叉查找树与完全二叉树"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 有散列表了，为什么还要"一颗树"
 

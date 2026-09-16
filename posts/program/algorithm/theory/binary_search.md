@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 12 二分查找
 date: 2018-10-19
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-19
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "12 二分查找"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/binary_search/binary_image.jpg)
 不简单的简单二分查找

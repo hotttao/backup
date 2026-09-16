@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 38 最短路经
 date: 2018-11-20
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-11-20
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "38 最短路经"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 

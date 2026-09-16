@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 1. 编程思想
 date: 2020-07-01
-categories:
-    - Python
-tags:
-    - 好玩的数据结构与算法
+lastmod: 2020-07-01
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "1. 编程思想"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 编程思想

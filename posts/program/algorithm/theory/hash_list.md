@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 15 散列表与链表
 date: 2018-10-22
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-22
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "15 散列表与链表"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 “形影不离”的散列表与链表
 

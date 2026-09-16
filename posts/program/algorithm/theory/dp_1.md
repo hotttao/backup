@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 31 初识动态规划
 date: 2018-11-10
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-11-10
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "31 初识动态规划"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 编程思想之动态规划初识

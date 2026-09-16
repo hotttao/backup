@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 23 字符串匹配之 BF & RK 算法
 date: 2018-10-30
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-30
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "23 字符串匹配之 BF & RK 算法"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 粗暴匹配的 BF 与 RK 算法

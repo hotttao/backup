@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 2. 递归
 date: 2020-07-02
-categories:
-    - Python
-tags:
-    - 好玩的数据结构与算法
+lastmod: 2020-07-02
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "2. 递归"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 递归

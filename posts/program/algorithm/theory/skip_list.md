@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 13 跳表
 date: 2018-10-20
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-20
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "13 跳表"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 跳表: 链表上的“二分查找”
 

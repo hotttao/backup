@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 19 红黑二叉树
 date: 2018-10-26
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-26
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "19 红黑二叉树"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 搞不懂的"红黑数"....
 

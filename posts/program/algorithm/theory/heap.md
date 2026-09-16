@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 21 堆
 date: 2018-10-28
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-28
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "21 堆"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 能找到"最好学生"的堆
 

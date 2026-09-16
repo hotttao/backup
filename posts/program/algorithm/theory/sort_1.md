@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 07 基于比较的排序(上)
 date: 2018-10-14
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-14
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "07 基于比较的排序(上)"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/sort/sort_image.jpg)
 基于比较的排序算法: 冒泡排序、插入排序和选择排序

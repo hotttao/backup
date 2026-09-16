@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 10 工业级的排序算法
 date: 2018-10-18
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-18
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "10 工业级的排序算法"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/sort/all_sort.jpg)
 实现一个通用的，高效的工业级排序函数

@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 24 字符串匹配之 KMP 算法
 date: 2018-10-31
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-31
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "24 字符串匹配之 KMP 算法"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 优雅的的 KMP 算法

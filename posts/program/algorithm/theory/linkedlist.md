@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 03 链表
 date: 2018-10-10
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-10
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "03 链表"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/linkedlist/single_linkedlist.jpg)
 

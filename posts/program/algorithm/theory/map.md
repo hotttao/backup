@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 11 映射
 date: 2018-10-19
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-19
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "11 映射"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 无处不在的映射
 

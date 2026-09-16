@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 36 图的传递闭包
 date: 2018-11-18
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-11-18
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "36 图的传递闭包"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 

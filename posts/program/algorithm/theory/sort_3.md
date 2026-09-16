@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 09 线性排序
 date: 2018-10-17
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-17
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "09 线性排序"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/sort/bucket.jpg)
 非基于比较的三个排序算法: 桶排序，计数排序，基数排序

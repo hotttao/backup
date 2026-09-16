@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 17 树的存储与遍历
 date: 2018-10-24
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-24
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "17 树的存储与遍历"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 如何表示和存储一颗树？
 

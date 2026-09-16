@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 37 拓扑排序
 date: 2018-11-19
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-11-19
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "37 拓扑排序"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 
 拓扑排序

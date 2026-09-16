@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 08 基于比较的排序(下)
 date: 2018-10-16
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-16
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "08 基于比较的排序(下)"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/sort/merge_quick.jpg)
 基于分治编程思想的归并排序和快速排序

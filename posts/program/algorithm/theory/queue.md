@@ -1,10 +1,18 @@
 ---
+weight: 1
 title: 05 队列
 date: 2018-10-12
-categories:
-    - Python
-tags:
-    - 数据结构与算法
+lastmod: 2018-10-12
+draft: false
+author: "宋涛"
+authorLink: "https://hotttao.github.io/"
+description: "05 队列"
+featuredImage:
+
+tags: ["数据结构与算法"]
+categories: ["python"]
+
+lightgallery: true
 ---
 ![linkedlist](/images/algo/queue/queue.jpg)
 
