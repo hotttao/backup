@@ -33,7 +33,7 @@ lightgallery: true
 
 本文重点是“显存怎么被规划、定位、复用”，不是 CUDA 驱动内部的物理页表实现。这里的 Block 也首先是推理引擎的逻辑 Block；GPU 是否把它映射到连续的物理显存，由 PyTorch/CUDA allocator 和驱动负责。
 
-## 一、先区分三种“内存”
+## 1. 先区分三种“内存”
 
 阅读代码前，先把几个容易混淆的概念分开。
 
@@ -62,6 +62,34 @@ GPU 上的模型 Parameter
 
 CPU 临时 Tensor 可能在拷贝后释放，但 GPU 上的模型参数要一直保留，因为每一次请求都要使用它们。模型越大，权重占用的显存越多；Tensor Parallelism 开启后，每个 rank 通常只持有自己负责的参数分片。
 
+从普通 Python 对象的角度看，模型权重不是散落在某个 Kernel 里的数据，而是 `nn.Parameter` 对象引用的 GPU Tensor：
+
+```text
+model.layers[0].self_attn.qkv_proj.weight
+        ↓
+GPU Tensor / Storage
+        ↓
+GPU 显存中的一段连续参数数据
+```
+
+模型结构对象只保存模块和参数的引用；真正占用显存的是 Parameter 背后的 Tensor Storage。后续每个请求执行前向时，多个请求共同读取这份权重，不会为每个请求复制一份模型。
+
+权重的生命周期可以画成：
+
+```text
+safetensors 文件
+      ↓ safe_open，在 CPU 创建临时 Tensor
+调用 weight_loader
+      ↓ copy_
+GPU Parameter Storage
+      ↓
+所有请求共享读取
+      ↓
+ModelRunner 退出时释放
+```
+
+这里的“释放”才可能最终导致这部分 GPU Tensor 被销毁；请求结束不会释放模型权重，因为其他请求仍然需要它。
+
 ### 1.2 运行时临时张量
 
 一次前向计算还会产生输入 ID、位置、hidden states、Q/K/V、MLP 中间结果和 logits 等张量。这些张量的生命周期通常只覆盖一次 `run` 或一次前向过程。
@@ -86,7 +114,32 @@ GPU 显存
 
 这正是“显存管理”和“Tensor 是否存在”的区别：BlockManager 管理的是使用权和索引，Attention 操作的才是 GPU 上真实的 K/V 数据。
 
-## 二、nano-vLLM 在启动时如何规划显存
+### 1.4 除 KV Cache 外，GPU 还保存什么
+
+一次推理进程的 GPU 显存可以抽象成：
+
+```text
+GPU 显存
+├── 模型权重 Parameter：进程启动后长期驻留
+├── KV Cache Tensor：预分配，按请求 Block 使用
+├── 前向临时 Tensor：随着本轮 Batch 创建和释放
+├── 输入、位置、logits：本轮请求使用
+├── CUDA Graph 缓冲区：可选，固定 Batch Size 的长期缓冲区
+└── PyTorch allocator 保留的空闲块：可能暂时未被 Tensor 使用
+```
+
+这几类内存的管理方式不同：
+
+| 显存对象 | 谁决定大小 | 生命周期 | 请求结束时是否释放 |
+| --- | --- | --- | --- |
+| 模型权重 | 模型参数量和 dtype | 整个进程 | 否 |
+| KV Cache | 显存预算和模型 KV 结构 | 整个进程，按 Block 借还 | 通常只归还 Block |
+| 临时 Tensor | Batch、算子和实现 | 一次或几次前向 | Tensor 引用消失后可回收 |
+| CUDA Graph 缓冲区 | 捕获的 Batch Size | Graph 生命周期 | 通常不释放 |
+
+因此，KV Cache 只是显存管理的一部分。推理引擎必须先让权重、临时 Tensor、CUDA Graph 等对象能够共存，剩余空间才可以拿来预分配 KV Cache。
+
+## 2. nano-vLLM 在启动时如何规划显存
 
 显存管理的起点在 `ModelRunner.allocate_kv_cache()`。
 
@@ -173,7 +226,7 @@ KV Cache 预算 ≈ 8 × 0.9 - 2 - 0.5 = 4.7 GiB
 
 实际项目中 `block_bytes` 会根据模型结构和 dtype 计算，而不是手写一个常数。
 
-## 三、一个 KV Block 究竟有多大
+## 3. 一个 KV Block 究竟有多大
 
 `allocate_kv_cache()` 中的核心公式是：
 
@@ -223,7 +276,7 @@ dtype = FP16（2 字节）
 
 `num_kv_heads` 要除以 `world_size`，因为 Tensor Parallelism 下每个进程只负责本 rank 的 KV Head。若有 2 个 rank，则每个 rank 的 KV Cache 大小大约是完整模型的一半；每个 rank 都会在自己的 GPU 上建立自己的 KV Cache Tensor。
 
-## 四、KV Cache 不是不断 malloc，而是一整块池
+## 4. KV Cache 不是不断 malloc，而是一整块池
 
 计算出 Block 数后，nano-vLLM 一次性执行：
 
@@ -273,7 +326,7 @@ module.v_cache = self.kv_cache[1, layer_id]
 
 `torch.empty` 只分配存储，不负责把每个位置初始化为 0。后续只有已经写入有效 K/V 的 slot 才能被 Attention 读取，BlockManager 因此必须严格维护映射关系。
 
-## 五、BlockManager 管理的不是数据，而是“位置表”
+## 5. BlockManager 管理的不是数据，而是“位置表”
 
 `BlockManager` 初始化时建立三类状态：
 
@@ -312,7 +365,7 @@ Token 0 ... 255 | Token 256 ... 511
 
 但它们在物理 KV 池中可以位于完全不相邻的 Block 7 和 Block 2。这就是分页式 KV Cache 的核心：逻辑连续，物理上可以离散。
 
-## 六、Prefill 时如何分配和填充 Block
+## 6. Prefill 时如何分配和填充 Block
 
 假设 `block_size=4`，请求 Token 为：
 
@@ -369,7 +422,7 @@ tl.store(v_cache_ptr + cache_offsets, value)
 
 所以，`slot_mapping` 是“新算出来的 K/V 应写到哪里”，而 `block_table` 是“一个请求的逻辑 Token Block 依次对应哪些物理 Block”。两者不要混为一谈。
 
-## 七、Decode 时为什么只需追加一个 slot
+## 7. Decode 时为什么只需追加一个 slot
 
 Prefill 可能一次处理几十到几千个 Token；Decode 通常每个请求每轮只输入一个新 Token。
 
@@ -413,7 +466,7 @@ len(self.free_block_ids) >= (len(seq) % self.block_size == 1)
 
 如果刚好跨过 Block 边界，`may_append()` 才从空闲池领取一个新 Block。也就是说，Decode 阶段绝大多数轮次只是写入已有 Block 的下一个 slot，只有跨边界时才新增 Block。
 
-## 八、调度器如何在显存不足时做选择
+## 8. 调度器如何在显存不足时做选择
 
 `Scheduler.schedule()` 同时受两个预算限制：
 
@@ -468,7 +521,7 @@ self.block_manager.deallocate(seq)
   → 后续请求覆盖同一批 slot
 ```
 
-## 九、Prefix Cache：Block 为什么需要 hash 和引用计数
+## 9. Prefix Cache：Block 为什么需要 hash 和引用计数
 
 nano-vLLM 还实现了一个简化的前缀缓存。`compute_hash()` 会把当前 Block 的 Token ID 和前一个 Block 的 hash 一起计算：
 
@@ -499,7 +552,7 @@ h = self.compute_hash(token_ids, h)
 
 这解释了为什么 Prefix Cache 不只是一个 Python 字典：它必须同时维护 Token 前缀、GPU Block、引用计数和回收时机。
 
-## 十、`block_table` 和 Attention 是怎样接上的
+## 10. `block_table` 和 Attention 是怎样接上的
 
 在 `prepare_block_tables()` 中，所有请求的 Block Table 被整理成一个二维 Tensor：
 
@@ -536,7 +589,7 @@ flash_attn_with_kvcache(
 
 Attention kernel 根据逻辑位置计算 Block 序号，再查表得到物理 Block ID，最后读取对应 K/V。于是模型不需要知道这些 K/V 在显存池中是否连续。
 
-## 十一、CUDA Graph 也会消耗显存
+## 11. CUDA Graph 也会消耗显存
 
 如果没有设置 `enforce_eager=True`，初始化 KV Cache 后还会执行 `capture_cudagraph()`。它为多个 batch size 预先准备输入、位置、slot mapping、context length、block table 和输出 Tensor：
 
@@ -550,7 +603,7 @@ self.graph_bs = [1, 2, 4, 8] + list(range(16, max_bs + 1, 16))
 
 当 `enforce_eager=True` 时，代码跳过 graph capture，显存占用和执行路径更容易观察，但可能损失一部分 Decode 性能。
 
-## 十二、用一条请求完整走一遍
+## 12. 用一条请求完整走一遍
 
 假设：
 
@@ -592,7 +645,7 @@ BlockManager 领取 Block 0/1
 
 旧数据不需要先清零，因为新的 Attention 只会读取新请求的有效长度和有效 Block Table。真正重要的是不能让新请求的 `context_lens` 或 `block_table` 指向旧请求未覆盖的区域。
 
-## 十三、从源码得到的几个关键结论
+## 13. 从源码得到的几个关键结论
 
 ### 13.1 显存容量首先由模型结构决定
 
@@ -640,7 +693,7 @@ Block 越大：
 
 Block 越小则相反。nano-vLLM 默认 `kvcache_block_size=256`，并要求它是 256 的倍数；这既影响单 Block 字节数，也影响前缀复用粒度和边界分配频率。
 
-## 十四、把这套实现和上一篇 CUDA 概念对应起来
+## 14. 把这套实现和上一篇 CUDA 概念对应起来
 
 上一篇里的层次可以这样落到 nano-vLLM：
 
@@ -657,7 +710,7 @@ Block 越小则相反。nano-vLLM 默认 `kvcache_block_size=256`，并要求它
 
 最容易产生误解的是：`BlockManager` 并不替代 CUDA allocator。它在已经分配好的 GPU Tensor 上做二次管理；CUDA 看到的是一个 Tensor 和一系列 kernel，推理引擎看到的是许多可复用的逻辑页。
 
-## 十五、总结：显存管理的完整心智模型
+## 15. 总结：显存管理的完整心智模型
 
 可以把 nano-vLLM 的显存管理记成下面六步：
 
