@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-10-15T10:49:39+08:00
+lastmod: 2026-10-15T10:54:39+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -32,6 +32,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| Tinycast | 原生的 macOS 启动器，用 SwiftUI 和 AppKit 编写，没有任何第三方依赖，不用 Electron 也没有数据上报，常驻内存不到 100MB。功能上基本对标 Raycast：支持应用搜索、全局快捷键、剪贴板历史、计算器和汇率换算、Snippets、窗口管理、日历会议提醒、Markdown 笔记等；最大的亮点是能直接运行现有的 Raycast 扩展并用原生 SwiftUI 渲染，还支持从 Raycast 一键导入配置。 | 2026-06-29 | 考拉认为 Raycast 功能强大，但越来越多的能力放进了订阅和云端，性能也被吐槽；Tinycast 抓住的正是够用、轻量、免费的需求场景，兼容 Raycast 扩展生态也是非常聪明的决策。 | [BV1Vier6bEwY · 03:54](https://www.bilibili.com/video/BV1Vier6bEwY?t=234) | [GitHub](https://github.com/abue-ammar/tinycast) |
 | deno desktop | Deno 2.9 新增的官方子命令，能把一个 TypeScript 文件甚至整个 Next.js 应用直接编译成跨平台桌面应用的单个二进制文件。 | 2026-06-25 | 考拉认为复用系统 WebView 虽然省体积，但也意味着各平台渲染一致性要打个问号，这是所有走原生 WebView 路线的方案都绕不开的老问题。 | [BV1EWTK6iEGj · 03:54](https://www.bilibili.com/video/BV1EWTK6iEGj?t=234) | [官网](https://docs.deno.com/runtime/reference/cli/desktop/) |
 | xisland | macOS 原生应用，把 MacBook 的刘海/灵动岛变成 AI 编码 agent（Claude Code、Codex、Gemini CLI、OpenCode 等）的控制面板，可实时监控会话状态、在岛内直接审批权限与回答问题，无需切换窗口。 | 2026-04-21 | 考拉认为，多 Agent 并行时频繁切窗口确实烦，灵动岛监控这个创意执行得不错。局限在于用户需要新款 MacBook，刘海屏化为悬浮条。 | [BV1rLD5BKEtE · 00:56](https://www.bilibili.com/video/BV1rLD5BKEtE?t=56) | [官网](https://xisland.app) |
 | CodeBurn | 本地优先的开源仪表盘，追踪 Claude Code、Cursor、Codex 等 20+ AI 编码工具的 Token 消耗与花费，按模型、项目、任务拆解，并提供浪费扫描与 CSV/JSON 报表导出。 | 2026-04-13 | 认为 CodeBurn 解决的是 AI 编码开销的黑盒焦虑，让钱花在哪、值不值、哪些是浪费变得更加透明；这类工具未来会向云成本管理的 FinOps 方向发展，用于优化 Agent 的成本。 | [BV1VsLJ6QEbN · 00:01](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=1) | [GitHub](https://github.com/getagentseal/codeburn) |
@@ -194,6 +195,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| open-compute | 让你在自己的硬件上跑一套兼容 Cloudflare Workers 的平台：用 Rust 编写，打包成单个二进制，里面包括运行时、控制平面和存储集成，底层直接复用 Cloudflare 开源的 workerd。现有的 Workers 代码和 Wrangler 的配置基本可以原样迁移，KV、D1、R2、Durable Objects 等周边产品也在内，本地用 SQLite 做存储。以 Apache 2.0 开源，自托管免费。 | 2026-08-23 | 考拉认为 Workers 的开发体验很好，但一直绑定 Cloudflare 的基础设施，想私有化的团队只能望洋兴叹；Workers 开源后社区版自托管方案陆续出现，open-compute 的卖点是单二进制加上周边存储兼容，部署门槛更低；不过项目刚到 0.1 版本，部分能力还依赖外部组件或在开发中。 | [BV1Vier6bEwY · 03:00](https://www.bilibili.com/video/BV1Vier6bEwY?t=180) | [GitHub](https://github.com/elliothux/open-compute) |
 | walgit | 用 Rust 写的 Git 服务器：部署只需一个二进制加一个对象存储桶。把 Write-Ahead Log 作为唯一事实来源，本地磁盘只当缓存，靠对象存储的 CAS 保证并发推送只有一个胜出，无需选举。支持 Smart HTTP、Bundle URI 克隆、Git LFS，带 Web UI 和 OIDC 认证，兼容 S3、R2 和 GCS。 | 2026-08-23 | 考拉认为 walgit 把之前介绍的超大规模 Git 的思路做成了开源实现，很有参考价值；不过目前是个人项目，没有公开性能基准，更适合学习架构和小规模自托管。 | [BV1AeHr6mEo6 · 02:27](https://www.bilibili.com/video/BV1AeHr6mEo6?t=147) | [GitHub](https://github.com/tobi/walgit) |
 | PicoMQ | 基于 S3 兼容对象存储构建的持久化实时流（Durable Streams）服务，用 Rust 编写；通过 HTTP 接口提供持久化流，按业务场景（用户/会话/设备/AI 对话）创建无限、可独立寻址的细粒度流，而非共享 Topic；其 S3Stream 存储原语也被 AutoMQ 采用，可对接任意 S3 兼容存储。 | 2026-08-11 | 把消息队列的状态层放进对象存储是近几年明显趋势，Kafka 也有类似思路；PicoMQ 的差异点在于按业务场景开隔离流而非共享 Topic，对多租户或微服务场景友好，但也意味着丧失传统消息队列里跨 Topic 的顺序保证与批量优化，适合场景明确、流量不算特别大的业务。 | [BV1sD4D6sEs2 · 00:01](https://www.bilibili.com/video/BV1sD4D6sEs2?t=1) | [GitHub](https://github.com/PicoMQ/picomq) |
 | celld | Deno 团队开源的 Apache-2.0 守护进程，让 Cloudflare Workers 与 Durable Objects 能跑在自有机器上；用 S3 兼容对象存储做分布式协调器（compare-and-swap 租约），每个对象即一个 SQLite 数据库，交付为 58MB 静态可执行文件或容器镜像，故障转移约 20 秒且零数据丢失。 | 2026-08-05 | Durable Objects 是近几年最优雅的有状态编程抽象之一，但代价是深度锁定 Cloudflare；celld 打破了这一限制，由 Deno 团队维护，目标或许是从 Cloudflare 争取用户。 | [BV1d6bU63Emy · 00:01](https://www.bilibili.com/video/BV1d6bU63Emy?t=1) | [GitHub](https://github.com/denoland/celld) |
@@ -272,6 +274,7 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Clef（含 Clef-flash） | Cloudflare 开源的决策模型：和生成式模型一样不写文字，而是在预设的 schema 选项里直接给出结果和概率。Clef 以冻结的 Qwen3.8-27B 为骨干，只训练路由头和 LoRA；Clef-flash 换用 Qwen3.5-9B 主干主打低延迟。推理时一次前向并行给所有选项打分（非自回归），flash 版中位延迟 38.8 毫秒，支持图像输入和 64K 上下文，权重以 Apache 2.0 开源。 | 2026-10-01 | 考拉认为 Agent 的工作流里大量环节其实是分类和路由，用通用大模型做既慢又不稳定，专用决策模型是很务实的方向；Clef 的实现在架构层面有所创新，在不盲目缩小模型参数量的情况下，大幅度提升了决策速度。 | [BV1AeHr6mEo6 · 01:40](https://www.bilibili.com/video/BV1AeHr6mEo6?t=100) | [Hugging Face](https://huggingface.co/Cloudflare/clef) |
 | Strata | 开源推理引擎，让 12GB 显存的消费级显卡在本地运行 125B 参数的 Qwen3.8-Flash-Next（MoE）：以 llama.cpp 为基础，把热点专家放显存、全量专家放内存、查找表放 SSD，再配合投机解码提速，并内置 OpenAI/Anthropic 兼容 API 与 MCP 服务器。 | 2026-09-30 | 考拉认为 MoE 模型每次只激活少数专家，这给分层存储留出了空间，Strata 把这点用到了极致；但代价也明显，包括需要 32GB 以上内存、只能串行处理单个请求、必须采取较为激进的量化策略等，不过对于个人使用或小规模场景仍然是个好的思路。 | [BV1AeHr6mEo6 · 00:01](https://www.bilibili.com/video/BV1AeHr6mEo6?t=1) | [GitHub](https://github.com/Niko1221/Strata) |
+| Jev | TypeSafe AI 发布的首个 System One 模型：不生成文本，而是输入非结构化状态，输出符合预设类型的结构化决策，并附带校准过的置信度。它用并行采样代替逐 Token 生成，单次决策只要 70-500 毫秒，号称比前沿大模型快四十到两百倍；训练上用了自研的 RLCD 方法来降低幻觉，定价是输入每百万 Token 0.042 美元，输出免费。 | 2026-09-15 | 考拉认为 Jev 定位很清晰，把大模型里分类、路由、打分这类快决策场景单独拎出来做，现在很多 Agent 的工作流里，最贵最慢的恰恰是这些本不需要长篇推理的判断环节，Jev 瞄准的是真实痛点；不过不产生幻觉更多是输出受 schema 约束带来的，选错选项依然可能发生，置信度是否真的校准也需要第三方验证；模型闭源，目前仅早期测试，性能数据还是一家之言。 | [BV1Vier6bEwY · 00:01](https://www.bilibili.com/video/BV1Vier6bEwY?t=1) | [官网](https://typesafe.ai/blog/introducing-system-one-models-and-jev) |
 | Needle 2 | Cactus Compute 开源的端侧小模型，45M 参数，专门给手机/手表/智能家居/机器人做工具调用与结构化信息抽取，编译成 14MB 单文件、约 28MB 内存 | 2026-08-14 | Koala 认为端侧小模型的竞争今年（2026）明显升温；Needle 2 自称在体积/质量前沿上与 Function Gemma、IoFM 以及苹果基础模型互有胜负，而体积小 5–70 倍；执行度分数（calibrated execution score）是个实用的设计——端侧模型必然出错，关键是知道什么时候该把请求转交给云端大模型接手。 | [BV1BF8s65ESL · 03:52](https://www.bilibili.com/video/BV1BF8s65ESL?t=232) | [GitHub](https://github.com/cactus-compute/needle) |
 | DeepSeek V4-Flash-0731 | 面向 Agent 场景、支持多档推理强度的 MoE 模型正式版 | 2026-07-31 | 正式版把模型私有化部署的能力边界推到新高度，也提高了大家对 V4 Pro 正式版的期待。 | [BV1Fz3X62ETW · 00:09](https://www.bilibili.com/video/BV1Fz3X62ETW?t=9) | [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731) |
 | TurboFieldfare | 在 Apple Silicon 上按需从 SSD 流式读取 MoE 专家权重，以约 2 GB 内存运行 Gemma 4 26B-A4B | 2026-07-17 | 真正价值是发挥 MoE 特点并降低资源需求；依赖苹果统一内存和高速 NVMe，换到普通 PC 后收益可能明显缩水。 | [BV1Fz3X62ETW · 00:48](https://www.bilibili.com/video/BV1Fz3X62ETW?t=48) | [GitHub](https://github.com/drumih/turbo-fieldfare) |
@@ -475,6 +478,7 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | PhotoCraft | ArtCraft 团队用纯 Rust 重写的开源版 Photoshop：用 WGPU 做 GPU 合成，支持图层、蒙版与 PSD 读写，整个引擎还能编译成 WebAssembly 在浏览器里跑，每个操作都抽象成命令，可通过 CLI JSON 控制通道和 MCP 服务器驱动。 | 2026-09-30 | 考拉认为真正的卖点是为 Agent 而生，五百多个命令让脚本和模型能直接操作图像软件；不过当前是早期 Alpha，离替代 Photoshop 的日常工作还有距离，但传统收费软件的壁垒正在被 AI 编程快速突破，是个不争的事实。 | [BV1Nopj6UEKP · 02:26](https://www.bilibili.com/video/BV1Nopj6UEKP?t=146) | [GitHub](https://github.com/storytold/photocraft) |
+| Rive CLI | 交互动画平台 Rive 推出的命令行工具：不打开编辑器也能创建、预览、检查和发布 Rive 图形。场景用 Rive 标记语言（RML）以文本形式编写，CLI 负责解析编译，生成运行时用的 .riv 文件和编辑器能打开的 .rev 文件；还能本地渲染关键帧、模拟输入和数据驱动、跑脚本测试；项目以文本加资源目录的形式组织，方便做代码审查和 diff，文档里还专门准备了给 Agent 的说明。 | 2026-09-11 | 考拉认为以往动画是最依赖图形界面的环节，Rive 把它变成易于编写和测试的文本，给 AI 生成动画带来了一个新的技术路线；但另一方面 Rive CLI 完全不需要使用 Rive 任何云端付费能力就能完成工作，这也说明了 Agent 对 SaaS 软件的冲击。 | [BV1Vier6bEwY · 04:42](https://www.bilibili.com/video/BV1Vier6bEwY?t=282) | [官网](https://rive.app/docs/cli/overview) |
 | Decoy Font | Mixfont 推出的 TTF 字体，利用混合图像（hybrid image）原理制作隐写效果：每个字母近看是诱饵文字、远看或眯眼则显示另一段隐藏信息，基于 DejaVu Sans Mono，免费用于个人与商业项目 | 2026-07-17 | 作者实测能骗过 ChatGPT、Gemini 等主流大模型的 OCR 识别，却作为普通字体文件即可使用。在 AI 抓取无处不在的今天，这类对抗性设计正在从学术界走向实用工具，验证码、隐私水印都是可能的落地方向；它更大的价值也许是作为视觉语言模型的基准测试素材，探出模型在感知层面和人眼的差距。当然作者也承认这不是可靠的保护手段，指令得当的模型依然可能识破，把它当安全方案不如当一个精巧的视觉实验。 | [BV17vKB6sEYR · 03:17](https://www.bilibili.com/video/BV17vKB6sEYR?t=197) | [项目页](https://www.mixfont.com/experiments/decoy-font) |
 | Flint | 微软研究院联合中国人民大学 IDEAS Lab 开源的可视化中间语言与编译器，面向 AI Agent：用一份简洁的语义化 spec 自动推导刻度、配色、布局等，编译为 Vega-Lite / ECharts / Chart.js（及 Plotly、Excel），并提供 flint-chart-mcp 的 MCP 服务器供 Agent 调用。 | 2026-07-08 | 不加约束时 Agent 绘制图表的效率与美观性都有所欠缺；Flint 的思路是把审美决策从模型手里收回到编译器里，让模型少一些灵活性，但在绝大多数场景提升了最终图表质量。 | [BV1d6bU63Emy · 00:57](https://www.bilibili.com/video/BV1d6bU63Emy?t=57) | [GitHub](https://github.com/microsoft/flint-chart) |
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
@@ -614,6 +618,7 @@ toc:
 | unbash | webpro 用 TypeScript 写的零依赖 Bash 解析器，把 Shell 源码解析为带类型与源码位置（startIndex/endIndex）的 AST；覆盖命令、管道、重定向、控制流等语法，对错误或不完整输入也能返回尽力而为的部分 AST，纯同步实现便于在浏览器与 Serverless 环境部署（无需 WASM）。 | 2026-02-27 | 这类工具此前几乎被 tree-sitter 垄断，但 tree-sitter 需带原生插件或 WASM 运行时，在浏览器和 Serverless 环境里部署别扭；unbash 用纯 TypeScript 同步实现绕开了这个包袱。AI 现在会大量生成和执行 Shell 命令，执行前做静态审计、判断风险时需要轻量的解析层。 | [BV1d6bU63Emy · 01:53](https://www.bilibili.com/video/BV1d6bU63Emy?t=113) | [GitHub](https://github.com/webpro-nl/unbash) |
 | llmfit | 用 Rust 编写的终端工具，先探测机器内存/CPU/显卡显存，再按能否装下、跑多快、质量如何、上下文多长四个维度为几百个大模型打分，提供交互式 TUI 与 Web 仪表盘 | 2026-02-17 | Koala 认为本地跑模型这两年从极客玩具变成真实需求，但大多数人靠论坛帖子和试错选型，效率不高；llmfit 把硬件探测和模型库对接好，实现了一个实用的模型推荐系统。 | [BV1BF8s65ESL · 02:53](https://www.bilibili.com/video/BV1BF8s65ESL?t=173) | [GitHub](https://github.com/AlexsJones/llmfit) |
 | mdq | 类 jq 的命令行工具，专为提取与操作 Markdown 文档中的标题、列表、链接等内容而设计。 | 2024-05-25 | 考拉认为 mdq 特别适合需要自动化处理 Markdown 文档的场景（如 GitHub PR 模板检查），语法设计与 Markdown 高度一致，使用顺手。 | [BV1xc9FYDED3 · 02:27](https://www.bilibili.com/video/BV1xc9FYDED3?t=147) | [GitHub](https://github.com/yshavit/mdq) |
+| himalaya | 用 Rust 写的命令行邮件工具：不是常驻的终端界面，而是无状态的子命令，列信封、读邮件、打标记、下附件都是一条命令搞定。后端支持 IMAP、SMTP 等协议，也能直连 Gmail API 和 Microsoft Graph，还支持邮箱自动发现和 TOML 多账户配置。 | 2020-12-24 | 考拉认为无状态 CLI 这个设计放在今天特别合适，天然适合脚本化，也适合交给 Agent 调用，邮件正是 Agent 办公最常碰的场景之一；相比各家 MCP 邮件集成，它一个工具打通多种协议，更通用。局限在于 OAuth 需要借助 Web 工具完成，v2 还去掉了原生 keychain 支持，对普通用户上手门槛不低，更适合愿意折腾配置的开发者。 | [BV1Vier6bEwY · 01:14](https://www.bilibili.com/video/BV1Vier6bEwY?t=74) | [GitHub](https://github.com/pimalaya/himalaya) |
 
 ## 移动应用与分发
 
@@ -633,6 +638,7 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | Better Auth | 类型安全、功能全面的开源身份验证框架，易于集成（如连接 Prisma ORM 并注册页面即可），可作为 Auth.js / NextAuth 的替代方案。 | 2024-05-19 | 考拉认为 Better Auth 是一款近期在开发者社区获得很高评价的身份验证方案，用起来简单且类型安全，相比 Auth.js 更容易集成（例如连接数据库时只需连接到 Prisma ORM 并注册一个注册页面即可），对于寻找简单而强大身份验证方案的新项目值得一试。 | [BV1ij5fz2En9 · 02:28](https://www.bilibili.com/video/BV1ij5fz2En9?t=148) | [GitHub](https://github.com/better-auth/better-auth) |
+| Dex | 开源的 OpenID Connect 中间件：在 LDAP、SAML 和各种 OAuth 身份源之上，把它们统一翻译成标准的 OIDC 协议，应用只需对接 Dex 一层，就能接入各种登录方式。Go 语言编写，以单个静态二进制交付，存储系统可插拔，可以用 Helm 部署到 Kubernetes，也能直接跑在 SystemD 下。最早出自 CoreOS，现在是 CNCF 沙箱项目，Argo CD、Kubeflow 等知名项目都把它内置为登录组件。 | 2016-10-13 | 考拉认为 Dex 只做协议适配，不保存用户数据，所以它比 Keycloak 这类大而全的身份平台轻得多，特别适合给 Kubernetes 集群和内部工具加一层统一登录；但反过来说，用户管理、细粒度权限、多因子认证这些能力它基本不管，如果团队需要完整的身份治理，还是得搭配其他方案。 | [BV1Vier6bEwY · 02:03](https://www.bilibili.com/video/BV1Vier6bEwY?t=123) | [GitHub](https://github.com/dexidp/dex) |
 
 ## 效率与笔记
 
