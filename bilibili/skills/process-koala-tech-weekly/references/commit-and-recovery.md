@@ -74,6 +74,22 @@ git show --format=fuller --no-patch HEAD
 
 只有 commit 成功后，才把当前视频状态标记为 `completed`。
 
+## 同步到 Hugo 博客并推送
+
+每期标记 `completed` 之后（批量处理则在每期提交完成后），必须同步发布副本并推送远程：
+
+```bash
+cp posts/tool/anything.md D:/Blog/hugo_blog/content/posts/tool/anything.md
+```
+
+然后在 `D:/Blog/hugo_blog` 中提交并推送。注意：
+
+- 两份文件（backup 与 hugo）共享同一 frontmatter，直接整文件覆盖即可；提交前可用 `md5sum` 比对确认一致。
+- hugo 仓库只暂存 `content/posts/tool/anything.md`，禁止带上 `resources/_gen/`（Hugo 构建产物）和 `themes/LoveIt`（子模块指针）等无关改动。
+- Commit message 用中文简述本期范围，例如：`工具集：同步 Koala 科技周报 2026-09-06 ~ 2026-10-11 共 6 期（34 个工具）`。
+- 推送目标：`git push origin master`（remote 为 `git@github.com:hotttao/hugo_blog.git`）。
+- 推送失败时保持 backup 侧状态不变，解决网络/SSH 问题后重试推送即可（不影响期次的 `completed` 状态）。
+
 ## 失败与中断处理
 
 - 联网核验只完成一部分：保持 `processing`；每完成一项就导入完整累计数组。
