@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-09-03T10:43:44+08:00
+lastmod: 2026-10-15T10:25:46+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -314,6 +314,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| TeamAI | 腾讯云开源的团队级 Agent 配置管理工具：把团队的 Skill、规范、MCP 服务器和模型配置放进一个共享的 Git 仓库，成员执行一条 init 命令接入，之后每次开启 AI 会话自动拉取最新内容，已适配 Claude Code、Codex、Cursor、CodeBuddy 等 19 种编码 Agent。 | 2026-10-10 | 考拉认为个人把 Agent 调校得再好，换一个同事就要从头来过，团队级的配置分发正变成刚需；用 Git 做底座是务实的选择，权限和审计都能复用现成流程。 | [BV1Nopj6UEKP · 01:45](https://www.bilibili.com/video/BV1Nopj6UEKP?t=105) | [GitHub](https://github.com/Tencent/teamai-cli) |
 | Destructive Command Guard | 用 Rust 编写的安全防护工具（简称 dcg），在 AI 编程助手执行 rm -rf、git push --force、DROP TABLE 等毁灭性命令前直接拦截，覆盖十多种主流 Agent，内置 50 多个规则包，并扩展到数据库、Kubernetes、云平台等场景 | 2026-07-13 | Agent 误删代码的事故几乎每个重度用户都遇到过，各家 CLI 自带的确认机制又常被自动批准模式绕过；dcg 把防护做成跨 Agent 的统一钩子层，解决的是真实痛点。它用 SIMD 做到亚毫秒级延迟，还能识别藏在 Python 代码和 heredoc 里的危险调用，并智能区分命令是为执行还是只做文本出现。不过规则天然存在绕过空间，把它当最后一道保险而不是唯一防线才是正确认知，配合容器隔离和 Git 备份使用更稳妥。 | [BV17vKB6sEYR · 02:22](https://www.bilibili.com/video/BV17vKB6sEYR?t=142) | [GitHub](https://github.com/Dicklesworthstone/destructive_command_guard) |
 | ax | Hono 作者 Yusuke Wada 推出的面向 AI Agent 的 HTTP/HTML 命令行工具，号称“AI 时代的 curl”，提供结构化的请求报告、页面结构探索和 CSS 选择器数据提取三类能力，输出按 token 成本优化（TSV 比 JSON 省约 40%）。 | 2026-07-06 | 给 Agent 造工具是当下最活跃的方向；ax 的聪明之处是不做黑盒抓取，而是让模型使用 CSS 选择器这种页面变化后仍可修复的抽象；作者（Hono）在开发者工具上的品位加上社区号召力会帮它快速铺开，值得放进 Agent 的工具箱。 | [BV19qNT6ZEmL · 00:57](https://www.bilibili.com/video/BV19qNT6ZEmL?t=57) | [GitHub](https://github.com/yusukebe/ax) |
 | AI SDK 7 | Vercel 的 TypeScript AI 工具包 7.0 版本，把重心从接入模型转向构建生产级 AI 代理，覆盖开发、运行、集成、观测全流程。 | 2026-06-25 | 考拉认为 AI SDK 的演进路径很能说明问题：从最早帮前端接 ChatGPT 做流式输出，到现在做全栈代理基础设施，本质是 Vercel 想占据 AI 应用的入口，把更多用量接入自家的基础设施。 | [BV1EWTK6iEGj · 00:58](https://www.bilibili.com/video/BV1EWTK6iEGj?t=58) | [GitHub](https://github.com/vercel/ai) |
@@ -467,6 +468,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| PhotoCraft | ArtCraft 团队用纯 Rust 重写的开源版 Photoshop：用 WGPU 做 GPU 合成，支持图层、蒙版与 PSD 读写，整个引擎还能编译成 WebAssembly 在浏览器里跑，每个操作都抽象成命令，可通过 CLI JSON 控制通道和 MCP 服务器驱动。 | 2026-09-30 | 考拉认为真正的卖点是为 Agent 而生，五百多个命令让脚本和模型能直接操作图像软件；不过当前是早期 Alpha，离替代 Photoshop 的日常工作还有距离，但传统收费软件的壁垒正在被 AI 编程快速突破，是个不争的事实。 | [BV1Nopj6UEKP · 02:26](https://www.bilibili.com/video/BV1Nopj6UEKP?t=146) | [GitHub](https://github.com/storytold/photocraft) |
 | Decoy Font | Mixfont 推出的 TTF 字体，利用混合图像（hybrid image）原理制作隐写效果：每个字母近看是诱饵文字、远看或眯眼则显示另一段隐藏信息，基于 DejaVu Sans Mono，免费用于个人与商业项目 | 2026-07-17 | 作者实测能骗过 ChatGPT、Gemini 等主流大模型的 OCR 识别，却作为普通字体文件即可使用。在 AI 抓取无处不在的今天，这类对抗性设计正在从学术界走向实用工具，验证码、隐私水印都是可能的落地方向；它更大的价值也许是作为视觉语言模型的基准测试素材，探出模型在感知层面和人眼的差距。当然作者也承认这不是可靠的保护手段，指令得当的模型依然可能识破，把它当安全方案不如当一个精巧的视觉实验。 | [BV17vKB6sEYR · 03:17](https://www.bilibili.com/video/BV17vKB6sEYR?t=197) | [项目页](https://www.mixfont.com/experiments/decoy-font) |
 | Flint | 微软研究院联合中国人民大学 IDEAS Lab 开源的可视化中间语言与编译器，面向 AI Agent：用一份简洁的语义化 spec 自动推导刻度、配色、布局等，编译为 Vega-Lite / ECharts / Chart.js（及 Plotly、Excel），并提供 flint-chart-mcp 的 MCP 服务器供 Agent 调用。 | 2026-07-08 | 不加约束时 Agent 绘制图表的效率与美观性都有所欠缺；Flint 的思路是把审美决策从模型手里收回到编译器里，让模型少一些灵活性，但在绝大多数场景提升了最终图表质量。 | [BV1d6bU63Emy · 00:57](https://www.bilibili.com/video/BV1d6bU63Emy?t=57) | [GitHub](https://github.com/microsoft/flint-chart) |
 | Carbon | Fenris Creations（原 CCP Games）开源的跨平台游戏引擎框架，支撑 EVE Online 与 EVE Frontier 的持续在线宇宙，由 Trinity 图形引擎、Destiny 物理/寻路引擎、CarbonIO 网络层等 20 多个模块构成，上层用 Python 做内容脚本，曾支撑 8825 人同场 PVP 的吉尼斯世界纪录。 | 2026-07-01 | 做 MMO 的团队值得研究它的分层设计；但这类引擎与自家游戏耦合很深，直接复用门槛不低，更大价值在于架构参考。 | [BV19qNT6ZEmL · 03:28](https://www.bilibili.com/video/BV19qNT6ZEmL?t=208) | [GitHub](https://github.com/carbonengine) |
@@ -580,6 +582,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| Python 3.15 | Python 年度大版本：新增显式惰性导入（PEP 810）加快启动，内置 frozendict 和 sentinel 类型，默认编码统一为 UTF-8，实验性 JIT 在 x86-64 Linux 提速 7-8%、AArch64 macOS 提速 11-12%，标准库加入 Tachyon 高频采样分析器。 | 2026-10-09 | 考拉认为惰性导入对命令行工具和 Agent 频繁拉起的脚本最实用；启动慢是 Python 的老毛病，实验性 JIT 做了三个版本仍是一成左右的提升，说明官方路线比较保守，想要数量级的加速还得靠别的方案。 | [BV1Nopj6UEKP · 00:01](https://www.bilibili.com/video/BV1Nopj6UEKP?t=1) | [官网](https://www.python.org/downloads/release/python-3150/) |
 | Inko | 灵感来自 Erlang 与 Pony 的实验性并发编程语言，以类型安全并发与确定性内存管理兼顾安全与效率。 | 2015-04-07 | 仅作功能介绍，未给出明确评价。 | [BV1G5ASetENw · 02:50](https://www.bilibili.com/video/BV1G5ASetENw?t=170) | [GitHub](https://github.com/inko-lang/inko) |
 
 ## GPU 与高性能计算
@@ -645,6 +648,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| AnyPS5 | 把 PS5 可执行文件自动移植到 Linux 和 Windows 的开源工具：不走模拟器路线，用重链接器把程序转成目标系统原生格式，自行实现 PS5 系统 PRX 动态库，并把着色器重编译为 SPIR-V。 | 2026-08-03 | 考拉认为 PS5 本身就是 x86 架构，静态重链接比模拟省掉一层开销；但目前验证过的游戏有限，系统库覆盖并不完整，遇到没实现的调用会直接退出；项目声明不含任何固件和密钥，可版权上的灰色地带依然存在。 | [BV1Nopj6UEKP · 00:56](https://www.bilibili.com/video/BV1Nopj6UEKP?t=56) | [GitHub](https://github.com/boykopovar/AnyPS5) |
 | I'm Building a Browser for Reverse Engineers | 研究者 veritas 的技术文章：通过 fork Chromium/Electron 并在 Blink 渲染引擎层注入自定义 CDP 域（Snitch）原生捕获 Canvas、WebGL、Audio 等指纹 API 调用，避免 JS 层 patch 被检测；并集成自动化混淆代码检测/去混淆与常见指纹库加密 payload 解密，用于逆向分析反爬与指纹追踪。 | 2025-10-06 | 考拉认为这是为数不多真正触及浏览器底层的逆向工程实践，需要 C++ 和 Chromium 架构知识，对安全研究者很有价值。 | [BV1Qe4Tz4EGi · 03:17](https://www.bilibili.com/video/BV1Qe4Tz4EGi?t=197) | [官网](https://nullpt.rs/reverse-engineering-browser) |
 
 ## 嵌入与物联网开发
