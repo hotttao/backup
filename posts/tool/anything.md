@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-10-15T10:25:46+08:00
+lastmod: 2026-10-15T10:43:03+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -193,6 +193,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| walgit | 用 Rust 写的 Git 服务器：部署只需一个二进制加一个对象存储桶。把 Write-Ahead Log 作为唯一事实来源，本地磁盘只当缓存，靠对象存储的 CAS 保证并发推送只有一个胜出，无需选举。支持 Smart HTTP、Bundle URI 克隆、Git LFS，带 Web UI 和 OIDC 认证，兼容 S3、R2 和 GCS。 | 2026-08-23 | 考拉认为 walgit 把之前介绍的超大规模 Git 的思路做成了开源实现，很有参考价值；不过目前是个人项目，没有公开性能基准，更适合学习架构和小规模自托管。 | [BV1AeHr6mEo6 · 02:27](https://www.bilibili.com/video/BV1AeHr6mEo6?t=147) | [GitHub](https://github.com/tobi/walgit) |
 | PicoMQ | 基于 S3 兼容对象存储构建的持久化实时流（Durable Streams）服务，用 Rust 编写；通过 HTTP 接口提供持久化流，按业务场景（用户/会话/设备/AI 对话）创建无限、可独立寻址的细粒度流，而非共享 Topic；其 S3Stream 存储原语也被 AutoMQ 采用，可对接任意 S3 兼容存储。 | 2026-08-11 | 把消息队列的状态层放进对象存储是近几年明显趋势，Kafka 也有类似思路；PicoMQ 的差异点在于按业务场景开隔离流而非共享 Topic，对多租户或微服务场景友好，但也意味着丧失传统消息队列里跨 Topic 的顺序保证与批量优化，适合场景明确、流量不算特别大的业务。 | [BV1sD4D6sEs2 · 00:01](https://www.bilibili.com/video/BV1sD4D6sEs2?t=1) | [GitHub](https://github.com/PicoMQ/picomq) |
 | celld | Deno 团队开源的 Apache-2.0 守护进程，让 Cloudflare Workers 与 Durable Objects 能跑在自有机器上；用 S3 兼容对象存储做分布式协调器（compare-and-swap 租约），每个对象即一个 SQLite 数据库，交付为 58MB 静态可执行文件或容器镜像，故障转移约 20 秒且零数据丢失。 | 2026-08-05 | Durable Objects 是近几年最优雅的有状态编程抽象之一，但代价是深度锁定 Cloudflare；celld 打破了这一限制，由 Deno 团队维护，目标或许是从 Cloudflare 争取用户。 | [BV1d6bU63Emy · 00:01](https://www.bilibili.com/video/BV1d6bU63Emy?t=1) | [GitHub](https://github.com/denoland/celld) |
 | Supapool | 为并行开发的 Agent 临时创建隔离 Supabase 实例，自动执行迁移并注入环境变量 | 2026-07-30 | 这是典型的 Agent 催生的基础设施；相比长期维护数据库分支，它主打快速、便宜、用完即抛。 | [BV1Fz3X62ETW · 03:22](https://www.bilibili.com/video/BV1Fz3X62ETW?t=202) | [官网](https://supapool.io/) |
@@ -268,6 +269,8 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| Clef（含 Clef-flash） | Cloudflare 开源的决策模型：和生成式模型一样不写文字，而是在预设的 schema 选项里直接给出结果和概率。Clef 以冻结的 Qwen3.8-27B 为骨干，只训练路由头和 LoRA；Clef-flash 换用 Qwen3.5-9B 主干主打低延迟。推理时一次前向并行给所有选项打分（非自回归），flash 版中位延迟 38.8 毫秒，支持图像输入和 64K 上下文，权重以 Apache 2.0 开源。 | 2026-10-01 | 考拉认为 Agent 的工作流里大量环节其实是分类和路由，用通用大模型做既慢又不稳定，专用决策模型是很务实的方向；Clef 的实现在架构层面有所创新，在不盲目缩小模型参数量的情况下，大幅度提升了决策速度。 | [BV1AeHr6mEo6 · 01:40](https://www.bilibili.com/video/BV1AeHr6mEo6?t=100) | [Hugging Face](https://huggingface.co/Cloudflare/clef) |
+| Strata | 开源推理引擎，让 12GB 显存的消费级显卡在本地运行 125B 参数的 Qwen3.8-Flash-Next（MoE）：以 llama.cpp 为基础，把热点专家放显存、全量专家放内存、查找表放 SSD，再配合投机解码提速，并内置 OpenAI/Anthropic 兼容 API 与 MCP 服务器。 | 2026-09-30 | 考拉认为 MoE 模型每次只激活少数专家，这给分层存储留出了空间，Strata 把这点用到了极致；但代价也明显，包括需要 32GB 以上内存、只能串行处理单个请求、必须采取较为激进的量化策略等，不过对于个人使用或小规模场景仍然是个好的思路。 | [BV1AeHr6mEo6 · 00:01](https://www.bilibili.com/video/BV1AeHr6mEo6?t=1) | [GitHub](https://github.com/Niko1221/Strata) |
 | Needle 2 | Cactus Compute 开源的端侧小模型，45M 参数，专门给手机/手表/智能家居/机器人做工具调用与结构化信息抽取，编译成 14MB 单文件、约 28MB 内存 | 2026-08-14 | Koala 认为端侧小模型的竞争今年（2026）明显升温；Needle 2 自称在体积/质量前沿上与 Function Gemma、IoFM 以及苹果基础模型互有胜负，而体积小 5–70 倍；执行度分数（calibrated execution score）是个实用的设计——端侧模型必然出错，关键是知道什么时候该把请求转交给云端大模型接手。 | [BV1BF8s65ESL · 03:52](https://www.bilibili.com/video/BV1BF8s65ESL?t=232) | [GitHub](https://github.com/cactus-compute/needle) |
 | DeepSeek V4-Flash-0731 | 面向 Agent 场景、支持多档推理强度的 MoE 模型正式版 | 2026-07-31 | 正式版把模型私有化部署的能力边界推到新高度，也提高了大家对 V4 Pro 正式版的期待。 | [BV1Fz3X62ETW · 00:09](https://www.bilibili.com/video/BV1Fz3X62ETW?t=9) | [Hugging Face](https://huggingface.co/deepseek-ai/DeepSeek-V4-Flash-0731) |
 | TurboFieldfare | 在 Apple Silicon 上按需从 SSD 流式读取 MoE 专家权重，以约 2 GB 内存运行 Gemma 4 26B-A4B | 2026-07-17 | 真正价值是发挥 MoE 特点并降低资源需求；依赖苹果统一内存和高速 NVMe，换到普通 PC 后收益可能明显缩水。 | [BV1Fz3X62ETW · 00:48](https://www.bilibili.com/video/BV1Fz3X62ETW?t=48) | [GitHub](https://github.com/drumih/turbo-fieldfare) |
@@ -331,6 +334,7 @@ toc:
 | codex-plugin-cc | OpenAI 官方开源的 Claude Code 插件，让用户在 Claude Code 工作流内直接调用本机 Codex，用于代码审查、对抗式 review、任务委派与后台任务管理，复用本机 Codex CLI 与认证 | 2026-03-30 | OpenAI 亲自给竞争对手的产品写官方插件，在以前难以想象，说明 Claude Code 的强势仍然难以挑战；OpenAI 宁可把 Codex 嵌进去，也不愿失去这批用户的使用量。对开发者是好事——用一个模型写代码、换另一个模型做对抗审查的双模型工作流，确实能捕捉到单一模型的盲区。这种巨头间的互操作能维持多久是个问号，但至少现在用户是赢家。 | [BV17vKB6sEYR · 00:58](https://www.bilibili.com/video/BV17vKB6sEYR?t=58) | [GitHub](https://github.com/openai/codex-plugin-cc) |
 | OneCLI | 面向 AI Agent 的开源凭证网关，Agent 只持占位凭证、真实密钥由网关在网络层按请求注入，支持端点封禁、按分钟/小时/天限流、敏感操作人工审批与按项目隔离 | 2026-03-08 | 过去一年 Agent 安全的最大共识是靠 Prompt 约束模型行为根本靠不住，规则必须放到模型管不到的地方执行；OneCLI 选择网络层拦截，覆盖面比在 MCP Server 里做权限校验更广，连 LLM 写代码直接发 API 请求这条路也堵住了；但局限在于所有流量走一个代理，网关本身成了单点。 | [BV1KK3J6cE5J · 03:48](https://www.bilibili.com/video/BV1KK3J6cE5J?t=228) | [GitHub](https://github.com/onecli/onecli) |
 | Autoresearch | Karpathy 开源的自主 AI 研究框架，让 AI Agent 在夜间自动开展机器学习实验，在受限环境下验证 Agent 能否做出有意义的研究迭代。 | 2026-03-06 | 考拉认为这是 AI 辅助研究从工具走向自主研究者的早期信号，但当前仍需人类定义实验方向，离真正自主研究尚有距离；项目总能精准把握 AI 社区脉搏，5 分钟训练预算与单文件约束的设计非常克制，既控制了风险又保证了可复现性。 | [BV1WbXUBGEJr · 00:01](https://www.bilibili.com/video/BV1WbXUBGEJr?t=1) | [GitHub](https://github.com/karpathy/autoresearch) |
+| TanStack Intent | 让 npm 包可以附带给 Agent 用的使用指南：维护者把 SKILL.md 写在源码中，CI 校验后一起打进 npm 包，包版本就是技能版本；使用方的 Agent 通过静态扫描发现已安装包里的技能（不执行包代码），源文件变化时由 intent stale 提醒维护者复查。 | 2026-03-04 | 考拉认为 Agent 写代码最常见的问题就是用过时的 API，因此把指南和版本绑定比外挂文档检索更直接；但这套机制完全依赖维护者持续投入，技能文件本身也是提示词注入的新入口，总的来说还是比完全手动管理要更加可靠一些。 | [BV1AeHr6mEo6 · 03:17](https://www.bilibili.com/video/BV1AeHr6mEo6?t=197) | [GitHub](https://github.com/TanStack/intent) |
 | Jido | 基于 Elixir/OTP 的自治多智能体框架，Agent 为纯函数式数据结构，状态变更通过指令描述，副作用由 OTP 运行时执行；内置 Supervisor 树可自动恢复崩溃的 agent，并支持热更新。 | 2026-02-22 | 考拉认为当 Python 和 Go 几乎垄断 AI 开发时，Jido 提供了另一种思路；Elixir 的并发模型与容错机制适合构建高可靠 Agent 系统，但生态成熟度仍有差距，适合对性能与稳定性有极致要求、且愿意接受函数式编程思维的团队。Jido 2.0 的代码设计对想深入 Agent 实现的开发者很有参考价值。 | [BV1txNKztENM · 03:52](https://www.bilibili.com/video/BV1txNKztENM?t=232) | [GitHub](https://github.com/agentjido/jido) |
 | LiteParse | LlamaIndex 团队开源的本地文档解析库，用 PDFium 提取带空间位置信息的文本，支持 PDF、Word、Excel、PowerPoint 与图片，并以 Rust、Node.js、Python 和浏览器 WASM 多种接口暴露，可生成截图供视觉模型使用。 | 2026-02-09 | 考拉认为文档解析是 Agent 应对复杂文档时的瓶颈，市面上收费的解析服务价格不菲；LiteParse 完全本地运行、License 宽松，对数据合规要求高的企业场景很友好；技术实现思路也有巧思——不再对全文使用 OCR 识别，而是尽可能还原 PDF 文本结构，让模型自行理解。 | [BV15iVV6AE6U · 00:32](https://www.bilibili.com/video/BV15iVV6AE6U?t=32) | [GitHub](https://github.com/run-llama/liteparse) |
 | Flue | Astro 团队开源的 TypeScript Agent Harness 框架，将架构拆为模型层（Token/Prompt/Tools）、工具层（Skill/Memory/Session）、沙箱层（Bash/网络/权限）与文件系统层（read/write/grep/glob），可部署到 Node.js 与 Cloudflare Workers。 | 2026-02-07 | 认为这个项目的 API 设计有一定创新性，但仍偏向编程的范畴；在模型驱动占主导地位的今天，也许该框架的适用场景是由模型而非人类开发者来编写业务逻辑；总体是有趣的尝试，但适用场景仍需探索。 | [BV1VsLJ6QEbN · 03:50](https://www.bilibili.com/video/BV1VsLJ6QEbN?t=230) | [GitHub](https://github.com/withastro/flue) |
@@ -578,6 +582,12 @@ toc:
 | --- | --- | --- | --- | --- | --- |
 | Printercow | 一个将任意 USB 热敏打印机变成联网 HTTP API 端点的平台，通过简单的安装命令配合 Raspberry Pi Zero W2 即可实现远程打印，支持 ESC/POS 指令与自定义纸张宽度。 | 2025-01-21 | 考拉认为 Printercow 的易用性和灵活性使其成为零售、餐饮和高流量物流行业的理想选择；其开源模式确保了功能的透明性和可扩展性，同时也为企业提供开箱即用的托管服务。 | [BV1dPFKeeEuw · 03:14](https://www.bilibili.com/video/BV1dPFKeeEuw?t=194) | [官网](https://www.printercow.com) |
 
+## API 与代码生成
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| Forge | Cloudflare 开源的可插拔代码生成管道：从 API 规范自动生成 SDK、CLI、文档和 MCP 服务器。核心是可以连续组合的 Transformer，比如先生成 TypeScript SDK，再生成 CLI，再产出文档或 MCP 服务器，手写命令也能和生成代码混在一起；跑在 CI 里，每个 PR 都生成预览，Apache 2.0 许可。 | 2026-09-28 | 考拉认为 SDK 生成长期被 Stainless、Speakeasy 这类商业服务把持，Cloudflare 把它做成免费基础设施，对这个赛道冲击不小，但项目还很早期：目前输入只支持 OpenAPI，多语言 SDK 和 Terraform 支持还不完善，现在能直接用上的更多是思路。 | [BV1AeHr6mEo6 · 03:57](https://www.bilibili.com/video/BV1AeHr6mEo6?t=237) | [GitHub](https://github.com/cloudflare/forge) |
+
 ## 编程语言与编译器
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
@@ -617,6 +627,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| Ledge | 能直接运行代码的 Markdown 笔记应用：在笔记里写 Shell、Python、SQL 或 AI 提示块，按快捷键执行，输出流式显示在代码块下方；每篇笔记有独立的持久 Shell，加一行 frontmatter 就能通过 SSH 在远程主机运行；数据就是普通 Markdown 文件，无账号无数据库，自带 MCP 服务器让 Agent 方便地读写笔记。 | 2026-07-15 | 考拉认为可执行文档不是新概念，Jupyter 都做过，Ledge 的差异在于把运维手册、远程执行和 Agent 接入捏到了一起，让 Agent 按笔记执行命令很方便，也放大了误操作风险，并且在权限管控方面也有自己的设计。 | [BV1AeHr6mEo6 · 00:55](https://www.bilibili.com/video/BV1AeHr6mEo6?t=55) | [GitHub](https://github.com/ledgesh/ledge) |
 | DoubleMemory | 一款 macOS 原生的本地优先（local-first）信息保存工具，双击 Command+C 即可保存书签、稍后阅读内容与剪贴板历史，数据存于本机并可同步到 iCloud，以美观卡片展示，并提供从 Pocket 等迁移数据的工具。 | 2025-02-25 | Koala 介绍 DoubleMemory 是一个简化信息保存与回忆的工具，双击 Ctrl+C（实为 Command+C）即可激活记忆功能，帮助你轻松管理网页书签、稍后阅读的内容和剪贴板历史；它离线优先、无需扩展、无需注册、无需服务器。有云端备份需求可同步到 iCloud，所有保存内容以美观视觉卡片展示；并提到 Mozilla 维护的同类工具 Pocket 即将停止服务，DoubleMemory 也提供了迁移工具。 | [BV1NpjMztEZR · 00:28](https://www.bilibili.com/video/BV1NpjMztEZR?t=28) | [官网](https://doublememory.com/) |
 
 ## 国际化与本地化
