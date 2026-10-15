@@ -88,6 +88,12 @@ uv run bili-sync collection <SEED_BVID> --continue-on-error
 uv run bili-sync status --bvid <BVID>
 ```
 
+注意：`one` / `collection` 需要调用 BBDown，默认按当前工作目录解析 `tools\bbdown\BBDown.exe`。如果从仓库根目录（而非 `bilibili/`）运行，必须显式传路径，否则报 `BackendError: Executable not found`：
+
+```text
+bili-sync --data-dir bilibili/data collection <SEED_BVID> --continue-on-error --bbdown bilibili/tools/bbdown/BBDown.exe
+```
+
 流水线优先保存平台字幕；平台无字幕时才回退到本地 faster-whisper ASR。除非显式强制，重复运行时会跳过本地文件完整的视频。
 
 ## 状态数据库
