@@ -2,7 +2,7 @@
 weight: 1
 title: "一个持续更新的工具集"
 date: 2026-03-25T12:00:00+08:00
-lastmod: 2026-10-15T10:43:03+08:00
+lastmod: 2026-10-15T10:49:39+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -79,6 +79,7 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | DiffsHub | GitHub 代码差异查看器，把 URL 里的 github.com 换成 diffshub.com 即可打开，用虚拟化渲染撑住超大规模 diff，PR、commit、compare、patch 等页面都能接管，宣称能流畅打开 Linux 内核版本间的对比。 | 2026-05-20 | 考拉认为背后的公司 Pierre 之前介绍过他们的两个底层组件 FileTree 和 Diff，DiffsHub 就是基于这两个组件搭出来的上层产品，可以看出他们在往 Patch Review 这个垂直方向深耕；这个时机也很合理——AI 让代码产出速度爆炸增长，Code Review 的工具体验反而成了瓶颈，GitHub 原生 diff 在大 PR 下卡顿是公认痛点，垂直工具用更好的工程实现来抢占体验是个合理的切入角度。 | [BV1yYG76oESe · 01:28](https://www.bilibili.com/video/BV1yYG76oESe?t=88) | [官网](https://diffshub.com/) |
+| fallow | 面向 TypeScript 和 JavaScript 项目的开源代码分析工具（Rust 编写）：一条命令找出无用代码、重复代码、复杂度热点和样式漂移，可接入 CI 在 PR 里评论，也能在编辑器和 Claude Code 里用（自带 LSP 与 MCP）。团队另推出付费的 Fallow Runtime，统计生产环境里每个函数的真实调用频率。 | 2026-03-17 | 考拉认为 AI 写代码越快，死代码堆得也越快，fallow 瞄准的正是清理需求，用生产运行数据判断代码能不能删，比纯静态分析更有说服力；但往生产环境放探针对很多团队是不低的门槛。 | [BV1Lhab64Eau · 00:32](https://www.bilibili.com/video/BV1Lhab64Eau?t=32) | [GitHub](https://github.com/fallow-rs/fallow) |
 | GitHub Stacked Pull Requests | 通过 `gh stack` 把大改动拆成相互依赖、可独立评审和合并的小 PR | 2026-02-06 | Agent 生成的代码量暴涨后，评审正成为新瓶颈；把大改动切成可消化的小块正好对症。 | [BV1Fz3X62ETW · 02:35](https://www.bilibili.com/video/BV1Fz3X62ETW?t=155) | [GitHub](https://github.com/github/gh-stack) |
 | sem | 基于 Git 的语义级版本控制/差异工具，从函数、类等实体层面（而非逐行）理解一次提交改了什么，提供 sem diff、sem blame、sem impact 命令，面向 AI 编程 Agent 输出结构化变更信息。 | 2026-02-06 | 传统行 diff 是给人看的，但在 AI 写代码的时代，Agent 需要的是结构化、语义化的变更信息；sem 通过代码静态分析，希望提供这种对 Agent 更友好的新格式。 | [BV1CWJF6xE1d · 00:01](https://www.bilibili.com/video/BV1CWJF6xE1d?t=1) | [GitHub](https://github.com/Ataraxy-Labs/sem) |
 | Diffs (@pierre/diffs) | 由 The Pierre Computer Company 开源的 diff 与代码渲染库,基于 Shiki 3 实现语法高亮与主题(自动浅色/深色),提供 split(并排)与 stacked(合并)两种布局、词级差异高亮、自定义 hunk 分隔与头部、合并冲突解决 UI、评论线程、行选择(点击拖拽)与 token hover 回调等原语;提供 Web Components、React、SSR、Cloudflare Worker 多种入口,不捆绑任何上层产品,作为独立工具维护。 | 2025-12-10 | 考拉认为,在 AI Coding 盛行的时代,开发者对 AI 产出的代码进行 Code Review 越来越重要,更智能的 Dev 工具是大势所趋。Diffs 让 Review 的关注点更加集中,未来我们还可能看到这个领域的更多创新。 | [BV1h56SBtEzh · 01:55](https://www.bilibili.com/video/BV1h56SBtEzh?t=115) | [GitHub](https://github.com/pierrecomputer/pierre) |
@@ -318,6 +319,7 @@ toc:
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
 | TeamAI | 腾讯云开源的团队级 Agent 配置管理工具：把团队的 Skill、规范、MCP 服务器和模型配置放进一个共享的 Git 仓库，成员执行一条 init 命令接入，之后每次开启 AI 会话自动拉取最新内容，已适配 Claude Code、Codex、Cursor、CodeBuddy 等 19 种编码 Agent。 | 2026-10-10 | 考拉认为个人把 Agent 调校得再好，换一个同事就要从头来过，团队级的配置分发正变成刚需；用 Git 做底座是务实的选择，权限和审计都能复用现成流程。 | [BV1Nopj6UEKP · 01:45](https://www.bilibili.com/video/BV1Nopj6UEKP?t=105) | [GitHub](https://github.com/Tencent/teamai-cli) |
+| AX | 谷歌开源的 Agent 执行平台：用 YAML 声明任务、工作区、网络策略和模型，由它负责沙箱隔离和调度，玩法很像 Kubernetes。底层基于开源的 Agent Substrate，每个任务是一个轻量 Actor，空闲时被快照挂起、恢复不到一秒，还支持用自然语言描述开发环境，由 Agent 自动装好工具链。 | 2026-09-22 | 考拉认为 Agent 的基础设施正从单机沙箱走向集群调度，AX 背后是 DeepMind 在隔离和调度上的积累，目标明显是做 Agent 时代的 K8s；不过它宣称的数十亿并发离普通团队很远，API 也还是 Alpha 阶段，现在更适合平台团队研究架构，而非直接上生产。 | [BV1Lhab64Eau · 00:01](https://www.bilibili.com/video/BV1Lhab64Eau?t=1) | [GitHub](https://github.com/google/ax) |
 | Destructive Command Guard | 用 Rust 编写的安全防护工具（简称 dcg），在 AI 编程助手执行 rm -rf、git push --force、DROP TABLE 等毁灭性命令前直接拦截，覆盖十多种主流 Agent，内置 50 多个规则包，并扩展到数据库、Kubernetes、云平台等场景 | 2026-07-13 | Agent 误删代码的事故几乎每个重度用户都遇到过，各家 CLI 自带的确认机制又常被自动批准模式绕过；dcg 把防护做成跨 Agent 的统一钩子层，解决的是真实痛点。它用 SIMD 做到亚毫秒级延迟，还能识别藏在 Python 代码和 heredoc 里的危险调用，并智能区分命令是为执行还是只做文本出现。不过规则天然存在绕过空间，把它当最后一道保险而不是唯一防线才是正确认知，配合容器隔离和 Git 备份使用更稳妥。 | [BV17vKB6sEYR · 02:22](https://www.bilibili.com/video/BV17vKB6sEYR?t=142) | [GitHub](https://github.com/Dicklesworthstone/destructive_command_guard) |
 | ax | Hono 作者 Yusuke Wada 推出的面向 AI Agent 的 HTTP/HTML 命令行工具，号称“AI 时代的 curl”，提供结构化的请求报告、页面结构探索和 CSS 选择器数据提取三类能力，输出按 token 成本优化（TSV 比 JSON 省约 40%）。 | 2026-07-06 | 给 Agent 造工具是当下最活跃的方向；ax 的聪明之处是不做黑盒抓取，而是让模型使用 CSS 选择器这种页面变化后仍可修复的抽象；作者（Hono）在开发者工具上的品位加上社区号召力会帮它快速铺开，值得放进 Agent 的工具箱。 | [BV19qNT6ZEmL · 00:57](https://www.bilibili.com/video/BV19qNT6ZEmL?t=57) | [GitHub](https://github.com/yusukebe/ax) |
 | AI SDK 7 | Vercel 的 TypeScript AI 工具包 7.0 版本，把重心从接入模型转向构建生产级 AI 代理，覆盖开发、运行、集成、观测全流程。 | 2026-06-25 | 考拉认为 AI SDK 的演进路径很能说明问题：从最早帮前端接 ChatGPT 做流式输出，到现在做全栈代理基础设施，本质是 Vercel 想占据 AI 应用的入口，把更多用量接入自家的基础设施。 | [BV1EWTK6iEGj · 00:58](https://www.bilibili.com/video/BV1EWTK6iEGj?t=58) | [GitHub](https://github.com/vercel/ai) |
@@ -516,6 +518,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| Univer | 开源的办公 SDK：把表格、文档、幻灯片、多维表格、白板和 PDF 编辑能力嵌进自己的产品。采用微内核加插件架构，官方插件上百个，主流前端框架都能接；表格支持 500 多个函数，官方称百万单元格秒开，还能在 Node.js 里无界面运行，方便 AI Agent 直接读写文档。 | 2026-09-24 | 考拉认为 Univer 对标 OnlyOffice 和 SpreadJS，无界面模式让它天然适合做 Agent 的文档工具层，比传统 Office SDK 更有前景；但协同等高级能力属于商业版，选型前要看清开源版的边界。 | [BV1Lhab64Eau · 01:35](https://www.bilibili.com/video/BV1Lhab64Eau?t=95) | [GitHub](https://github.com/dream-num/univer) |
 | Bento | 把完整 PPT 编辑器、演示器塞进单个约 560KB 的 HTML 文件，浏览器打开即用，支持 AES-GCM 端到端加密协作，且文档为明文 JSON 可被 Agent 直接编辑 | 2026-07-17 | 单个 HTML 文件配合浏览器能力足以胜任很多本地化使用场景，在满足需求的同时还提供了良好的隐私保护与离线体验。 | [BV1KK3J6cE5J · 00:02](https://www.bilibili.com/video/BV1KK3J6cE5J?t=2) | [GitHub](https://github.com/nyblnet/bento) |
 | FreeGraphPaper | 在线网格纸生成器，免注册、无水印，选好模板后调整间距、颜色和边距，实时预览并导出 PDF 或 PNG 直接打印；支持方格、点阵、等轴测、六边形、横线和康奈尔笔记纸，覆盖 A4、US Letter 等规格，间距可精确到 5 毫米或 1/4 英寸并保证 100% 比例打印。 | 2026-07-03 | 这类小工具网站的价值在于把一个具体需求做到零门槛，比起功能庞杂的绘图软件，打开即用反而是最大卖点。手帐、数学练习、工程草图都是稳定需求，靠搜索流量、自用站点往往能长期存活，也是独立开发者做小产品的一个不错样本。 | [BV1SYMM6FEeT · 04:18](https://www.bilibili.com/video/BV1SYMM6FEeT?t=258) | [官网](https://freegraphpaper.net/) |
 | Hucre | 纯 TypeScript 编写的零依赖电子表格引擎，支持 XLSX/CSV/ODS 的读写、Schema 校验、流式处理与往返保留，gzip 后约 18KB，可用于边缘运行时。 | 2026-03-24 | 考拉认为，在 SheetJS 长期统治电子表格处理领域的背景下，Hucre 用零依赖以及更开放的 license 开辟了差异化空间。这种小而精、专注解决一个问题的开源项目，正是社区最需要的创新方向。 | [BV1HzDSBqEgd · 01:58](https://www.bilibili.com/video/BV1HzDSBqEgd?t=118) | [GitHub](https://github.com/productdevbook/hucre) |
@@ -548,6 +551,7 @@ toc:
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| security-audit-skill | Cloudflare 开源的编码 Agent 安全审计技能：审计分 6 个阶段，先侦查架构和信任边界，再派出相互隔离的子 Agent 分区找漏洞，然后由全新的 Agent 专门推翻每条候选发现，最后输出结构化 JSON 和报告。核心原则是发现者永远不会验证自己的发现，而是交由独立 Agent 交叉验证。 | 2026-06-18 | 考拉认为 AI 找漏洞的最大问题是误报太多，维护者被 AI 垃圾漏洞报告淹没已是开源圈公害；这套对抗式验证把安全团队的流程工程化，比一句提示词靠谱，代价是需要并行子 Agent 和系统级沙箱，投放开销不低，更适合有安全需求的团队。 | [BV1Lhab64Eau · 02:13](https://www.bilibili.com/video/BV1Lhab64Eau?t=133) | [GitHub](https://github.com/cloudflare/security-audit-skill) |
 | Strix | 自主 AI 渗透测试平台/开源 CLI，由多 Agent 协作对代码、REST/GraphQL/gRPC API、Web 应用与云配置（AWS/Azure/Kubernetes）执行持续渗透测试，为每个漏洞提供可复现的 PoC 并自动生成修复 PR，支持私有化部署，已通过 SOC 2 与 ISO 27001 认证。 | 2026-05-26 | AI 渗透测试是今年安全领域最热的方向之一。Strix 的差异点在于打通了从发现、验证到修复的闭环，PoC 验证也能有效压低误报。不过自动化攻击面测试在生产环境的边界控制仍是敏感话题，企业落地前需要评估好授权与隔离策略。 | [BV1SYMM6FEeT · 00:31](https://www.bilibili.com/video/BV1SYMM6FEeT?t=31) | [GitHub](https://github.com/usestrix/strix) |
 | SkillSpector | NVIDIA 开源的 AI Agent Skill 安全扫描器，在安装前用静态分析加可选的 LLM 语义评估检测提示注入、数据外泄、权限提升与供应链投毒等风险，并给出 0–100 风险评分。 | 2026-03-21 | 考拉认为 Agent Skill 和 MCP 生态在快速膨胀，但安全治理几乎是空白，一个第三方 Skill 拿到的权限可能远超想象，而 SkillSpector 能方便地接入现有 CI 安全流水线；值得注意的是它也有局限，只能做静态分析，解析不了运行时行为、加密代码和非英文内容。 | [BV1SVj46KE3c · 04:16](https://www.bilibili.com/video/BV1SVj46KE3c?t=256) | [GitHub](https://github.com/NVIDIA/SkillSpector) |
 | thermoptic | HTTP 隐身代理，通过 Chrome DevTools Protocol 控制真实 Chrome 浏览器代为发起请求，使 curl 等非浏览器客户端在 TCP、TLS、HTTP 各层指纹与真实 Chrome 完全一致（JA3/JA4+ 等无法区分）。提供本地代理接口与 Docker 部署，可用于红队侦察、反爬采集与 C2 流量伪装。 | 2025-09-02 | 考拉认为 thermoptic 用'真浏览器代发请求'的思路优雅解决了指纹伪造的脆性问题，比手写 TLS/JA3 伪装稳得多，对反爬与红队价值很高；但运行真实 Chrome 有额外资源开销，且指纹一致不等于行为一致，仍要配合合理的速率与交互模拟。 | [BV1hKCXB3E4z · 07:30](https://www.bilibili.com/video/BV1hKCXB3E4z?t=450) | [GitHub](https://github.com/mandatoryprogrammer/thermoptic) |
@@ -611,10 +615,17 @@ toc:
 | llmfit | 用 Rust 编写的终端工具，先探测机器内存/CPU/显卡显存，再按能否装下、跑多快、质量如何、上下文多长四个维度为几百个大模型打分，提供交互式 TUI 与 Web 仪表盘 | 2026-02-17 | Koala 认为本地跑模型这两年从极客玩具变成真实需求，但大多数人靠论坛帖子和试错选型，效率不高；llmfit 把硬件探测和模型库对接好，实现了一个实用的模型推荐系统。 | [BV1BF8s65ESL · 02:53](https://www.bilibili.com/video/BV1BF8s65ESL?t=173) | [GitHub](https://github.com/AlexsJones/llmfit) |
 | mdq | 类 jq 的命令行工具，专为提取与操作 Markdown 文档中的标题、列表、链接等内容而设计。 | 2024-05-25 | 考拉认为 mdq 特别适合需要自动化处理 Markdown 文档的场景（如 GitHub PR 模板检查），语法设计与 Markdown 高度一致，使用顺手。 | [BV1xc9FYDED3 · 02:27](https://www.bilibili.com/video/BV1xc9FYDED3?t=147) | [GitHub](https://github.com/yshavit/mdq) |
 
+## 移动应用与分发
+
+| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
+| --- | --- | --- | --- | --- | --- |
+| F-Droid 2.0 | 开源安卓应用商店 F-Droid 的 2.0 大版本：客户端用 Kotlin 和 Compose 彻底重写，界面收敛成发现、搜索、我的应用三个入口；搜索覆盖描述和翻译内容，中日韩文字支持明显改善，自动后台更新成为默认；这一版还通过了独立安全审计，开发资金来自 NLnet 等公益基金。 | 2026-09-24 | 考拉认为发布时机很微妙，谷歌即将强制推行安卓开发者身份验证，第三方商店的空间正被压缩，此时发布也是一种表态；但它仍靠公益基金和志愿者维持，产品再好，在开发节奏上仍然比较被动。 | [BV1Lhab64Eau · 03:50](https://www.bilibili.com/video/BV1Lhab64Eau?t=230) | [官网](https://f-droid.org/) |
+
 ## 跨平台原生 UI 框架
 
 | 工具名称 | 作用 | 发布时间 | Koala 给予的评价 | Koala 视频 | GitHub / 项目地址 |
 | --- | --- | --- | --- | --- | --- |
+| GeaStack | 让你用 TypeScript、JSX 和 CSS 写一次，编译成原生程序：跑在单片机（ESP32/RP2350）、桌面、iOS 甚至 Xbox。编译器 geatsc 把 TypeScript 直接编译成 C++，设备上不需要 JS 引擎，单片机上也能跑 Flexbox 布局和 CSS 动画。官方数据是比 Node 平均快 2 倍半，启动约 2 毫秒。 | 2026-09-20 | 考拉认为在单片机上跑 JS 并不新鲜，Espruino、Moddable 早就在做，但它们都需要带引擎；GeaStack 直接提前编译，性能上限更高，代价是大概率只支持 TypeScript 子集，npm 生态难以复用；对想用 Web 技能做硬件界面的团队很有吸引力，但 GPL 协议对商业使用场景可能存在风险。 | [BV1Lhab64Eau · 02:58](https://www.bilibili.com/video/BV1Lhab64Eau?t=178) | [GitHub](https://github.com/geastack/compiler) |
 | Lynx | 字节跳动开源的跨平台原生 UI 开发框架，使用 React 等前端技术栈即可构建同时运行于 Android、iOS 与 Web 的高性能原生应用。 | 2025-03-05 | Koala 介绍 Lynx 是字节跳动开源的跨平台原生 UI 开发框架，开发者可以用 React 等熟悉的前端技术栈，构建同时运行在 Android、iOS 和 Web 上的原生应用；它主打原生渲染与高性能，让一套代码就能覆盖多端。 | [BV1gLR8Y2E8W · 01:28](https://www.bilibili.com/video/BV1gLR8Y2E8W?t=88) | [官网](https://lynxjs.org) |
 
 ## 身份验证与授权
