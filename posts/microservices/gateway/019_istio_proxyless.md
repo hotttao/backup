@@ -2,7 +2,7 @@
 weight: 14
 title: "Istio Proxyless：xDS 如何进入微服务框架"
 date: 2026-09-07T10:00:00+08:00
-lastmod: 2026-09-07T14:00:00+08:00
+lastmod: 2026-09-14T10:00:00+08:00
 draft: false
 author: "宋涛"
 authorLink: "https://hotttao.github.io/"
@@ -19,7 +19,245 @@ toc:
 2. gRPC-Go、Kitex 如何在没有 Envoy Sidecar 时执行 xDS 配置？
 3. Kitex 不支持动态负载均衡配置，具体缺少什么？
 4. Proxyless 是否只能治理客户端 Outbound？
-5. Proxyless 与 Ambient 是替代关系，还是可以组合？
+5. 当前 Kitex Proxyless 相比 Envoy Sidecar 缺少哪些能力？
+6. Proxyless 能否结合 Ambient，组合后的请求链是什么？
+7. Ambient 能补充 Proxyless 的哪些缺失能力，又有哪些仍然补不了？
+8. Istio 会不会把使用 Proxyless 的 Pod 当成 Sidecar Pod，从而不再使用 ztunnel？
+
+## 先回答三个问题
+
+这里必须区分两个概念：
+
+- **Proxyless 是一种架构方式**：由 RPC 框架直接订阅并执行 xDS；
+- **某个 Proxyless SDK 的能力**：取决于它实际实现了哪些 Resource、Filter 和执行器。
+
+因此不能笼统地说“Proxyless 不支持某项能力”。本节对比的是当前项目使用的
+`kitex-contrib/xds` 与 Istio Envoy Sidecar；gRPC-Go 的 xDS Server 能力会比当前 Kitex 更完整，
+但仍不是一个通用 Envoy。
+
+### 问题一：当前 Kitex Proxyless 相比 Sidecar 做不到什么
+
+Sidecar 是独立的通用网络代理，透明接管 Pod 的入站和出站流量；Kitex Proxyless 只是 Kitex
+进程内的一组 Router、Resolver、Retry、Circuit Breaker 和 Limiter 扩展。因此差异不只是
+“少一个进程”，而是执行边界不同：
+
+| 能力 | Envoy Sidecar | 当前 Kitex Proxyless | 缺失的实际影响 |
+| --- | --- | --- | --- |
+| 接入范围 | 透明治理 Pod 中的 HTTP、gRPC、TCP 等流量 | 只治理显式接入 xDS 的 Kitex Client，Server 侧能力很少 | PostgreSQL、Ory、第三方程序和普通 HTTP Client 不会自动受治理 |
+| Outbound 服务发现和路由 | Envoy 完整解释 Istio 生成的 LDS/RDS/CDS/EDS | 支持服务发现、权重路由、超时、重试和部分熔断 | 未实现的字段即使收到也不会生效 |
+| 动态负载均衡策略 | 可以执行 Envoy 支持的 Round Robin、Least Request、Ring Hash、Locality 等 | Endpoint 可以动态更新，但 Cluster 内 Balancer 主要由 Kitex 自己决定 | 不能仅靠 CDS 动态切换所有 LB 算法和参数 |
+| 通用 Inbound | Envoy 在业务进程前统一执行 Listener、TLS、RBAC、限流和 Filter | 只有有限的服务端本地限流，不是通用 xDS Server | 服务端授权、TLS、审计等不能假设由 Kitex xDS 自动完成 |
+| mTLS 和工作负载身份 | Istio Agent/Envoy 获取、轮换证书并校验对端身份 | 当前 Kitex xDS 明确不提供 Istio mTLS 集成 | 单独使用时必须由应用、基础设施或其他数据面补充安全传输 |
+| Envoy 扩展 | 可执行 Envoy 内置 Filter、`ext_authz`、Wasm、Transcoder 等 | 只能执行 Kitex 扩展已经显式映射的能力 | 不能直接复用大量 Envoy 生态插件 |
+| 统一遥测 | 在应用外生成连接、请求、响应码和时延指标及访问日志 | 依赖 Kitex/OpenTelemetry 埋点和各服务统一接入 | 未接入框架埋点的请求不会自动拥有同样的 Mesh L7 遥测 |
+| 策略强制性 | 应用一般不能绕开入站 Sidecar 的策略边界 | 策略在应用进程内执行，错误初始化或另建普通 Client 就可能绕开 | 安全授权不应只依赖客户端 Proxyless 策略 |
+| 升级方式 | 集中升级数据面版本 | 每种语言、框架和服务都要升级 SDK | 异构系统更难保证行为和版本完全一致 |
+
+Proxyless 可以做到什么也要说清楚：对纯 Kitex RPC 调用，它可以把 Endpoint Pick、路由、超时、
+重试和熔断放在应用进程内，省去客户端 Sidecar 的一次本机代理转发，并能直接结合业务降级逻辑。
+它不是 Sidecar 的等价重写，而是选择性地把部分客户端 L7 能力下沉到框架。
+
+### 问题二：Proxyless 能否结合 Ambient
+
+**可以。** 两者不在同一个层次：
+
+```text
+Proxyless：应用进程内执行 RPC 客户端 L7 治理
+Ambient ztunnel：应用进程外透明执行 L4 安全和转发
+Ambient Waypoint：按需执行目标服务的 L7 策略
+```
+
+最容易理解、也最不容易重复治理的组合是
+`Proxyless Outbound + Ambient ztunnel`：
+
+```text
+控制面：
+
+                         istiod
+                   ┌────────┴────────┐
+          xDS 路由/Endpoint      身份、证书和隧道配置
+                   │                 │
+                   ▼                 ▼
+          A 的 Kitex Client    两端节点的 ztunnel
+
+数据面：
+
+服务 A Pod
+┌──────────────────────────────────────────────┐
+│ 业务 Handler                                 │
+│   -> Kitex Proxyless Outbound                │
+│      1. RDS 选择 Cluster                     │
+│      2. CDS/EDS 得到 B1、B2                  │
+│      3. LB 选择 B1                           │
+│      4. 执行超时、重试、熔断                 │
+└──────────────────────┬───────────────────────┘
+                       │ 连接 B1 Pod IP；应用侧可保持明文 gRPC
+                       ▼
+              源节点 ztunnel
+              - 透明捕获连接
+              - 识别 A 的工作负载身份
+              - 建立 HBONE/mTLS
+                       │ 加密隧道
+                       ▼
+              目标节点 ztunnel
+              - 校验对端身份
+              - 执行 L4 AuthorizationPolicy
+              - 解密并转发
+                       │
+                       ▼
+服务 B Pod
+┌──────────────────────────────────────────────┐
+│ Kitex gRPC Server                            │
+│   -> JWT/Keto 等业务身份与权限校验           │
+│   -> SayHello / XHS Handler                  │
+└──────────────────────────────────────────────┘
+```
+
+这里没有 Sidecar。Kitex 决定“调用哪个 B、等多久、是否重试”，ztunnel 决定“这条连接以哪个
+工作负载身份安全地到达 B”。ztunnel 不解析 gRPC Method，也不会替 Kitex 执行重试或熔断。
+
+当目标服务还需要统一的 L7 入站能力时，可以增加 Waypoint：
+
+```text
+A 的业务代码
+  -> Kitex Proxyless Outbound：服务发现、LB、客户端超时/熔断
+  -> 源 ztunnel：身份、HBONE/mTLS
+  -> B 的 Waypoint：服务端 L7 授权、限流、访问日志等
+  -> 目标 ztunnel
+  -> B 的 Kitex Server
+```
+
+组合 Waypoint 时必须处理两个边界：
+
+1. **不要重复执行同一客户端策略。** Kitex 和 Waypoint 同时重试会造成请求放大；超时和故障注入
+   也必须指定唯一责任方。
+2. **确认流量确实经过 Waypoint。** Proxyless Resolver 通常从 EDS 直接选择 Pod IP；如果只把
+   Waypoint 绑定在 Service 上，这类直达 Workload 的连接是否进入 Waypoint 取决于注册范围和
+   当前 Istio 配置，必须通过实际路由、访问日志和策略拒绝测试验证，不能仅凭 Service 标签判断。
+
+外部流量仍然是另一条独立边界。例如本项目可以同时保持：
+
+```text
+浏览器 -> Istio Ingress -> Oathkeeper/Transcoder -> Social
+Social -> Kitex Proxyless + ztunnel -> XHS
+```
+
+Ingress 负责南北向认证与协议转换；Proxyless 和 Ambient 负责 Social 到 XHS 的东西向调用。
+
+#### Proxyless Pod、Sidecar Pod 和 Ambient Pod 如何判定
+
+Istio **不会检测应用是否创建了 xDS Client 来判定数据面模式**。Kitex 连接 istiod、订阅 xDS，
+只表示应用进程正在使用 Proxyless；它不会让 Kubernetes Pod 自动获得 Sidecar 身份，也不会自动
+退出 Ambient。
+
+三种机制的判断依据彼此独立：
+
+| 机制 | Istio/Kubernetes 根据什么判断 |
+| --- | --- |
+| Proxyless | 应用代码是否初始化 xDS Client，并把它接入 RPC Client/Server |
+| Sidecar | Pod 是否被 Admission Webhook 注入 `istio-proxy` 容器和相关网络配置 |
+| Ambient | namespace/Pod 是否通过 `istio.io/dataplane-mode=ambient` 注册，且该 Pod 没有使用 Sidecar 数据面 |
+
+所以，一个使用 Proxyless 的 Pod 最终走哪条网络路径，仍由 Sidecar 注入和 Ambient enrollment
+决定：
+
+| 应用内 Proxyless | 注入 Sidecar | 注册 Ambient | 实际执行路径 |
+| --- | --- | --- | --- |
+| 是 | 否 | 否 | 纯 Proxyless；没有 ztunnel 提供的 Istio mTLS 和 L4 授权 |
+| 是 | 是 | 任意 | Proxyless + Envoy Sidecar；Sidecar 数据面优先，不再由 ztunnel重复接管 |
+| 是 | 否 | 是 | Proxyless + ztunnel；推荐的无 Sidecar 组合 |
+| 否 | 否 | 是 | 普通 Ambient 工作负载，由 ztunnel 和可选 Waypoint治理 |
+
+`Proxyless + Sidecar` 在技术上可以启动，但通常不应该这样配置：
+
+```text
+Kitex Proxyless
+  -> 已经选择 Endpoint、执行客户端超时/重试
+  -> Envoy Sidecar 再次透明拦截
+  -> 可能再次路由、超时、重试和熔断
+```
+
+这会让同一项 L7 策略出现两个执行者。Istio 之所以把该 Pod 视为 Sidecar 工作负载，是因为它
+包含注入的 `istio-proxy`，不是因为它使用了 Proxyless。
+
+Sidecar 与 Ambient 可以在同一个 Mesh，甚至迁移期间出现在同一个 namespace，但对单个 Pod
+正常情况下只选择一套透明数据面：
+
+```text
+Sidecar Pod：应用 -> Envoy Sidecar -> 网络
+Ambient Pod：应用 -> 节点 ztunnel -> 网络
+```
+
+当 namespace 同时带有 Sidecar injection 标签和 Ambient 标签时，Sidecar 注入优先；已经注入
+`istio-proxy` 的 Pod 不会再由 ztunnel 重复捕获。长期配置不建议依赖两个互相竞争的 namespace
+标签，应使用独立 namespace，或者明确移除 Sidecar injection 标签后再迁移到 Ambient。
+
+两类工作负载之间仍然可以互相调用：
+
+```text
+Sidecar -> Ambient：应用 -> 源 Envoy -> mTLS -> 目标 ztunnel -> 应用
+Ambient -> Sidecar：应用 -> 源 ztunnel -> mTLS -> 目标 Envoy -> 应用
+```
+
+因此，“集群安装了 Ambient”不等于“所有无 Sidecar Pod 都自动使用 ztunnel”。Pod 所在
+namespace 还必须注册到 Ambient。以当前 009 实验为例：
+
+```text
+namespace ddd-learn-sidecar
+  -> istio-injection=enabled
+  -> 没有 istio.io/dataplane-mode=ambient
+
+Social Pod 如果设置 sidecar.istio.io/inject=false
+  -> 不会注入 Sidecar
+  -> 也不会被 ztunnel 接管
+  -> 当前实际是纯 Proxyless
+```
+
+如果要验证本文推荐的组合，需要让 Social 所在 namespace 注册 Ambient，并确保 Social Pod 不注入
+Sidecar，最终路径才是：
+
+```text
+Social Kitex Proxyless -> 源 ztunnel -> 目标数据面 -> XHS
+```
+
+### 问题三：Ambient 能给 Proxyless 补充什么
+
+Ambient 不是把缺失代码“安装进 Kitex”，而是在应用进程外增加执行者：
+
+| Proxyless 的缺口 | ztunnel 可以补充 | Waypoint 可以补充 | 仍然不能自动补齐的部分 |
+| --- | --- | --- | --- |
+| 没有 Istio mTLS | 工作负载身份、证书轮换、HBONE/mTLS | 通常不需要 Waypoint 参与 | Kitex 自身仍不理解 Istio 证书和 xDS Security Config |
+| 没有透明 L4 策略 | 按 source principal、namespace、端口执行 L4 授权 | — | ztunnel 看不到 gRPC Method 和业务字段 |
+| 缺少通用 Inbound L7 | — | 在服务前执行 L7 授权、限流及支持的 HTTP/gRPC 策略 | 业务对象权限仍应由服务自身校验，例如 Keto 的组织权限 |
+| 缺少统一网络遥测 | TCP 连接、字节、来源/目标工作负载指标 | HTTP/gRPC 请求级指标、访问日志和 Trace 上下文处理 | 应用内部阶段和业务指标仍需 OpenTelemetry 埋点 |
+| 不能治理非 Kitex 流量 | 透明保护任意 TCP 连接 | 支持的 L7 协议可获得更细治理 | Waypoint 仍不是任意应用协议的翻译器 |
+| 缺少 Envoy Filter 生态 | — | 可承载 Waypoint 支持的 Envoy/Istio L7 扩展 | 扩展运行在 Waypoint，不会变成 Kitex 进程内能力 |
+| SDK 不支持某些 CDS LB 策略 | 只负责安全转发，不能补 | 可以在经过 Waypoint 的流量上另做代理侧选择 | 不能让 Kitex Balancer 突然支持它没有实现的算法 |
+
+因此，三者最清晰的职责分工是：
+
+```text
+Kitex Proxyless
+  = 调用方 L7：发现、选路、负载均衡、超时、重试、熔断
+
+Ambient ztunnel
+  = Mesh L4：透明接入、工作负载身份、mTLS、L4 授权
+
+Ambient Waypoint（可选）
+  = 被调用方共享 L7：统一入站授权、限流、遥测和扩展
+
+业务服务
+  = 最终业务授权：用户是否属于组织、是否拥有 modify_keywords 等权限
+```
+
+选择时可以使用下面的判断顺序：
+
+1. 只缺透明 mTLS、工作负载身份和 L4 授权：使用 ztunnel，不必增加 Waypoint。
+2. 还缺统一的服务端 L7 授权、限流或审计：给目标服务增加 Waypoint。
+3. Kitex 已执行客户端路由、重试和熔断：不要在 Waypoint 再配置同一套策略。
+4. 希望补齐 Kitex 未实现的客户端 xDS 字段：Ambient 不能改变 Kitex，需升级 SDK、自己实现，
+   或明确把该能力交回代理执行。
+5. 需要保护业务对象权限：始终由服务端业务授权完成，不能交给客户端 Proxyless。
 
 ## 1. 核心理论：xDS 下发资源，数据面负责解释和执行
 
@@ -581,26 +819,30 @@ Ambient L7 -> Waypoint
 纯 Proxyless -> 框架的 Server RBAC；未实现就不生效
 ```
 
-### 8.2 Ambient 中通常不需要 Proxyless
+### 8.2 Ambient 与 Proxyless 可以组合，但必须划清职责
 
-Ambient 已经通过 ztunnel 消除了 Sidecar。需要 L7 时再增加 Waypoint，通常比把治理能力分散到每个
-RPC SDK 更一致。
+Ambient 通过 ztunnel 消除了每个 Pod 的 Sidecar，却没有禁止应用框架自己执行 xDS。是否需要
+Proxyless，取决于是否希望由 RPC 框架执行客户端 L7 策略：异构系统通常使用
+`ztunnel + Waypoint` 更一致；纯 Kitex 调用链可以使用 `Proxyless Outbound + ztunnel`。
 
-同时启用时有两个风险：
+同时启用时主要有两个风险：
 
 | 风险 | 原因 |
 | --- | --- |
 | 重复治理 | Client 和 Waypoint 同时 Retry 3 次，最坏可放大为 9 次尝试 |
-| 绕过 Waypoint | EDS 直接选择 Pod IP，可能不经过绑定在 Service 上的 Waypoint |
+| Waypoint 路径不确定 | EDS 直接选择 Pod IP 时，不能只凭 Service 上的绑定推断流量一定经过 Waypoint |
 
-仍值得组合的窄场景：
+推荐的最小组合是：
 
 ```text
 纯 gRPC/Kitex
-  + Proxyless 只负责客户端发现和 LB
+  + Proxyless 负责客户端发现、LB、超时和熔断
   + ztunnel 只负责 mTLS、身份和 L4 授权
-  + 不使用重复的 Waypoint Route/Retry
+  + 默认不增加 Waypoint
 ```
+
+只有在目标服务确实需要共享的 L7 入站授权、限流或审计时才增加 Waypoint，并通过实际请求验证
+流量路径；不要在 Proxyless 和 Waypoint 重复配置客户端重试、熔断和故障注入。
 
 ### 8.3 最终决策
 
@@ -709,6 +951,8 @@ RPC 框架、Envoy 还是 Waypoint 执行。
 
 ## 参考资料
 
+- [Istio Ambient architecture](https://istio.io/latest/docs/ambient/architecture/)
+- [Istio Waypoint proxies](https://istio.io/latest/docs/ambient/usage/waypoint/)
 - [CloudWeGo Kitex xDS](https://www.cloudwego.io/zh/docs/kitex/tutorials/advanced-feature/xds/)
 - [kitex-contrib/xds](https://github.com/kitex-contrib/xds)
 - [gRPC xDS features](https://github.com/grpc/grpc/blob/master/doc/grpc_xds_features.md)

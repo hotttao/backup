@@ -31,7 +31,7 @@ vLLM 和 SGLang 解决的是“如何高效执行一次模型推理”，但一�
 
 ```text
 统一模型网关：LiteLLM Proxy
-网关状态存储：PostgreSQL + Redis
+网关状态存储：PostgreSQL（权威数据）+ Redis/Valkey（可重建状态）
 推理引擎：vLLM / SGLang
 副本级路由：vLLM Production Stack Router / SGLang Model Gateway
 运行环境：Kubernetes + NVIDIA GPU Operator + Helm
@@ -89,7 +89,7 @@ flowchart TB
         L1[LiteLLM Proxy Replica 1]
         L2[LiteLLM Proxy Replica 2]
         PG[(PostgreSQL\nKey 租户 预算 消费记录)]
-        R[(Redis\n分布式限流 路由状态 缓存)]
+        R[(Redis / Valkey\n临时限流 租约 路由缓存)]
     end
 
     subgraph VP[vLLM 推理池]
@@ -171,8 +171,8 @@ flowchart TB
 | 能力 | 推荐组件 | 第一阶段职责 | 是否需要自研 |
 | --- | --- | --- | --- |
 | 统一 API 与模型网关 | LiteLLM Proxy | OpenAI API、Virtual Key、模型别名、路由、重试、预算、消费记录 | 只写配置和少量回调 |
-| 关系数据 | PostgreSQL | Key、用户、团队、预算、模型配置、Spend Logs | 否 |
-| 分布式状态 | Redis | 多网关副本共享限流、冷却状态、预算/路由计数 | 否 |
+| 权威关系数据 | PostgreSQL | Key、用户、团队、预算、模型配置、不可变 Usage/Spend Ledger | 否 |
+| 可重建分布式状态 | Redis/Valkey | 多网关副本共享限流、并发租约、预算预留、冷却和路由缓存 | 否 |
 | 推理执行 | vLLM、SGLang | Continuous Batching、Paged/Radix KV Cache、张量并行、OpenAI API | 否 |
 | vLLM 副本路由 | vLLM Production Stack Router | Prefix/KV/Load-aware 路由、服务发现 | 否 |
 | SGLang 副本路由 | SGLang Model Gateway | Cache-aware、Power-of-two、健康检查、动态 Worker | 否 |
@@ -188,9 +188,42 @@ flowchart TB
 
 LiteLLM 已经覆盖了最容易重复造轮子的部分：OpenAI-compatible API、Virtual Key、团队和模型权限、RPM/TPM、预算、Spend Tracking、多个 Deployment 的负载均衡、失败冷却、重试与 Fallback。
 
-需要特别注意：预算功能依赖 PostgreSQL；无数据库部署不能当作可靠的预算控制。多副本网关还需要 Redis 共享计数和路由状态。相关行为应该以所固定版本的[预算与限流文档](https://github.com/BerriAI/litellm-docs/blob/main/docs/proxy/users.md)和[预算路由文档](https://github.com/BerriAI/litellm-docs/blob/main/docs/proxy/provider_budget_routing.md)为准。
+需要特别注意：预算功能依赖 PostgreSQL；无数据库部署不能当作可靠的预算控制。多副本网关还需要 Redis/Valkey 共享实时计数，但不能把它当作消费账本或唯一预算依据。相关行为应该以所固定版本的[预算与限流文档](https://github.com/BerriAI/litellm-docs/blob/main/docs/proxy/users.md)和[预算路由文档](https://github.com/BerriAI/litellm-docs/blob/main/docs/proxy/provider_budget_routing.md)为准。
 
-### 4.2 其他网关什么时候更合适
+### 4.2 PostgreSQL 与 Redis/Valkey 的边界
+
+这里采用 Redis/Valkey，不是因为相信它能提供账务级持久化，而是因为它适合高频原子计数和短生命周期协调。系统必须遵循下面的权威关系：
+
+```text
+PostgreSQL：唯一权威数据源
+├── API Key、租户和团队
+├── 预算与价格版本
+├── 已完成请求的 Usage/Spend Ledger
+└── request_id 幂等记录
+
+Redis/Valkey：可丢失、可重建的运行时状态
+├── 当前窗口 RPM/TPM
+├── 带 TTL 的并发租约
+├── 请求执行期间的预算预留
+├── Deployment 冷却状态
+└── 路由与消费聚合缓存
+```
+
+该设计优化的不是 Redis 的备份，而是系统正确性：即使 Redis 恢复到了旧快照，也不能丢失消费流水、重复扣费或把错误的缓存余额当作最终结果。Redis 官方文档说明，RDB 可能丢失最近一段时间的数据，AOF `everysec` 在灾难情况下也可能丢失约一秒写入；因此备份和复制只能降低故障概率，不能代替权威账本。参考[Redis Persistence](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)。
+
+Redis/Valkey 丢失后，系统应当能够执行以下恢复流程：
+
+```text
+启动空的 Redis/Valkey
+    -> 从 PostgreSQL 读取预算与已消费基线
+    -> RPM/TPM 从新的时间窗口重新计数
+    -> 并发租约通过请求和 TTL 重新建立
+    -> 路由冷却与健康状态通过探活重新生成
+```
+
+Valkey 与 Redis 使用相似的 RDB、AOF 和异步复制机制，切换到 Valkey 主要改善开源治理，并不会自动获得更强的一致性。Apache Kvrocks 虽然使用 RocksDB 作为磁盘存储并兼容 Redis 协议，但复制仍是异步的，而且 LiteLLM 依赖的 Lua、TTL、Pipeline 和原子增量需要逐项验证。真正要求“预算绝对不能超”时，应使用 PostgreSQL 事务实现独立 Quota Service，代价是增加自研和热行竞争；这不属于最小开发方案。
+
+### 4.3 其他网关什么时候更合适
 
 | 方案 | 优势 | 相对本方案的代价 | 适用情况 |
 | --- | --- | --- | --- |
@@ -258,7 +291,7 @@ SGLang Model Gateway 提供 `cache_aware`、`power_of_two`、`round_robin` 等�
 sequenceDiagram
     participant C as Client
     participant G as LiteLLM Gateway
-    participant R as Redis
+    participant R as Redis/Valkey
     participant P as PostgreSQL
     participant MR as Engine Router
     participant W as vLLM/SGLang Worker
@@ -266,15 +299,18 @@ sequenceDiagram
 
     C->>G: POST /v1/chat/completions + Virtual Key
     G->>P: 校验 Key、租户、模型权限和预算配置
-    G->>R: 原子检查 RPM/TPM/并发并预留额度
+    G->>R: 原子检查 RPM/TPM，创建并发租约和预算预留
+    alt Redis 状态缺失或硬预算模式
+        G->>P: 查询权威消费额；无法确认则 Fail Closed
+    end
     G->>G: 将逻辑模型解析为 Deployment
     G->>MR: 转发 OpenAI-compatible 请求
     MR->>MR: 健康检查 + 负载/KV Cache-aware 选择
     MR->>W: 执行推理
     W-->>C: 经由 Router/Gateway 流式返回 Token
     W-->>G: 最终 Usage / 完成状态
-    G->>R: 以实际用量结算或修正预留额度
-    G->>P: 写入不可重复的 Usage/Spend 记录
+    G->>P: 以 request_id 幂等写入 Usage/Spend Ledger
+    G->>R: 释放并发租约，以实际用量修正预留缓存
     G-->>O: 指标、Trace、可选计费事件
 ```
 
@@ -296,7 +332,7 @@ sequenceDiagram
 
 ### 7.2 分布式限流
 
-当 LiteLLM 有多个副本时，限流计数必须放在 Redis，而不能保存在每个 Pod 的本地内存中，否则两个副本会分别放行一份额度。
+当 LiteLLM 有多个副本时，限流计数需要由 Redis/Valkey 共享，而不能只保存在每个 Pod 的本地内存中，否则两个副本会分别放行一份额度。但这些计数是短生命周期的运行时状态，而不是账务真相。
 
 建议限流键至少包含：
 
@@ -316,7 +352,26 @@ tenant_id + api_key_id + model_alias + time_window
 
 最具体的规则用于隔离调用方，上层规则用于保护共享基础设施。
 
-### 7.3 Token 预留与结算
+### 7.3 临时状态必须可自动恢复
+
+不要使用一个永久累加的 Redis Key 表示当前并发数，否则网关在执行减一之前崩溃，租户可能长期占用一个不存在的并发名额。应当使用带 TTL 的请求租约：
+
+```text
+concurrency:{tenant_id}:{request_id} = 1
+TTL = request_timeout + safety_margin
+```
+
+请求完成后主动删除租约；网关崩溃或网络中断时，由 TTL 最终释放。路由冷却、临时预算预留也必须具有过期时间。系统需要满足：
+
+```text
+Redis 数据丢失  -> 状态可以从请求、数据库或健康检查重新建立
+Redis 删除失败  -> TTL 能够最终清理
+Redis 恢复旧值  -> 不能覆盖 PostgreSQL 中的权威消费流水
+```
+
+对预算要求严格的部署，应保持 LiteLLM 预算预留，并启用 `fail_closed_budget_enforcement`。Redis 状态缺失或过旧时重新检查 PostgreSQL；Redis 和 PostgreSQL 都无法确认当前消费额时返回 `503`，而不是未经验证地继续调用付费模型。
+
+### 7.4 Token 预留与结算
 
 请求开始时只有输入 Token 和 `max_tokens` 是已知的，真实输出 Token 尚未产生。稳妥做法是：
 
@@ -330,9 +385,9 @@ estimated_tokens = input_tokens + requested_max_output_tokens
 4. 客户端中断时仍记录已经生成的 Token；
 5. 无法可靠计量时采取保守策略，并标记记录等待对账。
 
-LiteLLM 已提供 TPM/RPM、并发和预算能力，第一阶段应优先使用其现成功能，而不是自己实现一套 Redis Lua 算法。但必须压测所固定的版本，确认多副本、流式中断、Redis 重启和预算边界的行为。
+LiteLLM 已提供 TPM/RPM、并发和预算能力，第一阶段应优先使用其现成功能，而不是自己实现一套 Redis Lua 算法。但必须压测所固定的版本，确认多副本、流式中断、Redis 重启、主从切换和预算边界的行为。
 
-### 7.4 背压与错误码
+### 7.5 背压与错误码
 
 - 租户配额耗尽：返回 `429`；
 - 推理池队列已满：返回 `429` 或 `503`，并携带 `Retry-After`；
@@ -405,6 +460,16 @@ trace_id
 ```
 
 `request_id` 必须贯穿 Gateway、Router、Worker、日志和账务记录。同一个完成事件重试写入时，数据库应使用唯一约束或 Upsert，避免重复扣费。
+
+账务应保存不可变流水，而不是只维护一个可以被覆盖的余额字段：
+
+```text
+usage_ledger(request_id, tenant_id, tokens, amount, pricing_version, status)
+                         |
+                         +-> UNIQUE(request_id)
+```
+
+当前消费额是 Ledger 的聚合结果，Redis/Valkey 中的 `current_spend` 只是该结果的热路径缓存。缓存丢失后可以从 PostgreSQL 重建；价格变化后也可以通过 `pricing_version` 重放历史记录。这样才能同时满足幂等、审计和对账。
 
 ### 8.4 什么时候增加 OpenMeter
 
@@ -511,7 +576,9 @@ Prometheus + Grafana
 
 - LiteLLM 至少两个副本，使用 Pod Anti-Affinity；
 - PostgreSQL 使用托管高可用版或成熟 Operator；
-- Redis 使用高可用方案，并明确持久化和故障语义；
+- Redis/Valkey 使用高可用方案，所有临时 Key 设置 TTL，明确它只是可重建协调层；
+- PostgreSQL 保存权威预算与不可变 Usage/Spend Ledger，Redis 数据不能反向覆盖账务；
+- Redis/Valkey 建议启用 AOF `everysec`、周期备份、Pod Anti-Affinity 和 `noeviction`，这些措施用于缩短恢复时间，而不是保证账务正确性；
 - 每个模型建立独立 Deployment/Pool；
 - GPU 节点使用标签、Taint/Toleration 和 Node Affinity；
 - 模型文件预下载到本地 NVMe/PVC，避免每次 Pod 启动从公网下载；
@@ -622,6 +689,7 @@ router_settings:
 general_settings:
   master_key: os.environ/LITELLM_MASTER_KEY
   database_url: os.environ/DATABASE_URL
+  fail_closed_budget_enforcement: true
 ```
 
 实际生产中可以把两个引擎暴露为不同别名，只把其中一个配置为 Fallback；这样比无条件在 vLLM 和 SGLang 之间随机分流更容易解释和压测。
@@ -729,6 +797,10 @@ GPU 利用率不能直接代表用户等待时间。扩容决策应结合等待�
 
 LiteLLM、vLLM 和 SGLang 迭代很快，参数、指标和兼容行为可能变化。镜像必须使用不可变版本或 Digest；升级前执行协议、限流、流式中断、路由和计费回归测试。
 
+### 14.7 把 Redis 当作消费账本
+
+Redis/Valkey 的 RDB、AOF 和异步复制都有性能与数据丢失窗口之间的取舍。增加副本和备份能够改善可用性与恢复时间，但不能替代账务一致性。预算、实际消费、价格版本和请求幂等必须保存在 PostgreSQL；Redis 只保存带 TTL、可重新生成的限流计数、租约、预留和缓存。
+
 ## 十五、最终推荐
 
 如果从零开始，最合理的最小系统不是开发一个“大模型平台”，而是组合下面四个核心单元：
@@ -737,8 +809,11 @@ LiteLLM、vLLM 和 SGLang 迭代很快，参数、指标和兼容行为可能变
 LiteLLM Proxy
     负责统一 API、Virtual Key、配额、预算和模型级路由
 
-PostgreSQL + Redis
-    负责持久状态与多副本共享计数
+PostgreSQL
+    保存 Key、预算、价格和不可变 Usage/Spend Ledger，是唯一权威数据源
+
+Redis / Valkey
+    保存带 TTL 的限流、并发租约、预算预留和路由缓存，允许丢失并重建
 
 vLLM Production Stack / SGLang Model Gateway
     负责推理池内部的健康检查、负载和 KV Cache-aware 路由
@@ -752,8 +827,9 @@ Prometheus + Grafana + OpenTelemetry
 1. 模型与路由配置；
 2. Virtual Key 和配额管理流程；
 3. 统一的 Request ID、日志和 Trace 字段；
-4. 自托管模型价格表；
-5. 一套覆盖流式请求、限流、失败切换和账务幂等的集成测试。
+4. 自托管模型价格表与不可变 Usage Ledger；
+5. Redis/Valkey 故障时的数据库校验和 Fail Closed 策略；
+6. 一套覆盖流式请求、限流、故障恢复、失败切换和账务幂等的集成测试。
 
 只有在需要向外部客户正式收费时，再增加 OpenMeter 和一个异步 Usage Event Adapter。只有在压测证明现成网关成为瓶颈，或者业务存在现成组件无法表达的路由策略时，才考虑自研数据面。
 
@@ -761,6 +837,9 @@ Prometheus + Grafana + OpenTelemetry
 
 - [LiteLLM Budgets and Rate Limits](https://github.com/BerriAI/litellm-docs/blob/main/docs/proxy/users.md)
 - [LiteLLM Provider and Model Budget Routing](https://github.com/BerriAI/litellm-docs/blob/main/docs/proxy/provider_budget_routing.md)
+- [Redis Persistence](https://redis.io/docs/latest/operate/oss_and_stack/management/persistence/)
+- [Valkey Migration and Persistence Compatibility](https://valkey.io/topics/migration/)
+- [Apache Kvrocks](https://kvrocks.apache.org/)
 - [vLLM Production Stack](https://docs.vllm.ai/projects/production-stack/en/latest/)
 - [vLLM Load-aware Routing](https://docs.vllm.ai/projects/production-stack/en/latest/use_cases/loadaware-routing.html)
 - [vLLM Autoscaling with KEDA](https://docs.vllm.ai/projects/production-stack/en/latest/use_cases/autoscaling-keda.html)
