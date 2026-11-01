@@ -50,6 +50,9 @@ def main() -> int:
             """,
             (args.task_key, args.bvid),
         ).fetchall()
+        episode_row = connection.execute(
+            "SELECT published_at FROM videos WHERE bvid = ?", (args.bvid,)
+        ).fetchone()
     finally:
         connection.close()
 
@@ -70,7 +73,7 @@ def main() -> int:
         if line.startswith("| 工具名称 | 作用 | 发布时间 | Koala 给予的评价 |")
     ]
     if not headers:
-        fail("文章中没有六列表格表头")
+        fail("文章中没有七列表格表头")
 
     malformed = []
     for number, line in enumerate(lines, start=1):
@@ -78,10 +81,20 @@ def main() -> int:
             continue
         if line.startswith("| ---") or line.startswith("| 工具名称"):
             continue
-        if markdown_cell_count(line) != 6:
+        if markdown_cell_count(line) != 7:
             malformed.append(number)
     if malformed:
-        fail(f"以下表格行不是六列：{malformed}")
+        fail(f"以下表格行不是七列：{malformed}")
+
+    episode_date = (
+        str(episode_row["published_at"])[:10]
+        if episode_row and episode_row["published_at"]
+        else ""
+    )
+    if not episode_date:
+        fail("videos 表中没有该视频的发布日期")
+    if episode_date not in article:
+        fail(f"文章缺少本期科技周报日期列：{episode_date}")
 
     errors: list[str] = []
     for item in items:
